@@ -1,5 +1,5 @@
 #include "platform/glfw_window.hpp"
-#include "log.hpp"
+#include "blackberry/log.hpp"
 #include "blackberry/application/application.hpp"
 #include "blackberry/event/event.hpp"
 #include "blackberry/event/key_events.hpp"
@@ -20,7 +20,69 @@
 
 namespace Blackberry {
 
-    static KeyCode GLFWKeyToRaspberry(const i32 key) {
+#pragma region Callbacks
+
+    static KeyCode GLFWKeyToBlackberry(const i32 key);
+    static MouseCode GLFWMouseToBlackberry(const i32 button);
+
+    static void CallbackKey(GLFWwindow* window, i32 key, i32 scancode, i32 action, i32 mods) {
+        DISPATCHER;
+
+        const KeyCode keyCode = GLFWKeyToBlackberry(key);
+
+        if (action == GLFW_PRESS) {
+            dispatcher.Post(KeyPressedEvent(keyCode, false));
+        }
+        else if (action == GLFW_REPEAT) {
+            dispatcher.Post(KeyPressedEvent(keyCode, true));
+        }
+        else if (action == GLFW_RELEASE) {
+            dispatcher.Post(KeyReleasedEvent(keyCode));
+        }
+    }
+
+    static void CallbackChar(GLFWwindow* window, u32 codepoint) {
+        DISPATCHER;
+
+        dispatcher.Post(KeyTypedEvent(codepoint));
+    }
+
+    static void CallbackMouseButton(GLFWwindow* window, i32 button, i32 action, i32 mods) {
+        DISPATCHER;
+
+        MouseCode btn = GLFWMouseToBlackberry(button);
+
+        if (action == GLFW_PRESS) {
+            dispatcher.Post(MouseButtonPressedEvent(btn));
+        }
+        else {
+            dispatcher.Post(MouseButtonReleasedEvent(btn));
+        }
+    }
+
+    static void CallbackMouseMove(GLFWwindow* window, f64 x, f64 y) {
+        DISPATCHER;
+
+        dispatcher.Post(MouseMovedEvent(static_cast<u32>(x), static_cast<u32>(y)));
+    }
+
+    static void CallbackScroll(GLFWwindow* window, f64 x, f64 y) {
+        DISPATCHER;
+
+        dispatcher.Post(MouseScrolledEvent(static_cast<f32>(x)));
+    }
+
+    static void CallbackWindowResize(GLFWwindow* window, i32 width, i32 height) {
+        DISPATCHER;
+
+        dispatcher.Post(WindowResizeEvent(width, height));
+    }
+
+#pragma endregion
+
+#pragma region Utils
+
+    static KeyCode GLFWKeyToBlackberry(const i32 key) {
         switch (key) {
             // non-printable keys
             case GLFW_KEY_ESCAPE: return KeyCode::Escape;
@@ -100,7 +162,7 @@ namespace Blackberry {
         return KeyCode::None;
     }
 
-    static MouseCode GLFWMouseToRaspberry(i32 button) {
+    static MouseCode GLFWMouseToBlackberry(const i32 button) {
         switch (button) {
             case GLFW_MOUSE_BUTTON_LEFT: return MouseCode::Left;
             case GLFW_MOUSE_BUTTON_RIGHT: return MouseCode::Right;
@@ -111,6 +173,8 @@ namespace Blackberry {
 
         return MouseCode::None;
     }
+
+#pragma endregion
 
     Window_GLFW::Window_GLFW(const WindowData& data)
         : Window(data) {
@@ -145,58 +209,14 @@ namespace Blackberry {
 
         // glfwSetWindowIcon();
 
-        glfwSetKeyCallback(m_Handle, [](GLFWwindow* window, i32 key, i32 scancode, i32 action, i32 mods) {
-            DISPATCHER;
+        glfwSetKeyCallback(m_Handle, CallbackKey);
+        glfwSetCharCallback(m_Handle, CallbackChar);
 
-            const KeyCode keyCode = GLFWKeyToRaspberry(key);
+        glfwSetMouseButtonCallback(m_Handle, CallbackMouseButton);
+        glfwSetCursorPosCallback(m_Handle, CallbackMouseMove);
+        glfwSetScrollCallback(m_Handle, CallbackScroll);
 
-            if (action == GLFW_PRESS) {
-                dispatcher.Post(KeyPressedEvent(keyCode, false));
-            }
-            else if (action == GLFW_REPEAT) {
-                dispatcher.Post(KeyPressedEvent(keyCode, true));
-            }
-            else if (action == GLFW_RELEASE) {
-                dispatcher.Post(KeyReleasedEvent(keyCode));
-            }
-        });
-
-        glfwSetCharCallback(m_Handle, [](GLFWwindow* window, u32 codepoint) {
-            DISPATCHER;
-
-            dispatcher.Post(KeyTypedEvent(codepoint));
-        });
-
-        glfwSetMouseButtonCallback(m_Handle, [](GLFWwindow* window, i32 button, i32 action, i32 mods) {
-            DISPATCHER;
-
-            MouseCode btn = GLFWMouseToRaspberry(button);
-
-            if (action == GLFW_PRESS) {
-                dispatcher.Post(MouseButtonPressedEvent(btn));
-            }
-            else {
-                dispatcher.Post(MouseButtonReleasedEvent(btn));
-            }
-        });
-
-        glfwSetCursorPosCallback(m_Handle, [](GLFWwindow* window, f64 x, f64 y) {
-            DISPATCHER;
-
-            dispatcher.Post(MouseMovedEvent(x, y));
-        });
-
-        glfwSetScrollCallback(m_Handle, [](GLFWwindow* window, f64 x, f64 y) {
-            DISPATCHER;
-
-            dispatcher.Post(MouseScrolledEvent(x));
-        });
-
-        glfwSetFramebufferSizeCallback(m_Handle, [](GLFWwindow* window, i32 width, i32 height) {
-            DISPATCHER;
-
-            dispatcher.Post(WindowResizeEvent(width, height));
-        });
+        glfwSetFramebufferSizeCallback(m_Handle, CallbackWindowResize);
 
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -260,7 +280,7 @@ namespace Blackberry {
 
     void Window_GLFW::SleepSeconds(f64 seconds) const {
         // security check
-        if (seconds > 0) {
+        if (seconds > 0.0) {
             f64 targetTime = seconds + GetTime();
 
             while (GetTime() < targetTime) {}

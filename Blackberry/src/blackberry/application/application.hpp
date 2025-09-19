@@ -1,11 +1,11 @@
 #pragma once
 
 #include "blackberry/event/event.hpp"
-#include "layerstack.hpp"
-#include "log.hpp"
-#include "types.hpp"
-#include "window.hpp"
-#include "renderer.hpp"
+#include "blackberry/application/layerstack.hpp"
+#include "blackberry/log.hpp"
+#include "blackberry/types.hpp"
+#include "blackberry/application/window.hpp"
+#include "blackberry/application/renderer.hpp"
 
 namespace Blackberry {
 

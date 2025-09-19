@@ -10,13 +10,13 @@ namespace Blackberry {
 
     class Renderer_OpenGL3 : public Renderer {
     public:
-        explicit Renderer_OpenGL3(Vector2 viewport);
+        explicit Renderer_OpenGL3(BlVec2 viewport);
 
-        virtual void UpdateViewport(Vector2 viewport) override;
+        virtual void UpdateViewport(BlVec2 viewport) override;
 
         virtual void NewFrame() override;
 
-        virtual void VertexV(const Vertex& v) override;
+        virtual void VertexV(const BlVertex& v) override;
 
         virtual void Begin(RenderingMode mode) override;
         virtual void End() override;
@@ -48,7 +48,7 @@ namespace Blackberry {
 
         RenderingMode m_Mode;
 
-        Vector2 m_CurrentTexCoord;
+        BlVec2 m_CurrentTexCoord;
 
         bool m_UsingTexture = false;
         const Texture* m_CurrentTexture{};

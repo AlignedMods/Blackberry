@@ -1,6 +1,6 @@
-#include "opengl3_renderer.hpp"
-#include "util.hpp"
-#include "log.hpp"
+#include "platform/opengl3_renderer.hpp"
+#include "blackberry/util.hpp"
+#include "blackberry/log.hpp"
 
 #include "glad/glad.h"
 #include "glm/gtc/matrix_transform.hpp"
@@ -54,7 +54,7 @@ namespace Blackberry {
         }
     );
 
-    Renderer_OpenGL3::Renderer_OpenGL3(Vector2 viewport) {
+    Renderer_OpenGL3::Renderer_OpenGL3(BlVec2 viewport) {
         UpdateViewport(viewport);
 
         glEnable(GL_BLEND);
@@ -107,8 +107,8 @@ namespace Blackberry {
         glGenBuffers(1, &m_VBO);
     }
 
-    void Renderer_OpenGL3::UpdateViewport(Vector2 viewport) {
-        glViewport(0, 0, viewport.x, viewport.y);
+    void Renderer_OpenGL3::UpdateViewport(BlVec2 viewport) {
+        glViewport(0, 0, static_cast<GLsizei>(viewport.x), static_cast<GLsizei>(viewport.y));
 
         m_Projection = glm::ortho(
             0.0f,            // left
@@ -123,7 +123,7 @@ namespace Blackberry {
         m_DrawCalls = 0;
     }
 
-    void Renderer_OpenGL3::VertexV(const Vertex& v) {
+    void Renderer_OpenGL3::VertexV(const BlVertex& v) {
         m_Vertices[m_VertexIndex++] = v.pos.x;
         m_Vertices[m_VertexIndex++] = v.pos.y;
         m_Vertices[m_VertexIndex++] = 0.0f;
@@ -239,7 +239,7 @@ namespace Blackberry {
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-        glDrawArrays(glMode, 0, m_CurrentVertex);
+        glDrawArrays(glMode, 0, static_cast<GLsizei>(m_CurrentVertex));
 
         glBindVertexArray(0);
 

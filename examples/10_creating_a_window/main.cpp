@@ -1,4 +1,5 @@
-#include "blackberry/application/entrypoint.hpp"
+#define BL_ENTRYPOINT
+#include "blackberry.hpp"
 
 Blackberry::Application* Blackberry::Application::CreateApplication(const CommandLineArgs& args) {
     ApplicationSpecification spec;

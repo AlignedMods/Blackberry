@@ -27,7 +27,7 @@ namespace Blackberry {
 
         m_Window = new Window_GLFW(data); // also sets up opengl
 
-        Vector2 viewport = {static_cast<f32>(data.width), static_cast<f32>(data.height)};
+        BlVec2 viewport = BlVec2(static_cast<f32>(data.width), static_cast<f32>(data.height));
         m_Renderer = new Renderer_OpenGL3(viewport);
 
         m_TargetFPS = spec.FPS;
@@ -196,7 +196,7 @@ namespace Blackberry {
 
         if (type == EventType::WindowResize) {
             const auto& wr = EVENT_CAST(WindowResizeEvent);
-            m_Renderer->UpdateViewport({(f32)wr.GetWidth(), (f32)wr.GetHeight()});
+            m_Renderer->UpdateViewport(BlVec2((f32)wr.GetWidth(), (f32)wr.GetHeight()));
         }
     }
 

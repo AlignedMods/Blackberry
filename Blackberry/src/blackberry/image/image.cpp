@@ -1,5 +1,5 @@
 #include "blackberry/image/image.hpp"
-#include "log.hpp"
+#include "blackberry/log.hpp"
 
 #include "stb_image.h"
 

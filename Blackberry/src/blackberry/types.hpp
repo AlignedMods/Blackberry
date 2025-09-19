@@ -19,35 +19,30 @@ using i64 = int64_t;
 using f32 = float;
 using f64 = double;
 
-struct Vector2 {
+struct BlVec2 {
+    inline BlVec2() 
+        : x(0.0f), y(0.0f) {}
+
+    inline explicit BlVec2(f32 x, f32 y) 
+        : x(x), y(y) {}
+
+    inline explicit BlVec2(i32 x, i32 y)
+        : BlVec2(static_cast<f32>(x), static_cast<f32>(y)) {}
+
     f32 x, y;
 };
 
-struct Color {
-    f32 r, g, b, a;
+struct BlColor {
+    inline BlColor()
+        : r(0), g(0), b(0), a(0xff) {}
+
+    inline explicit BlColor(u8 r, u8 g, u8 b, u8 a)
+        : r(r), g(g), b(b), a(a) {}
+
+    u8 r, g, b, a;
 };
-
-struct Vertex {
-    Vector2 pos;
-    Color color;
-};
-
-namespace Blackberry {
-
-    struct Image {
-        const void* data;
-        i32 width, height;
-        i32 channels;
-    };
-
-} // namespace Blackberry
 
 struct Texture {
     u32 id; // OpenGL texture ID (TODO: add Vulkan support?)
     u32 width, height;
-};
-
-
-struct Sound {
-
 };
