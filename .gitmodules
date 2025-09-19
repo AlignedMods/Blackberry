@@ -1,0 +1,10 @@
+[submodule "Blackberry/vendor/glfw"]
+	path = Blackberry/vendor/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "Blackberry/vendor/imgui"]
+	path = Blackberry/vendor/imgui
+	url = https://github.com/ocornut/imgui.git
+	branch = docking
+[submodule "Blackberry/vendor/glm"]
+	path = Blackberry/vendor/glm
+	url = https://github.com/g-truc/glm.git
