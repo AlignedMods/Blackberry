@@ -12,7 +12,7 @@ namespace Blackberry {
 
     // shaders
     static const char* VertexShaderSource = MULTILINE_STR(
-        // we cannot use '#' since the c preprocesser gets mad at us
+        // we cannot use '#' since the c preprocesser gets mad at us (actually only lsp cared but yknow)
         \x23version 330 core\n
         layout (location = 0) in vec3 a_Pos;
         layout (location = 1) in vec4 a_Color;
@@ -128,10 +128,10 @@ namespace Blackberry {
         m_Vertices[m_VertexIndex++] = v.pos.y;
         m_Vertices[m_VertexIndex++] = 0.0f;
 
-        m_Vertices[m_VertexIndex++] = v.color.r;
-        m_Vertices[m_VertexIndex++] = v.color.g;
-        m_Vertices[m_VertexIndex++] = v.color.b;
-        m_Vertices[m_VertexIndex++] = v.color.a;
+        m_Vertices[m_VertexIndex++] = v.color.r / 255.0f;
+        m_Vertices[m_VertexIndex++] = v.color.g / 255.0f;
+        m_Vertices[m_VertexIndex++] = v.color.b / 255.0f;
+        m_Vertices[m_VertexIndex++] = v.color.a / 255.0f;
 
         m_Vertices[m_VertexIndex++] = m_CurrentTexCoord.x;
         m_Vertices[m_VertexIndex++] = m_CurrentTexCoord.y;
@@ -234,6 +234,7 @@ namespace Blackberry {
         glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 9 * sizeof(f32), (void*)(3 * sizeof(f32)));
         glEnableVertexAttribArray(1);
 
+        // tex coord
         glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(f32), (void*)(7 * sizeof(f32)));
         glEnableVertexAttribArray(2);
 

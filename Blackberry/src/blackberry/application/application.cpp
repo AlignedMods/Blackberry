@@ -195,8 +195,12 @@ namespace Blackberry {
         const auto type = event.GetEventType();
 
         if (type == EventType::WindowResize) {
-            const auto& wr = EVENT_CAST(WindowResizeEvent);
+            const auto& wr = BL_EVENT_CAST(WindowResizeEvent);
             m_Renderer->UpdateViewport(BlVec2((f32)wr.GetWidth(), (f32)wr.GetHeight()));
+        }
+
+        for (Layer* layer : m_Stack.GetAllLayers()) {
+            layer->OnEvent(event);
         }
     }
 

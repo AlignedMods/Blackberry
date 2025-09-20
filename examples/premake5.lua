@@ -16,5 +16,11 @@ end
 project "10_creating_a_window"
     SetupExample()
 
+project "10_events"
+    SetupExample()
+
 project "20_basic_rendering"
+    SetupExample()
+
+project "60_manual_rendering"
     SetupExample()

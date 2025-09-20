@@ -78,6 +78,12 @@ namespace Blackberry {
         dispatcher.Post(WindowResizeEvent(width, height));
     }
 
+    static void CallbackWindowClose(GLFWwindow* window) {
+        DISPATCHER;
+
+        dispatcher.Post(WindowCloseEvent());
+    }
+
 #pragma endregion
 
 #pragma region Utils
@@ -217,6 +223,7 @@ namespace Blackberry {
         glfwSetScrollCallback(m_Handle, CallbackScroll);
 
         glfwSetFramebufferSizeCallback(m_Handle, CallbackWindowResize);
+        glfwSetWindowCloseCallback(m_Handle, CallbackWindowClose);
 
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();

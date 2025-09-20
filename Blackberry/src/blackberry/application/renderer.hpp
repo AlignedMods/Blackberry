@@ -6,8 +6,7 @@
 enum class RenderingMode {
     Points,
     Lines,
-    Triangles,
-    Quads
+    Triangles
 };
 
 struct BlVertex {

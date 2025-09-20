@@ -24,7 +24,7 @@ enum class EventType {
     MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled
 };
 
-#define EVENT_CAST(type) static_cast<const Blackberry::type&>(event)
+#define BL_EVENT_CAST(type) static_cast<const Blackberry::type&>(event)
 
 #define EVENT_CLASS_TYPE(type) virtual EventType GetEventType() const override { return EventType::type; } \
                                virtual DiscriptorType GetName() const override { return #type; }
