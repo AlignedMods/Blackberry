@@ -1,6 +1,7 @@
 #include "blackberry/image/image.hpp"
 #include "blackberry/log.hpp"
 
+#define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
 namespace Blackberry {
