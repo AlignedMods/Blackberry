@@ -1,9 +1,19 @@
 # Directories
 build/
-.vs/
 
-# Files
+# Visual Studio Files
 **.sln
 **.vcxproj
 **.vcxproj.filters
 **.vcxproj.user
+.vs/
+
+# Makefiles
+Makefile
+**.make
+
+# user-generated stuff
+compile_commands.json
+compile_commands/
+.cache/
+.clangd

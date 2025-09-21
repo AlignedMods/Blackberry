@@ -10,6 +10,8 @@ project "Blackberry" -- The game engine
 
     files { "src/**.cpp", "src/**.hpp" }
 
+    pchheader "src/blpch.hpp"
+
     includedirs { "src/", "vendor/glfw/include/", "vendor/imgui/", "vendor/glad/include/", "vendor/glm/", "vendor/stb/" }
 
     links { "glfw", "glad", "imgui" }
