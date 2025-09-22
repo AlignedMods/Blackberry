@@ -122,18 +122,18 @@ namespace Blackberry {
         m_DrawCalls = 0;
     }
 
-    void Renderer_OpenGL3::VertexV(const BlVertex& v) {
-        m_Vertices[m_VertexIndex++] = v.pos.x;
-        m_Vertices[m_VertexIndex++] = v.pos.y;
+    void Renderer_OpenGL3::SubVertex(const BlVertex& vert) {
+        m_Vertices[m_VertexIndex++] = vert.pos.x;
+        m_Vertices[m_VertexIndex++] = vert.pos.y;
         m_Vertices[m_VertexIndex++] = 0.0f;
 
-        m_Vertices[m_VertexIndex++] = v.color.r / 255.0f;
-        m_Vertices[m_VertexIndex++] = v.color.g / 255.0f;
-        m_Vertices[m_VertexIndex++] = v.color.b / 255.0f;
-        m_Vertices[m_VertexIndex++] = v.color.a / 255.0f;
+        m_Vertices[m_VertexIndex++] = vert.color.r / 255.0f;
+        m_Vertices[m_VertexIndex++] = vert.color.g / 255.0f;
+        m_Vertices[m_VertexIndex++] = vert.color.b / 255.0f;
+        m_Vertices[m_VertexIndex++] = vert.color.a / 255.0f;
 
-        m_Vertices[m_VertexIndex++] = m_CurrentTexCoord.x;
-        m_Vertices[m_VertexIndex++] = m_CurrentTexCoord.y;
+        m_Vertices[m_VertexIndex++] = vert.texCoord.x;
+        m_Vertices[m_VertexIndex++] = vert.texCoord.y;
 
         m_CurrentVertex++;
     }
@@ -155,11 +155,6 @@ namespace Blackberry {
         glClear(GL_COLOR_BUFFER_BIT);
     }
 
-    void Renderer_OpenGL3::TexCoord2f(f32 x, f32 y) {
-        m_CurrentTexCoord.x = x;
-        m_CurrentTexCoord.y = y;
-    }
-
     void Renderer_OpenGL3::UseTexture(const Texture& tex) {
         if (tex.id == 0) { m_UsingTexture = false; return; }
 
@@ -167,7 +162,7 @@ namespace Blackberry {
 
         m_CurrentTexture = &tex;
 
-        // glBindTexture(GL_TEXTURE_2D, tex.id);
+        glBindTexture(GL_TEXTURE_2D, tex.id);
     }
 
     Texture Blackberry::Renderer_OpenGL3::GenTexture(const Image& image)

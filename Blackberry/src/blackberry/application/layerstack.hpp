@@ -11,15 +11,11 @@ namespace Blackberry {
         LayerStack();
         ~LayerStack();
 
-        template <typename T>
-        void PushLayer() {
-            static_assert(std::is_base_of<Layer, T>(), "Pushed layer is NOT a subclass of Layer!");
-            m_Layers.push_back(new T);
-            m_Layers.back()->OnInit();
-        }
+        void PushLayer(Layer* layer);
         void PopLayer();
+        void PopLayer(const std::string& name);
 
-        Layer* GetLayer(const std::string& name);
+        std::vector<Layer*>::iterator GetLayer(const std::string& name);
 
         std::vector<Layer*>& GetAllLayers();
 

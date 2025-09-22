@@ -7,17 +7,17 @@ namespace Blackberry {
 
         renderer.Begin(RenderingMode::Triangles);
 
-        renderer.SetColor(color);
-        // first triangle
-        renderer.Vertex2f(pos.x, pos.y + dimensions.y);
-        renderer.Vertex2f(pos.x + dimensions.x, pos.y);
-        renderer.Vertex2f(pos.x + dimensions.x, pos.y + dimensions.y);
-
-        // second triangle
-
-        renderer.Vertex2f(pos.x, pos.y + dimensions.y);
-        renderer.Vertex2f(pos.x, pos.y);
-        renderer.Vertex2f(pos.x + dimensions.x, pos.y);
+        // renderer.SetColor(color);
+        // // first triangle
+        // renderer.Vertex2f(pos.x, pos.y + dimensions.y);
+        // renderer.Vertex2f(pos.x + dimensions.x, pos.y);
+        // renderer.Vertex2f(pos.x + dimensions.x, pos.y + dimensions.y);
+        // 
+        // // second triangle
+        // 
+        // renderer.Vertex2f(pos.x, pos.y + dimensions.y);
+        // renderer.Vertex2f(pos.x, pos.y);
+        // renderer.Vertex2f(pos.x + dimensions.x, pos.y);
 
         renderer.End();
     }
@@ -27,10 +27,9 @@ namespace Blackberry {
 
         renderer.Begin(RenderingMode::Triangles);
 
-        renderer.SetColor(color);
-        renderer.Vertex2f(bl.x, bl.y);
-        renderer.Vertex2f(t.x, t.y);
-        renderer.Vertex2f(br.x, br.y);
+        renderer.SubVertex(BlVertex(bl, color, BlVec2(0.0f, 0.0f)));
+        renderer.SubVertex(BlVertex(t, color, BlVec2(0.0f, 0.0f)));
+        renderer.SubVertex(BlVertex(br, color, BlVec2(0.0f, 0.0f)));
 
         renderer.End();
     }

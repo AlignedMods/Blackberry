@@ -15,7 +15,7 @@ Blackberry::Application* Blackberry::Application::CreateApplication(const Comman
     spec.name = "Blackberry events!";
 
     Application* app = new Blackberry::Application(spec);
-    app->PushLayer<ExampleLayer>();
+    app->PushLayer(new ExampleLayer);
 
     return app;
 }

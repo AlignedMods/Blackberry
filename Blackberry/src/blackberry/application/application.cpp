@@ -91,7 +91,7 @@ namespace Blackberry {
 
         Log(Log_Info, "Constructed application!");
 
-        for (auto& layer : m_Stack.GetAllLayers()) {
+        for (auto& layer : m_LayerStack.GetAllLayers()) {
             layer->OnInit();
         }
 
@@ -158,16 +158,28 @@ namespace Blackberry {
         m_Running = false;
     }
 
+    void Application::PushLayer(Layer* layer) {
+        m_LayerStack.PushLayer(layer);
+    }
+
+    void Application::PopLayer() {
+        m_LayerStack.PopLayer();
+    }
+
+    void Application::PopLayer(const std::string& name) {
+        m_LayerStack.PopLayer(name);
+    }
+
     void Application::OnUpdate() {
         if (m_Window->GetTime() - m_FixedUpdateTime > 0.0167) {
             m_FixedUpdateTime += 0.0167;
 
-            for (auto layer : m_Stack.GetAllLayers()) {
+            for (auto layer : m_LayerStack.GetAllLayers()) {
                 layer->OnFixedUpdate();
             }
         }
 
-        for (auto layer : m_Stack.GetAllLayers()) {
+        for (auto layer : m_LayerStack.GetAllLayers()) {
             layer->OnUpdate(m_dt);
         }
     }
@@ -178,7 +190,7 @@ namespace Blackberry {
         m_Renderer->NewFrame();
         m_Renderer->Clear();
 
-        for (auto layer : m_Stack.GetAllLayers()) {
+        for (auto layer : m_LayerStack.GetAllLayers()) {
             layer->OnRender();
         }
     }
@@ -186,7 +198,7 @@ namespace Blackberry {
     void Application::OnUIRender() {
         ImGuiIO& io = ImGui::GetIO();
 
-        for (auto layer : m_Stack.GetAllLayers()) {
+        for (auto layer : m_LayerStack.GetAllLayers()) {
             layer->OnUIRender();
         }
     }
@@ -199,8 +211,10 @@ namespace Blackberry {
             m_Renderer->UpdateViewport(BlVec2((f32)wr.GetWidth(), (f32)wr.GetHeight()));
         }
 
-        for (Layer* layer : m_Stack.GetAllLayers()) {
-            layer->OnEvent(event);
+        auto& stack = m_LayerStack.GetAllLayers();
+
+        for (auto it = stack.rbegin(); it < stack.rend(); it++) {
+            (*it)->OnEvent(event);
         }
     }
 

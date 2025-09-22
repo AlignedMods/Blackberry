@@ -11,18 +11,35 @@ namespace Blackberry {
         }
     }
 
+    void LayerStack::PushLayer(Layer* layer)
+    {
+        m_Layers.push_back(layer);
+        m_Layers.back()->OnInit();
+    }
+
     void LayerStack::PopLayer() {
         m_Layers.pop_back();
     }
 
-    Layer* LayerStack::GetLayer(const std::string& name) {
-        for (auto layer : m_Layers) {
-            if (layer->GetName() == name) { // very advanced searching algorithm
-                return layer;
+    void LayerStack::PopLayer(const std::string& name) {
+        auto layer = GetLayer(name);
+
+        if (*layer) {
+            delete *layer;
+            m_Layers.erase(layer);
+        }
+    }
+
+    std::vector<Layer*>::iterator LayerStack::GetLayer(const std::string& name) {
+        for (auto it = m_Layers.begin(); it < m_Layers.end(); it++) {
+            Layer* layer = *it._Ptr; // wow that's bullshit, storing pointers to pointers i suppose though
+
+            if (layer->GetName() == name) {
+                return it;
             }
         }
 
-        return nullptr;
+        return m_Layers.end();
     }
 
     std::vector<Layer*>& LayerStack::GetAllLayers() {

@@ -56,13 +56,12 @@ namespace Blackberry {
 
         void Close();
 
-        template<typename T>
-        inline void PushLayer() {
-            m_Stack.PushLayer<T>();
-        }
+        void PushLayer(Layer* layer);
+        void PopLayer();
+        void PopLayer(const std::string& name);
 
         static Application& Get();
-        LayerStack& GetLayerStack() { return m_Stack; }
+        LayerStack& GetLayerStack() { return m_LayerStack; }
         Dispatcher& GetDispatcher() { return m_Dispatcher; }
         Renderer& GetRenderer() { return *m_Renderer; }
 
@@ -91,7 +90,7 @@ namespace Blackberry {
 
         f64 m_FixedUpdateTime = 0.0;
 
-        LayerStack m_Stack;
+        LayerStack m_LayerStack;
         Dispatcher m_Dispatcher;
 
         Window* m_Window = nullptr;

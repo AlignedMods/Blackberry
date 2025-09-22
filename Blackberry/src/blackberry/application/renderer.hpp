@@ -10,8 +10,12 @@ enum class RenderingMode {
 };
 
 struct BlVertex {
+    inline explicit BlVertex(BlVec2 pos, BlColor color, BlVec2 texCoord)
+        : pos(pos), color(color), texCoord(texCoord) {}
+
     BlVec2 pos;
     BlColor color;
+    BlVec2 texCoord;
 };
 
 namespace Blackberry {
@@ -29,13 +33,7 @@ namespace Blackberry {
 
         virtual void Clear() const = 0;
 
-        virtual void VertexV(const BlVertex& v) = 0;
-        virtual void Vertex2f(f32 x, f32 y) { VertexV({BlVec2(x, y), m_Color}); }
-        virtual void Vertex2i(i32 x, i32 y) { Vertex2f((f32)x, (f32)y); }
-
-        void SetColor(BlColor color) { m_Color = color; };
-
-        virtual void TexCoord2f(f32 x, f32 y) = 0;
+        virtual void SubVertex(const BlVertex& vert) = 0;
         virtual void UseTexture(const Texture& texture) = 0;
 
         virtual Texture GenTexture(const Image& image) = 0;
@@ -44,9 +42,6 @@ namespace Blackberry {
 
     protected:
         virtual void Render() = 0;
-
-    protected:
-        BlColor m_Color;
     };
 
 } // namespace Blackberry
