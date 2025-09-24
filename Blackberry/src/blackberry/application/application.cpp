@@ -23,8 +23,6 @@ namespace Blackberry {
         data.width = spec.width;
         data.height = spec.height;
 
-        stbi_set_flip_vertically_on_load(true);
-
         m_Window = new Window_GLFW(data); // also sets up opengl
 
         BlVec2 viewport = BlVec2(static_cast<f32>(data.width), static_cast<f32>(data.height));
@@ -147,9 +145,9 @@ namespace Blackberry {
     void Application::SetWindowIcon(const Image& image) {
         GLFWimage im{};
 
-        im.width = image.width;
-        im.height = image.height;
-        im.pixels = (u8*)image.data;
+        im.width = image.GetWidth();
+        im.height = image.GetHeight();
+        im.pixels = (u8*)image.GetData();
 
         glfwSetWindowIcon((GLFWwindow*)m_Window->GetHandle(), 1, &im);
     }
@@ -171,7 +169,7 @@ namespace Blackberry {
     }
 
     void Application::OnUpdate() {
-        if (m_Window->GetTime() - m_FixedUpdateTime > 0.0167) {
+        while (m_Window->GetTime() - m_FixedUpdateTime > 0.0167) {
             m_FixedUpdateTime += 0.0167;
 
             for (auto layer : m_LayerStack.GetAllLayers()) {

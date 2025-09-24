@@ -6,6 +6,11 @@
 
 #include <vector>
 
+struct GLTexture {
+    u32 ID;
+    u32 Width, Height;
+};
+
 namespace Blackberry {
 
     class Renderer_OpenGL3 : public Renderer {
@@ -23,9 +28,10 @@ namespace Blackberry {
 
         virtual void Clear() const override;
 
-        virtual void UseTexture(const Texture& tex) override;
+        virtual void AttachTexture(const BlTexture tex) override;
+        virtual void DettachTexture() override;
 
-        virtual Texture GenTexture(const Image& image) override;
+        virtual BlTexture GenTexture(const Image& image) override;
 
         virtual u32 GetDrawCalls() const override { return m_DrawCalls; }
 
@@ -48,7 +54,7 @@ namespace Blackberry {
         RenderingMode m_Mode;
 
         bool m_UsingTexture = false;
-        const Texture* m_CurrentTexture{};
+        BlTexture m_CurrentTexture{};
 
         u32 m_DrawCalls = 0;
     };

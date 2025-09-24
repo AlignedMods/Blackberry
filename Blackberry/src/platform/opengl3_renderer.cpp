@@ -42,10 +42,7 @@ namespace Blackberry {
 
         void main() {
             if (useTexture == 1) {
-                vec2 invert = texCoord;
-                invert.y = 1.0 - invert.y;
-
-                vec4 texelColor = texture(sampler, invert);
+                vec4 texelColor = texture(sampler, texCoord);
                 FragColor = col * texelColor;
             } else {
                 FragColor = col;
@@ -155,32 +152,39 @@ namespace Blackberry {
         glClear(GL_COLOR_BUFFER_BIT);
     }
 
-    void Renderer_OpenGL3::UseTexture(const Texture& tex) {
-        if (tex.id == 0) { m_UsingTexture = false; return; }
+    void Renderer_OpenGL3::AttachTexture(const BlTexture tex) {
+        const GLTexture* glTex = static_cast<GLTexture*>(tex);
+
+        if (glTex->ID == 0) { m_UsingTexture = false; return; }
 
         m_UsingTexture = true;
 
-        m_CurrentTexture = &tex;
+        m_CurrentTexture = tex;
 
-        glBindTexture(GL_TEXTURE_2D, tex.id);
+        glBindTexture(GL_TEXTURE_2D, glTex->ID);
     }
 
-    Texture Blackberry::Renderer_OpenGL3::GenTexture(const Image& image)
+    void Renderer_OpenGL3::DettachTexture() {
+        m_UsingTexture = false;
+        m_CurrentTexture = nullptr;
+    }
+
+    BlTexture Blackberry::Renderer_OpenGL3::GenTexture(const Image& image)
     {
-        Texture tex{};
+        GLTexture* tex = new GLTexture(); // we must heap alloc
 
-        tex.width = image.width;
-        tex.height = image.height;
+        tex->Width = image.GetWidth();
+        tex->Height = image.GetHeight();
 
-        glGenTextures(1, &tex.id);
-        glBindTexture(GL_TEXTURE_2D, tex.id);
+        glGenTextures(1, &tex->ID);
+        glBindTexture(GL_TEXTURE_2D, tex->ID);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tex.width, tex.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tex->Width, tex->Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.GetData());
         glGenerateMipmap(GL_TEXTURE_2D);
 
         glBindTexture(GL_TEXTURE_2D, 0);
@@ -208,7 +212,9 @@ namespace Blackberry {
             u32 useTex = glGetUniformLocation(m_Shader, "useTexture");
             glUniform1i(useTex, 1);
 
-            glBindTexture(GL_TEXTURE_2D, m_CurrentTexture->id);
+            const GLTexture* glTex = static_cast<GLTexture*>(m_CurrentTexture);
+
+            glBindTexture(GL_TEXTURE_2D, glTex->ID);
         } else {
             u32 useTex = glGetUniformLocation(m_Shader, "useTexture");
             glUniform1i(useTex, 0);

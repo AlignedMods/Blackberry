@@ -6,13 +6,22 @@
 
 namespace Blackberry {
 
-    struct Image {
-        const void* data;
-        i32 width, height;
-        i32 channels;
-    };
+    class Image {
+    public:
+        Image();
+        Image(const std::filesystem::path& path);
+        ~Image();
 
-    Image LoadImageFromFile(const std::filesystem::path& path);
-    void UnloadImage(const Image& image);
+        void LoadFromPath(const std::filesystem::path& path);
+
+        i32 GetWidth() const;
+        i32 GetHeight() const;
+        void* GetData() const;
+
+    private:
+        void* m_Data;
+        i32 m_Width, m_Height;
+        i32 m_Channels;
+    };
 
 } // namespace Blackberry

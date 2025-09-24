@@ -48,6 +48,9 @@ namespace Blackberry {
         bool IsInCategory(EventCategory category) {
             return GetCategoryFlags() & category;
         }
+
+    public:
+        mutable bool Handled = false;
     };
 
     class Dispatcher {

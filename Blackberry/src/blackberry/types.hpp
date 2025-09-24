@@ -42,7 +42,4 @@ struct BlColor {
     u8 r, g, b, a;
 };
 
-struct Texture {
-    u32 id; // OpenGL texture ID (TODO: add Vulkan support?)
-    u32 width, height;
-};
+using BlTexture = void*; // the funny (we don't know what a texture could be since we support different backends)

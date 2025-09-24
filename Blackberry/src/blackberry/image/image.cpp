@@ -6,21 +6,36 @@
 
 namespace Blackberry {
 
-    Image LoadImageFromFile(const std::filesystem::path& path) {
-        Image im{};
+    Image::Image()
+        : m_Data(nullptr), m_Width(0), m_Height(0), m_Channels(0) {}
 
-        stbi_set_flip_vertically_on_load(false);
-        im.data = stbi_load(path.string().c_str(), &im.width, &im.height, &im.channels, 4);
-
-        if (!im.data) {
-            Log(Log_Error, "Failed to load image!");
-        }
-
-        return im;
+    Image::Image(const std::filesystem::path& path) {
+        LoadFromPath(path);
     }
 
-    void UnloadImage(const Image& image) {
-        stbi_image_free((void*)image.data);
+    Image::~Image() {
+        Log(Log_Info, "Destructing Image!");
+        stbi_image_free(static_cast<void*>(m_Data));
+    }
+
+    void Image::LoadFromPath(const std::filesystem::path& path) {
+        m_Data = stbi_load(path.string().c_str(), &m_Width, &m_Height, &m_Channels, 4);
+
+        if (!m_Data) {
+            Log(Log_Error, "Failed to load image %s!", path.string().c_str());
+        }
+    }
+
+    i32 Image::GetWidth() const {
+        return m_Width;
+    }
+
+    i32 Image::GetHeight() const {
+        return m_Height;
+    }
+
+    void* Image::GetData() const {
+        return m_Data;
     }
 
 } // namespace Blackberry

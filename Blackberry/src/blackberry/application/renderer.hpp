@@ -34,9 +34,11 @@ namespace Blackberry {
         virtual void Clear() const = 0;
 
         virtual void SubVertex(const BlVertex& vert) = 0;
-        virtual void UseTexture(const Texture& texture) = 0;
+        virtual void AttachTexture(const BlTexture texture) = 0;
+        virtual void DettachTexture() = 0;
 
-        virtual Texture GenTexture(const Image& image) = 0;
+        virtual BlTexture GenTexture(const Image& image) = 0;
+        virtual void FreeTexture(const BlTexture texture) { delete texture; }
 
         virtual u32 GetDrawCalls() const = 0;
 
