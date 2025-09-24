@@ -33,6 +33,8 @@ namespace Blackberry {
 
         virtual BlTexture GenTexture(const Image& image) override;
 
+        virtual BlVec2 GetTexDims(const BlTexture texture) const override;
+
         virtual u32 GetDrawCalls() const override { return m_DrawCalls; }
 
     private:

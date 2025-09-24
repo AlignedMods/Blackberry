@@ -40,6 +40,8 @@ namespace Blackberry {
         virtual BlTexture GenTexture(const Image& image) = 0;
         virtual void FreeTexture(const BlTexture texture) { delete texture; }
 
+        virtual BlVec2 GetTexDims(const BlTexture texture) const = 0;
+
         virtual u32 GetDrawCalls() const = 0;
 
     protected:

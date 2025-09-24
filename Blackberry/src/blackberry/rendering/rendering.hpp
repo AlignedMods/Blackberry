@@ -11,5 +11,10 @@ namespace Blackberry {
     BlTexture LoadTextureFromImage(const Image& image);
     void DrawTexture(BlVec2 pos, BlTexture texture);
     void DrawTextureEx(BlVec2 pos, BlVec2 dimensions, BlTexture texture);
+    void DrawTextureArea(BlVec2 pos, BlVec2 dimensions, BlRec area, BlTexture texture); // draw only a part of the texture
+
+    BlVec2 GetTextureSize(BlTexture texture);
+    u32 GetTextureWidth(BlTexture texture);
+    u32 GetTextureHeight(BlTexture texture);
 
 } // namespace Blackberry

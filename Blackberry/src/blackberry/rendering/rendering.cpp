@@ -49,19 +49,25 @@ namespace Blackberry {
         renderer.AttachTexture(texture);
         renderer.Begin(RenderingMode::Triangles);
 
-        // renderer.SubVertex(BlVertex(BlVec2());
+        DrawTextureEx(pos, GetTextureSize(texture), texture);
 
         renderer.End();
         renderer.DettachTexture();
     }
 
     void DrawTextureEx(BlVec2 pos, BlVec2 dimensions, BlTexture texture) {
+        DrawTextureArea(pos, dimensions, BlRec(0.0f, 0.0f, GetTextureWidth(texture), GetTextureHeight(texture)), texture);
+    }
+
+    void DrawTextureArea(BlVec2 pos, BlVec2 dimensions, BlRec area, BlTexture texture) {
         auto& renderer = Application::Get().GetRenderer();
 
-        BlVertex bl = BlVertex(BlVec2(pos.x, pos.y + dimensions.y), BlColor(255, 255, 255, 255), BlVec2(0.0f, 1.0f));
-        BlVertex tr = BlVertex(BlVec2(pos.x + dimensions.x, pos.y), BlColor(255, 255, 255, 255), BlVec2(1.0f, 0.0f));
-        BlVertex br = BlVertex(BlVec2(pos.x + dimensions.x, pos.y + dimensions.y), BlColor(255, 255, 255, 255), BlVec2(1.0f, 1.0f));
-        BlVertex tl = BlVertex(BlVec2(pos.x, pos.y), BlColor(255, 255, 255, 255), BlVec2(0.0f, 0.0f));
+        BlVec2 texSize = GetTextureSize(texture);
+
+        BlVertex bl = BlVertex(BlVec2(pos.x, pos.y + dimensions.y), BlColor(255, 255, 255, 255), BlVec2(area.x / texSize.x, (area.h + area.y) / texSize.y));
+        BlVertex tr = BlVertex(BlVec2(pos.x + dimensions.x, pos.y), BlColor(255, 255, 255, 255), BlVec2((area.w + area.x) / texSize.x, area.y /texSize.y));
+        BlVertex br = BlVertex(BlVec2(pos.x + dimensions.x, pos.y + dimensions.y), BlColor(255, 255, 255, 255), BlVec2((area.w + area.x) / texSize.x, (area.h + area.y) / texSize.y));
+        BlVertex tl = BlVertex(BlVec2(pos.x, pos.y), BlColor(255, 255, 255, 255), BlVec2(area.x / texSize.x, area.y / texSize.y));
 
         renderer.AttachTexture(texture);
         renderer.Begin(RenderingMode::Triangles);
@@ -76,6 +82,20 @@ namespace Blackberry {
 
         renderer.End();
         renderer.DettachTexture();
+    }
+
+    BlVec2 GetTextureSize(BlTexture texture) {
+        auto& renderer = Application::Get().GetRenderer();
+
+        return renderer.GetTexDims(texture);
+    }
+
+    u32 GetTextureWidth(BlTexture texture) {
+        return GetTextureSize(texture).x;
+    }
+
+    u32 GetTextureHeight(BlTexture texture) {
+        return GetTextureSize(texture).y;
     }
 
 } // namespace Blackberry

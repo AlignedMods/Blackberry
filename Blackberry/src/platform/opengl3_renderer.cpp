@@ -101,6 +101,8 @@ namespace Blackberry {
         // generate VAOs and VBOs
         glGenVertexArrays(1, &m_VAO);
         glGenBuffers(1, &m_VBO);
+
+        
     }
 
     void Renderer_OpenGL3::UpdateViewport(BlVec2 viewport) {
@@ -169,8 +171,7 @@ namespace Blackberry {
         m_CurrentTexture = nullptr;
     }
 
-    BlTexture Blackberry::Renderer_OpenGL3::GenTexture(const Image& image)
-    {
+    BlTexture Blackberry::Renderer_OpenGL3::GenTexture(const Image& image) {
         GLTexture* tex = new GLTexture(); // we must heap alloc
 
         tex->Width = image.GetWidth();
@@ -190,6 +191,12 @@ namespace Blackberry {
         glBindTexture(GL_TEXTURE_2D, 0);
 
         return tex;
+    }
+
+    BlVec2 Blackberry::Renderer_OpenGL3::GetTexDims(const BlTexture texture) const {
+        GLTexture* glTex = static_cast<GLTexture*>(texture);
+
+        return BlVec2(static_cast<i32>(glTex->Width), static_cast<i32>(glTex->Height));
     }
 
     void Renderer_OpenGL3::Render() {

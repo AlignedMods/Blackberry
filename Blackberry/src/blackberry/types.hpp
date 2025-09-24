@@ -42,4 +42,14 @@ struct BlColor {
     u8 r, g, b, a;
 };
 
+struct BlRec {
+    inline BlRec()
+        : x(0.0f), y(0.0f), w(0.0f), h(0.0f) {}
+
+    inline explicit BlRec(f32 x, f32 y, f32 w, f32 h)
+        : x(x), y(y), w(w), h(h) {}
+    
+    f32 x, y, w, h;
+};
+
 using BlTexture = void*; // the funny (we don't know what a texture could be since we support different backends)
