@@ -2,7 +2,9 @@
 #include "blackberry/log.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image.h"
+#include "stb_image_write.h"
 
 namespace Blackberry {
 
@@ -12,6 +14,9 @@ namespace Blackberry {
     Image::Image(const std::filesystem::path& path) {
         LoadFromPath(path);
     }
+
+    Image::Image(void* data, u32 width, u32 height)
+        : m_Data(data), m_Width(width), m_Height(height) {}
 
     Image::~Image() {
         Log(Log_Info, "Destructing Image!");

@@ -10,6 +10,6 @@ project "Blackberry" -- The game engine
 
     files { "src/**.cpp", "src/**.hpp" }
 
-    includedirs { "src/", "vendor/glfw/include/", "vendor/imgui/", "vendor/glad/include/", "vendor/glm/", "vendor/stb/" }
+    includedirs { "src/", "vendor/glfw/include/", "vendor/imgui/", "vendor/glad/include/", "vendor/glm/", "vendor/stb/", "vendor/freetype/include/" }
 
-    links { "glfw", "glad", "imgui" }
+    links { "glfw", "glad", "imgui", "freetype" }

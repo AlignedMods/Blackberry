@@ -9,6 +9,10 @@ public:
 
         m_Texture = Blackberry::LoadTextureFromImage(m_Image);
 
+        
+        m_FontAtlas = m_Font.LoadFontFromFile("Assets/komika_axis/axis.ttf");
+        // m_Texture = Blackberry::LoadTextureFromImage(m_FontAtlas);
+
         // Blackberry::Application::Get().SetWindowIcon(m_Image);
     }
 
@@ -18,6 +22,7 @@ public:
         Blackberry::DrawTriangle(BlVec2(130, 400), BlVec2(260, 250), BlVec2(390, 400), m_Color);
 
         Blackberry::DrawTextureEx(m_CatPosition, BlVec2(400, 300), m_Texture);
+        // Blackberry::DrawTexture(BlVec2(300.0f, 400.0f), m_FontTexture);
     }
 
     // runs 60 times per second
@@ -47,6 +52,10 @@ private:
 
     BlVec2 m_CatPosition = BlVec2(500, 140);
     bool m_CatGoingBackwards = false;
+
+    Blackberry::Font m_Font;
+    Blackberry::Image m_FontAtlas;
+    BlTexture m_FontTexture;
 };
 
 Blackberry::Application* Blackberry::Application::CreateApplication(const CommandLineArgs& args) {

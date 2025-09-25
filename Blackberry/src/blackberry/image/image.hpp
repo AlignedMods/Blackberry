@@ -10,6 +10,7 @@ namespace Blackberry {
     public:
         Image();
         Image(const std::filesystem::path& path);
+        Image(void* data, u32 width, u32 height);
         ~Image();
 
         void LoadFromPath(const std::filesystem::path& path);

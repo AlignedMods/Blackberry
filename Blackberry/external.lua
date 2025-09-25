@@ -46,7 +46,7 @@ project "glad"
 
     files { "vendor/glad/src/glad.c" }
 
-    includedirs { "vendor/glad/include" }
+    includedirs { "vendor/glad/include/" }
 
 project "imgui"
     language "C++"
@@ -63,4 +63,63 @@ project "imgui"
             "vendor/imgui/backends/imgui_impl_opengl3.h",
             "vendor/imgui/backends/imgui_impl_opengl3.cpp"}
 
-    includedirs { "vendor/imgui/", "vendor/glfw/include" }
+    includedirs { "vendor/imgui/", "vendor/glfw/include/" }
+
+project "freetype"
+    language "C++"
+    cppdialect "C++20"
+    kind "StaticLib"
+
+    targetdir("../build/bin/" .. OutputDir .. "/%{prj.name}")
+    objdir("../build/obj/" .. OutputDir .. "/%{prj.name}")
+
+    files { "vendor/freetype/include/ft2build.h",
+		    "vendor/freetype/include/freetype/*.h",
+		    "vendor/freetype/include/freetype/config/*.h",
+		    "vendor/freetype/include/freetype/internal/*.h",
+            
+		    "vendor/freetype/src/autofit/autofit.c",
+		    "vendor/freetype/src/base/ftbase.c",
+		    "vendor/freetype/src/base/ftbbox.c",
+		    "vendor/freetype/src/base/ftbdf.c",
+		    "vendor/freetype/src/base/ftbitmap.c",
+		    "vendor/freetype/src/base/ftcid.c",
+		    "vendor/freetype/src/base/ftdebug.c",
+		    "vendor/freetype/src/base/ftfstype.c",
+		    "vendor/freetype/src/base/ftgasp.c",
+		    "vendor/freetype/src/base/ftglyph.c",
+		    "vendor/freetype/src/base/ftgxval.c",
+		    "vendor/freetype/src/base/ftinit.c",
+		    "vendor/freetype/src/base/ftmm.c",
+		    "vendor/freetype/src/base/ftotval.c",
+		    "vendor/freetype/src/base/ftpatent.c",
+		    "vendor/freetype/src/base/ftpfr.c",
+		    "vendor/freetype/src/base/ftstroke.c",
+		    "vendor/freetype/src/base/ftsynth.c",
+		    "vendor/freetype/src/base/ftsystem.c",
+		    "vendor/freetype/src/base/fttype1.c",
+		    "vendor/freetype/src/base/ftwinfnt.c",
+		    "vendor/freetype/src/bdf/bdf.c",
+		    "vendor/freetype/src/bzip2/ftbzip2.c",
+		    "vendor/freetype/src/cache/ftcache.c",
+		    "vendor/freetype/src/cff/cff.c",
+		    "vendor/freetype/src/cid/type1cid.c",
+		    "vendor/freetype/src/gzip/ftgzip.c",
+		    "vendor/freetype/src/lzw/ftlzw.c",
+		    "vendor/freetype/src/pcf/pcf.c",
+		    "vendor/freetype/src/pfr/pfr.c",
+		    "vendor/freetype/src/psaux/psaux.c",
+		    "vendor/freetype/src/pshinter/pshinter.c",
+		    "vendor/freetype/src/psnames/psnames.c",
+		    "vendor/freetype/src/raster/raster.c",
+		    -- "vendor/freetype/src/sdf/sdf.c",
+		    "vendor/freetype/src/sfnt/sfnt.c",
+		    "vendor/freetype/src/smooth/smooth.c",
+		    "vendor/freetype/src/truetype/truetype.c",
+		    "vendor/freetype/src/type1/type1.c",
+		    "vendor/freetype/src/type42/type42.c",
+		    "vendor/freetype/src/winfonts/winfnt.c" }
+
+    includedirs { "vendor/freetype/include/" }
+
+    defines { "FT2_BUILD_LIBRARY", "_CRT_NONSTDC_NO_WARNINGS" }

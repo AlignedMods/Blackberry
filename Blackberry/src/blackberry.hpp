@@ -9,6 +9,7 @@
 #include "blackberry/application/layer.hpp"
 #include "blackberry/input/keycodes.hpp"
 #include "blackberry/input/mousecodes.hpp"
+#include "blackberry/font/font.hpp"
 
 // events
 #include "blackberry/event/event.hpp"
