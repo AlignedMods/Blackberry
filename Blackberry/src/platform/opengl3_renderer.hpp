@@ -6,12 +6,13 @@
 
 #include <vector>
 
-struct GLTexture {
-    u32 ID;
-    u32 Width, Height;
-};
-
 namespace Blackberry {
+
+    struct GLTexture {
+        u32 ID;
+        u32 Width, Height;
+        ImageFormat Format;
+    };
 
     class Renderer_OpenGL3 : public Renderer {
     public:

@@ -15,20 +15,34 @@ namespace Blackberry {
         LoadFromPath(path);
     }
 
-    Image::Image(void* data, u32 width, u32 height)
-        : m_Data(data), m_Width(width), m_Height(height) {}
+    Image::Image(void* data, u32 width, u32 height, ImageFormat format)
+        : m_Data(data), m_Width(width), m_Height(height), m_Format(format) {}
 
     Image::~Image() {
         Log(Log_Info, "Destructing Image!");
         stbi_image_free(static_cast<void*>(m_Data));
+
+        m_Data = nullptr;
     }
 
     void Image::LoadFromPath(const std::filesystem::path& path) {
         m_Data = stbi_load(path.string().c_str(), &m_Width, &m_Height, &m_Channels, 4);
+        m_Format = ImageFormat::RGBA8;
 
         if (!m_Data) {
             Log(Log_Error, "Failed to load image %s!", path.string().c_str());
         }
+    }
+
+    void Image::LoadFromMemory(void* data, u32 width, u32 height, ImageFormat format) {
+        m_Width = width;
+        m_Height = height;
+        m_Data = data;
+        m_Format = format;
+    }
+
+    void Image::WriteOut(const std::string& fileName) {
+        stbi_write_png(fileName.c_str(), m_Width, m_Height, 1, m_Data, m_Width);
     }
 
     i32 Image::GetWidth() const {
@@ -41,6 +55,10 @@ namespace Blackberry {
 
     void* Image::GetData() const {
         return m_Data;
+    }
+
+    ImageFormat Image::GetFormat() const {
+        return m_Format;
     }
 
 } // namespace Blackberry

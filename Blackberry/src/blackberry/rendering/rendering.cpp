@@ -41,7 +41,7 @@ namespace Blackberry {
         return renderer.GenTexture(image);
     }
 
-    void DrawTexture(BlVec2 pos, BlTexture texture) {
+    void DrawTexture(BlVec2 pos, BlTexture texture, BlColor color) {
         auto& renderer = Application::Get().GetRenderer();
 
         // BlVertex bl = BlVertex(BlVec2(pos.x, pos.y + texture))
@@ -49,25 +49,25 @@ namespace Blackberry {
         renderer.AttachTexture(texture);
         renderer.Begin(RenderingMode::Triangles);
 
-        DrawTextureEx(pos, GetTextureSize(texture), texture);
+        DrawTextureEx(pos, GetTextureSize(texture), texture, color);
 
         renderer.End();
         renderer.DettachTexture();
     }
 
-    void DrawTextureEx(BlVec2 pos, BlVec2 dimensions, BlTexture texture) {
-        DrawTextureArea(pos, dimensions, BlRec(0.0f, 0.0f, GetTextureWidth(texture), GetTextureHeight(texture)), texture);
+    void DrawTextureEx(BlVec2 pos, BlVec2 dimensions, BlTexture texture, BlColor color) {
+        DrawTextureArea(pos, dimensions, BlRec(0.0f, 0.0f, GetTextureWidth(texture), GetTextureHeight(texture)), texture, color);
     }
 
-    void DrawTextureArea(BlVec2 pos, BlVec2 dimensions, BlRec area, BlTexture texture) {
+    void DrawTextureArea(BlVec2 pos, BlVec2 dimensions, BlRec area, BlTexture texture, BlColor color) {
         auto& renderer = Application::Get().GetRenderer();
 
         BlVec2 texSize = GetTextureSize(texture);
 
-        BlVertex bl = BlVertex(BlVec2(pos.x, pos.y + dimensions.y), BlColor(255, 255, 255, 255), BlVec2(area.x / texSize.x, (area.h + area.y) / texSize.y));
-        BlVertex tr = BlVertex(BlVec2(pos.x + dimensions.x, pos.y), BlColor(255, 255, 255, 255), BlVec2((area.w + area.x) / texSize.x, area.y /texSize.y));
-        BlVertex br = BlVertex(BlVec2(pos.x + dimensions.x, pos.y + dimensions.y), BlColor(255, 255, 255, 255), BlVec2((area.w + area.x) / texSize.x, (area.h + area.y) / texSize.y));
-        BlVertex tl = BlVertex(BlVec2(pos.x, pos.y), BlColor(255, 255, 255, 255), BlVec2(area.x / texSize.x, area.y / texSize.y));
+        BlVertex bl = BlVertex(BlVec2(pos.x, pos.y + dimensions.y), color, BlVec2(area.x / texSize.x, (area.h + area.y) / texSize.y));
+        BlVertex tr = BlVertex(BlVec2(pos.x + dimensions.x, pos.y), color, BlVec2((area.w + area.x) / texSize.x, area.y /texSize.y));
+        BlVertex br = BlVertex(BlVec2(pos.x + dimensions.x, pos.y + dimensions.y), color, BlVec2((area.w + area.x) / texSize.x, (area.h + area.y) / texSize.y));
+        BlVertex tl = BlVertex(BlVec2(pos.x, pos.y), color, BlVec2(area.x / texSize.x, area.y / texSize.y));
 
         renderer.AttachTexture(texture);
         renderer.Begin(RenderingMode::Triangles);
@@ -96,6 +96,18 @@ namespace Blackberry {
 
     u32 GetTextureHeight(BlTexture texture) {
         return GetTextureSize(texture).y;
+    }
+
+    void DrawText(const std::string& str, BlVec2 pos, Font& font, u32 size, BlColor color) {
+        BlTexture tex = font.GetTexture(size);
+        f32 currentPos = 0;
+
+        for (char c : str) {
+            BlGlyphInfo glyph = font.GetGlyphInfo(c, size);
+            
+            DrawTextureArea(BlVec2(pos.x + currentPos, pos.y), BlVec2(glyph.Rect.w, glyph.Rect.h), glyph.Rect, tex, color);
+            currentPos += glyph.AdvanceX;
+        }
     }
 
 } // namespace Blackberry

@@ -112,7 +112,6 @@ project "freetype"
 		    "vendor/freetype/src/pshinter/pshinter.c",
 		    "vendor/freetype/src/psnames/psnames.c",
 		    "vendor/freetype/src/raster/raster.c",
-		    -- "vendor/freetype/src/sdf/sdf.c",
 		    "vendor/freetype/src/sfnt/sfnt.c",
 		    "vendor/freetype/src/smooth/smooth.c",
 		    "vendor/freetype/src/truetype/truetype.c",

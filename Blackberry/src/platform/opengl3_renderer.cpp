@@ -101,8 +101,6 @@ namespace Blackberry {
         // generate VAOs and VBOs
         glGenVertexArrays(1, &m_VAO);
         glGenBuffers(1, &m_VBO);
-
-        
     }
 
     void Renderer_OpenGL3::UpdateViewport(BlVec2 viewport) {
@@ -160,7 +158,6 @@ namespace Blackberry {
         if (glTex->ID == 0) { m_UsingTexture = false; return; }
 
         m_UsingTexture = true;
-
         m_CurrentTexture = tex;
 
         glBindTexture(GL_TEXTURE_2D, glTex->ID);
@@ -176,6 +173,7 @@ namespace Blackberry {
 
         tex->Width = image.GetWidth();
         tex->Height = image.GetHeight();
+        tex->Format = image.GetFormat();
 
         glGenTextures(1, &tex->ID);
         glBindTexture(GL_TEXTURE_2D, tex->ID);
@@ -185,7 +183,21 @@ namespace Blackberry {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tex->Width, tex->Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.GetData());
+        GLuint format = GL_RGBA;
+        GLuint glFormat = GL_RGBA;
+
+        switch (image.GetFormat()) {
+            case ImageFormat::RGBA8:
+                format = GL_RGBA;
+                glFormat = GL_RGBA;
+                break;
+            case ImageFormat::U8:
+                format = GL_RED;
+                glFormat = GL_R8;
+                break;
+        }
+
+        glTexImage2D(GL_TEXTURE_2D, 0, glFormat, tex->Width, tex->Height, 0, format, GL_UNSIGNED_BYTE, image.GetData());
         glGenerateMipmap(GL_TEXTURE_2D);
 
         glBindTexture(GL_TEXTURE_2D, 0);
