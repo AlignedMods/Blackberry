@@ -1,5 +1,7 @@
 #include "blackberry/image/image.hpp"
 #include "blackberry/log.hpp"
+#include "blackberry/application/renderer.hpp"
+#include "blackberry/application/application.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -39,6 +41,15 @@ namespace Blackberry {
         m_Height = height;
         m_Data = data;
         m_Format = format;
+    }
+
+    void Image::LoadFromTexture(BlTexture texture) {
+        Renderer& renderer = Application::Get().GetRenderer();
+
+        m_Data = renderer.GetTextureData(texture);
+        m_Width = renderer.GetTexDims(texture).x;
+        m_Height = renderer.GetTexDims(texture).y;
+        m_Format = ImageFormat::RGBA8;
     }
 
     void Image::WriteOut(const std::string& fileName) {

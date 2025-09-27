@@ -20,6 +20,7 @@ namespace Blackberry {
 
         void LoadFromPath(const std::filesystem::path& path);
         void LoadFromMemory(void* data, u32 width, u32 height, ImageFormat format);
+        void LoadFromTexture(BlTexture texture);
 
         void WriteOut(const std::string& fileName);
 

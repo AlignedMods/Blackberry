@@ -8,15 +8,20 @@
 namespace Blackberry {
 
     struct BlGlyphInfo {
-        u32 Value; // unicode character value
+        u8 Value; // unicode character value
         BlRec Rect;
         i32 AdvanceX;
+        i32 Top;
+        i32 Left;
+        i32 BaselineOffset;
     };
 
     struct __BlFont {
         BlTexture Atlas = nullptr;
+        Image* Image;
         u32 GlyphCount = 0;
         BlGlyphInfo* Glyphs = nullptr;
+        u32 Ascender, Descender;
     };
 
     class Font {
@@ -31,6 +36,12 @@ namespace Blackberry {
         void SetSize(u32 size);
 
         BlTexture GetTexture(u32 size = 24);
+        void GetImage(Image& image, u32 size = 24);
+        u32 GetAscender(u32 size = 24);
+        u32 GetDescender(u32 size = 24);
+
+    private:
+        void InitFreeType();
 
     private:
         std::filesystem::path m_FontPath;

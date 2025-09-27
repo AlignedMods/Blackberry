@@ -168,7 +168,7 @@ namespace Blackberry {
         m_CurrentTexture = nullptr;
     }
 
-    BlTexture Blackberry::Renderer_OpenGL3::GenTexture(const Image& image) {
+    BlTexture Renderer_OpenGL3::GenTexture(const Image& image) {
         GLTexture* tex = new GLTexture(); // we must heap alloc
 
         tex->Width = image.GetWidth();
@@ -205,7 +205,22 @@ namespace Blackberry {
         return tex;
     }
 
-    BlVec2 Blackberry::Renderer_OpenGL3::GetTexDims(const BlTexture texture) const {
+    void* Renderer_OpenGL3::GetTextureData(BlTexture texture) {
+        GLTexture* glTex = static_cast<GLTexture*>(texture);
+        glBindTexture(GL_TEXTURE_2D, glTex->ID);
+        void* buffer = new u8[glTex->Width * glTex->Height * 4];
+        glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        return buffer;
+    }
+
+    void Renderer_OpenGL3::FreeTexture(const BlTexture texture) {
+        GLTexture* tex = static_cast<GLTexture*>(texture);
+        delete tex;
+    }
+
+    BlVec2 Renderer_OpenGL3::GetTexDims(const BlTexture texture) const {
         GLTexture* glTex = static_cast<GLTexture*>(texture);
 
         return BlVec2(static_cast<i32>(glTex->Width), static_cast<i32>(glTex->Height));

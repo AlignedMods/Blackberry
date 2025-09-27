@@ -2,6 +2,7 @@
 
 #include "blackberry/application/renderer.hpp"
 
+#include "blackberry/types.hpp"
 #include "glm/glm.hpp"
 
 #include <vector>
@@ -33,6 +34,8 @@ namespace Blackberry {
         virtual void DettachTexture() override;
 
         virtual BlTexture GenTexture(const Image& image) override;
+        void* GetTextureData(BlTexture texture) override;
+        virtual void FreeTexture(const BlTexture texture) override;
 
         virtual BlVec2 GetTexDims(const BlTexture texture) const override;
 

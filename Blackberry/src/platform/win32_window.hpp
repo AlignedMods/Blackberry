@@ -22,7 +22,7 @@ namespace Blackberry {
         virtual void* GetHandle() const override;
 
     private:
-        WNDCLASSEX m_WindowClass;
+        WNDCLASSEXW m_WindowClass;
         HWND m_Handle;
         MSG m_MSG;
     };

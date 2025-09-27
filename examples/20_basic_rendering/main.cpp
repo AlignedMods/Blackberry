@@ -9,7 +9,10 @@ public:
 
         m_Texture = Blackberry::LoadTextureFromImage(m_Image);
 
-        m_Font.LoadFontFromFile("Assets/komika_axis/axis.ttf");
+        m_Font.LoadFontFromFile("Assets/kg_red_hands/KGRedHands.ttf");
+        m_Font.GetImage(m_FontAtlas);
+        m_FontAtlas.WriteOut("test.png");
+        m_FontTexture = m_Font.GetTexture();
 
         // Blackberry::Application::Get().SetWindowIcon(m_Image);
     }
@@ -20,8 +23,9 @@ public:
         Blackberry::DrawTriangle(BlVec2(130, 400), BlVec2(260, 250), BlVec2(390, 400), m_Color);
 
         Blackberry::DrawTextureEx(m_CatPosition, BlVec2(400, 300), m_Texture);
-        // Blackberry::DrawTextureArea(BlVec2(300.0f, 400.0f), BlVec2(m_Font.GetGlyphRec(69).w, m_Font.GetGlyphRec(69).h), m_Font.GetGlyphRec(69), m_Font.GetTexture());
-        Blackberry::DrawText("Hello world!", BlVec2(400.0f, 200.0f), m_Font, 67, Blackberry::Blue);
+        Blackberry::DrawTexture(BlVec2(300.0f, 400.0f), m_FontTexture);
+        Blackberry::DrawText("Cat image by @rt____________________j on Discord!", BlVec2(400.0f, 600.0f), m_Font, 24, Blackberry::Red);
+        Blackberry::DrawText("abcdefghijklmnop", BlVec2(400.0f, 650.0f), m_Font, 24, Blackberry::Red);
     }
 
     // runs 60 times per second

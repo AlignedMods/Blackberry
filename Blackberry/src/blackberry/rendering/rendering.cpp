@@ -100,13 +100,21 @@ namespace Blackberry {
 
     void DrawText(const std::string& str, BlVec2 pos, Font& font, u32 size, BlColor color) {
         BlTexture tex = font.GetTexture(size);
-        f32 currentPos = 0;
+        f32 currentX = pos.x;
+        f32 currentY = pos.y;
 
-        for (char c : str) {
-            BlGlyphInfo glyph = font.GetGlyphInfo(c, size);
+        BlColor currentColor = color;
+
+        for (u32 c = 0; c < str.length(); c++) {
+            BlGlyphInfo glyph = font.GetGlyphInfo(str.at(c), size);
+
+            if (str.at(c) == 'j') {
+            Log(Log_Info, "char: %c, Top: %d, Height %f, Ascender %d, Descender %d", str.at(c), glyph.Top, glyph.Rect.h, font.GetAscender(size), font.GetDescender(size));
+                
+            }
             
-            DrawTextureArea(BlVec2(pos.x + currentPos, pos.y), BlVec2(glyph.Rect.w, glyph.Rect.h), glyph.Rect, tex, color);
-            currentPos += glyph.AdvanceX;
+            DrawTextureArea(BlVec2(currentX + glyph.Left, currentY - glyph.Top), BlVec2(glyph.Rect.w, glyph.Rect.h), glyph.Rect, tex, White);
+            currentX += glyph.AdvanceX + 1;
         }
     }
 

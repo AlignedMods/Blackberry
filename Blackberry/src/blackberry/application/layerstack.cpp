@@ -32,7 +32,7 @@ namespace Blackberry {
 
     std::vector<Layer*>::iterator LayerStack::GetLayer(const std::string& name) {
         for (auto it = m_Layers.begin(); it < m_Layers.end(); it++) {
-            Layer* layer = *it._Ptr; // wow that's bullshit, storing pointers to pointers i suppose though
+            Layer* layer = *it; // wow that's bullshit, storing pointers to pointers i suppose though
 
             if (layer->GetName() == name) {
                 return it;
