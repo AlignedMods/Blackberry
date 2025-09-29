@@ -5,7 +5,7 @@ class ExampleLayer : public Blackberry::Layer {
 public:
     virtual void OnRender() override {
         // get the renderer
-        Blackberry::Renderer& renderer = Blackberry::Application::Get().GetRenderer();
+        Blackberry::Renderer& renderer = BL_APP.GetRenderer();
 
         renderer.Begin(RenderingMode::Triangles);
 

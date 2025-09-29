@@ -7,6 +7,8 @@
 #include "blackberry/application/window.hpp"
 #include "blackberry/application/renderer.hpp"
 
+#define BL_APP Blackberry::Application::Get()
+
 namespace Blackberry {
 
     struct ApplicationSpecification {
