@@ -106,10 +106,15 @@ namespace Blackberry {
         BlColor currentColor = color;
 
         for (u32 c = 0; c < str.length(); c++) {
-            BlGlyphInfo glyph = font.GetGlyphInfo(str.at(c), size);
+            if (str.at(c) == '\n') {
+                currentY += font.GetRowHeight();
+                currentX = pos.x;
+            } else {
+                BlGlyphInfo glyph = font.GetGlyphInfo(str.at(c), size);
 
-            DrawTextureArea(BlVec2(currentX + glyph.Left, currentY - glyph.Top), BlVec2(glyph.Rect.w, glyph.Rect.h), glyph.Rect, tex, White);
-            currentX += glyph.AdvanceX + 1;
+                DrawTextureArea(BlVec2(currentX + glyph.Left, currentY - glyph.Top), BlVec2(glyph.Rect.w, glyph.Rect.h), glyph.Rect, tex, White);
+                currentX += glyph.AdvanceX + 1;
+            }
         }
     }
 

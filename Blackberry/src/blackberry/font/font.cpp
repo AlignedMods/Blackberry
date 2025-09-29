@@ -107,6 +107,8 @@ namespace Blackberry {
             }
         }
 
+        font.RowHeight = rowHeight;
+
         // create a rgba image out of grayscale
         u8* rgba = new u8[512 * 512 * 4];
 
@@ -142,16 +144,10 @@ namespace Blackberry {
         image = *m_Fonts.at(size).Image;
     }
 
-   u32 Font::GetAscender(u32 size) {
+   i32 Font::GetRowHeight(u32 size) {
        SetSize(size);
 
-       return m_Fonts.at(size).Ascender;
-   }
-
-   u32 Font::GetDescender(u32 size) {
-       SetSize(size);
-
-       return m_Fonts.at(size).Descender;
+       return m_Fonts.at(size).RowHeight;
    }
 
    void Font::InitFreeType() {

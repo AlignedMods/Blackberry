@@ -24,7 +24,7 @@ public:
 
         Blackberry::DrawTextureEx(m_CatPosition, BlVec2(400, 300), m_Texture);
         Blackberry::DrawTexture(BlVec2(300.0f, 400.0f), m_FontTexture);
-        Blackberry::DrawText("Cat image by @rt____________________j on Discord!", BlVec2(400.0f, 600.0f), m_Font, 24, Blackberry::Red);
+        Blackberry::DrawText("Cat image by @rt____________________j\non Discord!", BlVec2(400.0f, 600.0f), m_Font, 24, Blackberry::Red);
         Blackberry::DrawText("abcdefghijklmnop", BlVec2(400.0f, 650.0f), m_Font, 24, Blackberry::Red);
     }
 
