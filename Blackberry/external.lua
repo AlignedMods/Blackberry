@@ -40,6 +40,7 @@ project "glad"
     language "C"
     cdialect "C99"
     kind "StaticLib"
+    staticruntime "On"
 
     targetdir("../build/bin/" .. OutputDir .. "/%{prj.name}")
     objdir("../build/obj/" .. OutputDir .. "/%{prj.name}")
@@ -52,6 +53,7 @@ project "imgui"
     language "C++"
     cppdialect "C++20"
     kind "StaticLib"
+    staticruntime "On"
 
     targetdir("../build/bin/" .. OutputDir .. "/%{prj.name}")
     objdir("../build/obj/" .. OutputDir .. "/%{prj.name}")

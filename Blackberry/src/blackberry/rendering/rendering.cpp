@@ -108,11 +108,6 @@ namespace Blackberry {
         for (u32 c = 0; c < str.length(); c++) {
             BlGlyphInfo glyph = font.GetGlyphInfo(str.at(c), size);
 
-            if (str.at(c) == 'j') {
-            Log(Log_Info, "char: %c, Top: %d, Height %f, Ascender %d, Descender %d", str.at(c), glyph.Top, glyph.Rect.h, font.GetAscender(size), font.GetDescender(size));
-                
-            }
-            
             DrawTextureArea(BlVec2(currentX + glyph.Left, currentY - glyph.Top), BlVec2(glyph.Rect.w, glyph.Rect.h), glyph.Rect, tex, White);
             currentX += glyph.AdvanceX + 1;
         }

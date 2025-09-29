@@ -4,6 +4,8 @@
 
 #include "stdlib.h"
 
+#include <iostream>
+
 template<typename T>
 class BlVector {
 public:

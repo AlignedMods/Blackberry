@@ -4,6 +4,7 @@ project "Blackberry" -- The game engine
     language "C++"
     cppdialect "C++20"
     kind "StaticLib"
+    staticruntime "On"
 
     targetdir ( "../build/bin/" .. OutputDir .. "/%{prj.name}" )
     objdir ( "../build/obj/" .. OutputDir .. "/%{prj.name}" )

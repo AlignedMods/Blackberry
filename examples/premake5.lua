@@ -2,6 +2,7 @@ local function SetupExample()
     language "C++"
     cppdialect "C++20"
     kind "ConsoleApp"
+    staticruntime "On"
 
     targetdir ( "../build/bin/" .. OutputDir .. "/%{prj.name}" )
     objdir ( "../build/obj/" .. OutputDir .. "/%{prj.name}" )
@@ -11,6 +12,7 @@ local function SetupExample()
     includedirs { "../Blackberry/src/" }
 
     links { "Blackberry" }
+
 end
 
 project "10_creating_a_window"

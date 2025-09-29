@@ -5,6 +5,8 @@
 #include <filesystem>
 #include <unordered_map>
 
+struct FT_FaceRec_;
+
 namespace Blackberry {
 
     struct BlGlyphInfo {
@@ -42,10 +44,13 @@ namespace Blackberry {
 
     private:
         void InitFreeType();
+        void CreateFont(u32 size);
 
     private:
         std::filesystem::path m_FontPath;
         std::unordered_map<u32, __BlFont> m_Fonts; // map of fonts (with the key being the font size)
+        
+        FT_FaceRec_* m_Face;
     };
 
 } // namespace Blackberry

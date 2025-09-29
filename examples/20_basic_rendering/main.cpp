@@ -45,6 +45,8 @@ public:
         } else {
             m_CatPosition.x += 2.0f;
         }
+
+        Log(Log_Info, "FPS: %u", Blackberry::Application::Get().GetFPS());
     }
 
 private:

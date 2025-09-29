@@ -66,6 +66,7 @@ namespace Blackberry {
         Renderer& GetRenderer() { return *m_Renderer; }
 
         f32 GetDeltaTime() const { return m_dt; }
+        u32 GetFPS() const { return 1.0f / m_dt; }
 
         // To be implemented by client!
         static Application* CreateApplication(const CommandLineArgs& args);

@@ -26,23 +26,21 @@ namespace Blackberry {
     }
 
     Font::~Font() {
-        
+        FT_Done_Face(m_Face);
     }
 
     void Font::LoadFontFromFile(const std::filesystem::path& path, u32 size) {
         m_FontPath = path;
 
-        SetSize(size);
+        CreateFont(size);
     }
 
     BlGlyphInfo Font::GetGlyphInfo(u32 value, u32 size) {
-        if (!m_Fonts.contains(size)) {
-            SetSize(size);
-        }
+        SetSize(size);
 
         __BlFont font = m_Fonts.at(size);
 
-        for (int i = 32; i < font.GlyphCount; i++) {
+        for (u32 i = 32; i < font.GlyphCount; i++) {
             if (font.Glyphs[i].Value == value) {
                 return font.Glyphs[i];
             }
@@ -52,21 +50,17 @@ namespace Blackberry {
     }
 
     void Font::SetSize(u32 size) {
-        Log(Log_Info, "Set size called!");
-        FT_Face face;
-        if (FT_New_Face(s_FT, m_FontPath.string().c_str(), 0, &face)) {
-            Log(Log_Error, "Failed to create font %s!", m_FontPath.string().c_str());
-        }
+        if (m_Fonts.contains(size)) { return; }
 
-        FT_Set_Pixel_Sizes(face, 0, size);
+        FT_Set_Pixel_Sizes(m_Face, 0, size);
 
         // to insert the size
-        m_Fonts[size].GlyphCount = face->num_glyphs;
+        m_Fonts[size].GlyphCount = m_Face->num_glyphs;
 
         __BlFont& font = m_Fonts.at(size);
 
         // set up glyph array
-        font.Glyphs = new BlGlyphInfo[128];
+        font.Glyphs = new BlGlyphInfo[255];
 
         u32 currentX = 0;
         u32 currentY = 0;
@@ -75,13 +69,13 @@ namespace Blackberry {
         u8* buffer = new u8[512 * 512];
         memset(buffer, 0, 512 * 512);
 
-        for (u8 c = 32; c < 127; c++) {
-            if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
+        for (u8 c = 32; c < 255; c++) {
+            if (FT_Load_Char(m_Face, c, FT_LOAD_RENDER)) {
                 Log(Log_Debug, "Failed to load codepoint %c", c);
                 continue;
             }
 
-            FT_GlyphSlot g = face->glyph;
+            FT_GlyphSlot g = m_Face->glyph;
             FT_Bitmap bmp = g->bitmap;
 
             if (currentX + bmp.width >= 512) {
@@ -137,33 +131,25 @@ namespace Blackberry {
     }
 
     BlTexture Font::GetTexture(u32 size) {
-        if (!m_Fonts.contains(size)) {
-            SetSize(size);
-        }
+        SetSize(size);
 
         return m_Fonts.at(size).Atlas;
     }
 
    void Font::GetImage(Image& image, u32 size) {
-        if (!m_Fonts.contains(size)) {
-            SetSize(size);
-        }
+        SetSize(size);
 
         image = *m_Fonts.at(size).Image;
     }
 
    u32 Font::GetAscender(u32 size) {
-       if (!m_Fonts.contains(size)) {
-            SetSize(size);
-       }
+       SetSize(size);
 
        return m_Fonts.at(size).Ascender;
    }
 
    u32 Font::GetDescender(u32 size) {
-       if (!m_Fonts.contains(size)) {
-            SetSize(size);
-       }
+       SetSize(size);
 
        return m_Fonts.at(size).Descender;
    }
@@ -176,6 +162,12 @@ namespace Blackberry {
             }
 
             s_IsInitialized = true;
+        }
+   }
+
+   void Font::CreateFont(u32 size) {
+        if (FT_New_Face(s_FT, m_FontPath.string().c_str(), 0, &m_Face)) {
+            Log(Log_Error, "Failed to create font %s!", m_FontPath.string().c_str());
         }
    }
 
