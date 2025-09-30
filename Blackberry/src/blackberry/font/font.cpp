@@ -65,6 +65,7 @@ namespace Blackberry {
         u32 currentX = 0;
         u32 currentY = 0;
         u32 rowHeight = 0;
+        u32 maxRowHeight = 0;
 
         u8* buffer = new u8[512 * 512];
         memset(buffer, 0, 512 * 512);
@@ -104,10 +105,11 @@ namespace Blackberry {
             currentX += bmp.width;
             if (bmp.rows > rowHeight) {
                 rowHeight = bmp.rows;
+                maxRowHeight = rowHeight;
             }
         }
 
-        font.RowHeight = rowHeight;
+        font.RowHeight = maxRowHeight;
 
         // create a rgba image out of grayscale
         u8* rgba = new u8[512 * 512 * 4];

@@ -25,6 +25,9 @@
 // rendering abstractions
 #include "blackberry/rendering/rendering.hpp"
 
+// imgui
+#include "../vendor/imgui/imgui.h"
+
 // NOTE: entry point should be defined only ONCE (in the file where your CreateApplication function is!)
 #ifdef BL_ENTRYPOINT
 #include "blackberry/application/entrypoint.hpp"

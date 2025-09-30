@@ -11,8 +11,7 @@ local function SetupExample()
 
     includedirs { "../Blackberry/src/" }
 
-    links { "Blackberry" }
-
+    links { BlackberryLinks }
 end
 
 project "10_creating_a_window"

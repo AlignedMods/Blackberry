@@ -28,6 +28,10 @@ public:
         Blackberry::DrawText("abcdefghijklmnop", BlVec2(400.0f, 650.0f), m_Font, 24, Blackberry::Red);
     }
 
+    virtual void OnUIRender() override {
+        ImGui::ShowDemoWindow();
+    }
+
     // runs 60 times per second
     virtual void OnFixedUpdate() override {
         m_Color.r++;
@@ -45,8 +49,6 @@ public:
         } else {
             m_CatPosition.x += 2.0f;
         }
-
-        Log(Log_Info, "FPS: %u", BL_APP.GetFPS());
     }
 
 private:
@@ -61,6 +63,8 @@ private:
     Blackberry::Font m_Font;
     Blackberry::Image m_FontAtlas;
     BlTexture m_FontTexture;
+
+    char m_Buffer[1024];
 };
 
 Blackberry::Application* Blackberry::Application::CreateApplication(const CommandLineArgs& args) {

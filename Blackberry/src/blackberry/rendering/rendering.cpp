@@ -118,4 +118,23 @@ namespace Blackberry {
         }
     }
 
+    BlVec2 MeasureText(const std::string& str, Font& font, u32 size) {
+        f32 x = 0.0f;
+        f32 y = 0.0f;
+
+        for (u32 c = 0; c < str.length(); c++) {
+            if (str.at(c) == '\n') {
+                y += font.GetRowHeight();
+                x = 0.0f;
+            } else {
+                BlGlyphInfo glyph = font.GetGlyphInfo(str.at(c), size);
+
+                x += glyph.AdvanceX;
+                y += font.GetRowHeight();
+            }
+        }
+
+        return BlVec2(x, y);
+    }
+
 } // namespace Blackberry

@@ -25,7 +25,8 @@ namespace Blackberry {
     u32 GetTextureWidth(BlTexture texture);
     u32 GetTextureHeight(BlTexture texture);
 
-    // font rendering
+    // font rendering and utilities
     void DrawText(const std::string& str, BlVec2 pos, Font& font, u32 size, BlColor color = White);
+    BlVec2 MeasureText(const std::string& str, Font& font, u32 size);
 
 } // namespace Blackberry
