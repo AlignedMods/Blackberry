@@ -23,5 +23,8 @@ project "10_events"
 project "20_basic_rendering"
     SetupExample()
 
+project "30_entities"
+    SetupExample()
+
 project "60_manual_rendering"
     SetupExample()

@@ -157,6 +157,8 @@ namespace Blackberry {
     class Coordinator {
     public:
         Coordinator() {
+            using namespace Components;
+
             m_ComponentManager = std::make_unique<ComponentManager>();
             m_SystemManager = std::make_unique<SystemManager>(this);
 
@@ -166,7 +168,7 @@ namespace Blackberry {
             // components
             RegisterComponent<Drawable>();
             RegisterComponent<Transform>();
-            RegisterComponent<Color>();
+            RegisterComponent<Material>();
 
             m_Entities.reserve(5000);
         }
