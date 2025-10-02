@@ -1,6 +1,16 @@
 #define BL_ENTRYPOINT
 #include "blackberry.hpp"
 
+struct Transform {
+    BlVec2 Pos;
+    BlVec2 Dim;
+};
+
+struct Gradient {
+    BlColor Left;
+    BlColor Right;
+};
+
 class ExampleLayer : public Blackberry::Layer {
 public:
     virtual void OnInit() override {
@@ -13,8 +23,6 @@ public:
         m_Font.GetImage(m_FontAtlas);
         m_FontAtlas.WriteOut("test.png");
         m_FontTexture = m_Font.GetTexture();
-
-        // Blackberry::Application::Get().SetWindowIcon(m_Image);
     }
 
     virtual void OnRender() override {
@@ -63,8 +71,6 @@ private:
     Blackberry::Font m_Font;
     Blackberry::Image m_FontAtlas;
     BlTexture m_FontTexture;
-
-    char m_Buffer[1024];
 };
 
 Blackberry::Application* Blackberry::Application::CreateApplication(const CommandLineArgs& args) {

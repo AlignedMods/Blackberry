@@ -17,6 +17,10 @@
 #include "blackberry/event/mouse_events.hpp"
 #include "blackberry/event/window_events.hpp"
 
+// ecs
+#include "blackberry/ecs/ecs.hpp"
+#include "blackberry/ecs/components.hpp"
+
 // utils
 #include "blackberry/log.hpp"
 #include "blackberry/types.hpp"

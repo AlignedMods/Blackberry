@@ -1,10 +1,11 @@
-#include "application.hpp"
+#include "blackberry/application/application.hpp"
 #include "blackberry/event/event.hpp"
 #include "blackberry/event/key_events.hpp"
 #include "blackberry/event/window_events.hpp"
 #include "blackberry/event/mouse_events.hpp"
 #include "blackberry/input/keycodes.hpp"
 #include "blackberry/input/mousecodes.hpp"
+#include "blackberry/ecs/ecs.hpp"
 #include "platform/glfw_window.hpp"
 // #include "platform/win32_window.hpp"
 #include "platform/opengl3_renderer.hpp"
@@ -179,6 +180,7 @@ namespace Blackberry {
         }
 
         for (auto layer : m_LayerStack.GetAllLayers()) {
+            layer->m_Coordinator->Update();
             layer->OnUpdate(m_dt);
         }
     }
@@ -190,6 +192,7 @@ namespace Blackberry {
         m_Renderer->Clear();
 
         for (auto layer : m_LayerStack.GetAllLayers()) {
+            layer->m_Coordinator->Render();
             layer->OnRender();
         }
     }

@@ -22,7 +22,7 @@ project "glfw"
             "vendor/glfw/src/null_monitor.c", 
             "vendor/glfw/src/null_window.c" }
 
-    filter "system:Windows"
+    filter "system:windows"
         files { "vendor/glfw/src/win32_init.c", 
                 "vendor/glfw/src/win32_joystick.c",
                 "vendor/glfw/src/win32_monitor.c", 
@@ -35,6 +35,9 @@ project "glfw"
                 "vendor/glfw/src/osmesa_context.c" }
 
         defines { "_GLFW_WIN32" }
+
+    filter "system:linux"
+        defines { "_GLFW_X11" }
 
 project "glad"
     language "C"

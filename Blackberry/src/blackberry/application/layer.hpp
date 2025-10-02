@@ -2,11 +2,15 @@
 
 #include "blackberry/event/event.hpp"
 #include "blackberry/types.hpp"
+// #include "blackberry/ecs/ecs.hpp"
 
 #include <string>
 #include <vector>
+#include <memory>
 
 namespace Blackberry {
+
+    class Coordinator;
 
     class Layer {
     public:
@@ -27,6 +31,9 @@ namespace Blackberry {
 
     protected:
         std::string m_Name;
+        std::unique_ptr<Coordinator> m_Coordinator;
+
+        friend class Application;
     };
 
 } // namespace Blackberry
