@@ -22,9 +22,9 @@ public:
 
 Blackberry::Application* Blackberry::Application::CreateApplication(const CommandLineArgs& args) {
     Blackberry::ApplicationSpecification spec;
-    spec.name = "Blackberry entities example";
-    spec.width = 1280;
-    spec.height = 720;
+    spec.Name = "Blackberry entities example";
+    spec.Width = 1280;
+    spec.Height = 720;
 
     Blackberry::Application* app = new Blackberry::Application(spec);
     app->PushLayer(new ExampleLayer);

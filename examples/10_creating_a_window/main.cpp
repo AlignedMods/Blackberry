@@ -3,9 +3,9 @@
 
 Blackberry::Application* Blackberry::Application::CreateApplication(const CommandLineArgs& args) {
     ApplicationSpecification spec;
-    spec.width = 1280;
-    spec.height = 720;
-    spec.name = "Blackberry basic window!";
+    spec.Name = "Blackberry basic window!";
+    spec.Width = 1280;
+    spec.Height = 720;
 
     return new Blackberry::Application(spec);
 }

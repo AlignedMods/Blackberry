@@ -194,7 +194,7 @@ namespace Blackberry {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_SAMPLES, 4);
-        m_Handle = glfwCreateWindow(data.width, data.height, data.name.c_str(), nullptr, nullptr);
+        m_Handle = glfwCreateWindow(data.Width, data.Height, data.Name.c_str(), nullptr, nullptr);
 
         if (!m_Handle) {
             Log(Log_Critical, "Failed to create GLFW window, Error code 0x%x!", glfwGetError(nullptr));

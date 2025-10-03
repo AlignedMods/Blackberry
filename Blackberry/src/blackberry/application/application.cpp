@@ -21,80 +21,25 @@ namespace Blackberry {
     Application::Application(const ApplicationSpecification& spec) 
         : m_Specification(spec) {
         WindowData data;
-        data.name = spec.name;
-        data.width = spec.width;
-        data.height = spec.height;
+        data.Name = spec.Name;
+        data.Width = spec.Width;
+        data.Height = spec.Height;
 
         m_Window = new Window_GLFW(data); // also sets up opengl
 
-        BlVec2 viewport = BlVec2(static_cast<f32>(data.width), static_cast<f32>(data.height));
+        BlVec2 viewport = BlVec2(static_cast<f32>(data.Width), static_cast<f32>(data.Height));
         m_Renderer = new Renderer_OpenGL3(viewport);
 
         m_TargetFPS = spec.FPS;
         m_LastTime = m_Window->GetTime();
 
-        IMGUI_CHECKVERSION();
-        ImGui::CreateContext();
-
-        ImGuiIO& io = ImGui::GetIO();
-        ImGuiStyle& style = ImGui::GetStyle();
-        auto& colors = style.Colors;
-
-        // buttons
-        colors[ImGuiCol_Button] = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);
-        colors[ImGuiCol_ButtonHovered] = ImVec4(0.3f, 0.3f, 0.3f, 1.0f);
-        colors[ImGuiCol_ButtonActive] = ImVec4(0.4f, 0.4f, 0.4f, 1.0f);
-
-        // headers
-        colors[ImGuiCol_Header] = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);
-        colors[ImGuiCol_HeaderHovered] = ImVec4(0.25f, 0.25f, 0.25f, 1.0f);
-        colors[ImGuiCol_HeaderActive] = ImVec4(0.3f, 0.3f, 0.3f, 1.0f);
-
-        // checkboxes
-        colors[ImGuiCol_CheckMark] = ImVec4(0.9f, 0.2f, 0.2f, 1.0f);
-
-        // frame backgrounds (checkbox, radio)
-        colors[ImGuiCol_FrameBg] = ImVec4(0.6f, 0.3f, 0.3f, 0.7f);
-        colors[ImGuiCol_FrameBgHovered] = ImVec4(0.7f, 0.3f, 0.3f, 0.8f);
-        colors[ImGuiCol_FrameBgActive] = ImVec4(0.8f, 0.4f, 0.4f, 0.9f);
-
-        // sliders
-        colors[ImGuiCol_SliderGrab] = ImVec4(0.7f, 0.4f, 0.4f, 0.7f);
-        colors[ImGuiCol_SliderGrabActive] = ImVec4(0.7f, 0.4f, 0.4f, 0.9f);
-
-        // docking
-        colors[ImGuiCol_DockingPreview] = ImVec4(0.6f, 0.3f, 0.3f, 0.7f);
-
-        // tabs
-        colors[ImGuiCol_Tab] = ImVec4(0.3f, 0.1f, 0.1f, 0.3f);
-        colors[ImGuiCol_TabHovered] = ImVec4(0.3f, 0.1f, 0.1f, 0.5f);
-        colors[ImGuiCol_TabSelected] = ImVec4(0.3f, 0.1f, 0.1f, 0.6f);
-        colors[ImGuiCol_TabSelectedOverline] = ImVec4(0.4f, 0.1f, 0.1f, 1.0f);
-        colors[ImGuiCol_TabDimmed] = ImVec4(0.2f, 0.1f, 0.1f, 0.2f);
-        colors[ImGuiCol_TabDimmedSelected] = ImVec4(0.2f, 0.1f, 0.1f, 0.4f);
-
-        // windows
-        colors[ImGuiCol_WindowBg] = ImVec4(0.05f, 0.05f, 0.05f, 1.0f);
-        colors[ImGuiCol_TitleBg] = ImVec4(0.5f, 0.2f, 0.2f, 1.0f);
-        colors[ImGuiCol_TitleBgActive] = ImVec4(0.8f, 0.2f, 0.2f, 1.0f);
-        colors[ImGuiCol_ResizeGrip] = ImVec4(0.4f, 0.2f, 0.2f, 0.8f);
-        colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.5f, 0.2f, 0.2f, 0.9f);
-        colors[ImGuiCol_ResizeGripActive] = ImVec4(0.6f, 0.2f, 0.2f, 1.0f);
-
-        // the resize thingy on the edge on windows!
-        colors[ImGuiCol_SeparatorActive] = ImVec4(0.8f, 0.25f, 0.25f, 1.0f);
-        colors[ImGuiCol_SeparatorHovered] = ImVec4(0.7f, 0.3f, 0.3f, 1.0f);
-
-        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-
-        m_Initalized = true;
-
-        Log(Log_Info, "Constructed application!");
+        InitImGui();
 
         for (auto& layer : m_LayerStack.GetAllLayers()) {
             layer->OnInit();
         }
 
+        m_Initalized = true;
         s_Instance = this;
     }
 
@@ -218,6 +163,62 @@ namespace Blackberry {
         for (auto it = stack.rbegin(); it < stack.rend(); it++) {
             (*it)->OnEvent(event);
         }
+    }
+
+    void Application::InitImGui() {
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+
+        ImGuiIO& io = ImGui::GetIO();
+        ImGuiStyle& style = ImGui::GetStyle();
+        auto& colors = style.Colors;
+
+        // buttons
+        colors[ImGuiCol_Button] = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);
+        colors[ImGuiCol_ButtonHovered] = ImVec4(0.3f, 0.3f, 0.3f, 1.0f);
+        colors[ImGuiCol_ButtonActive] = ImVec4(0.4f, 0.4f, 0.4f, 1.0f);
+
+        // headers
+        colors[ImGuiCol_Header] = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);
+        colors[ImGuiCol_HeaderHovered] = ImVec4(0.25f, 0.25f, 0.25f, 1.0f);
+        colors[ImGuiCol_HeaderActive] = ImVec4(0.3f, 0.3f, 0.3f, 1.0f);
+
+        // checkboxes
+        colors[ImGuiCol_CheckMark] = ImVec4(0.9f, 0.2f, 0.2f, 1.0f);
+
+        // frame backgrounds (checkbox, radio)
+        colors[ImGuiCol_FrameBg] = ImVec4(0.6f, 0.3f, 0.3f, 0.7f);
+        colors[ImGuiCol_FrameBgHovered] = ImVec4(0.7f, 0.3f, 0.3f, 0.8f);
+        colors[ImGuiCol_FrameBgActive] = ImVec4(0.8f, 0.4f, 0.4f, 0.9f);
+
+        // sliders
+        colors[ImGuiCol_SliderGrab] = ImVec4(0.7f, 0.4f, 0.4f, 0.7f);
+        colors[ImGuiCol_SliderGrabActive] = ImVec4(0.7f, 0.4f, 0.4f, 0.9f);
+
+        // docking
+        colors[ImGuiCol_DockingPreview] = ImVec4(0.6f, 0.3f, 0.3f, 0.7f);
+
+        // tabs
+        colors[ImGuiCol_Tab] = ImVec4(0.3f, 0.1f, 0.1f, 0.3f);
+        colors[ImGuiCol_TabHovered] = ImVec4(0.3f, 0.1f, 0.1f, 0.5f);
+        colors[ImGuiCol_TabSelected] = ImVec4(0.3f, 0.1f, 0.1f, 0.6f);
+        colors[ImGuiCol_TabSelectedOverline] = ImVec4(0.4f, 0.1f, 0.1f, 1.0f);
+        colors[ImGuiCol_TabDimmed] = ImVec4(0.2f, 0.1f, 0.1f, 0.2f);
+        colors[ImGuiCol_TabDimmedSelected] = ImVec4(0.2f, 0.1f, 0.1f, 0.4f);
+
+        // windows
+        colors[ImGuiCol_WindowBg] = ImVec4(0.05f, 0.05f, 0.05f, 1.0f);
+        colors[ImGuiCol_TitleBg] = ImVec4(0.5f, 0.2f, 0.2f, 1.0f);
+        colors[ImGuiCol_TitleBgActive] = ImVec4(0.8f, 0.2f, 0.2f, 1.0f);
+        colors[ImGuiCol_ResizeGrip] = ImVec4(0.4f, 0.2f, 0.2f, 0.8f);
+        colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.5f, 0.2f, 0.2f, 0.9f);
+        colors[ImGuiCol_ResizeGripActive] = ImVec4(0.6f, 0.2f, 0.2f, 1.0f);
+
+        // the resize thingy on the edge on windows!
+        colors[ImGuiCol_SeparatorActive] = ImVec4(0.8f, 0.25f, 0.25f, 1.0f);
+        colors[ImGuiCol_SeparatorHovered] = ImVec4(0.7f, 0.3f, 0.3f, 1.0f);
+
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     }
 
     Application& Application::Get() {

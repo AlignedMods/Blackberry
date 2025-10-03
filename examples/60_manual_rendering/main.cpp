@@ -20,9 +20,9 @@ public:
 
 Blackberry::Application* Blackberry::Application::CreateApplication(const CommandLineArgs& args) {
     ApplicationSpecification spec;
-    spec.width = 1280;
-    spec.height = 720;
-    spec.name = "Blackberry manual rendering";
+    spec.Name = "Blackberry manual rendering";
+    spec.Width = 1280;
+    spec.Height = 720;
 
     Blackberry::Application* app = new Blackberry::Application(spec);
     app->PushLayer(new ExampleLayer);

@@ -9,8 +9,8 @@ namespace Blackberry {
     using EventCallbackFn = std::function<void(const Event&)>;
 
     struct WindowData {
-        std::string name;
-        u32 width = 720, height = 1280;
+        std::string Name;
+        u32 Width = 720, Height = 1280;
     };
 
     // an abstract window class so we can use multiple windowing and input backends (GLFW, win32...)

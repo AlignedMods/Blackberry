@@ -12,10 +12,8 @@
 namespace Blackberry {
 
     struct ApplicationSpecification {
-        const char* name;
-        u32 width, height;
-        u32 min_width, min_height;
-        bool enable_audio;
+        const char* Name;
+        u32 Width, Height;
         u32 FPS;
     };
 
@@ -68,7 +66,7 @@ namespace Blackberry {
         Renderer& GetRenderer() { return *m_Renderer; }
 
         f32 GetDeltaTime() const { return m_dt; }
-        u32 GetFPS() const { return 1.0f / m_dt; }
+        u32 GetFPS() const { return static_cast<u32>(1.0f / m_dt); }
 
         // To be implemented by client!
         static Application* CreateApplication(const CommandLineArgs& args);
@@ -78,6 +76,8 @@ namespace Blackberry {
         void OnRender();
         void OnUIRender();
         void OnEvent(const Event& event);
+
+        void InitImGui();
 
     private:
         ApplicationSpecification m_Specification;
