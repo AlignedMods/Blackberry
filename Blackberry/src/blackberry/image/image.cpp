@@ -21,7 +21,7 @@ namespace Blackberry {
         : m_Data(data), m_Width(width), m_Height(height), m_Format(format) {}
 
     Image::~Image() {
-        Log(Log_Info, "Destructing Image!");
+        BL_INFO("Destructing Image!");
         stbi_image_free(static_cast<void*>(m_Data));
 
         m_Data = nullptr;
@@ -32,7 +32,7 @@ namespace Blackberry {
         m_Format = ImageFormat::RGBA8;
 
         if (!m_Data) {
-            Log(Log_Error, "Failed to load image %s!", path.string().c_str());
+            BL_ERROR("Failed to load image %s!", path.string().c_str());
         }
     }
 

@@ -185,7 +185,7 @@ namespace Blackberry {
     Window_GLFW::Window_GLFW(const WindowData& data)
         : Window(data) {
         if (!glfwInit()) {
-            Log(Log_Critical, "Failed to init GLFW!");
+            BL_CRITICAL("Failed to init GLFW!");
             glfwTerminate();
             exit(1);
         }
@@ -197,7 +197,7 @@ namespace Blackberry {
         m_Handle = glfwCreateWindow(data.Width, data.Height, data.Name.c_str(), nullptr, nullptr);
 
         if (!m_Handle) {
-            Log(Log_Critical, "Failed to create GLFW window, Error code 0x%x!", glfwGetError(nullptr));
+            BL_CRITICAL("Failed to create GLFW window, Error code {}!", glfwGetError(nullptr));
             glfwTerminate();
             exit(1);
         }
@@ -208,7 +208,7 @@ namespace Blackberry {
 
         // load GLAD
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-            Log(Log_Critical, "Failed to init GLAD (Needed for OpenGL!)");
+            BL_CRITICAL("Failed to init GLAD (Needed for OpenGL!)");
             glfwTerminate();
             exit(1);
         }

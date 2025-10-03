@@ -4,7 +4,11 @@
 namespace Blackberry {
 
     Layer::Layer() : m_Name("Layer") {
-        m_Coordinator = std::make_unique<Coordinator>();
+        m_Coordinator = new Coordinator;
+    }
+
+    Layer::~Layer() {
+        delete m_Coordinator;
     }
 
     std::string& Layer::GetName() {

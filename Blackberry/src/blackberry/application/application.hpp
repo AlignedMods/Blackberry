@@ -26,7 +26,7 @@ namespace Blackberry {
 
         inline const char* at(const u32 i) {
             if (i >= argc) {
-                Log(Log_Critical, "Trying to access position in command line arguments that is out of bounds! {Position %lu, Size %lu}", i, argc);
+                BL_CRITICAL("Trying to access position in command line arguments that is out of bounds! {Position {}, Size {}}", i, argc);
                 exit(1);
             }
 

@@ -25,7 +25,7 @@ namespace Blackberry {
         m_WindowClass.hIconSm = LoadIcon (NULL, IDI_APPLICATION);
 
         if (!RegisterClassExW(&m_WindowClass)) {
-            Log(Log_Critical, "Could NOT register window class for win32!");
+            BL_CRITICAL("Could NOT register window class for win32!");
             exit(1);
         }
 
@@ -43,7 +43,7 @@ namespace Blackberry {
                                   nullptr);
 
         if (!m_Handle) {
-            Log(Log_Critical, "Failed to create win32 window!");
+            BL_CRITICAL("Failed to create win32 window!");
             exit(1);
         }
 

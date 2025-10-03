@@ -15,7 +15,7 @@ namespace Blackberry {
     class Layer {
     public:
         Layer();
-        virtual ~Layer() = default;
+        virtual ~Layer();
 
         std::string& GetName();
         void SetName(const std::string& name);
@@ -31,7 +31,7 @@ namespace Blackberry {
 
     protected:
         std::string m_Name;
-        std::unique_ptr<Coordinator> m_Coordinator;
+        Coordinator* m_Coordinator;
 
         friend class Application;
     };

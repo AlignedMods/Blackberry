@@ -72,7 +72,7 @@ namespace Blackberry {
 
         for (u8 c = 32; c < 255; c++) {
             if (FT_Load_Char(m_Face, c, FT_LOAD_RENDER)) {
-                Log(Log_Debug, "Failed to load codepoint %c", c);
+                BL_DEBUG("Failed to load codepoint %c", c);
                 continue;
             }
 
@@ -155,7 +155,7 @@ namespace Blackberry {
    void Font::InitFreeType() {
         if (!s_IsInitialized) {
             if (FT_Init_FreeType(&s_FT)) {
-                Log(Log_Critical, "Failed to initialze freetype!");
+                BL_CRITICAL("Failed to initialze freetype!");
                 exit(1);
             }
 
@@ -165,7 +165,7 @@ namespace Blackberry {
 
    void Font::CreateFont(u32 size) {
         if (FT_New_Face(s_FT, m_FontPath.string().c_str(), 0, &m_Face)) {
-            Log(Log_Error, "Failed to create font %s!", m_FontPath.string().c_str());
+            BL_ERROR("Failed to create font %s!", m_FontPath.string().c_str());
         }
    }
 

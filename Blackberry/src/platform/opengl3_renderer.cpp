@@ -69,7 +69,7 @@ namespace Blackberry {
 
         if (!errorCode) {
             glGetShaderInfoLog(vertex, 512, nullptr, buf);
-            Log(Log_Error, "Failed to compile default vertex shader! Error: %s", buf);
+            BL_ERROR("Failed to compile default vertex shader! Error: {}", buf);
         }
 
         u32 fragment = glCreateShader(GL_FRAGMENT_SHADER);
@@ -80,7 +80,7 @@ namespace Blackberry {
 
         if (!errorCode) {
             glGetShaderInfoLog(fragment, 512, nullptr, buf);
-            Log(Log_Error, "Failed to compile default fragment shader! Error: %s", buf);
+            BL_ERROR("Failed to compile default fragment shader! Error: {}", buf);
         }
 
         m_Shader = glCreateProgram();
@@ -92,7 +92,7 @@ namespace Blackberry {
 
         if (!errorCode) {
             glGetProgramInfoLog(m_Shader, 512, nullptr, buf);
-            Log(Log_Error, "Failed to link default shader program! Error: %s", buf);
+            BL_ERROR("Failed to link default shader program! Error: {}", buf);
         }
 
         glDeleteShader(vertex);
