@@ -30,4 +30,6 @@ void EditorLayer::OnUIRender() {
     Blackberry::Entity entity = Blackberry::Entity(m_EditorScene.CreateEntity("funny"), &m_EditorScene);
     entity.AddComponent<Drawable>({ BlColor(0xff, 0x00, 0x00, 0xff) });
     entity.AddComponent<Transform>({ BlVec2(100.0f, 50.0f), BlVec2(400.0f, 100.0f) });
+
+    BL_INFO("Current ID: {}", entity.ID);
 }

@@ -37,7 +37,7 @@ namespace Blackberry {
         }
     
         buffer.append(formatted);
-        buffer.append('\n', 1);
+        buffer.append(1, '\n');
     
         std::cout << buffer;
     }

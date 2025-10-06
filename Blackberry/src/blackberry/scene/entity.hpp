@@ -9,20 +9,22 @@ namespace Blackberry {
     public:
         Entity() = default;
         explicit Entity(EntityID id, Scene* scene)
-            : m_ID(id), m_Scene(scene) {}
+            : ID(id), m_Scene(scene) {}
 
         template <typename T>
         void AddComponent(const T& component) {
-            m_Scene->m_Coordinator->AddComponent<T>(m_ID, component);
+            m_Scene->m_Coordinator->AddComponent<T>(ID, component);
         }
 
         template <typename T>
         bool HasComponent() {
-            return m_Scene->m_Coordinator->HasComponent<T>(m_ID);
+            return m_Scene->m_Coordinator->HasComponent<T>(ID);
         }
 
+    public:
+        EntityID ID = 0;
+
     private:
-        EntityID m_ID = 0;
         Scene* m_Scene = nullptr;
     };
 
