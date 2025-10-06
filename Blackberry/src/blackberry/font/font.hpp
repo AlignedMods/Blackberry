@@ -24,6 +24,7 @@ namespace Blackberry {
         u32 GlyphCount = 0;
         BlGlyphInfo* Glyphs = nullptr;
         i32 RowHeight = 0;
+        i32 Ascender = 0;
     };
 
     class Font {
@@ -40,6 +41,7 @@ namespace Blackberry {
         BlTexture GetTexture(u32 size = 24);
         void GetImage(Image& image, u32 size = 24);
         i32 GetRowHeight(u32 size = 24);
+        i32 GetAscender(u32 size = 24);
 
     private:
         void InitFreeType();

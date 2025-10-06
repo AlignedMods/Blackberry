@@ -67,6 +67,8 @@ namespace Blackberry {
         u32 rowHeight = 0;
         u32 maxRowHeight = 0;
 
+        font.Ascender = m_Face->ascender >> 6;
+
         u8* buffer = new u8[512 * 512];
         memset(buffer, 0, 512 * 512);
 
@@ -144,6 +146,12 @@ namespace Blackberry {
        SetSize(size);
 
        return m_Fonts.at(size).RowHeight;
+   }
+
+   i32 Font::GetAscender(u32 size) {
+       SetSize(size);
+
+       return m_Fonts.at(size).Ascender;
    }
 
    void Font::InitFreeType() {

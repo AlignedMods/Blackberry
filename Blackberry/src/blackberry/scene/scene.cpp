@@ -21,6 +21,10 @@ namespace Blackberry {
     }
 
     EntityID Scene::GetEntity(const std::string& name) {
+        if (!m_EntityMap.contains(name)) {
+            CreateEntity(name);
+        }
+
         return m_EntityMap.at(name);
     }
 

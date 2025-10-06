@@ -21,6 +21,12 @@ namespace Blackberry {
                 } else {
                     Blackberry::DrawRectangle(trans.Position, trans.Dimensions, color);
                 }
+
+                if (m_Coordinator->HasComponent<Text>(entity)) {
+                    Text& text = m_Coordinator->GetComponent<Text>(entity);
+
+                    Blackberry::DrawText(text.Contents, trans.Position, *text.Font, text.FontSize);
+                }
             }
         }
     }

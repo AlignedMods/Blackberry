@@ -112,7 +112,7 @@ namespace Blackberry {
             } else {
                 BlGlyphInfo glyph = font.GetGlyphInfo(str.at(c), size);
 
-                DrawTextureArea(BlVec2(currentX + glyph.Left, currentY - glyph.Top), BlVec2(glyph.Rect.w, glyph.Rect.h), glyph.Rect, tex, White);
+                DrawTextureArea(BlVec2(currentX + glyph.Left, currentY - glyph.Top + font.GetAscender(size)), BlVec2(glyph.Rect.w, glyph.Rect.h), glyph.Rect, tex, White);
                 currentX += glyph.AdvanceX + 1;
             }
         }

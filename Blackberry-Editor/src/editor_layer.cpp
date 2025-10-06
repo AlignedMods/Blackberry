@@ -1,5 +1,17 @@
 #include "editor_layer.hpp"
 
+void EditorLayer::OnInit() {
+    using namespace Blackberry::Components;
+
+    m_EditorFont.LoadFontFromFile("Assets/arial/arial.ttf", 36);
+
+    m_TestEntity = Blackberry::Entity(m_EditorScene.CreateEntity("funny"), &m_EditorScene);
+
+    m_TestEntity.AddComponent<Drawable>({ BlColor(0xff, 0x00, 0x00, 0xff) });
+    m_TestEntity.AddComponent<Transform>({ BlVec2(100.0f, 50.0f), BlVec2(400.0f, 100.0f) });
+    m_TestEntity.AddComponent<Text>({ &m_EditorFont, 36, "gurt__gooning" });
+}
+
 void EditorLayer::OnUpdate(f32 ts) {
     m_EditorScene.OnUpdate();
 }
@@ -26,10 +38,4 @@ void EditorLayer::OnUIRender() {
     ImGui::DockSpace(dockspaceID, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
 
     ImGui::End();
-
-    Blackberry::Entity entity = Blackberry::Entity(m_EditorScene.CreateEntity("funny"), &m_EditorScene);
-    entity.AddComponent<Drawable>({ BlColor(0xff, 0x00, 0x00, 0xff) });
-    entity.AddComponent<Transform>({ BlVec2(100.0f, 50.0f), BlVec2(400.0f, 100.0f) });
-
-    BL_INFO("Current ID: {}", entity.ID);
 }

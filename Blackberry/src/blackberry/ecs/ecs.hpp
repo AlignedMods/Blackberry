@@ -168,6 +168,7 @@ namespace Blackberry {
             RegisterComponent<Drawable>();
             RegisterComponent<Transform>();
             RegisterComponent<Material>();
+            RegisterComponent<Text>();
 
             m_Entities.reserve(200);
         }
