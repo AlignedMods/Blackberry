@@ -2,14 +2,15 @@
 
 #include "blackberry/application/window.hpp"
 
-#include "Windows.h"
+#define GLFW_INCLUDE_NONE
+#include "GLFW/glfw3.h"
 
 namespace Blackberry {
 
-    class Window_Win32 : public Window {
+    class Window_GLFW : public Window {
     public:
-        Window_Win32(const WindowData& data);
-        ~Window_Win32();
+        Window_GLFW(const WindowData& data);
+        ~Window_GLFW();
 
         virtual bool ShouldClose() const override;
         virtual void OnUpdate() override;
@@ -19,12 +20,12 @@ namespace Blackberry {
         virtual f64 GetTime() const override;
         virtual void SleepSeconds(f64 seconds) const override;
 
+        virtual void SetWindowIcon(const Image& image) override;
+
         virtual void* GetHandle() const override;
 
     private:
-        WNDCLASSEXW m_WindowClass;
-        HWND m_Handle;
-        MSG m_MSG;
+        GLFWwindow* m_Handle;
     };
 
 } // namespace Blackberry

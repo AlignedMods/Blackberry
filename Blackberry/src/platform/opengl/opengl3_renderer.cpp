@@ -1,4 +1,4 @@
-#include "platform/opengl3_renderer.hpp"
+#include "platform/opengl/opengl3_renderer.hpp"
 #include "blackberry/util.hpp"
 #include "blackberry/log.hpp"
 
@@ -10,7 +10,7 @@
 namespace Blackberry {
 
     // shaders
-    static const char* VertexShaderSource = MULTILINE_STR(
+    static const char* VertexShaderSource = BL_STR(
         // we cannot use '#' since the c preprocesser gets mad at us (actually only lsp cared but yknow)
         \x23version 330 core\n
         layout (location = 0) in vec3 a_Pos;
@@ -29,7 +29,7 @@ namespace Blackberry {
         }
     );
 
-    static const char* FragmentShaderSource = MULTILINE_STR(
+    static const char* FragmentShaderSource = BL_STR(
         \x23version 330 core\n
 
         in vec4 col;

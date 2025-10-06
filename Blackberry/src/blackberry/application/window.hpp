@@ -1,6 +1,7 @@
 #pragma once
 
 #include "blackberry/event/event.hpp"
+#include "blackberry/image/image.hpp"
 
 #include <functional>
 
@@ -28,6 +29,8 @@ namespace Blackberry {
         virtual f64 GetTime() const = 0;
         virtual void SleepSeconds(f64 seconds) const = 0;
         void SleepMilli(f64 milliseconds) const { SleepSeconds(milliseconds / 1000.0); }
+
+        virtual void SetWindowIcon(const Image& image) = 0;
 
         virtual void* GetHandle() const = 0;
 

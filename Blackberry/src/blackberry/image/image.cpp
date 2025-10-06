@@ -47,8 +47,8 @@ namespace Blackberry {
         Renderer& renderer = Application::Get().GetRenderer();
 
         m_Data = renderer.GetTextureData(texture);
-        m_Width = renderer.GetTexDims(texture).x;
-        m_Height = renderer.GetTexDims(texture).y;
+        m_Width = static_cast<i32>(renderer.GetTexDims(texture).x);
+        m_Height = static_cast<i32>(renderer.GetTexDims(texture).y);
         m_Format = ImageFormat::RGBA8;
     }
 

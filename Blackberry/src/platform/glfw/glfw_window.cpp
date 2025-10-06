@@ -1,4 +1,5 @@
-#include "platform/glfw_window.hpp"
+#include "platform/glfw/glfw_window.hpp"
+#include "GLFW/glfw3.h"
 #include "blackberry/log.hpp"
 #include "blackberry/application/application.hpp"
 #include "blackberry/event/event.hpp"
@@ -196,6 +197,8 @@ namespace Blackberry {
         glfwWindowHint(GLFW_SAMPLES, 4);
         m_Handle = glfwCreateWindow(data.Width, data.Height, data.Name.c_str(), nullptr, nullptr);
 
+        glfwSwapInterval(0);
+
         if (!m_Handle) {
             BL_CRITICAL("Failed to create GLFW window, Error code {}!", glfwGetError(nullptr));
             glfwTerminate();
@@ -224,14 +227,6 @@ namespace Blackberry {
 
         glfwSetFramebufferSizeCallback(m_Handle, CallbackWindowResize);
         glfwSetWindowCloseCallback(m_Handle, CallbackWindowClose);
-
-        IMGUI_CHECKVERSION();
-        ImGui::CreateContext();
-        ImGui::StyleColorsDark();
-
-        ImGuiIO& io = ImGui::GetIO();
-        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
         ImGui_ImplGlfw_InitForOpenGL(m_Handle, true);
         ImGui_ImplOpenGL3_Init("#version 330");
@@ -293,6 +288,15 @@ namespace Blackberry {
             while (GetTime() < targetTime) {}
             // std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
         }
+    }
+
+    void Window_GLFW::SetWindowIcon(const Image& image) {
+        GLFWimage im;
+        im.pixels = static_cast<u8*>(image.GetData());
+        im.width = image.GetWidth();
+        im.height = image.GetHeight();
+
+        glfwSetWindowIcon(m_Handle, 1, &im);
     }
 
     void* Window_GLFW::GetHandle() const {

@@ -4,7 +4,7 @@
 class ExampleLayer : public Blackberry::Layer {
 public:
     virtual void OnEvent(const Blackberry::Event& event) override {
-        Log(Log_Info, "Recieved event: %s", event.ToString().c_str());
+        BL_INFO("Recieved event: %s", event.ToString());
 
         event.Handled = true; // setting this to true will make the event not be dispatched any further
 

@@ -56,7 +56,7 @@ namespace Blackberry {
     }
 
     void DrawTextureEx(BlVec2 pos, BlVec2 dimensions, BlTexture texture, BlColor color) {
-        DrawTextureArea(pos, dimensions, BlRec(0.0f, 0.0f, GetTextureWidth(texture), GetTextureHeight(texture)), texture, color);
+        DrawTextureArea(pos, dimensions, BlRec(0.0f, 0.0f, static_cast<f32>(GetTextureWidth(texture)), static_cast<f32>(GetTextureHeight(texture))), texture, color);
     }
 
     void DrawTextureArea(BlVec2 pos, BlVec2 dimensions, BlRec area, BlTexture texture, BlColor color) {
@@ -91,11 +91,11 @@ namespace Blackberry {
     }
 
     u32 GetTextureWidth(BlTexture texture) {
-        return GetTextureSize(texture).x;
+        return static_cast<u32>(GetTextureSize(texture).x);
     }
 
     u32 GetTextureHeight(BlTexture texture) {
-        return GetTextureSize(texture).y;
+        return static_cast<u32>(GetTextureSize(texture).y);
     }
 
     void DrawText(const std::string& str, BlVec2 pos, Font& font, u32 size, BlColor color) {

@@ -96,7 +96,7 @@ namespace Blackberry {
                 }
             }
 
-            font.Glyphs[c].Rect = BlRec(currentX, currentY, bmp.width, bmp.rows);
+            font.Glyphs[c].Rect = BlRec(static_cast<f32>(currentX), static_cast<f32>(currentY), static_cast<f32>(bmp.width), static_cast<f32>(bmp.rows));
             font.Glyphs[c].Left = g->bitmap_left;
             font.Glyphs[c].Top = g->bitmap_top;
             font.Glyphs[c].AdvanceX = g->advance.x >> 6;
@@ -121,17 +121,11 @@ namespace Blackberry {
             rgba[i * 4 + 3] = buffer[i];
         }
 
-        // FT_Done_Face(face);
-
         delete[] buffer;
         buffer = rgba;
 
         font.Image = new Image(buffer, 512, 512, ImageFormat::RGBA8);
         font.Atlas = LoadTextureFromImage(*font.Image);
-
-        // Image im(m_Buffer, 512, 512, ImageFormat::RGBA8);
-        // 
-        // font.Atlas = LoadTextureFromImage(im);
     }
 
     BlTexture Font::GetTexture(u32 size) {
@@ -165,7 +159,7 @@ namespace Blackberry {
 
    void Font::CreateFont(u32 size) {
         if (FT_New_Face(s_FT, m_FontPath.string().c_str(), 0, &m_Face)) {
-            BL_ERROR("Failed to create font %s!", m_FontPath.string().c_str());
+            BL_ERROR("Failed to create font {}!", m_FontPath.string().c_str());
         }
    }
 

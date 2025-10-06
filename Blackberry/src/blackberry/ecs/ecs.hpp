@@ -3,54 +3,53 @@
 #include "blackberry/types.hpp"
 #include "blackberry/application/application.hpp"
 #include "blackberry/ecs/components.hpp"
+#include "blackberry/util.hpp"
 
 #include <unordered_map>
 #include <unordered_set>
 #include <memory>
 #include <string>
 #include <type_traits>
-#include <assert.h>
 
 namespace Blackberry {
 
-    // internal only use
-    using __EntityID = u32;
+    using EntityID = u32;
 
     // we need to have some sort of generic component array
     class __ComponentArray {
     public:
-        virtual void OnEntityDestroyed(__EntityID entity) {}
+        virtual void OnEntityDestroyed(EntityID entity) {}
     };
 
     template<typename T>
     class ComponentArray : public __ComponentArray {
     public:
-        void AddComponent(__EntityID entity, const T& component) {
+        void AddComponent(EntityID entity, const T& component) {
             m_Components[entity] = component;
         }
 
-        T& GetComponent(__EntityID entity) {
-            assert(m_Components.contains(entity) && "Trying to get component that wanted entity doesn't contain!");
+        T& GetComponent(EntityID entity) {
+            BL_ASSERT(m_Components.contains(entity), "Trying to get component that wanted entity doesn't contain!");
             return m_Components.at(entity);
         }
 
-        bool HasComponent(__EntityID entity) {
+        bool HasComponent(EntityID entity) {
             return m_Components.contains(entity);
         }
 
-        void RemoveComponent(__EntityID entity) {
-            assert(m_Components.contains(entity) && "Trying to remove component that wanted entity doesn't contain!");
+        void RemoveComponent(EntityID entity) {
+            BL_ASSERT(m_Components.contains(entity), "Trying to remove component that wanted entity doesn't contain!");
             m_Components.erase(entity);
         }
 
-        virtual void OnEntityDestroyed(__EntityID entity) {
+        virtual void OnEntityDestroyed(EntityID entity) {
             if (!m_Components.contains(entity)) { return; }
 
             m_Components.erase(entity);
         }
 
     private:
-        std::unordered_map<__EntityID, T> m_Components;
+        std::unordered_map<EntityID, T> m_Components;
     };
 
     class ComponentManager {
@@ -63,30 +62,30 @@ namespace Blackberry {
         }
 
         template<typename T>
-        void AddComponent(__EntityID entity, const T& component) {
+        void AddComponent(EntityID entity, const T& component) {
             auto comp = GetCompArray<T>();
             comp->AddComponent(entity, component);
         }
 
         template<typename T>
-        T& GetComponent(__EntityID entity) {
+        T& GetComponent(EntityID entity) {
             auto comp = GetCompArray<T>();
             return comp->GetComponent(entity);
         }
 
         template<typename T>
-        bool HasComponent(__EntityID entity) {
+        bool HasComponent(EntityID entity) {
             auto comp = GetCompArray<T>();
             return comp->HasComponent(entity);
         }
 
         template<typename T>
-        void RemoveComponent(__EntityID entity) {
+        void RemoveComponent(EntityID entity) {
             auto comp = GetCompArray<T>();
             comp->RemoveComponent(entity);
         }
 
-        void OnEntityDestroyed(__EntityID entity) {
+        void OnEntityDestroyed(EntityID entity) {
             for (auto&[_, componentArray] : m_ComponentArrays) {
                 componentArray->OnEntityDestroyed(entity);
             }
@@ -170,17 +169,17 @@ namespace Blackberry {
             RegisterComponent<Transform>();
             RegisterComponent<Material>();
 
-            m_Entities.reserve(5000);
+            m_Entities.reserve(200);
         }
 
-        __EntityID CreateEntity() {
+        EntityID CreateEntity() {
             m_Entities.push_back(m_CurrentEntityID);
-            __EntityID id = m_CurrentEntityID;
+            EntityID id = m_CurrentEntityID;
             m_CurrentEntityID++;
             return id;
         }
 
-        std::vector<__EntityID>& GetEntities() {
+        std::vector<EntityID>& GetEntities() {
             return m_Entities;
         }
 
@@ -195,17 +194,17 @@ namespace Blackberry {
         }
 
         template<typename T>
-        void AddComponent(__EntityID entity, const T& component = T{}) {
+        void AddComponent(EntityID entity, const T& component = T{}) {
             m_ComponentManager->AddComponent<T>(entity, component);
         }
 
         template<typename T>
-        bool HasComponent(__EntityID entity) {
+        bool HasComponent(EntityID entity) {
             return m_ComponentManager->HasComponent<T>(entity);
         }
 
         template<typename T>
-        T& GetComponent(__EntityID entity) {
+        T& GetComponent(EntityID entity) {
             return m_ComponentManager->GetComponent<T>(entity);
         }
 
@@ -221,8 +220,8 @@ namespace Blackberry {
         std::unique_ptr<ComponentManager> m_ComponentManager;
         std::unique_ptr<SystemManager> m_SystemManager;
 
-        __EntityID m_CurrentEntityID = 0;
-        std::vector<__EntityID> m_Entities;
+        EntityID m_CurrentEntityID = 0;
+        std::vector<EntityID> m_Entities;
     };
 
 } // namespace Blackberry

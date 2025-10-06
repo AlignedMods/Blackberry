@@ -7,8 +7,28 @@ workspace "Blackberry"
     -- annoying
     defines { "_CRT_SECURE_NO_WARNINGS" }
 
+    filter "configurations:Debug"
+        defines { "BL_DEBUG_BUILD" }
+
+    filter "configurations:Release"
+        defines { "BL_RELEASE_BUILD" }
+
+    filter ""
+
+    filter "system:windows"
+        defines { "BL_WINDOWS_BUILD" }
+
+    filter "system:linux"
+        defines { "BL_LINUX_BUILD" }
+
+    filter ""
+
     include "Blackberry/"
 
     group "examples"
         include "examples/"
+    group ""
+
+    group "tools"
+        include "Blackberry-Editor/"
     group ""

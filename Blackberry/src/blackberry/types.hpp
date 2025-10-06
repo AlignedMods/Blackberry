@@ -48,6 +48,9 @@ struct BlRec {
 
     inline explicit BlRec(f32 x, f32 y, f32 w, f32 h)
         : x(x), y(y), w(w), h(h) {}
+
+    inline explicit BlRec(i32 x, i32 y, i32 w, i32 h)
+        : x(static_cast<f32>(x)), y(static_cast<f32>(y)), w(static_cast<f32>(w)), h(static_cast<f32>(h)) {}
     
     f32 x, y, w, h;
 };

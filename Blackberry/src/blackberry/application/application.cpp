@@ -6,9 +6,8 @@
 #include "blackberry/input/keycodes.hpp"
 #include "blackberry/input/mousecodes.hpp"
 #include "blackberry/ecs/ecs.hpp"
-#include "platform/glfw_window.hpp"
-// #include "platform/win32_window.hpp"
-#include "platform/opengl3_renderer.hpp"
+#include "platform/glfw/glfw_window.hpp"
+#include "platform/opengl/opengl3_renderer.hpp"
 
 #include "imgui.h"
 #include "glad/glad.h"
@@ -25,15 +24,15 @@ namespace Blackberry {
         data.Width = spec.Width;
         data.Height = spec.Height;
 
-        m_Window = new Window_GLFW(data); // also sets up opengl
+        InitImGui();
+
+        m_Window = new Window_GLFW(data);
 
         BlVec2 viewport = BlVec2(static_cast<f32>(data.Width), static_cast<f32>(data.Height));
         m_Renderer = new Renderer_OpenGL3(viewport);
 
         m_TargetFPS = spec.FPS;
         m_LastTime = m_Window->GetTime();
-
-        InitImGui();
 
         for (auto& layer : m_LayerStack.GetAllLayers()) {
             layer->OnInit();
@@ -90,13 +89,7 @@ namespace Blackberry {
     }
 
     void Application::SetWindowIcon(const Image& image) {
-        GLFWimage im{};
-
-        im.width = image.GetWidth();
-        im.height = image.GetHeight();
-        im.pixels = (u8*)image.GetData();
-
-        glfwSetWindowIcon((GLFWwindow*)m_Window->GetHandle(), 1, &im);
+        m_Window->SetWindowIcon(image);
     }
 
     void Application::Close() {
@@ -129,8 +122,6 @@ namespace Blackberry {
             layer->OnUpdate(m_dt);
         }
     }
-
-    static bool usingTex = false;
 
     void Application::OnRender() {
         m_Renderer->NewFrame();
@@ -168,10 +159,11 @@ namespace Blackberry {
     void Application::InitImGui() {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
+        ImGui::StyleColorsDark();
 
         ImGuiIO& io = ImGui::GetIO();
         ImGuiStyle& style = ImGui::GetStyle();
-        auto& colors = style.Colors;
+        auto& colors = style.Colors; 
 
         // buttons
         colors[ImGuiCol_Button] = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);
@@ -219,6 +211,7 @@ namespace Blackberry {
         colors[ImGuiCol_SeparatorHovered] = ImVec4(0.7f, 0.3f, 0.3f, 1.0f);
 
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
     }
 
     Application& Application::Get() {
