@@ -24,37 +24,41 @@ static void DrawVec2Control(const std::string& label, BlVec2* vec) {
 
     ImGui::PushID(label.c_str());
 
-    ImGui::Columns(3);
-    ImGui::SetColumnWidth(0, 100.0f);
-
-    ImGui::Text(label.c_str());
-    ImGui::NextColumn();
+    // label
 
     ImGui::PushFont(io.Fonts->Fonts[1], 16);
-    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
-    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.0f, 0.0f, 0.7f));
-    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 0.0f, 0.0f, 0.4f));
-    ImGui::Button("X");
-    ImGui::PopStyleColor(3);
+
+    if (ImGui::TreeNode(label.c_str())) {
+        // x axis control
+
+        ImGui::PushFont(io.Fonts->Fonts[1], 16);
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.0f, 0.0f, 0.7f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 0.0f, 0.0f, 0.4f));
+        ImGui::Button("X");
+        ImGui::PopStyleColor(3);
+        ImGui::PopFont();
+
+        ImGui::SameLine();
+        ImGui::DragFloat("##DragX", &vec->x, 1.0f);
+
+        // y axis control
+
+        ImGui::PushFont(io.Fonts->Fonts[1], 16);
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 1.0f, 0.0f, 0.7f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 1.0f, 0.0f, 0.4f));
+        ImGui::Button("Y");
+        ImGui::PopStyleColor(3);
+        ImGui::PopFont();
+
+        ImGui::SameLine();
+        ImGui::DragFloat("##DragY", &vec->y);
+
+        ImGui::TreePop();
+    }
+
     ImGui::PopFont();
-
-    ImGui::SameLine();
-    ImGui::DragFloat("##DragX", &vec->x, 1.0f);
-
-    ImGui::NextColumn();
-
-    ImGui::PushFont(io.Fonts->Fonts[1], 16);
-    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
-    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 1.0f, 0.0f, 0.7f));
-    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 1.0f, 0.0f, 0.4f));
-    ImGui::Button("Y");
-    ImGui::PopStyleColor(3);
-    ImGui::PopFont();
-
-    ImGui::SameLine();
-    ImGui::DragFloat("##DragY", &vec->y);
-
-    ImGui::Columns(1);
 
     ImGui::PopID();
 }
