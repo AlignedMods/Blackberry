@@ -35,6 +35,7 @@
 
 // imgui
 #include "../vendor/imgui/imgui.h"
+#include "../vendor/imgui/misc/cpp/imgui_stdlib.h"
 
 // NOTE: entry point should be defined only ONCE (in the file where your CreateApplication function is!)
 #ifdef BL_ENTRYPOINT

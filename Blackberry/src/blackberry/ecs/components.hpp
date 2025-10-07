@@ -7,6 +7,10 @@
 
 namespace Blackberry::Components {
 
+    struct Tag {
+        std::string Name;
+    };
+
     struct Transform {
         BlVec2 Position;
         BlVec2 Dimensions;

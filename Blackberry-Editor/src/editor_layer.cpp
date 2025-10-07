@@ -1,15 +1,88 @@
 #include "editor_layer.hpp"
 
+template <typename T, typename F>
+static void DrawComponent(const std::string& name, Blackberry::Entity entity, F uiFunction) {
+    if (entity.HasComponent<T>()) {
+        T& component = entity.GetComponent<T>();
+
+        if (ImGui::CollapsingHeader(name.c_str())) {
+            uiFunction(component);
+        }
+    }
+}
+
+template <typename T>
+static void AddComponentListOption(const std::string& name, Blackberry::Entity& entity) {
+    if (ImGui::Button(name.c_str())) {
+        entity.AddComponent<T>();
+        ImGui::CloseCurrentPopup();
+    }
+}
+
+static void DrawVec2Control(const std::string& label, BlVec2* vec) {
+    ImGuiIO& io = ImGui::GetIO();
+
+    ImGui::PushID(label.c_str());
+
+    ImGui::Columns(3);
+    ImGui::SetColumnWidth(0, 100.0f);
+
+    ImGui::Text(label.c_str());
+    ImGui::NextColumn();
+
+    ImGui::PushFont(io.Fonts->Fonts[1], 16);
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.0f, 0.0f, 0.7f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 0.0f, 0.0f, 0.4f));
+    ImGui::Button("X");
+    ImGui::PopStyleColor(3);
+    ImGui::PopFont();
+
+    ImGui::SameLine();
+    ImGui::DragFloat("##DragX", &vec->x, 1.0f);
+
+    ImGui::NextColumn();
+
+    ImGui::PushFont(io.Fonts->Fonts[1], 16);
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 1.0f, 0.0f, 0.7f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 1.0f, 0.0f, 0.4f));
+    ImGui::Button("Y");
+    ImGui::PopStyleColor(3);
+    ImGui::PopFont();
+
+    ImGui::SameLine();
+    ImGui::DragFloat("##DragY", &vec->y);
+
+    ImGui::Columns(1);
+
+    ImGui::PopID();
+}
+
+static void DrawColorControl(const std::string& label, BlColor* color) {
+    ImVec4 imGuiColor = ImVec4(color->r / 255.0f, color->g / 255.0f, color->b / 255.0f, color->a / 255.0f);
+
+    ImGui::PushID(label.c_str());
+
+    ImGui::ColorEdit4("##ColorEdit", &imGuiColor.x);
+
+    ImGui::PopID();
+
+    // return value from ImVec4
+    color->r = imGuiColor.x * 255.0f;
+    color->g = imGuiColor.y * 255.0f;
+    color->b = imGuiColor.z * 255.0f;
+    color->a = imGuiColor.w * 255.0f;
+}
+
 void EditorLayer::OnInit() {
     using namespace Blackberry::Components;
 
     m_EditorFont.LoadFontFromFile("Assets/arial/arial.ttf", 36);
 
-    m_TestEntity = Blackberry::Entity(m_EditorScene.CreateEntity("funny"), &m_EditorScene);
-
-    m_TestEntity.AddComponent<Drawable>({ BlColor(0xff, 0x00, 0x00, 0xff) });
-    m_TestEntity.AddComponent<Transform>({ BlVec2(100.0f, 50.0f), BlVec2(400.0f, 100.0f) });
-    m_TestEntity.AddComponent<Text>({ &m_EditorFont, 36, "gurt__gooning" });
+    ImGuiIO& io = ImGui::GetIO();
+    io.Fonts->AddFontFromFileTTF("Assets/arial/arial.ttf", 16);
+    io.Fonts->AddFontFromFileTTF("Assets/arial/arial-bold.ttf", 16);
 }
 
 void EditorLayer::OnUpdate(f32 ts) {
@@ -20,8 +93,12 @@ void EditorLayer::OnRender() {
     m_EditorScene.OnRender();
 }
 
+static i32 s_CurrentItem = 0;
+
 void EditorLayer::OnUIRender() {
     using namespace Blackberry::Components;
+
+    ImGui::ShowDemoWindow();
 
     // set up dockspace
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
@@ -36,6 +113,78 @@ void EditorLayer::OnUIRender() {
 
     ImGuiID dockspaceID = ImGui::GetID("dockspace");
     ImGui::DockSpace(dockspaceID, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
+    
+    ImGui::End();
+
+    ImGui::Begin("Explorer");
+
+    if (ImGui::Button("Add Entity")) {
+        ImGui::OpenPopup("EntityName");
+    }
+
+    if (ImGui::BeginPopup("EntityName")) {
+        static char buffer[128];
+
+        ImGui::InputText("Name: ", buffer, 128);
+        if (ImGui::Button("OK")) {
+            Blackberry::Entity entity(m_EditorScene.CreateEntity(buffer), &m_EditorScene);
+            
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+
+    ImGui::NewLine();
+    
+    for (auto id : m_EditorScene.GetEntities()) {
+        ImGui::PushID(id);
+
+        Blackberry::Entity entity(id, &m_EditorScene);
+        if (ImGui::Button(entity.GetComponent<Tag>().Name.c_str())) {
+            m_IsEntitySelected = true;
+            m_SelectedEntity = id;
+        }
+
+        ImGui::PopID();
+    }
+
+    ImGui::End();
+
+    ImGui::Begin("Properties");
+
+    if (m_IsEntitySelected) {
+        Blackberry::Entity entity(m_SelectedEntity, &m_EditorScene);
+
+        if (ImGui::Button("Add Component")) {
+            ImGui::OpenPopup("AddComponent");
+        }
+
+        if (ImGui::BeginPopup("AddComponent")) {
+            AddComponentListOption<Transform>("Transform", entity);
+            AddComponentListOption<Drawable>("Drawable", entity);
+            AddComponentListOption<Text>("Text", entity);
+
+            ImGui::EndPopup();
+        }
+
+        DrawComponent<Tag>("Tag", entity, [](Tag& tag) {
+            ImGui::Text("Name: ");
+            ImGui::SameLine();
+            ImGui::InputText("##Name", &tag.Name);
+        });
+        DrawComponent<Text>("Text", entity, [](Text& text) {
+            ImGui::Text("This is a text!");    
+        });
+        DrawComponent<Transform>("Transform", entity, [](Transform& transform) {
+            DrawVec2Control("Position: ", &transform.Position);
+            DrawVec2Control("Dimensions: ", &transform.Dimensions);
+        });
+        DrawComponent<Drawable>("Drawable", entity, [](Drawable& drawable) {
+            DrawColorControl("Color: ", &drawable.Color);
+        });
+        DrawComponent<Material>("Material", entity, [](Material& material) {});
+    }
 
     ImGui::End();
 }

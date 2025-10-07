@@ -66,7 +66,9 @@ project "imgui"
             "vendor/imgui/backends/imgui_impl_glfw.h",
             "vendor/imgui/backends/imgui_impl_glfw.cpp",
             "vendor/imgui/backends/imgui_impl_opengl3.h",
-            "vendor/imgui/backends/imgui_impl_opengl3.cpp"}
+            "vendor/imgui/backends/imgui_impl_opengl3.cpp",
+            "vendor/imgui/misc/cpp/**.cpp",
+            "vendor/imgui/misc/cpp/**.h" }
 
     includedirs { "vendor/imgui/", "vendor/glfw/include/" }
 

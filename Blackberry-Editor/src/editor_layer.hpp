@@ -12,7 +12,9 @@ public:
 
 private:
     Blackberry::Scene m_EditorScene;
-    Blackberry::Entity m_TestEntity;
 
     Blackberry::Font m_EditorFont;
+
+    Blackberry::EntityID m_SelectedEntity = 0;
+    bool m_IsEntitySelected = false;
 };

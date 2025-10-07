@@ -118,7 +118,6 @@ namespace Blackberry {
         }
 
         for (auto layer : m_LayerStack.GetAllLayers()) {
-            layer->m_Coordinator->Update();
             layer->OnUpdate(m_dt);
         }
     }
@@ -128,7 +127,6 @@ namespace Blackberry {
         m_Renderer->Clear();
 
         for (auto layer : m_LayerStack.GetAllLayers()) {
-            layer->m_Coordinator->Render();
             layer->OnRender();
         }
     }

@@ -16,6 +16,7 @@ namespace Blackberry {
 
     EntityID Scene::CreateEntity(const std::string& name) {
         m_EntityMap[name] = m_Coordinator->CreateEntity();
+        m_Coordinator->AddComponent<Blackberry::Components::Tag>(m_EntityMap.at(name), { name });
         
         return m_EntityMap.at(name);
     }
@@ -26,6 +27,10 @@ namespace Blackberry {
         }
 
         return m_EntityMap.at(name);
+    }
+
+    std::vector<EntityID>& Scene::GetEntities() {
+        return m_Coordinator->GetEntities();
     }
 
 } // namespace Blackberry

@@ -12,13 +12,18 @@ namespace Blackberry {
             : ID(id), m_Scene(scene) {}
 
         template <typename T>
-        void AddComponent(const T& component) {
+        void AddComponent(const T& component = T{}) {
             m_Scene->m_Coordinator->AddComponent<T>(ID, component);
         }
 
         template <typename T>
         bool HasComponent() {
             return m_Scene->m_Coordinator->HasComponent<T>(ID);
+        }
+
+        template <typename T>
+        T& GetComponent() {
+            return m_Scene->m_Coordinator->GetComponent<T>(ID);
         }
 
     public:

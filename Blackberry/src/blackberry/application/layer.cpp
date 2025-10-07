@@ -3,13 +3,7 @@
 
 namespace Blackberry {
 
-    Layer::Layer() : m_Name("Layer") {
-        m_Coordinator = new Coordinator;
-    }
-
-    Layer::~Layer() {
-        delete m_Coordinator;
-    }
+    Layer::Layer() : m_Name("Layer") {}
 
     std::string& Layer::GetName() {
         return m_Name;
