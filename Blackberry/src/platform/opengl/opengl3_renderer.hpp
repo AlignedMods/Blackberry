@@ -9,12 +9,6 @@
 
 namespace Blackberry {
 
-    struct GLTexture {
-        u32 ID;
-        u32 Width, Height;
-        ImageFormat Format;
-    };
-
     class Renderer_OpenGL3 : public Renderer {
     public:
         explicit Renderer_OpenGL3(BlVec2 viewport);
@@ -33,11 +27,8 @@ namespace Blackberry {
         virtual void AttachTexture(const BlTexture tex) override;
         virtual void DettachTexture() override;
 
-        virtual BlTexture GenTexture(const Image& image) override;
-        void* GetTextureData(BlTexture texture) override;
-        virtual void FreeTexture(const BlTexture texture) override;
-
-        virtual BlVec2 GetTexDims(const BlTexture texture) const override;
+        virtual void AttachRenderTexture(const BlRenderTexture texture) override;
+        virtual void DettachRenderTexture() override;
 
         virtual u32 GetDrawCalls() const override { return m_DrawCalls; }
 
@@ -60,7 +51,7 @@ namespace Blackberry {
         RenderingMode m_Mode;
 
         bool m_UsingTexture = false;
-        BlTexture m_CurrentTexture{};
+        BlTexture m_CurrentTexture;
 
         u32 m_DrawCalls = 0;
     };

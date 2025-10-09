@@ -2,8 +2,14 @@
 
 namespace Blackberry {
 
+    void Clear() {
+        auto& renderer = BL_APP.GetRenderer();
+
+        renderer.Clear();
+    }
+
     void DrawRectangle(BlVec2 pos, BlVec2 dimensions, const BlColor& color) {
-        auto& renderer = Application::Get().GetRenderer();
+        auto& renderer = BL_APP.GetRenderer();
 
         BlVertex bl = BlVertex(BlVec2(pos.x, pos.y + dimensions.y), color, BlVec2(0.0f, 1.0f));
         BlVertex tr = BlVertex(BlVec2(pos.x + dimensions.x, pos.y), color, BlVec2(1.0f, 0.0f));
@@ -24,7 +30,7 @@ namespace Blackberry {
     }
 
     void DrawTriangle(BlVec2 bl, BlVec2 t, BlVec2 br, const BlColor& color) {
-        auto& renderer = Application::Get().GetRenderer();
+        auto& renderer = BL_APP.GetRenderer();
 
         renderer.Begin(RenderingMode::Triangles);
 
@@ -35,37 +41,21 @@ namespace Blackberry {
         renderer.End();
     }
 
-    BlTexture LoadTextureFromImage(const Blackberry::Image& image) {
-        auto& renderer = Application::Get().GetRenderer();
-
-        return renderer.GenTexture(image);
-    }
-
     void DrawTexture(BlVec2 pos, BlTexture texture, BlColor color) {
-        auto& renderer = Application::Get().GetRenderer();
-
-        // BlVertex bl = BlVertex(BlVec2(pos.x, pos.y + texture))
-
-        renderer.AttachTexture(texture);
-        renderer.Begin(RenderingMode::Triangles);
-
-        DrawTextureEx(pos, GetTextureSize(texture), texture, color);
-
-        renderer.End();
-        renderer.DettachTexture();
+        DrawTextureEx(pos, BlVec2(static_cast<f32>(texture.Width), static_cast<f32>(texture.Height)), texture, color);
     }
 
     void DrawTextureEx(BlVec2 pos, BlVec2 dimensions, BlTexture texture, BlColor color) {
-        DrawTextureArea(pos, dimensions, BlRec(0.0f, 0.0f, static_cast<f32>(GetTextureWidth(texture)), static_cast<f32>(GetTextureHeight(texture))), texture, color);
+        DrawTextureArea(pos, dimensions, BlRec(0.0f, 0.0f, static_cast<f32>(texture.Width), static_cast<f32>(texture.Height)), texture, color);
     }
 
     void DrawTextureArea(BlVec2 pos, BlVec2 dimensions, BlRec area, BlTexture texture, BlColor color) {
-        auto& renderer = Application::Get().GetRenderer();
+        auto& renderer = BL_APP.GetRenderer();
 
-        BlVec2 texSize = GetTextureSize(texture);
+        BlVec2 texSize = BlVec2(static_cast<f32>(texture.Width), static_cast<f32>(texture.Height));
 
         BlVertex bl = BlVertex(BlVec2(pos.x, pos.y + dimensions.y), color, BlVec2(area.x / texSize.x, (area.h + area.y) / texSize.y));
-        BlVertex tr = BlVertex(BlVec2(pos.x + dimensions.x, pos.y), color, BlVec2((area.w + area.x) / texSize.x, area.y /texSize.y));
+        BlVertex tr = BlVertex(BlVec2(pos.x + dimensions.x, pos.y), color, BlVec2((area.w + area.x) / texSize.x, area.y / texSize.y));
         BlVertex br = BlVertex(BlVec2(pos.x + dimensions.x, pos.y + dimensions.y), color, BlVec2((area.w + area.x) / texSize.x, (area.h + area.y) / texSize.y));
         BlVertex tl = BlVertex(BlVec2(pos.x, pos.y), color, BlVec2(area.x / texSize.x, area.y / texSize.y));
 
@@ -84,18 +74,20 @@ namespace Blackberry {
         renderer.DettachTexture();
     }
 
-    BlVec2 GetTextureSize(BlTexture texture) {
-        auto& renderer = Application::Get().GetRenderer();
-
-        return renderer.GetTexDims(texture);
+    void DrawRenderTexture(BlVec2 pos, BlVec2 dimensions, BlRenderTexture texture) {
+        DrawTextureArea(pos, dimensions, BlRec(0.0f, 0.0f, texture.Texture.Width, texture.Texture.Height * -1.0f), texture.Texture);
     }
 
-    u32 GetTextureWidth(BlTexture texture) {
-        return static_cast<u32>(GetTextureSize(texture).x);
+    void AttachRenderTexture(BlRenderTexture texture) {
+        auto& renderer = BL_APP.GetRenderer();
+
+        renderer.AttachRenderTexture(texture);
     }
 
-    u32 GetTextureHeight(BlTexture texture) {
-        return static_cast<u32>(GetTextureSize(texture).y);
+    void DetachRenderTexture() {
+        auto& renderer = BL_APP.GetRenderer();
+
+        renderer.DettachRenderTexture();
     }
 
     void DrawText(const std::string& str, BlVec2 pos, Font& font, u32 size, BlColor color) {

@@ -9,6 +9,7 @@ public:
     virtual void OnUpdate(f32 ts) override;
     virtual void OnRender() override;
     virtual void OnUIRender() override;
+    virtual void OnEvent(const Blackberry::Event& event) override;
 
 private:
     Blackberry::Scene m_EditorScene;
@@ -17,4 +18,6 @@ private:
 
     Blackberry::EntityID m_SelectedEntity = 0;
     bool m_IsEntitySelected = false;
+
+    BlRenderTexture m_RenderTexture;
 };

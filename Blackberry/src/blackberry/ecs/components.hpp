@@ -17,7 +17,7 @@ namespace Blackberry::Components {
     };
 
     struct Material {
-        BlTexture Texture = nullptr;
+        BlTexture Texture;
         BlRec Area;
     };
 

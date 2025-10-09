@@ -1,5 +1,7 @@
 #include "editor_layer.hpp"
 
+static char s_Buffer[512];
+
 template <typename T, typename F>
 static void DrawComponent(const std::string& name, Blackberry::Entity entity, F uiFunction) {
     if (entity.HasComponent<T>()) {
@@ -13,6 +15,8 @@ static void DrawComponent(const std::string& name, Blackberry::Entity entity, F 
 
 template <typename T>
 static void AddComponentListOption(const std::string& name, Blackberry::Entity& entity) {
+    if (entity.HasComponent<T>()) { return; }
+
     if (ImGui::Button(name.c_str())) {
         entity.AddComponent<T>();
         ImGui::CloseCurrentPopup();
@@ -27,10 +31,10 @@ static void DrawVec2Control(const std::string& label, BlVec2* vec) {
     // label
 
     ImGui::PushFont(io.Fonts->Fonts[1], 16);
-
     if (ImGui::TreeNode(label.c_str())) {
-        // x axis control
+        ImGui::PopFont();
 
+        // x axis control
         ImGui::PushFont(io.Fonts->Fonts[1], 16);
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.0f, 0.0f, 0.7f));
@@ -43,7 +47,6 @@ static void DrawVec2Control(const std::string& label, BlVec2* vec) {
         ImGui::DragFloat("##DragX", &vec->x, 1.0f);
 
         // y axis control
-
         ImGui::PushFont(io.Fonts->Fonts[1], 16);
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 1.0f, 0.0f, 0.7f));
@@ -56,19 +59,30 @@ static void DrawVec2Control(const std::string& label, BlVec2* vec) {
         ImGui::DragFloat("##DragY", &vec->y);
 
         ImGui::TreePop();
+    } else {
+        ImGui::PopFont();
     }
-
-    ImGui::PopFont();
 
     ImGui::PopID();
 }
 
 static void DrawColorControl(const std::string& label, BlColor* color) {
+    ImGuiIO& io = ImGui::GetIO();
+
     ImVec4 imGuiColor = ImVec4(color->r / 255.0f, color->g / 255.0f, color->b / 255.0f, color->a / 255.0f);
 
     ImGui::PushID(label.c_str());
 
-    ImGui::ColorEdit4("##ColorEdit", &imGuiColor.x);
+    ImGui::PushFont(io.Fonts->Fonts[1], 16);
+    if (ImGui::TreeNode(label.c_str())) {
+        ImGui::PopFont();
+
+        ImGui::ColorEdit4("##ColorEdit", &imGuiColor.x);
+
+        ImGui::TreePop();
+    } else {
+        ImGui::PopFont();
+    }
 
     ImGui::PopID();
 
@@ -87,6 +101,8 @@ void EditorLayer::OnInit() {
     ImGuiIO& io = ImGui::GetIO();
     io.Fonts->AddFontFromFileTTF("Assets/arial/arial.ttf", 16);
     io.Fonts->AddFontFromFileTTF("Assets/arial/arial-bold.ttf", 16);
+
+    m_RenderTexture.Create(1280, 720);
 }
 
 void EditorLayer::OnUpdate(f32 ts) {
@@ -94,7 +110,14 @@ void EditorLayer::OnUpdate(f32 ts) {
 }
 
 void EditorLayer::OnRender() {
+    Blackberry::AttachRenderTexture(m_RenderTexture);
+    
+    Blackberry::Clear();
     m_EditorScene.OnRender();
+
+    Blackberry::DetachRenderTexture();
+
+    // Blackberry::DrawRenderTexture(BlVec2(0.0f, 0.0f), BlVec2(1280.0f, 720.0f), m_RenderTexture);
 }
 
 static i32 s_CurrentItem = 0;
@@ -102,7 +125,7 @@ static i32 s_CurrentItem = 0;
 void EditorLayer::OnUIRender() {
     using namespace Blackberry::Components;
 
-    ImGui::ShowDemoWindow();
+    // ImGui::ShowDemoWindow();
 
     // set up dockspace
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
@@ -123,15 +146,14 @@ void EditorLayer::OnUIRender() {
     ImGui::Begin("Explorer");
 
     if (ImGui::Button("Add Entity")) {
+        memset(s_Buffer, 0, 512);
         ImGui::OpenPopup("EntityName");
     }
 
     if (ImGui::BeginPopup("EntityName")) {
-        static char buffer[128];
-
-        ImGui::InputText("Name: ", buffer, 128);
+        ImGui::InputText("Name: ", s_Buffer, 512);
         if (ImGui::Button("OK")) {
-            Blackberry::Entity entity(m_EditorScene.CreateEntity(buffer), &m_EditorScene);
+            Blackberry::Entity entity(m_EditorScene.CreateEntity(s_Buffer), &m_EditorScene);
             
             ImGui::CloseCurrentPopup();
         }
@@ -168,6 +190,7 @@ void EditorLayer::OnUIRender() {
             AddComponentListOption<Transform>("Transform", entity);
             AddComponentListOption<Drawable>("Drawable", entity);
             AddComponentListOption<Text>("Text", entity);
+            AddComponentListOption<Material>("Material", entity);
 
             ImGui::EndPopup();
         }
@@ -191,4 +214,23 @@ void EditorLayer::OnUIRender() {
     }
 
     ImGui::End();
+    ImGui::Begin("Asset Manager");
+    ImGui::End();
+
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+    ImGui::Begin("Viewport");
+
+    ImGui::Image(m_RenderTexture.Texture.ID, ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
+
+    ImGui::End();
+    ImGui::PopStyleVar();
+}
+
+void EditorLayer::OnEvent(const Blackberry::Event& event) {
+    if (event.GetEventType() == Blackberry::EventType::WindowResize) {
+        const auto& wr = BL_EVENT_CAST(WindowResizeEvent);
+
+        m_RenderTexture.Delete();
+        m_RenderTexture.Create(wr.GetWidth(), wr.GetHeight());
+    }
 }

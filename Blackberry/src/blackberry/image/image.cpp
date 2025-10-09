@@ -43,14 +43,14 @@ namespace Blackberry {
         m_Format = format;
     }
 
-    void Image::LoadFromTexture(BlTexture texture) {
-        Renderer& renderer = Application::Get().GetRenderer();
-
-        m_Data = renderer.GetTextureData(texture);
-        m_Width = static_cast<i32>(renderer.GetTexDims(texture).x);
-        m_Height = static_cast<i32>(renderer.GetTexDims(texture).y);
-        m_Format = ImageFormat::RGBA8;
-    }
+    // void Image::LoadFromTexture(BlTexture texture) {
+    //     Renderer& renderer = Application::Get().GetRenderer();
+    // 
+    //     // m_Data = renderer.GetTextureData(texture);
+    //     // m_Width = static_cast<i32>(renderer.GetTexDims(texture).x);
+    //     // m_Height = static_cast<i32>(renderer.GetTexDims(texture).y);
+    //     // m_Format = ImageFormat::RGBA8;
+    // }
 
     void Image::WriteOut(const std::string& fileName) {
         stbi_write_png(fileName.c_str(), m_Width, m_Height, 1, m_Data, m_Width);

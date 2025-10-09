@@ -2,6 +2,7 @@
 
 #include "blackberry/types.hpp"
 #include "blackberry/image/image.hpp"
+#include "blackberry/rendering/texture.hpp"
 
 enum class RenderingMode {
     Points,
@@ -34,14 +35,12 @@ namespace Blackberry {
         virtual void Clear() const = 0;
 
         virtual void SubVertex(const BlVertex& vert) = 0;
+
         virtual void AttachTexture(const BlTexture texture) = 0;
         virtual void DettachTexture() = 0;
 
-        virtual BlTexture GenTexture(const Image& image) = 0;
-        virtual void* GetTextureData(BlTexture texture) = 0;
-        virtual void FreeTexture(const BlTexture texture) = 0;
-
-        virtual BlVec2 GetTexDims(const BlTexture texture) const = 0;
+        virtual void AttachRenderTexture(const BlRenderTexture texture) = 0;
+        virtual void DettachRenderTexture() = 0;
 
         virtual u32 GetDrawCalls() const = 0;
 

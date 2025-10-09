@@ -16,7 +16,7 @@ namespace Blackberry {
 
                 if (m_Coordinator->HasComponent<Material>(entity)) {
                     Material& material = m_Coordinator->GetComponent<Material>(entity);
-                    BlRec area = (material.Area.w != 0.0f && material.Area.h != 0.0f) ? material.Area : BlRec(0.0f, 0.0f, static_cast<f32>(GetTextureWidth(material.Texture)), static_cast<f32>(GetTextureHeight(material.Texture)));
+                    BlRec area = (material.Area.w != 0.0f && material.Area.h != 0.0f) ? material.Area : BlRec(0.0f, 0.0f, static_cast<f32>(material.Texture.Width), static_cast<f32>(material.Texture.Height));
                     Blackberry::DrawTextureArea(trans.Position, trans.Dimensions, area, material.Texture);
                 } else {
                     Blackberry::DrawRectangle(trans.Position, trans.Dimensions, color);

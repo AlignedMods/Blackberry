@@ -1,6 +1,7 @@
 #pragma once
 
 #include "blackberry/image/image.hpp"
+#include "blackberry/rendering/texture.hpp"
 
 #include <filesystem>
 #include <unordered_map>
@@ -19,7 +20,7 @@ namespace Blackberry {
     };
 
     struct __BlFont {
-        BlTexture Atlas = nullptr;
+        BlTexture Atlas;
         Image* Image = nullptr;
         u32 GlyphCount = 0;
         BlGlyphInfo* Glyphs = nullptr;

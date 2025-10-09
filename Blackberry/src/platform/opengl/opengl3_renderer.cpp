@@ -20,10 +20,10 @@ namespace Blackberry {
         out vec4 col;
         out vec2 texCoord;
 
-        uniform mat4 projection;
+        uniform mat4 u_Projection;
     
         void main() {
-            gl_Position = projection * vec4(a_Pos, 1.0);
+            gl_Position = u_Projection * vec4(a_Pos, 1.0);
             col = a_Color;
             texCoord = a_TexCoord;
         }
@@ -37,12 +37,12 @@ namespace Blackberry {
 
         out vec4 FragColor;
 
-        uniform sampler2D sampler;
-        uniform int useTexture;
+        uniform sampler2D u_Sampler;
+        uniform int u_UseTexture;
 
         void main() {
-            if (useTexture == 1) {
-                vec4 texelColor = texture(sampler, texCoord);
+            if (u_UseTexture == 1) {
+                vec4 texelColor = texture(u_Sampler, texCoord);
                 FragColor = col * texelColor;
             } else {
                 FragColor = col;
@@ -153,77 +153,22 @@ namespace Blackberry {
     }
 
     void Renderer_OpenGL3::AttachTexture(const BlTexture tex) {
-        const GLTexture* glTex = static_cast<GLTexture*>(tex);
-
-        if (glTex->ID == 0) { m_UsingTexture = false; return; }
-
         m_UsingTexture = true;
         m_CurrentTexture = tex;
 
-        glBindTexture(GL_TEXTURE_2D, glTex->ID);
+        glBindTexture(GL_TEXTURE_2D, tex.ID);
     }
 
     void Renderer_OpenGL3::DettachTexture() {
         m_UsingTexture = false;
-        m_CurrentTexture = nullptr;
     }
 
-    BlTexture Renderer_OpenGL3::GenTexture(const Image& image) {
-        GLTexture* tex = new GLTexture(); // we must heap alloc
-
-        tex->Width = image.GetWidth();
-        tex->Height = image.GetHeight();
-        tex->Format = image.GetFormat();
-
-        glGenTextures(1, &tex->ID);
-        glBindTexture(GL_TEXTURE_2D, tex->ID);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-        GLuint format = GL_RGBA;
-        GLuint glFormat = GL_RGBA;
-
-        switch (image.GetFormat()) {
-            case ImageFormat::RGBA8:
-                format = GL_RGBA;
-                glFormat = GL_RGBA;
-                break;
-            case ImageFormat::U8:
-                format = GL_RED;
-                glFormat = GL_R8;
-                break;
-        }
-
-        glTexImage2D(GL_TEXTURE_2D, 0, glFormat, tex->Width, tex->Height, 0, format, GL_UNSIGNED_BYTE, image.GetData());
-        glGenerateMipmap(GL_TEXTURE_2D);
-
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-        return tex;
+    void Blackberry::Renderer_OpenGL3::AttachRenderTexture(const BlRenderTexture texture) {
+        glBindFramebuffer(GL_FRAMEBUFFER, texture.ID);
     }
 
-    void* Renderer_OpenGL3::GetTextureData(BlTexture texture) {
-        GLTexture* glTex = static_cast<GLTexture*>(texture);
-        glBindTexture(GL_TEXTURE_2D, glTex->ID);
-        void* buffer = new u8[glTex->Width * glTex->Height * 4];
-        glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-        return buffer;
-    }
-
-    void Renderer_OpenGL3::FreeTexture(const BlTexture texture) {
-        GLTexture* tex = static_cast<GLTexture*>(texture);
-        delete tex;
-    }
-
-    BlVec2 Renderer_OpenGL3::GetTexDims(const BlTexture texture) const {
-        GLTexture* glTex = static_cast<GLTexture*>(texture);
-
-        return BlVec2(static_cast<i32>(glTex->Width), static_cast<i32>(glTex->Height));
+    void Blackberry::Renderer_OpenGL3::DettachRenderTexture() {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
     void Renderer_OpenGL3::Render() {
@@ -239,18 +184,16 @@ namespace Blackberry {
         }
 
         glUseProgram(m_Shader);
-        u32 uni = glGetUniformLocation(m_Shader, "projection");
+        u32 uni = glGetUniformLocation(m_Shader, "u_Projection");
         glUniformMatrix4fv(uni, 1, GL_FALSE, glm::value_ptr(m_Projection));
 
         if (m_UsingTexture) {
-            u32 useTex = glGetUniformLocation(m_Shader, "useTexture");
+            u32 useTex = glGetUniformLocation(m_Shader, "u_UseTexture");
             glUniform1i(useTex, 1);
 
-            const GLTexture* glTex = static_cast<GLTexture*>(m_CurrentTexture);
-
-            glBindTexture(GL_TEXTURE_2D, glTex->ID);
+            glBindTexture(GL_TEXTURE_2D, m_CurrentTexture.ID);
         } else {
-            u32 useTex = glGetUniformLocation(m_Shader, "useTexture");
+            u32 useTex = glGetUniformLocation(m_Shader, "u_UseTexture");
             glUniform1i(useTex, 0);
         }
 

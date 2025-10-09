@@ -54,5 +54,3 @@ struct BlRec {
     
     f32 x, y, w, h;
 };
-
-using BlTexture = void*; // the funny (we don't know what a texture could be since we support different backends)

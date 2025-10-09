@@ -1,6 +1,7 @@
 #pragma once
 
 #include "blackberry/types.hpp"
+// #include "blackberry/rendering/texture.hpp"
 
 #include <filesystem>
 
@@ -20,7 +21,7 @@ namespace Blackberry {
 
         void LoadFromPath(const std::filesystem::path& path);
         void LoadFromMemory(void* data, u32 width, u32 height, ImageFormat format);
-        void LoadFromTexture(BlTexture texture);
+        // void LoadFromTexture(BlTexture texture);
 
         void WriteOut(const std::string& fileName);
 

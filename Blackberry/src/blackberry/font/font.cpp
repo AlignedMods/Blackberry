@@ -127,7 +127,7 @@ namespace Blackberry {
         buffer = rgba;
 
         font.Image = new Image(buffer, 512, 512, ImageFormat::RGBA8);
-        font.Atlas = LoadTextureFromImage(*font.Image);
+        font.Atlas.Create(*font.Image);
     }
 
     BlTexture Font::GetTexture(u32 size) {
