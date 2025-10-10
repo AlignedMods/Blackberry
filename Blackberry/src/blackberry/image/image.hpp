@@ -9,6 +9,7 @@ namespace Blackberry {
 
     enum class ImageFormat {
         U8,
+        RGB8,
         RGBA8
     };
 
@@ -16,7 +17,7 @@ namespace Blackberry {
     public:
         Image();
         Image(const std::filesystem::path& path);
-        Image(void* data, u32 width, u32 height, ImageFormat format);
+        Image(const void* data, u32 width, u32 height, ImageFormat format);
         ~Image();
 
         void LoadFromPath(const std::filesystem::path& path);

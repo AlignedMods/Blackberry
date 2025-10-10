@@ -2,7 +2,7 @@ group "dependencies"
     include "external.lua"
 group ""
 
-BlackberryLinks = { "Blackberry", "glfw", "glad", "imgui", "freetype" }
+BlackberryLinks = { "Blackberry", "glfw", "glad", "imgui", "freetype", "msdfgen", "msdf-atlas-gen" }
 
 project "Blackberry" -- The game engine
     language "C++"
@@ -15,7 +15,15 @@ project "Blackberry" -- The game engine
 
     files { "src/blackberry/**.cpp", "src/blackberry/**.hpp", "src/blackberry.hpp" }
 
-    includedirs { "src/", "vendor/glfw/include/", "vendor/imgui/", "vendor/glad/include/", "vendor/glm/", "vendor/stb/", "vendor/freetype/include/" }
+    includedirs { "src/", 
+                  "vendor/glfw/include/", 
+                  "vendor/imgui/", 
+                  "vendor/glad/include/", 
+                  "vendor/glm/", 
+                  "vendor/stb/", 
+                  "vendor/msdf-atlas-gen/",
+                  "vendor/msdf-atlas-gen/msdfgen/",
+                  "vendor/msdf-atlas-gen/msdfgen/include/" }
 
     files { "src/platform/opengl/**.cpp", "src/platform/opengl/**.hpp" }
 

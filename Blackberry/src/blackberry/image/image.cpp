@@ -17,12 +17,30 @@ namespace Blackberry {
         LoadFromPath(path);
     }
 
-    Image::Image(void* data, u32 width, u32 height, ImageFormat format)
-        : m_Data(data), m_Width(width), m_Height(height), m_Format(format) {}
+    Image::Image(const void* data, u32 width, u32 height, ImageFormat format)
+        : m_Data(nullptr), m_Width(width), m_Height(height), m_Format(format) 
+    {
+        u32 size = 4;
+
+        switch (format) {
+            case ImageFormat::U8:
+                size = 1;
+                break;
+            case ImageFormat::RGB8:
+                size = 3;
+                break;
+            case ImageFormat::RGBA8:
+                size = 4;
+                break;
+        }
+
+        m_Data = new u8[width * height * size];
+        memcpy(m_Data, data, width * height * size);
+    }
 
     Image::~Image() {
         BL_INFO("Destructing Image!");
-        stbi_image_free(static_cast<void*>(m_Data));
+        stbi_image_free(m_Data);
 
         m_Data = nullptr;
     }
@@ -53,7 +71,7 @@ namespace Blackberry {
     // }
 
     void Image::WriteOut(const std::string& fileName) {
-        stbi_write_png(fileName.c_str(), m_Width, m_Height, 1, m_Data, m_Width);
+        stbi_write_png(fileName.c_str(), m_Width, m_Height, 3, m_Data, m_Width * 3);
     }
 
     i32 Image::GetWidth() const {

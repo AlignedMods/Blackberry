@@ -17,10 +17,12 @@ namespace Blackberry {
 
         virtual void NewFrame() override;
 
-        virtual void SubVertex(const BlVertex& vert) override;
-
         virtual void Begin(RenderingMode mode) override;
         virtual void End() override;
+
+        virtual void SubVertex(const BlVertex& vert) override;
+
+        virtual void AttachDefaultShader(DefaultShader shader) override;
 
         virtual void Clear() const override;
 
@@ -35,12 +37,18 @@ namespace Blackberry {
     private:
         virtual void Render() override;
 
+        void CompileDefaultShaders();
+
     private:
         u32 m_VAO;
         u32 m_VBO;
     
         // shaders
-        u32 m_Shader;
+        u32 m_ShapeShader;
+        u32 m_TextureShader;
+        u32 m_FontShader;
+
+        u32 m_CurrentShader;
 
         f32 m_Vertices[2000];
         u64 m_VertexIndex = 0;

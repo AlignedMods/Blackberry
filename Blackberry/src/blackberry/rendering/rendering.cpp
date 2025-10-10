@@ -10,6 +10,7 @@ namespace Blackberry {
 
     void DrawRectangle(BlVec2 pos, BlVec2 dimensions, const BlColor& color) {
         auto& renderer = BL_APP.GetRenderer();
+        renderer.AttachDefaultShader(DefaultShader::Shape);
 
         BlVertex bl = BlVertex(BlVec2(pos.x, pos.y + dimensions.y), color, BlVec2(0.0f, 1.0f));
         BlVertex tr = BlVertex(BlVec2(pos.x + dimensions.x, pos.y), color, BlVec2(1.0f, 0.0f));
@@ -31,6 +32,7 @@ namespace Blackberry {
 
     void DrawTriangle(BlVec2 bl, BlVec2 t, BlVec2 br, const BlColor& color) {
         auto& renderer = BL_APP.GetRenderer();
+        renderer.AttachDefaultShader(DefaultShader::Shape);
 
         renderer.Begin(RenderingMode::Triangles);
 
@@ -51,6 +53,7 @@ namespace Blackberry {
 
     void DrawTextureArea(BlVec2 pos, BlVec2 dimensions, BlRec area, BlTexture texture, BlColor color) {
         auto& renderer = BL_APP.GetRenderer();
+        renderer.AttachDefaultShader(DefaultShader::Texture);
 
         BlVec2 texSize = BlVec2(static_cast<f32>(texture.Width), static_cast<f32>(texture.Height));
 
@@ -91,42 +94,48 @@ namespace Blackberry {
     }
 
     void DrawText(const std::string& str, BlVec2 pos, Font& font, u32 size, BlColor color) {
-        BlTexture tex = font.GetTexture(size);
+        auto& renderer = BL_APP.GetRenderer();
+        BlTexture tex = font.GetTexture();
+        
+        renderer.AttachDefaultShader(DefaultShader::Font);
+
         f32 currentX = pos.x;
         f32 currentY = pos.y;
-
+        
         BlColor currentColor = color;
-
+        
         for (u32 c = 0; c < str.length(); c++) {
             if (str.at(c) == '\n') {
-                currentY += font.GetRowHeight();
+                // currentY += font.GetRowHeight();
                 currentX = pos.x;
             } else {
-                BlGlyphInfo glyph = font.GetGlyphInfo(str.at(c), size);
-
-                DrawTextureArea(BlVec2(currentX + glyph.Left, currentY - glyph.Top + font.GetAscender(size)), BlVec2(glyph.Rect.w, glyph.Rect.h), glyph.Rect, tex, White);
+                BlGlyphInfo glyph = font.GetGlyphInfo(str.at(c));
+        
+                // DrawTextureArea(BlVec2(currentX + glyph.Left, currentY - glyph.Top + font.GetAscender(size)), BlVec2(glyph.Rect.w, glyph.Rect.h), glyph.Rect, tex, White);
+                DrawTextureArea(BlVec2(currentX + glyph.Left, currentY - glyph.Top), BlVec2(glyph.Rect.w, glyph.Rect.h), glyph.Rect, tex, White);
                 currentX += glyph.AdvanceX + 1;
             }
         }
     }
 
     BlVec2 MeasureText(const std::string& str, Font& font, u32 size) {
-        f32 x = 0.0f;
-        f32 y = 0.0f;
-
-        for (u32 c = 0; c < str.length(); c++) {
-            if (str.at(c) == '\n') {
-                y += font.GetRowHeight();
-                x = 0.0f;
-            } else {
-                BlGlyphInfo glyph = font.GetGlyphInfo(str.at(c), size);
-
-                x += glyph.AdvanceX;
-                y += font.GetRowHeight();
-            }
-        }
-
-        return BlVec2(x, y);
+        // f32 x = 0.0f;
+        // f32 y = 0.0f;
+        // 
+        // for (u32 c = 0; c < str.length(); c++) {
+        //     if (str.at(c) == '\n') {
+        //         y += font.GetRowHeight();
+        //         x = 0.0f;
+        //     } else {
+        //         BlGlyphInfo glyph = font.GetGlyphInfo(str.at(c), size);
+        // 
+        //         x += glyph.AdvanceX;
+        //         y += font.GetRowHeight();
+        //     }
+        // }
+        // 
+        // return BlVec2(x, y);
+        return BlVec2();
     }
 
 } // namespace Blackberry

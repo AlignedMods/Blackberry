@@ -32,6 +32,7 @@ void BlTexture::Create(const Blackberry::Image& image) {
 
     glGenTextures(1, &ID);
     glBindTexture(GL_TEXTURE_2D, ID);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // <<< very important!
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -42,13 +43,17 @@ void BlTexture::Create(const Blackberry::Image& image) {
     GLuint glFormat = GL_RGBA;
 
     switch (image.GetFormat()) {
-        case Blackberry::ImageFormat::RGBA8:
-            format = GL_RGBA;
-            glFormat = GL_RGBA;
-            break;
         case Blackberry::ImageFormat::U8:
             format = GL_RED;
             glFormat = GL_R8;
+            break;
+        case Blackberry::ImageFormat::RGB8:
+            format = GL_RGB;
+            glFormat = GL_RGB8;
+            break;
+        case Blackberry::ImageFormat::RGBA8:
+            format = GL_RGBA;
+            glFormat = GL_RGBA8;
             break;
     }
 
@@ -65,6 +70,7 @@ void BlTexture::Delete() {
 BlRenderTexture::BlRenderTexture() {}
 
 void BlRenderTexture::Create(u32 width, u32 height) {
+    if (width == 0 || height == 0) { return; }
     glGenFramebuffers(1, &ID);
     glBindFramebuffer(GL_FRAMEBUFFER, ID);
 

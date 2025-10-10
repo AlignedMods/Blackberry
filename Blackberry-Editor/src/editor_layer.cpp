@@ -98,7 +98,8 @@ static void DrawColorControl(const std::string& label, BlColor* color) {
 EditorLayer::~EditorLayer() {}
 
 void EditorLayer::OnInit() {
-    m_EditorFont.LoadFontFromFile("Assets/arial/arial.ttf", 36);
+    // m_EditorFont.LoadFontFromFile("Assets/arial/arial.ttf", 36);
+    m_EditorFont.CreateFont();
 
     ImGuiIO& io = ImGui::GetIO();
     io.Fonts->AddFontFromFileTTF("Assets/arial/arial.ttf", 16);
@@ -194,7 +195,7 @@ void EditorLayer::OnUIRender() {
         if (ImGui::BeginPopup("AddComponent")) {
             AddComponentListOption<Transform>("Transform", entity);
             AddComponentListOption<Drawable>("Drawable", entity);
-            AddComponentListOption<Text>("Text", entity);
+            AddComponentListOption<Text>("Text", entity, {&m_EditorFont});
             AddComponentListOption<Material>("Material", entity, {m_BlankTexture});
 
             ImGui::EndPopup();
@@ -206,7 +207,12 @@ void EditorLayer::OnUIRender() {
             ImGui::InputText("##Name", &tag.Name);
         });
         DrawComponent<Text>("Text", entity, [](Text& text) {
-            ImGui::Text("This is a text!");    
+            i32 size = text.FontSize;
+
+            ImGui::InputText("Cotents: ", &text.Contents); 
+            ImGui::InputInt("Font size", &size);
+
+            text.FontSize = size;
         });
         DrawComponent<Transform>("Transform", entity, [](Transform& transform) {
             DrawVec2Control("Position: ", &transform.Position);

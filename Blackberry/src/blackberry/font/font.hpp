@@ -5,54 +5,49 @@
 
 #include <filesystem>
 #include <unordered_map>
+#include <vector>
 
-struct FT_FaceRec_;
+namespace msdfgen {
+    class FontHandle;
+}
+
+namespace msdf_atlas {
+    class GlyphGeometry;
+}
+
+struct BlGlyphInfo {
+    u8 Value = 0; // unicode character value
+    BlRec Rect;
+    f32 AdvanceX = 0.0f;
+    i32 Top = 0;
+    i32 Left = 0;
+    i32 BaselineOffset = 0;
+};
 
 namespace Blackberry {
-
-    struct BlGlyphInfo {
-        u8 Value = 0; // unicode character value
-        BlRec Rect;
-        i32 AdvanceX = 0;
-        i32 Top = 0;
-        i32 Left = 0;
-        i32 BaselineOffset = 0;
-    };
-
-    struct __BlFont {
-        BlTexture Atlas;
-        Image* Image = nullptr;
-        u32 GlyphCount = 0;
-        BlGlyphInfo* Glyphs = nullptr;
-        i32 RowHeight = 0;
-        i32 Ascender = 0;
-    };
 
     class Font {
     public:
         Font();
-        Font(const std::filesystem::path& path, u32 size = 24);
+        Font(const std::filesystem::path& path);
         ~Font();
 
-        void LoadFontFromFile(const std::filesystem::path& path, u32 size = 24);
-        BlGlyphInfo GetGlyphInfo(u32 value, u32 size = 24);
+        void CreateFont();
+        BlTexture GetTexture();
 
-        void SetSize(u32 size);
-
-        BlTexture GetTexture(u32 size = 24);
-        void GetImage(Image& image, u32 size = 24);
-        i32 GetRowHeight(u32 size = 24);
-        i32 GetAscender(u32 size = 24);
+        BlGlyphInfo GetGlyphInfo(u8 codepoint);
 
     private:
         void InitFreeType();
-        void CreateFont(u32 size);
 
     private:
-        std::filesystem::path m_FontPath;
-        std::unordered_map<u32, __BlFont> m_Fonts; // map of fonts (with the key being the font size)
-        
-        FT_FaceRec_* m_Face;
+        msdfgen::FontHandle* m_Handle;
+        std::filesystem::path m_Path = "Assets/arial/arial.ttf";
+
+        std::vector<msdf_atlas::GlyphGeometry> m_Glyphs; // internal glyphs
+        std::unordered_map<u8, BlGlyphInfo> m_UserGlyphs; // user land glyphs
+
+        BlTexture m_Texture;
     };
 
 } // namespace Blackberry

@@ -73,59 +73,104 @@ project "imgui"
     includedirs { "vendor/imgui/", "vendor/glfw/include/" }
 
 project "freetype"
-    language "C++"
-    cppdialect "C++20"
-    kind "StaticLib"
+	language "C"
+	kind "StaticLib"
+    staticruntime "On"
 
-    targetdir("../build/bin/" .. OutputDir .. "/%{prj.name}")
-    objdir("../build/obj/" .. OutputDir .. "/%{prj.name}")
+	targetdir ("../build/bin/" .. OutputDir .. "/%{prj.name}")
+	objdir ("../build/obj/" .. OutputDir .. "/%{prj.name}")
 
-    files { "vendor/freetype/include/ft2build.h",
-		    "vendor/freetype/include/freetype/*.h",
-		    "vendor/freetype/include/freetype/config/*.h",
-		    "vendor/freetype/include/freetype/internal/*.h",
-            
-		    "vendor/freetype/src/autofit/autofit.c",
-		    "vendor/freetype/src/base/ftbase.c",
-		    "vendor/freetype/src/base/ftbbox.c",
-		    "vendor/freetype/src/base/ftbdf.c",
-		    "vendor/freetype/src/base/ftbitmap.c",
-		    "vendor/freetype/src/base/ftcid.c",
-		    "vendor/freetype/src/base/ftdebug.c",
-		    "vendor/freetype/src/base/ftfstype.c",
-		    "vendor/freetype/src/base/ftgasp.c",
-		    "vendor/freetype/src/base/ftglyph.c",
-		    "vendor/freetype/src/base/ftgxval.c",
-		    "vendor/freetype/src/base/ftinit.c",
-		    "vendor/freetype/src/base/ftmm.c",
-		    "vendor/freetype/src/base/ftotval.c",
-		    "vendor/freetype/src/base/ftpatent.c",
-		    "vendor/freetype/src/base/ftpfr.c",
-		    "vendor/freetype/src/base/ftstroke.c",
-		    "vendor/freetype/src/base/ftsynth.c",
-		    "vendor/freetype/src/base/ftsystem.c",
-		    "vendor/freetype/src/base/fttype1.c",
-		    "vendor/freetype/src/base/ftwinfnt.c",
-		    "vendor/freetype/src/bdf/bdf.c",
-		    "vendor/freetype/src/bzip2/ftbzip2.c",
-		    "vendor/freetype/src/cache/ftcache.c",
-		    "vendor/freetype/src/cff/cff.c",
-		    "vendor/freetype/src/cid/type1cid.c",
-		    "vendor/freetype/src/gzip/ftgzip.c",
-		    "vendor/freetype/src/lzw/ftlzw.c",
-		    "vendor/freetype/src/pcf/pcf.c",
-		    "vendor/freetype/src/pfr/pfr.c",
-		    "vendor/freetype/src/psaux/psaux.c",
-		    "vendor/freetype/src/pshinter/pshinter.c",
-		    "vendor/freetype/src/psnames/psnames.c",
-		    "vendor/freetype/src/raster/raster.c",
-		    "vendor/freetype/src/sfnt/sfnt.c",
-		    "vendor/freetype/src/smooth/smooth.c",
-		    "vendor/freetype/src/truetype/truetype.c",
-		    "vendor/freetype/src/type1/type1.c",
-		    "vendor/freetype/src/type42/type42.c",
-		    "vendor/freetype/src/winfonts/winfnt.c" }
+	files { "vendor/msdf-atlas-gen/msdfgen/freetype/include/ft2build.h",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/include/freetype/*.h",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/include/freetype/config/*.h",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/include/freetype/internal/*.h",
 
-    includedirs { "vendor/freetype/include/" }
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/autofit/autofit.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/base/ftbase.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/base/ftbbox.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/base/ftbdf.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/base/ftbitmap.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/base/ftcid.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/base/ftdebug.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/base/ftfstype.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/base/ftgasp.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/base/ftglyph.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/base/ftgxval.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/base/ftinit.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/base/ftmm.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/base/ftotval.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/base/ftpatent.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/base/ftpfr.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/base/ftstroke.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/base/ftsynth.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/base/ftsystem.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/base/fttype1.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/base/ftwinfnt.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/bdf/bdf.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/bzip2/ftbzip2.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/cache/ftcache.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/cff/cff.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/cid/type1cid.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/gzip/ftgzip.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/lzw/ftlzw.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/pcf/pcf.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/pfr/pfr.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/psaux/psaux.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/pshinter/pshinter.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/psnames/psnames.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/raster/raster.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/sdf/sdf.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/sfnt/sfnt.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/smooth/smooth.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/truetype/truetype.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/type1/type1.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/type42/type42.c",
+			"vendor/msdf-atlas-gen/msdfgen/freetype/src/winfonts/winfnt.c"
+	}
 
-    defines { "FT2_BUILD_LIBRARY", "_CRT_NONSTDC_NO_WARNINGS" }
+	includedirs {
+		"vendor/msdf-atlas-gen/msdfgen/freetype/include/"
+	}
+
+	defines { "FT2_BUILD_LIBRARY", "_CRT_NONSTDC_NO_WARNINGS" }
+
+project "msdfgen"
+	language "C++"
+	cppdialect "C++17"
+	kind "StaticLib"
+    staticruntime "On"
+
+	targetdir ("../build/bin/" .. OutputDir .. "/%{prj.name}")
+	objdir ("..build/obj/" .. OutputDir .. "/%{prj.name}")
+
+	files { "vendor/msdf-atlas-gen/msdfgen/core/**.h",
+			"vendor/msdf-atlas-gen/msdfgen/core/**.hpp",
+			"vendor/msdf-atlas-gen/msdfgen/core/**.cpp",
+			"vendor/msdf-atlas-gen/msdfgen/ext/**.h",
+			"vendor/msdf-atlas-gen/msdfgen/ext/**.hpp",
+			"vendor/msdf-atlas-gen/msdfgen/ext/**.cpp",
+			"vendor/msdf-atlas-gen/msdfgen/lib/**.cpp",
+			"vendor/msdf-atlas-gen/msdfgen/include/**.h" }
+
+	includedirs { "vendor/msdf-atlas-gen/msdfgen/include/",
+				  "vendor/msdf-atlas-gen/msdfgen/freetype/include/" }
+
+	defines { "MSDFGEN_USE_CPP11" }
+
+project "msdf-atlas-gen"
+	language "C++"
+	cppdialect "C++20"
+	kind "StaticLib"
+    staticruntime "On"
+
+	targetdir ("../build/bin/" .. OutputDir .. "/%{prj.name}")
+	objdir ("../build/obj/" .. OutputDir .. "/%{prj.name}")
+
+	files { "vendor/msdf-atlas-gen/msdf-atlas-gen/**.h",
+    		"vendor/msdf-atlas-gen/msdf-atlas-gen/**.hpp",
+    		"vendor/msdf-atlas-gen/msdf-atlas-gen/**.cpp" }
+
+	includedirs {
+		"vendor/msdf-atlas-gen/msdf-atlas-gen/",
+		"vendor/msdf-atlas-gen/msdfgen/",
+		"vendor/msdf-atlas-gen/msdfgen/include/" }

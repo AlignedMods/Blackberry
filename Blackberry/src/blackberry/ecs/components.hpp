@@ -27,7 +27,7 @@ namespace Blackberry::Components {
 
     struct Text {
         Blackberry::Font* Font;
-        u32 FontSize;
+        u32 FontSize = 24;
         std::string Contents;
     };
 
