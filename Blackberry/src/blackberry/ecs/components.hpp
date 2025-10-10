@@ -22,7 +22,7 @@ namespace Blackberry::Components {
     };
 
     struct Drawable {
-        BlColor Color;
+        BlColor Color = BlColor(0xff, 0xff, 0xff, 0xff);
     };
 
     struct Text {

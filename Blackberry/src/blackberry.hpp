@@ -37,6 +37,10 @@
 #include "../vendor/imgui/imgui.h"
 #include "../vendor/imgui/misc/cpp/imgui_stdlib.h"
 
+// json
+#include "../vendor/json/json.hpp"
+using json = nlohmann::json;
+
 // NOTE: entry point should be defined only ONCE (in the file where your CreateApplication function is!)
 #ifdef BL_ENTRYPOINT
 #include "blackberry/application/entrypoint.hpp"

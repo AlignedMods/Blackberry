@@ -4,6 +4,8 @@
 
 class EditorLayer : public Blackberry::Layer {
 public:
+    ~EditorLayer();
+
     virtual void OnInit() override;
 
     virtual void OnUpdate(f32 ts) override;
@@ -13,11 +15,12 @@ public:
 
 private:
     Blackberry::Scene m_EditorScene;
-
     Blackberry::Font m_EditorFont;
 
     Blackberry::EntityID m_SelectedEntity = 0;
     bool m_IsEntitySelected = false;
 
     BlRenderTexture m_RenderTexture;
+
+    BlTexture m_BlankTexture;
 };

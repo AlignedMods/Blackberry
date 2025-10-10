@@ -1,5 +1,7 @@
 #include "editor_layer.hpp"
 
+#include <fstream>
+
 static char s_Buffer[512];
 
 template <typename T, typename F>
@@ -14,11 +16,11 @@ static void DrawComponent(const std::string& name, Blackberry::Entity entity, F 
 }
 
 template <typename T>
-static void AddComponentListOption(const std::string& name, Blackberry::Entity& entity) {
+static void AddComponentListOption(const std::string& name, Blackberry::Entity& entity, const T& component = T{}) {
     if (entity.HasComponent<T>()) { return; }
 
     if (ImGui::Button(name.c_str())) {
-        entity.AddComponent<T>();
+        entity.AddComponent<T>(component);
         ImGui::CloseCurrentPopup();
     }
 }
@@ -93,9 +95,9 @@ static void DrawColorControl(const std::string& label, BlColor* color) {
     color->a = imGuiColor.w * 255.0f;
 }
 
-void EditorLayer::OnInit() {
-    using namespace Blackberry::Components;
+EditorLayer::~EditorLayer() {}
 
+void EditorLayer::OnInit() {
     m_EditorFont.LoadFontFromFile("Assets/arial/arial.ttf", 36);
 
     ImGuiIO& io = ImGui::GetIO();
@@ -103,6 +105,9 @@ void EditorLayer::OnInit() {
     io.Fonts->AddFontFromFileTTF("Assets/arial/arial-bold.ttf", 16);
 
     m_RenderTexture.Create(1280, 720);
+
+    Blackberry::Image image("Assets/blank.png");
+    m_BlankTexture.Create(image);
 }
 
 void EditorLayer::OnUpdate(f32 ts) {
@@ -190,7 +195,7 @@ void EditorLayer::OnUIRender() {
             AddComponentListOption<Transform>("Transform", entity);
             AddComponentListOption<Drawable>("Drawable", entity);
             AddComponentListOption<Text>("Text", entity);
-            AddComponentListOption<Material>("Material", entity);
+            AddComponentListOption<Material>("Material", entity, {m_BlankTexture});
 
             ImGui::EndPopup();
         }
@@ -214,6 +219,7 @@ void EditorLayer::OnUIRender() {
     }
 
     ImGui::End();
+
     ImGui::Begin("Asset Manager");
     ImGui::End();
 
