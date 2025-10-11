@@ -1,27 +1,27 @@
 {
     "Entities": {
         "ID - 0": {
-            "ID": 0,
+            "DrawableComponent": {
+                "Color": [
+                    255,
+                    255,
+                    255,
+                    255
+                ]
+            },
             "TagComponent": {
-                "Name": "hfkahasjhjkashsajkasdkhfkfhdksjhfkjf"
-            }
-        },
-        "ID - 1": {
-            "ID": 1,
-            "TagComponent": {
-                "Name": "sdfsdssfdfsdffdsf"
-            }
-        },
-        "ID - 2": {
-            "ID": 2,
-            "TagComponent": {
-                "Name": "fdfds"
-            }
-        },
-        "ID - 3": {
-            "ID": 3,
-            "TagComponent": {
-                "Name": ""
+                "Name": "fdasfd",
+                "UUID": 4591843464429008100
+            },
+            "TransformComponent": {
+                "Dimensions": [
+                    271.0,
+                    154.0
+                ],
+                "Position": [
+                    124.0,
+                    101.0
+                ]
             }
         }
     }

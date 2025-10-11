@@ -20,13 +20,14 @@ namespace Blackberry {
 
             Entity entity(id, m_Scene);
             std::string name = "ID - " + std::to_string(id);
-
-            j["Entities"][name] = { { "ID", id } };
             
             if (entity.HasComponent<Tag>()) {
                 Tag& tag = entity.GetComponent<Tag>();
 
-                j["Entities"][name]["TagComponent"] = { {"Name", tag.Name} };
+                j["Entities"][name]["TagComponent"] = { 
+                    {"Name", tag.Name},
+                    {"UUID", tag.UUID}
+                };
             }
 
             if (entity.HasComponent<Transform>()) {
@@ -50,6 +51,8 @@ namespace Blackberry {
     }
 
     void Serializer::Deserialize(const std::filesystem::path& path) {
+        using namespace Components;
+
         std::ifstream stream(path);
         std::stringstream ss;
         ss << stream.rdbuf();
@@ -59,8 +62,35 @@ namespace Blackberry {
         json j = json::parse(contents);
         auto& entities = j.at("Entities");
 
-        for (auto& entity : entities) {
-            
+        for (auto& jsonEntity : entities) {
+            Entity entity;
+
+            // TagComponent
+            // (aligned) TODO: potentially redo the way tags get handled?
+            if (jsonEntity.contains("TagComponent")) {
+                auto& jsonTag = jsonEntity.at("TagComponent");
+
+                entity = Entity(m_Scene->CreateEntityWithUUID(jsonTag.at("UUID")), m_Scene);
+                Tag& entityTag = entity.GetComponent<Tag>();
+                entityTag.Name = jsonTag.at("Name");
+            }
+
+            // TransformComponent
+            if (jsonEntity.contains("TransformComponent")) {
+                auto& jsonTransform = jsonEntity.at("TransformComponent");
+                std::array<f32, 2> position = jsonTransform.at("Position");
+                std::array<f32, 2> dimensions = jsonTransform.at("Dimensions");
+                
+                entity.AddComponent<Transform>({ BlVec2(position[0], position[1]), BlVec2(dimensions[0], dimensions[1]) });
+            }
+
+            // DrawableComponent
+            if (jsonEntity.contains("DrawableComponent")) {
+                auto& jsonDrawable = jsonEntity.at("DrawableComponent");
+                std::array<u8, 4> color = jsonDrawable.at("Color");
+
+                entity.AddComponent<Drawable>({ BlColor(color[0], color[1], color[2], color[3]) });
+            }
         }
     }
 
