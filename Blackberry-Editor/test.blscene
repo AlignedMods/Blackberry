@@ -1,0 +1,28 @@
+{
+    "Entities": {
+        "ID - 0": {
+            "ID": 0,
+            "TagComponent": {
+                "Name": "hfkahasjhjkashsajkasdkhfkfhdksjhfkjf"
+            }
+        },
+        "ID - 1": {
+            "ID": 1,
+            "TagComponent": {
+                "Name": "sdfsdssfdfsdffdsf"
+            }
+        },
+        "ID - 2": {
+            "ID": 2,
+            "TagComponent": {
+                "Name": "fdfds"
+            }
+        },
+        "ID - 3": {
+            "ID": 3,
+            "TagComponent": {
+                "Name": ""
+            }
+        }
+    }
+}

@@ -138,4 +138,8 @@ namespace Blackberry {
         return BlVec2();
     }
 
+    std::string FileDialogs::OpenFile(const char* filter) {
+        return BL_APP.GetWindow().OpenFile(filter);
+    }
+
 } // namespace Blackberry

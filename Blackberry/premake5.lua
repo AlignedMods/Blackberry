@@ -20,7 +20,8 @@ project "Blackberry" -- The game engine
                   "vendor/imgui/", 
                   "vendor/glad/include/", 
                   "vendor/glm/", 
-                  "vendor/stb/", 
+                  "vendor/stb/",
+                  "vendor/json/",
                   "vendor/msdf-atlas-gen/",
                   "vendor/msdf-atlas-gen/msdfgen/",
                   "vendor/msdf-atlas-gen/msdfgen/include/" }

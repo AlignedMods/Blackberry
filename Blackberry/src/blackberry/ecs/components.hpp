@@ -9,6 +9,7 @@ namespace Blackberry::Components {
 
     struct Tag {
         std::string Name;
+        u64 UUID;
     };
 
     struct Transform {

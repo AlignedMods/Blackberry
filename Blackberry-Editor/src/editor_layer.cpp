@@ -1,5 +1,7 @@
 #include "editor_layer.hpp"
 
+#include "blackberry/scene/serializer.hpp"
+
 #include <fstream>
 
 static char s_Buffer[512];
@@ -95,7 +97,10 @@ static void DrawColorControl(const std::string& label, BlColor* color) {
     color->a = imGuiColor.w * 255.0f;
 }
 
-EditorLayer::~EditorLayer() {}
+EditorLayer::~EditorLayer() {
+    Blackberry::Serializer serializer(&m_EditorScene);
+    serializer.Serialize("test.blscene");
+}
 
 void EditorLayer::OnInit() {
     // m_EditorFont.LoadFontFromFile("Assets/arial/arial.ttf", 36);
@@ -109,6 +114,12 @@ void EditorLayer::OnInit() {
 
     Blackberry::Image image("Assets/blank.png");
     m_BlankTexture.Create(image);
+
+    Blackberry::Serializer serializer(&m_EditorScene);
+    serializer.Deserialize("test.blscene");
+
+    // std::string file = Blackberry::FileDialogs::OpenFile(nullptr);
+    // BL_INFO(file);
 }
 
 void EditorLayer::OnUpdate(f32 ts) {
@@ -205,6 +216,10 @@ void EditorLayer::OnUIRender() {
             ImGui::Text("Name: ");
             ImGui::SameLine();
             ImGui::InputText("##Name", &tag.Name);
+
+            ImGui::Text("UUID: ");
+            ImGui::SameLine();
+            ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 0.6f), "%llu", tag.UUID);
         });
         DrawComponent<Text>("Text", entity, [](Text& text) {
             i32 size = text.FontSize;

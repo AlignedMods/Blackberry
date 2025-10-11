@@ -31,4 +31,10 @@ namespace Blackberry {
     void DrawText(const std::string& str, BlVec2 pos, Font& font, u32 size, BlColor color = White);
     BlVec2 MeasureText(const std::string& str, Font& font, u32 size);
 
+    namespace FileDialogs {
+        
+        std::string OpenFile(const char* filter);
+
+    } // namespace FileDialogs
+
 } // namespace Blackberry

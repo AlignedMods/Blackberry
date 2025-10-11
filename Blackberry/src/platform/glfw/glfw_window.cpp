@@ -13,6 +13,10 @@
 #include "imgui.h"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
+#ifdef BL_WINDOWS_BUILD
+    #define GLFW_EXPOSE_NATIVE_WIN32
+    #include "GLFW/glfw3native.h"
+#endif
 
 #include <thread>
 #include <chrono>
@@ -297,6 +301,31 @@ namespace Blackberry {
         im.height = image.GetHeight();
 
         glfwSetWindowIcon(m_Handle, 1, &im);
+    }
+
+    std::string Window_GLFW::OpenFile(const char* filter) {
+        #ifdef BL_WINDOWS_BUILD
+
+        OPENFILENAMEA ofn;
+        CHAR szFile[260]{};
+        CHAR currentDir[256]{};
+        ZeroMemory(&ofn, sizeof(OPENFILENAMEA));
+        ofn.lStructSize = sizeof(OPENFILENAME);
+        ofn.hwndOwner = glfwGetWin32Window(m_Handle);
+        ofn.lpstrFile = szFile;
+        ofn.nMaxFile = sizeof(szFile);
+        if (GetCurrentDirectoryA(256, currentDir))
+            ofn.lpstrInitialDir = currentDir;
+        ofn.lpstrFilter = filter;
+		ofn.nFilterIndex = 1;
+        ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+
+        if (GetOpenFileNameA(&ofn) == TRUE)
+		    return ofn.lpstrFile;
+
+        return std::string{};
+
+        #endif
     }
 
     void* Window_GLFW::GetHandle() const {

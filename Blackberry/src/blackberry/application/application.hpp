@@ -64,6 +64,7 @@ namespace Blackberry {
         LayerStack& GetLayerStack() { return m_LayerStack; }
         Dispatcher& GetDispatcher() { return m_Dispatcher; }
         Renderer& GetRenderer() { return *m_Renderer; }
+        Window& GetWindow() { return *m_Window; }
 
         f32 GetDeltaTime() const { return m_dt; }
         u32 GetFPS() const { return static_cast<u32>(1.0f / m_dt); }
