@@ -1,7 +1,7 @@
 #pragma once
 
-#include "blackberry/types.hpp"
-#include "blackberry/log.hpp"
+#include "blackberry/core/types.hpp"
+#include "blackberry/core/log.hpp"
 
 #define BL_STR(...) #__VA_ARGS__
 

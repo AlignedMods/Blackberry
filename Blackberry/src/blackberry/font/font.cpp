@@ -1,8 +1,8 @@
 #include "blackberry/font/font.hpp"
-#include "blackberry/types.hpp"
-#include "blackberry/log.hpp"
+#include "blackberry/core/types.hpp"
+#include "blackberry/core/log.hpp"
 #include "blackberry/rendering/rendering.hpp"
-#include "blackberry/util.hpp"
+#include "blackberry/core/util.hpp"
 
 #include "msdf-atlas-gen/msdf-atlas-gen.h"
 #include "msdfgen/msdfgen.h"

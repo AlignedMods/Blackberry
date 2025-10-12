@@ -1,5 +1,5 @@
 #include "blackberry/application/application.hpp"
-#include "blackberry/types.hpp"
+#include "blackberry/core/types.hpp"
 #include "blackberry/font/font.hpp"
 
 #include <string>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "blackberry/types.hpp"
+#include "blackberry/core/types.hpp"
 // #include "blackberry/rendering/texture.hpp"
 
 #include <filesystem>

@@ -9,14 +9,17 @@
                     255
                 ]
             },
+            "MaterialComponent": {
+                "TextureHandle": 8573663274192661246
+            },
             "TagComponent": {
                 "Name": "fdasfd",
                 "UUID": 4591843464429008100
             },
             "TransformComponent": {
                 "Dimensions": [
-                    271.0,
-                    154.0
+                    406.0,
+                    503.0
                 ],
                 "Position": [
                     124.0,

@@ -1,7 +1,8 @@
 #pragma once
 
-#include "blackberry/types.hpp"
+#include "blackberry/core/types.hpp"
 #include "blackberry/image/image.hpp"
+// #include "blackberry/assets/asset_manager.hpp"
 
 struct BlTexture {
     BlTexture();
@@ -14,6 +15,7 @@ struct BlTexture {
     u32 Width = 0;
     u32 Height = 0;
     Blackberry::ImageFormat Format = Blackberry::ImageFormat::RGBA8;
+    u64 Handle;
 };
 
 struct BlRenderTexture {

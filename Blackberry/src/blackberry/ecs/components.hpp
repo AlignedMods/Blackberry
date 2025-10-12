@@ -1,7 +1,8 @@
 #pragma once
 
-#include "blackberry/types.hpp"
+#include "blackberry/core/types.hpp"
 #include "blackberry/font/font.hpp"
+#include "blackberry/assets/asset_manager.hpp"
 
 #define BL_SYMBOLIC_COMPONENT(name) using name = u8
 

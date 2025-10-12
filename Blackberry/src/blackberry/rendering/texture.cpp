@@ -1,5 +1,5 @@
 #include "blackberry/rendering/texture.hpp"
-#include "blackberry/util.hpp"
+#include "blackberry/core/util.hpp"
 
 #include "glad/glad.h"
 

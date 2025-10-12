@@ -23,4 +23,6 @@ private:
     BlRenderTexture m_RenderTexture;
 
     BlTexture m_BlankTexture;
+
+    Blackberry::AssetManager m_AssetManager;
 };

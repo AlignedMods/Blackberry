@@ -1,7 +1,7 @@
 #pragma once
 
 #include "blackberry/event/event.hpp"
-#include "blackberry/types.hpp"
+#include "blackberry/core/types.hpp"
 // #include "blackberry/ecs/ecs.hpp"
 
 #include <string>

@@ -1,7 +1,5 @@
 #include "editor_layer.hpp"
 
-#include "blackberry/scene/serializer.hpp"
-
 #include <fstream>
 
 static char s_Buffer[512];
@@ -91,15 +89,18 @@ static void DrawColorControl(const std::string& label, BlColor* color) {
     ImGui::PopID();
 
     // return value from ImVec4
-    color->r = imGuiColor.x * 255.0f;
-    color->g = imGuiColor.y * 255.0f;
-    color->b = imGuiColor.z * 255.0f;
-    color->a = imGuiColor.w * 255.0f;
+    color->r = static_cast<u8>(imGuiColor.x * 255.0f);
+    color->g = static_cast<u8>(imGuiColor.y * 255.0f);
+    color->b = static_cast<u8>(imGuiColor.z * 255.0f);
+    color->a = static_cast<u8>(imGuiColor.w * 255.0f);
 }
 
 EditorLayer::~EditorLayer() {
-    Blackberry::Serializer serializer(&m_EditorScene);
+    Blackberry::SceneSerializer serializer(&m_EditorScene, &m_AssetManager);
     serializer.Serialize("test.blscene");
+
+    Blackberry::AssetManagerSerializer assetSerializer(&m_AssetManager);
+    assetSerializer.Serialize("test.blasset");
 }
 
 void EditorLayer::OnInit() {
@@ -115,7 +116,10 @@ void EditorLayer::OnInit() {
     Blackberry::Image image("Assets/blank.png");
     m_BlankTexture.Create(image);
 
-    Blackberry::Serializer serializer(&m_EditorScene);
+    Blackberry::AssetManagerSerializer assetSerializer(&m_AssetManager);
+    assetSerializer.Deserialize("test.blasset");
+
+    Blackberry::SceneSerializer serializer(&m_EditorScene, &m_AssetManager);
     serializer.Deserialize("test.blscene");
 
     // std::string file = Blackberry::FileDialogs::OpenFile(nullptr);
@@ -141,8 +145,6 @@ static i32 s_CurrentItem = 0;
 
 void EditorLayer::OnUIRender() {
     using namespace Blackberry::Components;
-
-    // ImGui::ShowDemoWindow();
 
     // set up dockspace
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
@@ -236,12 +238,61 @@ void EditorLayer::OnUIRender() {
         DrawComponent<Drawable>("Drawable", entity, [](Drawable& drawable) {
             DrawColorControl("Color: ", &drawable.Color);
         });
-        DrawComponent<Material>("Material", entity, [](Material& material) {});
+        DrawComponent<Material>("Material", entity, [this](Material& material) {
+            static std::string handle = std::to_string(material.Texture.Handle);
+
+            if (ImGui::InputText("Handle", &handle, ImGuiInputTextFlags_EnterReturnsTrue)) {
+                Blackberry::Asset asset = m_AssetManager.GetAsset(std::stoull(handle));
+            
+                material.Texture = std::get<BlTexture>(asset.Data);
+            }
+        });
     }
 
     ImGui::End();
 
     ImGui::Begin("Asset Manager");
+
+    if (ImGui::Button("+")) {
+        ImGui::OpenPopup("ImportAsset");
+    }
+
+    if (ImGui::BeginPopup("ImportAsset")) {
+        static std::string path;
+        static std::string name;
+
+        ImGui::Text("Path: ");
+        ImGui::SameLine();
+        ImGui::InputText("##FilePath", &path);
+
+        ImGui::SameLine();
+        if (ImGui::Button("...")) {
+            path = Blackberry::FileDialogs::OpenFile("");
+        }
+
+        ImGui::NewLine();
+        ImGui::Text("Name: ");
+        ImGui::SameLine();
+        ImGui::InputText("##AssetName", &name);
+
+        if (ImGui::Button("OK")) {
+            m_AssetManager.AddTextureFromPath(name, path);
+
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+
+    for (const auto&[handle, asset] : m_AssetManager.GetAllAssets()) {
+        
+        ImGui::Text("%llu", handle);
+        ImGui::SameLine();
+        if (ImGui::Button("Copy to clipboard")) {
+            ImGui::SetClipboardText(std::format("{}", handle).c_str());
+        }
+    }
+
     ImGui::End();
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));

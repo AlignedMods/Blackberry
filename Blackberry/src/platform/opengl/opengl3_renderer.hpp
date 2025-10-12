@@ -2,7 +2,7 @@
 
 #include "blackberry/application/renderer.hpp"
 
-#include "blackberry/types.hpp"
+#include "blackberry/core/types.hpp"
 #include "glm/glm.hpp"
 
 #include <vector>

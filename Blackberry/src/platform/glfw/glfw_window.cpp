@@ -1,6 +1,5 @@
 #include "platform/glfw/glfw_window.hpp"
-#include "GLFW/glfw3.h"
-#include "blackberry/log.hpp"
+#include "blackberry/core/log.hpp"
 #include "blackberry/application/application.hpp"
 #include "blackberry/event/event.hpp"
 #include "blackberry/event/key_events.hpp"
@@ -9,6 +8,7 @@
 #include "blackberry/input/keycodes.hpp"
 #include "blackberry/input/mousecodes.hpp"
 
+#include "GLFW/glfw3.h"
 #include "glad/glad.h"
 #include "imgui.h"
 #include "backends/imgui_impl_glfw.h"

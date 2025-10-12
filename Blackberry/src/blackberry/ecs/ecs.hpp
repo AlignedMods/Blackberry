@@ -1,9 +1,9 @@
 #pragma once
 
-#include "blackberry/types.hpp"
+#include "blackberry/core/types.hpp"
 #include "blackberry/application/application.hpp"
 #include "blackberry/ecs/components.hpp"
-#include "blackberry/util.hpp"
+#include "blackberry/core/util.hpp"
 
 #include <unordered_map>
 #include <unordered_set>
@@ -11,6 +11,7 @@
 #include <string>
 #include <type_traits>
 
+// (aligned) TODO: redo everything
 namespace Blackberry {
 
     using EntityID = u32;

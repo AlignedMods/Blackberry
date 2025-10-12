@@ -1,6 +1,6 @@
 #include "platform/opengl/opengl3_renderer.hpp"
-#include "blackberry/util.hpp"
-#include "blackberry/log.hpp"
+#include "blackberry/core/util.hpp"
+#include "blackberry/core/log.hpp"
 
 #include "glad/glad.h"
 #include "glm/gtc/matrix_transform.hpp"

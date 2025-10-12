@@ -1,19 +1,20 @@
 #pragma once
 
-#include "blackberry/scene/scene.hpp"
+#include "blackberry/assets/asset_manager.hpp"
+
+#include <filesystem>
 
 namespace Blackberry {
 
-    class SceneSerializer {
+    class AssetManagerSerializer {
     public:
-        SceneSerializer() = default;
-        SceneSerializer(Scene* scene, AssetManager* assetManager);
+        AssetManagerSerializer() = default;
+        AssetManagerSerializer(AssetManager* assetManager);
 
         void Serialize(const std::filesystem::path& path);
         void Deserialize(const std::filesystem::path& path);
 
     private:
-        Scene* m_Scene = nullptr;
         AssetManager* m_AssetManager = nullptr;
     };
 

@@ -5,13 +5,14 @@
 using json = nlohmann::json;
 
 #include <fstream>
+#include "serializer.hpp"
 
 namespace Blackberry {
 
-    Serializer::Serializer(Scene* scene)
-        : m_Scene(scene) {}
+    SceneSerializer::SceneSerializer(Scene* scene, AssetManager* assetManager)
+        : m_Scene(scene), m_AssetManager(assetManager) {}
 
-    void Serializer::Serialize(const std::filesystem::path& path) {
+    void SceneSerializer::Serialize(const std::filesystem::path& path) {
         if (m_Scene->GetEntities().size() == 0) { return; }
         json j;
 
@@ -44,13 +45,19 @@ namespace Blackberry {
 
                 j["Entities"][name]["DrawableComponent"] = { {"Color", {drawable.Color.r, drawable.Color.g, drawable.Color.b, drawable.Color.a}} };
             }
+
+            if (entity.HasComponent<Material>()) {
+                Material& material = entity.GetComponent<Material>();
+
+                j["Entities"][name]["MaterialComponent"] = { {"TextureHandle", material.Texture.Handle}};
+            }
         }
 
         std::ofstream stream(path);
         stream << j.dump(4);
     }
 
-    void Serializer::Deserialize(const std::filesystem::path& path) {
+    void SceneSerializer::Deserialize(const std::filesystem::path& path) {
         using namespace Components;
 
         std::ifstream stream(path);
@@ -90,6 +97,14 @@ namespace Blackberry {
                 std::array<u8, 4> color = jsonDrawable.at("Color");
 
                 entity.AddComponent<Drawable>({ BlColor(color[0], color[1], color[2], color[3]) });
+            }
+
+            // MaterialComponent
+            if (jsonEntity.contains("MaterialComponent")) {
+                auto& jsonMaterial = jsonEntity.at("MaterialComponent");
+                u64 handle = jsonMaterial.at("TextureHandle");
+
+                entity.AddComponent<Material>({ std::get<BlTexture>(m_AssetManager->GetAsset(handle).Data) });
             }
         }
     }

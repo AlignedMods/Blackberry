@@ -1,6 +1,6 @@
 #pragma once
 
-#include "blackberry/types.hpp"
+#include "blackberry/core/types.hpp"
 
 enum class KeyCode : u32 {
     None = 0,

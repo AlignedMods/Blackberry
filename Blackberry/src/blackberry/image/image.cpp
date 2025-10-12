@@ -1,5 +1,5 @@
 #include "blackberry/image/image.hpp"
-#include "blackberry/log.hpp"
+#include "blackberry/core/log.hpp"
 #include "blackberry/application/renderer.hpp"
 #include "blackberry/application/application.hpp"
 

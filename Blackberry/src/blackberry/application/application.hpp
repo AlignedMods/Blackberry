@@ -2,8 +2,8 @@
 
 #include "blackberry/event/event.hpp"
 #include "blackberry/application/layerstack.hpp"
-#include "blackberry/log.hpp"
-#include "blackberry/types.hpp"
+#include "blackberry/core/log.hpp"
+#include "blackberry/core/types.hpp"
 #include "blackberry/application/window.hpp"
 #include "blackberry/application/renderer.hpp"
 

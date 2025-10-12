@@ -26,12 +26,19 @@
 #include "blackberry/scene/entity.hpp"
 
 // utils
-#include "blackberry/log.hpp"
-#include "blackberry/types.hpp"
-#include "blackberry/util.hpp"
+#include "blackberry/core/log.hpp"
+#include "blackberry/core/types.hpp"
+#include "blackberry/core/util.hpp"
 
 // rendering abstractions
 #include "blackberry/rendering/rendering.hpp"
+
+// asset manager
+#include "blackberry/assets/asset_manager.hpp"
+
+// serializing
+#include "blackberry/scene/serializer.hpp"
+#include "blackberry/assets/serializer.hpp"
 
 // imgui
 #include "../vendor/imgui/imgui.h"
