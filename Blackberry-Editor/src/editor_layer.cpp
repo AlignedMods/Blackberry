@@ -25,7 +25,7 @@ static void AddComponentListOption(const std::string& name, Blackberry::Entity& 
     }
 }
 
-static void DrawVec2Control(const std::string& label, BlVec2* vec) {
+static void DrawVec2Control(const std::string& label, BlVec2* vec, const char* fmtX = "X", const char* fmtY = "Y") {
     ImGuiIO& io = ImGui::GetIO();
 
     ImGui::PushID(label.c_str());
@@ -41,7 +41,7 @@ static void DrawVec2Control(const std::string& label, BlVec2* vec) {
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.0f, 0.0f, 0.7f));
         ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 0.0f, 0.0f, 0.4f));
-        ImGui::Button("X");
+        ImGui::Button(fmtX);
         ImGui::PopStyleColor(3);
         ImGui::PopFont();
 
@@ -53,7 +53,7 @@ static void DrawVec2Control(const std::string& label, BlVec2* vec) {
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 1.0f, 0.0f, 0.7f));
         ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 1.0f, 0.0f, 0.4f));
-        ImGui::Button("Y");
+        ImGui::Button(fmtY);
         ImGui::PopStyleColor(3);
         ImGui::PopFont();
 
@@ -66,6 +66,28 @@ static void DrawVec2Control(const std::string& label, BlVec2* vec) {
     }
 
     ImGui::PopID();
+}
+
+static void DrawRecControl(const std::string& label, BlRec* rec) {
+    BlVec2 xy = BlVec2(rec->x, rec->y);
+    BlVec2 wh = BlVec2(rec->w, rec->h);
+
+    ImGui::PushID(label.c_str());
+
+    if (ImGui::TreeNode(label.c_str())) {
+        DrawVec2Control("Position: ", &xy);
+        DrawVec2Control("Dimensions: ", &wh);
+
+        ImGui::TreePop();
+    }
+
+    ImGui::PopID();
+
+    // return value
+    rec->x = xy.x;
+    rec->y = xy.y;
+    rec->w = wh.x;
+    rec->h = wh.y;
 }
 
 static void DrawColorControl(const std::string& label, BlColor* color) {
@@ -246,6 +268,8 @@ void EditorLayer::OnUIRender() {
             
                 material.Texture = std::get<BlTexture>(asset.Data);
             }
+
+            DrawRecControl("Area", &material.Area);
         });
     }
 
@@ -288,9 +312,11 @@ void EditorLayer::OnUIRender() {
         
         ImGui::Text("%llu", handle);
         ImGui::SameLine();
+        ImGui::PushID(handle);
         if (ImGui::Button("Copy to clipboard")) {
             ImGui::SetClipboardText(std::format("{}", handle).c_str());
         }
+        ImGui::PopID();
     }
 
     ImGui::End();
@@ -306,9 +332,9 @@ void EditorLayer::OnUIRender() {
 
 void EditorLayer::OnEvent(const Blackberry::Event& event) {
     if (event.GetEventType() == Blackberry::EventType::WindowResize) {
-        const auto& wr = BL_EVENT_CAST(WindowResizeEvent);
+        auto& wr = BL_EVENT_CAST(WindowResizeEvent);
 
-        m_RenderTexture.Delete();
-        m_RenderTexture.Create(wr.GetWidth(), wr.GetHeight());
+        // m_RenderTexture.Delete();
+        // m_RenderTexture.Create(wr.GetWidth(), wr.GetHeight());
     }
 }

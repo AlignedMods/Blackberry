@@ -20,7 +20,7 @@ namespace Blackberry::Components {
 
     struct Material {
         BlTexture Texture;
-        BlRec Area;
+        BlRec Area = BlRec(0, 0, Texture.Width, Texture.Height); // (aligned) NOTE: very sketchy, this depends on texture being initialized first!
     };
 
     struct Drawable {
@@ -32,5 +32,7 @@ namespace Blackberry::Components {
         u32 FontSize = 24;
         std::string Contents;
     };
+
+
 
 } // namespace Blackberry::Components

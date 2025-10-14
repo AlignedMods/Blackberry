@@ -62,6 +62,9 @@ namespace Blackberry {
         BlTexture m_CurrentTexture;
 
         u32 m_DrawCalls = 0;
+
+        BlVec2 m_CurrentViewportSize;
+        BlVec2 m_PrevViewportSize;
     };
 
 } // namespace Blackberry

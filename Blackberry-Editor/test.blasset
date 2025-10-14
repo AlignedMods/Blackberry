@@ -1,5 +1,15 @@
 {
     "Assets": {
+        "Handle - 8265016933704590019": {
+            "FilePath": "Assets\\MANGODIDDYBLUD.jpg",
+            "Handle": 8265016933704590019,
+            "Type": "Texture"
+        },
+        "Handle - 8547893594208142252": {
+            "FilePath": "Assets\\Blank.png",
+            "Handle": 8547893594208142252,
+            "Type": "Texture"
+        },
         "Handle - 8573663274192661246": {
             "FilePath": "Assets\\cat.jpg",
             "Handle": 8573663274192661246,

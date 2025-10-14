@@ -320,8 +320,7 @@ namespace Blackberry {
 		ofn.nFilterIndex = 1;
         ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
 
-        if (GetOpenFileNameA(&ofn) == TRUE)
-		    return ofn.lpstrFile;
+        if (GetOpenFileNameA(&ofn) == TRUE) { return ofn.lpstrFile; }
 
         return std::string{};
 

@@ -89,6 +89,8 @@ namespace Blackberry {
     }
 
     void Renderer_OpenGL3::UpdateViewport(BlVec2 viewport) {
+        m_PrevViewportSize = m_CurrentViewportSize;
+        m_CurrentViewportSize = viewport;
         glViewport(0, 0, static_cast<GLsizei>(viewport.x), static_cast<GLsizei>(viewport.y));
 
         m_Projection = glm::ortho(
@@ -161,10 +163,12 @@ namespace Blackberry {
 
     void Blackberry::Renderer_OpenGL3::AttachRenderTexture(const BlRenderTexture texture) {
         glBindFramebuffer(GL_FRAMEBUFFER, texture.ID);
+        UpdateViewport(BlVec2(static_cast<f32>(texture.Texture.Width), static_cast<f32>(texture.Texture.Height)));
     }
 
     void Blackberry::Renderer_OpenGL3::DettachRenderTexture() {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        UpdateViewport(m_PrevViewportSize);
     }
 
     void Renderer_OpenGL3::Render() {

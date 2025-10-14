@@ -13,7 +13,7 @@
                 "TextureHandle": 8573663274192661246
             },
             "TagComponent": {
-                "Name": "fdasfd",
+                "Name": "cat",
                 "UUID": 4591843464429008100
             },
             "TransformComponent": {
@@ -24,6 +24,57 @@
                 "Position": [
                     124.0,
                     101.0
+                ]
+            }
+        },
+        "ID - 1": {
+            "DrawableComponent": {
+                "Color": [
+                    210,
+                    170,
+                    103,
+                    255
+                ]
+            },
+            "TagComponent": {
+                "Name": "rect",
+                "UUID": 15409902001426328282
+            },
+            "TransformComponent": {
+                "Dimensions": [
+                    290.0,
+                    657.0
+                ],
+                "Position": [
+                    834.0,
+                    253.0
+                ]
+            }
+        },
+        "ID - 2": {
+            "DrawableComponent": {
+                "Color": [
+                    255,
+                    255,
+                    255,
+                    255
+                ]
+            },
+            "MaterialComponent": {
+                "TextureHandle": 8265016933704590019
+            },
+            "TagComponent": {
+                "Name": "MANGO DIDDY BLUD",
+                "UUID": 13357212114625220805
+            },
+            "TransformComponent": {
+                "Dimensions": [
+                    350.0,
+                    350.0
+                ],
+                "Position": [
+                    1256.0,
+                    290.0
                 ]
             }
         }
