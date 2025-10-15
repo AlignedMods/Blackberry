@@ -22,6 +22,7 @@ struct BlRenderTexture {
     BlRenderTexture();
 
     void Create(u32 width, u32 height);
+    void Rezize(u32 width, u32 height);
     void Delete();
 
     u32 ID = 0;

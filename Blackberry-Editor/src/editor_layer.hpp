@@ -14,6 +14,9 @@ public:
     virtual void OnEvent(const Blackberry::Event& event) override;
 
 private:
+    void UI_Viewport();
+
+private:
     Blackberry::Scene m_EditorScene;
     Blackberry::Font m_EditorFont;
 

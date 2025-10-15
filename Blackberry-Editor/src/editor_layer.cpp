@@ -126,7 +126,6 @@ EditorLayer::~EditorLayer() {
 }
 
 void EditorLayer::OnInit() {
-    // m_EditorFont.LoadFontFromFile("Assets/arial/arial.ttf", 36);
     m_EditorFont.CreateFont();
 
     ImGuiIO& io = ImGui::GetIO();
@@ -143,9 +142,6 @@ void EditorLayer::OnInit() {
 
     Blackberry::SceneSerializer serializer(&m_EditorScene, &m_AssetManager);
     serializer.Deserialize("test.blscene");
-
-    // std::string file = Blackberry::FileDialogs::OpenFile(nullptr);
-    // BL_INFO(file);
 }
 
 void EditorLayer::OnUpdate(f32 ts) {
@@ -159,11 +155,7 @@ void EditorLayer::OnRender() {
     m_EditorScene.OnRender();
 
     Blackberry::DetachRenderTexture();
-
-    // Blackberry::DrawRenderTexture(BlVec2(0.0f, 0.0f), BlVec2(1280.0f, 720.0f), m_RenderTexture);
 }
-
-static i32 s_CurrentItem = 0;
 
 void EditorLayer::OnUIRender() {
     using namespace Blackberry::Components;
@@ -246,7 +238,7 @@ void EditorLayer::OnUIRender() {
             ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 0.6f), "%llu", tag.UUID);
         });
         DrawComponent<Text>("Text", entity, [](Text& text) {
-            i32 size = text.FontSize;
+            int size = text.FontSize;
 
             ImGui::InputText("Cotents: ", &text.Contents); 
             ImGui::InputInt("Font size", &size);
@@ -309,25 +301,20 @@ void EditorLayer::OnUIRender() {
     }
 
     for (const auto&[handle, asset] : m_AssetManager.GetAllAssets()) {
+        std::string stringHandle = std::format("{}", handle);
         
-        ImGui::Text("%llu", handle);
+        ImGui::Text(stringHandle.c_str());
         ImGui::SameLine();
-        ImGui::PushID(handle);
+        ImGui::PushID(static_cast<int>(handle));
         if (ImGui::Button("Copy to clipboard")) {
-            ImGui::SetClipboardText(std::format("{}", handle).c_str());
+            ImGui::SetClipboardText(stringHandle.c_str());
         }
         ImGui::PopID();
     }
 
     ImGui::End();
 
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-    ImGui::Begin("Viewport");
-
-    ImGui::Image(m_RenderTexture.Texture.ID, ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
-
-    ImGui::End();
-    ImGui::PopStyleVar();
+    UI_Viewport();
 }
 
 void EditorLayer::OnEvent(const Blackberry::Event& event) {
@@ -337,4 +324,60 @@ void EditorLayer::OnEvent(const Blackberry::Event& event) {
         // m_RenderTexture.Delete();
         // m_RenderTexture.Create(wr.GetWidth(), wr.GetHeight());
     }
+}
+
+void EditorLayer::UI_Viewport() {
+    static int currentViewportSize = 1;
+    static const char* viewportSizes[] = { "960x540", "1280x720", "1920x1280", "2048x1080", "2560x1440", "3840x2160", "7680x4320" };
+    static bool showViewportOptionsWindow = false;
+
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+    ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_MenuBar);
+    ImGui::PopStyleVar();
+
+    if (ImGui::BeginMenuBar()) {
+        if (ImGui::BeginMenu("Viewport options")) {
+            if (ImGui::BeginMenu("Size")) {
+                if (ImGui::Combo("Viewport size", &currentViewportSize, viewportSizes, IM_ARRAYSIZE(viewportSizes))) {
+                    u32 width = 0;
+                    u32 height = 0;
+            
+                    if (currentViewportSize == 0) {
+                        width = 960;
+                        height = 540;
+                    } else if (currentViewportSize == 1) {
+                        width = 1280;
+                        height = 720;
+                    } else if (currentViewportSize == 2) {
+                        width = 1920;
+                        height = 1280;
+                    } else if (currentViewportSize == 3) {
+                        width = 2048;
+                        height = 1080;
+                    } else if (currentViewportSize == 4) {
+                        width = 2560;
+                        height = 1440;
+                    } else if (currentViewportSize == 5) {
+                        width = 3840;
+                        height = 2160;
+                    } else if (currentViewportSize == 6) {
+                        width = 7680;
+                        height = 4320;
+                    }
+            
+                    m_RenderTexture.Rezize(width, height);
+                }
+
+                ImGui::EndMenu();
+            }
+            
+            ImGui::EndMenu();
+        }
+
+        ImGui::EndMenuBar();
+    }
+
+    ImGui::Image(m_RenderTexture.Texture.ID, ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
+
+    ImGui::End();
 }
