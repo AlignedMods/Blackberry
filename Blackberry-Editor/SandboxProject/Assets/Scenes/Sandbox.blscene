@@ -10,6 +10,12 @@
                 ]
             },
             "MaterialComponent": {
+                "Area": [
+                    0.0,
+                    0.0,
+                    3072.0,
+                    4096.0
+                ],
                 "TextureHandle": 8573663274192661246
             },
             "TagComponent": {
@@ -30,9 +36,9 @@
         "ID - 1": {
             "DrawableComponent": {
                 "Color": [
-                    210,
-                    170,
-                    103,
+                    0,
+                    160,
+                    142,
                     255
                 ]
             },
@@ -54,13 +60,19 @@
         "ID - 2": {
             "DrawableComponent": {
                 "Color": [
-                    255,
+                    0,
                     255,
                     255,
                     255
                 ]
             },
             "MaterialComponent": {
+                "Area": [
+                    0.0,
+                    0.0,
+                    736.0,
+                    981.0
+                ],
                 "TextureHandle": 8265016933704590019
             },
             "TagComponent": {

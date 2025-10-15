@@ -3,6 +3,10 @@
 #include "blackberry/core/types.hpp"
 #include "blackberry/core/log.hpp"
 
+#include <filesystem>
+#include <fstream>
+#include <sstream>
+
 #define BL_STR(...) #__VA_ARGS__
 
 #ifdef BL_DEBUG_BUILD
@@ -34,6 +38,16 @@ namespace Blackberry {
         color.r = static_cast<u8>(hex << 0)  & 0xff;
 
         return color;
+    }
+
+    inline std::string ReadEntireFile(const std::filesystem::path& path) {
+        std::ifstream file(path);
+        std::stringstream ss;
+        ss << file.rdbuf();
+        std::string contents = ss.str();
+        ss.flush();
+
+        return contents; // implicit move
     }
 
 } // namespace Blackberry

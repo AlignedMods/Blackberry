@@ -4,9 +4,6 @@
 #include "json.hpp"
 using json = nlohmann::json;
 
-#include <fstream>
-#include "serializer.hpp"
-
 namespace Blackberry {
 
     SceneSerializer::SceneSerializer(Scene* scene, AssetManager* assetManager)
@@ -49,7 +46,10 @@ namespace Blackberry {
             if (entity.HasComponent<Material>()) {
                 Material& material = entity.GetComponent<Material>();
 
-                j["Entities"][name]["MaterialComponent"] = { {"TextureHandle", material.Texture.Handle}};
+                j["Entities"][name]["MaterialComponent"] = { 
+                    {"TextureHandle", material.Texture.Handle},
+                    {"Area", {material.Area.x, material.Area.y, material.Area.w, material.Area.h}}
+                };
             }
         }
 
@@ -60,11 +60,7 @@ namespace Blackberry {
     void SceneSerializer::Deserialize(const std::filesystem::path& path) {
         using namespace Components;
 
-        std::ifstream stream(path);
-        std::stringstream ss;
-        ss << stream.rdbuf();
-        std::string contents = ss.str();
-        ss.flush();
+        std::string contents = ReadEntireFile(path);
 
         json j = json::parse(contents);
         auto& entities = j.at("Entities");
@@ -103,8 +99,9 @@ namespace Blackberry {
             if (jsonEntity.contains("MaterialComponent")) {
                 auto& jsonMaterial = jsonEntity.at("MaterialComponent");
                 u64 handle = jsonMaterial.at("TextureHandle");
+                std::array<f32, 4> area = jsonMaterial.at("Area");
 
-                entity.AddComponent<Material>({ std::get<BlTexture>(m_AssetManager->GetAsset(handle).Data) });
+                entity.AddComponent<Material>({ std::get<BlTexture>(m_AssetManager->GetAsset(handle).Data), BlRec(area[0], area[1], area[2], area[3]) });
             }
         }
     }
