@@ -200,6 +200,10 @@ void EditorLayer::OnUIRender() {
         UI_NewProject();
     }
 
+    if (m_ShowNewSceneWindow) {
+        UI_NewScene();
+    }
+
     UI_AssetManager();
     UI_Explorer();
     UI_Properties();
@@ -390,6 +394,12 @@ void EditorLayer::UI_Properties() {
                 }
             }
 
+            ImGui::SameLine();
+            if (ImGui::Button("Remove Texture")) {
+                material.Texture.Delete();
+                material.TexturePath = "";
+            }
+
             DrawRecControl("Area", &material.Area);
         });
     }
@@ -450,6 +460,28 @@ void EditorLayer::UI_Viewport() {
 
     ImGui::Image(m_RenderTexture.Texture.ID, ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
 
+    if (ImGui::BeginDragDropTarget()) {
+        if (auto payload = ImGui::AcceptDragDropPayload("ASSET_DRAG_DROP")) {
+            bool sceneExists = false;
+
+            std::string strPath = (char*)payload->Data;
+            std::filesystem::path path(strPath);
+            path = m_BaseDirectory / path;
+            
+            for (auto& scene : m_CurrentProject.Scenes) {
+                if (scene.ScenePath == path) {
+                    m_EditingScene = &scene.Scene;
+                    sceneExists = true;
+                }
+            }
+
+            if (!sceneExists) {
+                m_EditingScene = LoadSceneFromFile(path);
+            }
+        }
+        ImGui::EndDragDropTarget();
+    };
+
     ImGui::End();
 }
 
@@ -477,6 +509,33 @@ void EditorLayer::UI_NewProject() {
         m_CurrentProject.ProjectDirectory = std::filesystem::path(projectPath).parent_path();
         m_CurrentProject.AssetDirectory = m_CurrentProject.ProjectDirectory / assetPath;
     }
+
+    ImGui::End();
+}
+
+void EditorLayer::UI_NewScene() {
+    static std::string scenePath;
+
+    ImGui::Begin("New Scene", &m_ShowNewSceneWindow);
+
+    ImGui::InputText("Scene Path: ", &scenePath); ImGui::SameLine();
+
+    if (ImGui::Button("...")) {
+        scenePath = Blackberry::FileDialogs::OpenFile("Blackberry Scene (*.blscene)");
+    }
+
+    if (ImGui::Button("Create")) {
+        EditorScene scene;
+        scene.ScenePath = scenePath;
+        scene.Name = "New Scene";
+        auto& newScene = m_CurrentProject.Scenes.emplace_back(scene);
+        m_EditingScene = &newScene.Scene;
+
+        std::ofstream file(scenePath);
+        file.close();
+
+        m_ShowNewSceneWindow = false;
+    };
 
     ImGui::End();
 }
@@ -532,9 +591,5 @@ void EditorLayer::NewProject() {
 }
 
 void EditorLayer::NewScene() {
-    EditorScene scene;
-    scene.Name = "New Scene";
-
-    auto& newScene = m_CurrentProject.Scenes.emplace_back(scene);
-    m_EditingScene = &newScene.Scene;
+    m_ShowNewSceneWindow = true;
 }

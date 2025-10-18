@@ -1,0 +1,37 @@
+{
+    "Entities": {
+        "ID - 0": {
+            "DrawableComponent": {
+                "Color": [
+                    255,
+                    255,
+                    255,
+                    255
+                ]
+            },
+            "MaterialComponent": {
+                "Area": [
+                    0.0,
+                    0.0,
+                    1920.0,
+                    1200.0
+                ],
+                "TexturePath": "Textures\\rabbit.jpg"
+            },
+            "TagComponent": {
+                "Name": "rabbit",
+                "UUID": 2940531136892136807
+            },
+            "TransformComponent": {
+                "Dimensions": [
+                    901.0,
+                    475.0
+                ],
+                "Position": [
+                    155.0,
+                    102.0
+                ]
+            }
+        }
+    }
+}

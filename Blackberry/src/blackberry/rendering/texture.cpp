@@ -75,6 +75,9 @@ void BlTexture::Create(const Blackberry::Image& image) {
 
 void BlTexture::Delete() {
     glDeleteTextures(1, &ID);
+    ID = 0;
+    Width = 0;
+    Height = 0;
 }
 
 BlRenderTexture::BlRenderTexture() {}

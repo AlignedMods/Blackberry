@@ -34,6 +34,7 @@ private:
     void UI_Viewport();
 
     void UI_NewProject();
+    void UI_NewScene();
 
     void LoadProject();
     void LoadProjectFromPath(const std::filesystem::path& path);
@@ -47,6 +48,7 @@ private:
 
 private:
     bool m_ShowNewProjectWindow = false;
+    bool m_ShowNewSceneWindow = false;
 
     Blackberry::Font m_EditorFont;
 
