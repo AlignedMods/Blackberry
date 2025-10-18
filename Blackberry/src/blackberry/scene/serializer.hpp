@@ -7,14 +7,14 @@ namespace Blackberry {
     class SceneSerializer {
     public:
         SceneSerializer() = default;
-        SceneSerializer(Scene* scene, AssetManager* assetManager);
+        SceneSerializer(Scene* scene, const std::filesystem::path& assetDirectory);
 
         void Serialize(const std::filesystem::path& path);
         void Deserialize(const std::filesystem::path& path);
 
     private:
         Scene* m_Scene = nullptr;
-        AssetManager* m_AssetManager = nullptr;
+        std::filesystem::path m_AssetDirectory;
     };
 
 } // namespace Blackberry

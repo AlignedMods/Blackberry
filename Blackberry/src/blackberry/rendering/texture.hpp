@@ -8,6 +8,7 @@ struct BlTexture {
     BlTexture();
 
     void Create(u32 width, u32 height);
+    void Create(const std::filesystem::path& path);
     void Create(const Blackberry::Image& image);
     void Delete();
 
@@ -15,7 +16,6 @@ struct BlTexture {
     u32 Width = 0;
     u32 Height = 0;
     Blackberry::ImageFormat Format = Blackberry::ImageFormat::RGBA8;
-    u64 Handle;
 };
 
 struct BlRenderTexture {

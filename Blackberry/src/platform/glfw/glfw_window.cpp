@@ -16,6 +16,7 @@
 #ifdef BL_WINDOWS_BUILD
     #define GLFW_EXPOSE_NATIVE_WIN32
     #include "GLFW/glfw3native.h"
+    #include "ShlObj.h"
 #endif
 
 #include <thread>

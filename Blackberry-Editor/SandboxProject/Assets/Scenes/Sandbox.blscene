@@ -16,7 +16,7 @@
                     3072.0,
                     4096.0
                 ],
-                "TextureHandle": 8573663274192661246
+                "TexturePath": "Textures\\cat.jpg"
             },
             "TagComponent": {
                 "Name": "cat",
@@ -60,7 +60,7 @@
         "ID - 2": {
             "DrawableComponent": {
                 "Color": [
-                    0,
+                    255,
                     255,
                     255,
                     255
@@ -73,7 +73,7 @@
                     736.0,
                     981.0
                 ],
-                "TextureHandle": 8265016933704590019
+                "TexturePath": "Textures\\MANGODIDDYBLUD.jpg"
             },
             "TagComponent": {
                 "Name": "MANGO DIDDY BLUD",

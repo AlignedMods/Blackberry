@@ -25,6 +25,16 @@ void BlTexture::Create(u32 width, u32 height) {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
+void BlTexture::Create(const std::filesystem::path& path) {
+    Blackberry::Image image(path);
+    if (image.GetData() == nullptr) {
+        BL_ERROR("Failed to load texture from path: {}", path.string());
+        return;
+    }
+
+    Create(image);
+}
+
 void BlTexture::Create(const Blackberry::Image& image) {
     Width = image.GetWidth();
     Height = image.GetHeight();

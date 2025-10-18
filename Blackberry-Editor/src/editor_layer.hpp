@@ -2,6 +2,20 @@
 
 #include "blackberry.hpp"
 
+struct EditorScene {
+    std::string Name;
+    Blackberry::Scene Scene;
+    std::filesystem::path ScenePath;
+};
+
+struct EditorProject {
+    std::string Name;
+    std::filesystem::path AssetDirectory;
+    std::filesystem::path ProjectDirectory;
+
+    std::vector<EditorScene> Scenes;
+};
+
 class EditorLayer : public Blackberry::Layer {
 public:
     ~EditorLayer();
@@ -19,19 +33,21 @@ private:
     void UI_Properties();
     void UI_Viewport();
 
+    void UI_NewProject();
+
     void LoadProject();
     void LoadProjectFromPath(const std::filesystem::path& path);
-
-    void LoadAssetRegistryFromFile(const std::filesystem::path& path);
-    void LoadSceneFromFile(const std::filesystem::path& path);
-
     void SaveProject();
 
-    void SaveAssetRegistryToFile(const std::filesystem::path& path);
-    void SaveSceneToFile(const std::filesystem::path& path);
+    Blackberry::Scene* LoadSceneFromFile(const std::filesystem::path& path);
+    void SaveSceneToFile(Blackberry::Scene& scene, const std::filesystem::path& path);
+
+    void NewProject();
+    void NewScene();
 
 private:
-    Blackberry::Scene m_EditorScene;
+    bool m_ShowNewProjectWindow = false;
+
     Blackberry::Font m_EditorFont;
 
     Blackberry::EntityID m_SelectedEntity = 0;
@@ -39,13 +55,16 @@ private:
 
     BlRenderTexture m_RenderTexture;
 
-    BlTexture m_BlankTexture;
+    EditorProject m_CurrentProject;
+    Blackberry::Scene* m_EditingScene = nullptr;
 
-    Blackberry::AssetManager m_AssetManager;
+    std::filesystem::path m_CurrentDirectory;
+    std::filesystem::path m_BaseDirectory;
 
-    std::filesystem::path m_ProjectPath;
-    std::filesystem::path m_AssetDir;
+    // textures
+    BlTexture m_DirectoryIcon;
+    BlTexture m_FileIcon;
+    BlTexture m_BackDirectoryIcon;
 
-    std::filesystem::path m_CurrentAssetRegistryPath;
-    std::filesystem::path m_CurrentScenePath;
+    bool m_ShowDemoWindow = false;
 };

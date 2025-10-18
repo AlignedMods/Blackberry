@@ -122,7 +122,7 @@ EditorLayer::~EditorLayer() {
 }
 
 void EditorLayer::OnInit() {
-    m_EditorFont.CreateFont();
+    // m_EditorFont.CreateFont();
 
     ImGuiIO& io = ImGui::GetIO();
     io.Fonts->AddFontFromFileTTF("Assets/arial/arial.ttf", 16);
@@ -130,21 +130,25 @@ void EditorLayer::OnInit() {
 
     m_RenderTexture.Create(1280, 720);
 
-    Blackberry::Image image("Assets/blank.png");
-    m_BlankTexture.Create(image);
+    m_DirectoryIcon.Create("Assets/icons/directory.png");
+    m_FileIcon.Create("Assets/icons/file.png");
+    m_BackDirectoryIcon.Create("Assets/icons/back_directory.png");
 
     LoadProject();
+
+    m_CurrentDirectory = m_CurrentProject.AssetDirectory;
+    m_BaseDirectory = m_CurrentProject.AssetDirectory;
 }
 
 void EditorLayer::OnUpdate(f32 ts) {
-    m_EditorScene.OnUpdate();
+    m_EditingScene->OnUpdate();
 }
 
 void EditorLayer::OnRender() {
     Blackberry::AttachRenderTexture(m_RenderTexture);
     
     Blackberry::Clear();
-    m_EditorScene.OnRender();
+    m_EditingScene->OnRender();
 
     Blackberry::DetachRenderTexture();
 }
@@ -168,6 +172,18 @@ void EditorLayer::OnUIRender() {
 
     if (ImGui::BeginMenuBar()) {
         if (ImGui::BeginMenu("File")) {
+            if (ImGui::BeginMenu("New")) {
+                if (ImGui::MenuItem("Project")) {
+                    NewProject();
+                }
+
+                if (ImGui::MenuItem("Scene")) {
+                    NewScene();
+                }
+
+                ImGui::EndMenu();
+            }
+
             if (ImGui::MenuItem("Save Project", "CTRL+S")) {
                 SaveProject();
             }
@@ -180,10 +196,18 @@ void EditorLayer::OnUIRender() {
     
     ImGui::End();
 
+    if (m_ShowNewProjectWindow) {
+        UI_NewProject();
+    }
+
     UI_AssetManager();
     UI_Explorer();
     UI_Properties();
     UI_Viewport();
+
+    if (m_ShowDemoWindow) {
+        ImGui::ShowDemoWindow(&m_ShowDemoWindow);
+    }
 }
 
 void EditorLayer::OnEvent(const Blackberry::Event& event) {
@@ -193,53 +217,72 @@ void EditorLayer::OnEvent(const Blackberry::Event& event) {
         // m_RenderTexture.Delete();
         // m_RenderTexture.Create(wr.GetWidth(), wr.GetHeight());
     }
+
+    if (event.GetEventType() == Blackberry::EventType::KeyPressed) {
+        auto& kp = BL_EVENT_CAST(KeyPressedEvent);
+        if (kp.GetKeyCode() == KeyCode::F3) {
+            m_ShowDemoWindow = true;
+        }
+    }
 }
 
 void EditorLayer::UI_AssetManager() {
+    namespace fs = std::filesystem;
+
     ImGui::Begin("Asset Manager");
 
-    if (ImGui::Button("+")) {
-        ImGui::OpenPopup("ImportAsset");
+    if (m_CurrentDirectory != m_BaseDirectory) {
+        if (ImGui::ImageButton("##BackDirectory", m_BackDirectoryIcon.ID, ImVec2(32.0f, 32.0f))) {
+            m_CurrentDirectory = m_CurrentDirectory.parent_path();
+        }
     }
 
-    if (ImGui::BeginPopup("ImportAsset")) {
-        static std::string path;
-        static std::string name;
+    static f32 padding = 16.0f;
+    static f32 thumbnailSize = 128.0f;
+    f32 cellSize = thumbnailSize + padding;
 
-        ImGui::Text("Path: ");
-        ImGui::SameLine();
-        ImGui::InputText("##FilePath", &path);
-
-        ImGui::SameLine();
-        if (ImGui::Button("...")) {
-            path = Blackberry::FileDialogs::OpenFile("");
-        }
-
-        ImGui::NewLine();
-        ImGui::Text("Name: ");
-        ImGui::SameLine();
-        ImGui::InputText("##AssetName", &name);
-
-        if (ImGui::Button("OK")) {
-            m_AssetManager.AddTextureFromPath(name, path);
-
-            ImGui::CloseCurrentPopup();
-        }
-
-        ImGui::EndPopup();
+    f32 panelWidth = ImGui::GetContentRegionAvail().x;
+    u32 columnCount = (u32)(panelWidth / cellSize);
+    if (columnCount < 1) {
+        columnCount = 1;
     }
 
-    for (const auto&[handle, asset] : m_AssetManager.GetAllAssets()) {
-        std::string stringHandle = std::format("{}", handle);
-        
-        ImGui::Text(stringHandle.c_str());
-        ImGui::SameLine();
-        ImGui::PushID(static_cast<int>(handle));
-        if (ImGui::Button("Copy to clipboard")) {
-            ImGui::SetClipboardText(stringHandle.c_str());
+    ImGui::Columns(columnCount, 0, false);
+
+    for (const auto& file : fs::directory_iterator(m_CurrentDirectory)) {
+        const auto& path = file.path();
+        std::string name = path.filename().string();
+
+        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
+
+        if (file.is_directory()) {
+            ImGui::ImageButton(name.c_str(), m_DirectoryIcon.ID, ImVec2(thumbnailSize, thumbnailSize));
+        } else {
+            ImGui::ImageButton(name.c_str(), m_FileIcon.ID, ImVec2(thumbnailSize, thumbnailSize));
         }
-        ImGui::PopID();
+
+        ImGui::PopStyleVar();
+
+        if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_AcceptNoDrawDefaultRect)) {
+            auto relative = fs::relative(path, m_BaseDirectory);
+            std::string filePath = relative.string();
+            ImGui::SetDragDropPayload("ASSET_DRAG_DROP", filePath.c_str(), filePath.size() + 1);
+            ImGui::Text("%s", name.c_str());
+            ImGui::EndDragDropSource();
+        }
+
+        if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+            if (file.is_directory()) {
+                m_CurrentDirectory /= path.filename();
+            }
+        }
+
+        ImGui::TextWrapped(name.c_str());
+
+        ImGui::NextColumn();
     }
+
+    ImGui::Columns(1);
 
     ImGui::End();
 }
@@ -255,7 +298,7 @@ void EditorLayer::UI_Explorer() {
     if (ImGui::BeginPopup("EntityName")) {
         ImGui::InputText("Name: ", s_Buffer, 512);
         if (ImGui::Button("OK")) {
-            Blackberry::Entity entity(m_EditorScene.CreateEntity(s_Buffer), &m_EditorScene);
+            Blackberry::Entity entity(m_EditingScene->CreateEntity(s_Buffer), m_EditingScene);
             
             ImGui::CloseCurrentPopup();
         }
@@ -265,10 +308,10 @@ void EditorLayer::UI_Explorer() {
 
     ImGui::NewLine();
     
-    for (auto id : m_EditorScene.GetEntities()) {
+    for (auto id : m_EditingScene->GetEntities()) {
         ImGui::PushID(id);
 
-        Blackberry::Entity entity(id, &m_EditorScene);
+        Blackberry::Entity entity(id, m_EditingScene);
         if (ImGui::Button(entity.GetComponent<Blackberry::Components::Tag>().Name.c_str())) {
             m_IsEntitySelected = true;
             m_SelectedEntity = id;
@@ -286,7 +329,7 @@ void EditorLayer::UI_Properties() {
     ImGui::Begin("Properties");
 
     if (m_IsEntitySelected) {
-        Blackberry::Entity entity(m_SelectedEntity, &m_EditorScene);
+        Blackberry::Entity entity(m_SelectedEntity, m_EditingScene);
 
         if (ImGui::Button("Add Component")) {
             ImGui::OpenPopup("AddComponent");
@@ -296,7 +339,7 @@ void EditorLayer::UI_Properties() {
             AddComponentListOption<Transform>("Transform", entity);
             AddComponentListOption<Drawable>("Drawable", entity);
             AddComponentListOption<Text>("Text", entity, {&m_EditorFont});
-            AddComponentListOption<Material>("Material", entity, {m_BlankTexture});
+            AddComponentListOption<Material>("Material", entity);
 
             ImGui::EndPopup();
         }
@@ -326,15 +369,25 @@ void EditorLayer::UI_Properties() {
             DrawColorControl("Color: ", &drawable.Color);
         });
         DrawComponent<Material>("Material", entity, [this](Material& material) {
-            static std::string handle = std::to_string(material.Texture.Handle);
+            ImGui::Button("Drop Texture Here!");
 
-            if (ImGui::InputText("Handle", &handle, ImGuiInputTextFlags_EnterReturnsTrue)) {
-                Blackberry::Asset asset = m_AssetManager.GetAsset(std::stoull(handle));
+            if (ImGui::BeginDragDropTarget()) {
+                // we don't want to create a new texture if one already exists
+                if (!material.Texture.ID) {
+                    if (auto payload = ImGui::AcceptDragDropPayload("ASSET_DRAG_DROP")) {
+                        std::string strPath = (char*)payload->Data;
+                        std::filesystem::path path(strPath);
+                        path = m_BaseDirectory / path;
 
-                BlTexture tex = std::get<BlTexture>(asset.Data);
-            
-                material.Texture = tex;
-                material.Area = BlRec(0.0f, 0.0f, tex.Width, tex.Height);
+                        BlTexture tex;
+                        tex.Create(path);
+                        material.Texture = tex;
+                        material.Area = BlRec(0.0f, 0.0f, tex.Width, tex.Height);
+                        material.TexturePath = std::filesystem::relative(path, m_BaseDirectory);
+                    }
+                    
+                    ImGui::EndDragDropTarget();
+                }
             }
 
             DrawRecControl("Area", &material.Area);
@@ -400,6 +453,34 @@ void EditorLayer::UI_Viewport() {
     ImGui::End();
 }
 
+void EditorLayer::UI_NewProject() {
+    static std::string projectName = "Example";
+    static std::string projectPath;
+    static std::string assetPath = "Assets/";
+
+    ImGui::Begin("New Project", &m_ShowNewProjectWindow);
+
+    ImGui::Text("Name: "); ImGui::SameLine();
+    ImGui::InputText("##ProjectName", &projectName);
+
+    ImGui::Text("Root Directory: "); ImGui::SameLine();
+    ImGui::InputText("##FilePath", &projectPath); ImGui::SameLine();
+    if (ImGui::SmallButton("...")) {
+        projectPath = Blackberry::FileDialogs::OpenFile("Blackberry Project (*.blproj)");
+    }
+
+    ImGui::Text("Asset Directory: "); ImGui::SameLine();
+    ImGui::InputText("##AssetDirectory", &assetPath);
+
+    if (ImGui::Button("Create")) {
+        m_CurrentProject.Name = projectName;
+        m_CurrentProject.ProjectDirectory = std::filesystem::path(projectPath).parent_path();
+        m_CurrentProject.AssetDirectory = m_CurrentProject.ProjectDirectory / assetPath;
+    }
+
+    ImGui::End();
+}
+
 void EditorLayer::LoadProject() {
     std::string path = Blackberry::FileDialogs::OpenFile("Blackberry Project (*.blproj)");
 
@@ -410,44 +491,50 @@ void EditorLayer::LoadProjectFromPath(const std::filesystem::path& path) {
     std::string contents = Blackberry::ReadEntireFile(path);
 
     json j = json::parse(contents);
-    m_ProjectPath = path.parent_path();
+    m_CurrentProject.ProjectDirectory = path.parent_path();
     std::string assetDir = j.at("AssetsDirectory");
-    m_AssetDir = m_ProjectPath / assetDir;
-
-    std::string assetRegistry = j.at("AssetRegistry");
-    std::filesystem::path assetRegistryPath = m_AssetDir / assetRegistry;
-    LoadAssetRegistryFromFile(assetRegistryPath);
+    m_CurrentProject.AssetDirectory = path.parent_path() / assetDir;
 
     std::string startScene = j.at("StartScene");
-    std::filesystem::path scenePath = m_AssetDir / startScene;
-    LoadSceneFromFile(scenePath);
-}
+    std::filesystem::path scenePath = m_CurrentProject.AssetDirectory / startScene;
+    auto scene = LoadSceneFromFile(scenePath);
 
-void EditorLayer::LoadAssetRegistryFromFile(const std::filesystem::path& path) {
-    Blackberry::AssetManagerSerializer serializer(&m_AssetManager);
-    serializer.Deserialize(path);
-
-    m_CurrentAssetRegistryPath = path;
-}
-
-void EditorLayer::LoadSceneFromFile(const std::filesystem::path& path) {
-    Blackberry::SceneSerializer serializer(&m_EditorScene, &m_AssetManager);
-    serializer.Deserialize(path);
-
-    m_CurrentScenePath = path;
-}
+    m_EditingScene = scene;
+} 
 
 void EditorLayer::SaveProject() {
-    SaveAssetRegistryToFile(m_CurrentAssetRegistryPath);
-    SaveSceneToFile(m_CurrentScenePath);
+    for (auto& scene : m_CurrentProject.Scenes) {
+        SaveSceneToFile(scene.Scene, scene.ScenePath);
+    }
 }
 
-void EditorLayer::SaveAssetRegistryToFile(const std::filesystem::path& path) {
-    Blackberry::AssetManagerSerializer serializer(&m_AssetManager);
+Blackberry::Scene* EditorLayer::LoadSceneFromFile(const std::filesystem::path& path) {
+    EditorScene scene;
+    scene.ScenePath = path;
+
+    Blackberry::SceneSerializer serializer(&scene.Scene, m_CurrentProject.AssetDirectory);
+    serializer.Deserialize(path);
+
+    m_CurrentProject.Scenes.push_back(std::move(scene));
+
+    return &m_CurrentProject.Scenes.back().Scene;
+}
+
+void EditorLayer::SaveSceneToFile(Blackberry::Scene& scene, const std::filesystem::path& path) {
+    Blackberry::SceneSerializer serializer(&scene, m_CurrentProject.AssetDirectory);
     serializer.Serialize(path);
 }
 
-void EditorLayer::SaveSceneToFile(const std::filesystem::path& path) {
-    Blackberry::SceneSerializer serializer(&m_EditorScene, &m_AssetManager);
-    serializer.Serialize(path);
+void EditorLayer::NewProject() {
+    SaveProject();
+
+    m_ShowNewProjectWindow = true;
+}
+
+void EditorLayer::NewScene() {
+    EditorScene scene;
+    scene.Name = "New Scene";
+
+    auto& newScene = m_CurrentProject.Scenes.emplace_back(scene);
+    m_EditingScene = &newScene.Scene;
 }

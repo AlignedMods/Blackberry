@@ -1,6 +1,5 @@
 {
    "Name": "Sandbox",
-   "AssetsDirectory": "Assets/",
-   "StartScene": "Scenes/Sandbox.blscene",
-   "AssetRegistry": "Assets.blasset"
+   "AssetsDirectory": "Assets",
+   "StartScene": "Scenes/Sandbox.blscene"
 }

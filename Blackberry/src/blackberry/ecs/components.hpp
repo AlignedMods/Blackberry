@@ -19,6 +19,7 @@ namespace Blackberry::Components {
     };
 
     struct Material {
+        std::filesystem::path TexturePath;
         BlTexture Texture;
         BlRec Area = BlRec(0, 0, Texture.Width, Texture.Height); // (aligned) NOTE: very sketchy, this depends on texture being initialized first!
     };

@@ -6,8 +6,8 @@ using json = nlohmann::json;
 
 namespace Blackberry {
 
-    SceneSerializer::SceneSerializer(Scene* scene, AssetManager* assetManager)
-        : m_Scene(scene), m_AssetManager(assetManager) {}
+    SceneSerializer::SceneSerializer(Scene* scene, const std::filesystem::path& assetDirectory)
+        : m_Scene(scene), m_AssetDirectory(assetDirectory) {}
 
     void SceneSerializer::Serialize(const std::filesystem::path& path) {
         if (m_Scene->GetEntities().size() == 0) { return; }
@@ -47,7 +47,7 @@ namespace Blackberry {
                 Material& material = entity.GetComponent<Material>();
 
                 j["Entities"][name]["MaterialComponent"] = { 
-                    {"TextureHandle", material.Texture.Handle},
+                    {"TexturePath", material.TexturePath.string()},
                     {"Area", {material.Area.x, material.Area.y, material.Area.w, material.Area.h}}
                 };
             }
@@ -98,10 +98,13 @@ namespace Blackberry {
             // MaterialComponent
             if (jsonEntity.contains("MaterialComponent")) {
                 auto& jsonMaterial = jsonEntity.at("MaterialComponent");
-                u64 handle = jsonMaterial.at("TextureHandle");
+                std::filesystem::path filePath = jsonMaterial.at("TexturePath");
                 std::array<f32, 4> area = jsonMaterial.at("Area");
 
-                entity.AddComponent<Material>({ std::get<BlTexture>(m_AssetManager->GetAsset(handle).Data), BlRec(area[0], area[1], area[2], area[3]) });
+                BlTexture tex;
+                tex.Create(m_AssetDirectory / filePath);
+
+                entity.AddComponent<Material>({ filePath, tex, BlRec(area[0], area[1], area[2], area[3]) });
             }
         }
     }

@@ -47,7 +47,7 @@ namespace Blackberry {
             Image image(path);
             BlTexture tex;
             tex.Create(image);
-            tex.Handle = handle;
+            // tex.Handle = handle;
 
             m_AssetManager->AddAssetWithHandle(handle, {path, AssetType::Texture, tex});
             // BL_INFO("Handle: {}", handle);
