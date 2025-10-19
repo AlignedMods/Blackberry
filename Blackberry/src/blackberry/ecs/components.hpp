@@ -28,12 +28,18 @@ namespace Blackberry::Components {
         BlColor Color = BlColor(0xff, 0xff, 0xff, 0xff);
     };
 
+    struct Velocity {
+        BlVec2 Acceleration;
+    };
+
     struct Text {
         Blackberry::Font* Font;
         u32 FontSize = 24;
         std::string Contents;
     };
 
-
+    struct Script {
+        std::filesystem::path ModulePath;
+    };
 
 } // namespace Blackberry::Components

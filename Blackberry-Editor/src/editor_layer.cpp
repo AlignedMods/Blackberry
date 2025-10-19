@@ -2,594 +2,664 @@
 
 #include <fstream>
 
-static char s_Buffer[512];
+namespace BlackberryEditor {
 
-template <typename T, typename F>
-static void DrawComponent(const std::string& name, Blackberry::Entity entity, F uiFunction) {
-    if (entity.HasComponent<T>()) {
-        T& component = entity.GetComponent<T>();
+    static char s_Buffer[512];
 
-        if (ImGui::CollapsingHeader(name.c_str())) {
-            uiFunction(component);
-        }
-    }
-}
-
-template <typename T>
-static void AddComponentListOption(const std::string& name, Blackberry::Entity& entity, const T& component = T{}) {
-    if (entity.HasComponent<T>()) { return; }
-
-    if (ImGui::Button(name.c_str())) {
-        entity.AddComponent<T>(component);
-        ImGui::CloseCurrentPopup();
-    }
-}
-
-static void DrawVec2Control(const std::string& label, BlVec2* vec, const char* fmtX = "X", const char* fmtY = "Y") {
-    ImGuiIO& io = ImGui::GetIO();
-
-    ImGui::PushID(label.c_str());
-
-    // label
-
-    ImGui::PushFont(io.Fonts->Fonts[1], 16);
-    if (ImGui::TreeNode(label.c_str())) {
-        ImGui::PopFont();
-
-        // x axis control
-        ImGui::PushFont(io.Fonts->Fonts[1], 16);
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.0f, 0.0f, 0.7f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 0.0f, 0.0f, 0.4f));
-        ImGui::Button(fmtX);
-        ImGui::PopStyleColor(3);
-        ImGui::PopFont();
-
-        ImGui::SameLine();
-        ImGui::DragFloat("##DragX", &vec->x, 1.0f);
-
-        // y axis control
-        ImGui::PushFont(io.Fonts->Fonts[1], 16);
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 1.0f, 0.0f, 0.7f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 1.0f, 0.0f, 0.4f));
-        ImGui::Button(fmtY);
-        ImGui::PopStyleColor(3);
-        ImGui::PopFont();
-
-        ImGui::SameLine();
-        ImGui::DragFloat("##DragY", &vec->y);
-
-        ImGui::TreePop();
-    } else {
-        ImGui::PopFont();
-    }
-
-    ImGui::PopID();
-}
-
-static void DrawRecControl(const std::string& label, BlRec* rec) {
-    BlVec2 xy = BlVec2(rec->x, rec->y);
-    BlVec2 wh = BlVec2(rec->w, rec->h);
-
-    ImGui::PushID(label.c_str());
-
-    if (ImGui::TreeNode(label.c_str())) {
-        DrawVec2Control("Position: ", &xy);
-        DrawVec2Control("Dimensions: ", &wh);
-
-        ImGui::TreePop();
-    }
-
-    ImGui::PopID();
-
-    // return value
-    rec->x = xy.x;
-    rec->y = xy.y;
-    rec->w = wh.x;
-    rec->h = wh.y;
-}
-
-static void DrawColorControl(const std::string& label, BlColor* color) {
-    ImGuiIO& io = ImGui::GetIO();
-
-    ImVec4 imGuiColor = ImVec4(color->r / 255.0f, color->g / 255.0f, color->b / 255.0f, color->a / 255.0f);
-
-    ImGui::PushID(label.c_str());
-
-    ImGui::PushFont(io.Fonts->Fonts[1], 16);
-    if (ImGui::TreeNode(label.c_str())) {
-        ImGui::PopFont();
-
-        ImGui::ColorEdit4("##ColorEdit", &imGuiColor.x);
-
-        ImGui::TreePop();
-    } else {
-        ImGui::PopFont();
-    }
-
-    ImGui::PopID();
-
-    // return value from ImVec4
-    color->r = static_cast<u8>(imGuiColor.x * 255.0f);
-    color->g = static_cast<u8>(imGuiColor.y * 255.0f);
-    color->b = static_cast<u8>(imGuiColor.z * 255.0f);
-    color->a = static_cast<u8>(imGuiColor.w * 255.0f);
-}
-
-EditorLayer::~EditorLayer() {
-    SaveProject();
-}
-
-void EditorLayer::OnInit() {
-    // m_EditorFont.CreateFont();
-
-    ImGuiIO& io = ImGui::GetIO();
-    io.Fonts->AddFontFromFileTTF("Assets/arial/arial.ttf", 16);
-    io.Fonts->AddFontFromFileTTF("Assets/arial/arial-bold.ttf", 16);
-
-    m_RenderTexture.Create(1280, 720);
-
-    m_DirectoryIcon.Create("Assets/icons/directory.png");
-    m_FileIcon.Create("Assets/icons/file.png");
-    m_BackDirectoryIcon.Create("Assets/icons/back_directory.png");
-
-    LoadProject();
-
-    m_CurrentDirectory = m_CurrentProject.AssetDirectory;
-    m_BaseDirectory = m_CurrentProject.AssetDirectory;
-}
-
-void EditorLayer::OnUpdate(f32 ts) {
-    m_EditingScene->OnUpdate();
-}
-
-void EditorLayer::OnRender() {
-    Blackberry::AttachRenderTexture(m_RenderTexture);
+#pragma region HelperFunctions
     
-    Blackberry::Clear();
-    m_EditingScene->OnRender();
-
-    Blackberry::DetachRenderTexture();
-}
-
-void EditorLayer::OnUIRender() {
-    using namespace Blackberry::Components;
-
-    // set up dockspace
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-
-    ImGuiViewport* viewport = ImGui::GetMainViewport();
-
-    ImGui::SetNextWindowPos(viewport->WorkPos);
-    ImGui::SetNextWindowSize(viewport->WorkSize);
-    ImGui::Begin("dockspace window", nullptr, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar |
-                                              ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_MenuBar);
-    ImGui::PopStyleVar();
-
-    ImGuiID dockspaceID = ImGui::GetID("dockspace");
-    ImGui::DockSpace(dockspaceID, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
-
-    if (ImGui::BeginMenuBar()) {
-        if (ImGui::BeginMenu("File")) {
-            if (ImGui::BeginMenu("New")) {
-                if (ImGui::MenuItem("Project")) {
-                    NewProject();
-                }
-
-                if (ImGui::MenuItem("Scene")) {
-                    NewScene();
-                }
-
-                ImGui::EndMenu();
+    template <typename T, typename F>
+    static void DrawComponent(const std::string& name, Blackberry::Entity entity, F uiFunction) {
+        if (entity.HasComponent<T>()) {
+            T& component = entity.GetComponent<T>();
+    
+            if (ImGui::CollapsingHeader(name.c_str())) {
+                uiFunction(component);
             }
-
-            if (ImGui::MenuItem("Save Project", "CTRL+S")) {
-                SaveProject();
-            }
-
-            ImGui::EndMenu();
         }
-
-        ImGui::EndMenuBar();
     }
     
-    ImGui::End();
-
-    if (m_ShowNewProjectWindow) {
-        UI_NewProject();
-    }
-
-    if (m_ShowNewSceneWindow) {
-        UI_NewScene();
-    }
-
-    UI_AssetManager();
-    UI_Explorer();
-    UI_Properties();
-    UI_Viewport();
-
-    if (m_ShowDemoWindow) {
-        ImGui::ShowDemoWindow(&m_ShowDemoWindow);
-    }
-}
-
-void EditorLayer::OnEvent(const Blackberry::Event& event) {
-    if (event.GetEventType() == Blackberry::EventType::WindowResize) {
-        auto& wr = BL_EVENT_CAST(WindowResizeEvent);
-
-        // m_RenderTexture.Delete();
-        // m_RenderTexture.Create(wr.GetWidth(), wr.GetHeight());
-    }
-
-    if (event.GetEventType() == Blackberry::EventType::KeyPressed) {
-        auto& kp = BL_EVENT_CAST(KeyPressedEvent);
-        if (kp.GetKeyCode() == KeyCode::F3) {
-            m_ShowDemoWindow = true;
-        }
-    }
-}
-
-void EditorLayer::UI_AssetManager() {
-    namespace fs = std::filesystem;
-
-    ImGui::Begin("Asset Manager");
-
-    if (m_CurrentDirectory != m_BaseDirectory) {
-        if (ImGui::ImageButton("##BackDirectory", m_BackDirectoryIcon.ID, ImVec2(32.0f, 32.0f))) {
-            m_CurrentDirectory = m_CurrentDirectory.parent_path();
-        }
-    }
-
-    static f32 padding = 16.0f;
-    static f32 thumbnailSize = 128.0f;
-    f32 cellSize = thumbnailSize + padding;
-
-    f32 panelWidth = ImGui::GetContentRegionAvail().x;
-    u32 columnCount = (u32)(panelWidth / cellSize);
-    if (columnCount < 1) {
-        columnCount = 1;
-    }
-
-    ImGui::Columns(columnCount, 0, false);
-
-    for (const auto& file : fs::directory_iterator(m_CurrentDirectory)) {
-        const auto& path = file.path();
-        std::string name = path.filename().string();
-
-        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
-
-        if (file.is_directory()) {
-            ImGui::ImageButton(name.c_str(), m_DirectoryIcon.ID, ImVec2(thumbnailSize, thumbnailSize));
-        } else {
-            ImGui::ImageButton(name.c_str(), m_FileIcon.ID, ImVec2(thumbnailSize, thumbnailSize));
-        }
-
-        ImGui::PopStyleVar();
-
-        if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_AcceptNoDrawDefaultRect)) {
-            auto relative = fs::relative(path, m_BaseDirectory);
-            std::string filePath = relative.string();
-            ImGui::SetDragDropPayload("ASSET_DRAG_DROP", filePath.c_str(), filePath.size() + 1);
-            ImGui::Text("%s", name.c_str());
-            ImGui::EndDragDropSource();
-        }
-
-        if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-            if (file.is_directory()) {
-                m_CurrentDirectory /= path.filename();
-            }
-        }
-
-        ImGui::TextWrapped(name.c_str());
-
-        ImGui::NextColumn();
-    }
-
-    ImGui::Columns(1);
-
-    ImGui::End();
-}
-
-void EditorLayer::UI_Explorer() {
-    ImGui::Begin("Explorer");
-
-    if (ImGui::Button("Add Entity")) {
-        memset(s_Buffer, 0, 512);
-        ImGui::OpenPopup("EntityName");
-    }
-
-    if (ImGui::BeginPopup("EntityName")) {
-        ImGui::InputText("Name: ", s_Buffer, 512);
-        if (ImGui::Button("OK")) {
-            Blackberry::Entity entity(m_EditingScene->CreateEntity(s_Buffer), m_EditingScene);
-            
+    template <typename T>
+    static void AddComponentListOption(const std::string& name, Blackberry::Entity& entity, const T& component = T{}) {
+        if (entity.HasComponent<T>()) { return; }
+    
+        if (ImGui::Button(name.c_str())) {
+            entity.AddComponent<T>(component);
             ImGui::CloseCurrentPopup();
         }
-
-        ImGui::EndPopup();
     }
-
-    ImGui::NewLine();
     
-    for (auto id : m_EditingScene->GetEntities()) {
-        ImGui::PushID(id);
-
-        Blackberry::Entity entity(id, m_EditingScene);
-        if (ImGui::Button(entity.GetComponent<Blackberry::Components::Tag>().Name.c_str())) {
-            m_IsEntitySelected = true;
-            m_SelectedEntity = id;
+    static void DrawVec2Control(const std::string& label, BlVec2* vec, const char* fmtX = "X", const char* fmtY = "Y") {
+        ImGuiIO& io = ImGui::GetIO();
+    
+        ImGui::PushID(label.c_str());
+    
+        // label
+    
+        ImGui::PushFont(io.Fonts->Fonts[1], 16);
+        if (ImGui::TreeNode(label.c_str())) {
+            ImGui::PopFont();
+    
+            // x axis control
+            ImGui::PushFont(io.Fonts->Fonts[1], 16);
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.0f, 0.0f, 0.7f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 0.0f, 0.0f, 0.4f));
+            ImGui::Button(fmtX);
+            ImGui::PopStyleColor(3);
+            ImGui::PopFont();
+    
+            ImGui::SameLine();
+            ImGui::DragFloat("##DragX", &vec->x, 1.0f);
+    
+            // y axis control
+            ImGui::PushFont(io.Fonts->Fonts[1], 16);
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 1.0f, 0.0f, 0.7f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 1.0f, 0.0f, 0.4f));
+            ImGui::Button(fmtY);
+            ImGui::PopStyleColor(3);
+            ImGui::PopFont();
+    
+            ImGui::SameLine();
+            ImGui::DragFloat("##DragY", &vec->y);
+    
+            ImGui::TreePop();
+        } else {
+            ImGui::PopFont();
         }
-
+    
         ImGui::PopID();
     }
-
-    ImGui::End();
-}
-
-void EditorLayer::UI_Properties() {
-    using namespace Blackberry::Components;
-
-    ImGui::Begin("Properties");
-
-    if (m_IsEntitySelected) {
-        Blackberry::Entity entity(m_SelectedEntity, m_EditingScene);
-
-        if (ImGui::Button("Add Component")) {
-            ImGui::OpenPopup("AddComponent");
+    
+    static void DrawRecControl(const std::string& label, BlRec* rec) {
+        BlVec2 xy = BlVec2(rec->x, rec->y);
+        BlVec2 wh = BlVec2(rec->w, rec->h);
+    
+        ImGui::PushID(label.c_str());
+    
+        if (ImGui::TreeNode(label.c_str())) {
+            DrawVec2Control("Position: ", &xy);
+            DrawVec2Control("Dimensions: ", &wh);
+    
+            ImGui::TreePop();
         }
-
-        if (ImGui::BeginPopup("AddComponent")) {
-            AddComponentListOption<Transform>("Transform", entity);
-            AddComponentListOption<Drawable>("Drawable", entity);
-            AddComponentListOption<Text>("Text", entity, {&m_EditorFont});
-            AddComponentListOption<Material>("Material", entity);
-
-            ImGui::EndPopup();
+    
+        ImGui::PopID();
+    
+        // return value
+        rec->x = xy.x;
+        rec->y = xy.y;
+        rec->w = wh.x;
+        rec->h = wh.y;
+    }
+    
+    static void DrawColorControl(const std::string& label, BlColor* color) {
+        ImGuiIO& io = ImGui::GetIO();
+    
+        ImVec4 imGuiColor = ImVec4(color->r / 255.0f, color->g / 255.0f, color->b / 255.0f, color->a / 255.0f);
+    
+        ImGui::PushID(label.c_str());
+    
+        ImGui::PushFont(io.Fonts->Fonts[1], 16);
+        if (ImGui::TreeNode(label.c_str())) {
+            ImGui::PopFont();
+    
+            ImGui::ColorEdit4("##ColorEdit", &imGuiColor.x);
+    
+            ImGui::TreePop();
+        } else {
+            ImGui::PopFont();
         }
-
-        DrawComponent<Tag>("Tag", entity, [](Tag& tag) {
-            ImGui::Text("Name: ");
-            ImGui::SameLine();
-            ImGui::InputText("##Name", &tag.Name);
-
-            ImGui::Text("UUID: ");
-            ImGui::SameLine();
-            ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 0.6f), "%llu", tag.UUID);
-        });
-        DrawComponent<Text>("Text", entity, [](Text& text) {
-            int size = text.FontSize;
-
-            ImGui::InputText("Cotents: ", &text.Contents); 
-            ImGui::InputInt("Font size", &size);
-
-            text.FontSize = size;
-        });
-        DrawComponent<Transform>("Transform", entity, [](Transform& transform) {
-            DrawVec2Control("Position: ", &transform.Position);
-            DrawVec2Control("Dimensions: ", &transform.Dimensions);
-        });
-        DrawComponent<Drawable>("Drawable", entity, [](Drawable& drawable) {
-            DrawColorControl("Color: ", &drawable.Color);
-        });
-        DrawComponent<Material>("Material", entity, [this](Material& material) {
-            ImGui::Button("Drop Texture Here!");
-
-            if (ImGui::BeginDragDropTarget()) {
-                // we don't want to create a new texture if one already exists
-                if (!material.Texture.ID) {
-                    if (auto payload = ImGui::AcceptDragDropPayload("ASSET_DRAG_DROP")) {
-                        std::string strPath = (char*)payload->Data;
-                        std::filesystem::path path(strPath);
-                        path = m_BaseDirectory / path;
-
-                        BlTexture tex;
-                        tex.Create(path);
-                        material.Texture = tex;
-                        material.Area = BlRec(0.0f, 0.0f, tex.Width, tex.Height);
-                        material.TexturePath = std::filesystem::relative(path, m_BaseDirectory);
-                    }
-                    
-                    ImGui::EndDragDropTarget();
-                }
-            }
-
-            ImGui::SameLine();
-            if (ImGui::Button("Remove Texture")) {
-                material.Texture.Delete();
-                material.TexturePath = "";
-            }
-
-            DrawRecControl("Area", &material.Area);
-        });
+    
+        ImGui::PopID();
+    
+        // return value from ImVec4
+        color->r = static_cast<u8>(imGuiColor.x * 255.0f);
+        color->g = static_cast<u8>(imGuiColor.y * 255.0f);
+        color->b = static_cast<u8>(imGuiColor.z * 255.0f);
+        color->a = static_cast<u8>(imGuiColor.w * 255.0f);
     }
 
-    ImGui::End();
-}
+#pragma endregion
+    
+#pragma region OverridenFunctions
 
-void EditorLayer::UI_Viewport() {
-    static int currentViewportSize = 1;
-    static const char* viewportSizes[] = { "960x540", "1280x720", "1920x1280", "2048x1080", "2560x1440", "3840x2160", "7680x4320" };
-    static bool showViewportOptionsWindow = false;
+    void EditorLayer::OnAttach() {
+        // m_EditorFont.CreateFont();
+    
+        ImGuiIO& io = ImGui::GetIO();
+        io.Fonts->AddFontFromFileTTF("Assets/arial/arial.ttf", 16);
+        io.Fonts->AddFontFromFileTTF("Assets/arial/arial-bold.ttf", 16);
+    
+        m_RenderTexture.Create(1280, 720);
+    
+        m_DirectoryIcon.Create("Assets/icons/directory.png");
+        m_FileIcon.Create("Assets/icons/file.png");
+        m_BackDirectoryIcon.Create("Assets/icons/back_directory.png");
+    
+        LoadProject();
+    
+        m_CurrentDirectory = m_CurrentProject.AssetDirectory;
+        m_BaseDirectory = m_CurrentProject.AssetDirectory;
+    }
 
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-    ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_MenuBar);
-    ImGui::PopStyleVar();
+    void EditorLayer::OnDetach() {
+        m_RenderTexture.Delete();
+    
+        m_DirectoryIcon.Delete();
+        m_FileIcon.Delete();
+        m_BackDirectoryIcon.Delete();
 
-    if (ImGui::BeginMenuBar()) {
-        if (ImGui::BeginMenu("Viewport options")) {
-            if (ImGui::BeginMenu("Size")) {
-                if (ImGui::Combo("Viewport size", &currentViewportSize, viewportSizes, IM_ARRAYSIZE(viewportSizes))) {
-                    u32 width = 0;
-                    u32 height = 0;
-            
-                    if (currentViewportSize == 0) {
-                        width = 960;
-                        height = 540;
-                    } else if (currentViewportSize == 1) {
-                        width = 1280;
-                        height = 720;
-                    } else if (currentViewportSize == 2) {
-                        width = 1920;
-                        height = 1280;
-                    } else if (currentViewportSize == 3) {
-                        width = 2048;
-                        height = 1080;
-                    } else if (currentViewportSize == 4) {
-                        width = 2560;
-                        height = 1440;
-                    } else if (currentViewportSize == 5) {
-                        width = 3840;
-                        height = 2160;
-                    } else if (currentViewportSize == 6) {
-                        width = 7680;
-                        height = 4320;
+        SaveProject();
+    }
+    
+    void EditorLayer::OnUpdate(f32 ts) {
+        if (m_EditorState == EditorState::Play) {
+            m_CurrentScene->OnRuntimeUpdate();
+        } else {
+            m_CurrentScene->OnUpdate();
+        }
+    }
+    
+    void EditorLayer::OnRender() {
+        Blackberry::AttachRenderTexture(m_RenderTexture);
+        
+        Blackberry::Clear();
+        m_CurrentScene->OnRender();
+    
+        Blackberry::DetachRenderTexture();
+    }
+    
+    void EditorLayer::OnUIRender() {
+        using namespace Blackberry::Components;
+    
+        // set up dockspace
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+    
+        ImGuiViewport* viewport = ImGui::GetMainViewport();
+    
+        ImGui::SetNextWindowPos(viewport->WorkPos);
+        ImGui::SetNextWindowSize(viewport->WorkSize);
+        ImGui::Begin("dockspace window", nullptr, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar |
+                                                  ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_MenuBar);
+        ImGui::PopStyleVar();
+    
+        ImGuiID dockspaceID = ImGui::GetID("dockspace");
+        ImGui::DockSpace(dockspaceID, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
+    
+        if (ImGui::BeginMenuBar()) {
+            if (ImGui::BeginMenu("File")) {
+                if (ImGui::BeginMenu("New")) {
+                    if (ImGui::MenuItem("Project")) {
+                        NewProject();
                     }
-            
-                    m_RenderTexture.Rezize(width, height);
+    
+                    if (ImGui::MenuItem("Scene")) {
+                        NewScene();
+                    }
+    
+                    ImGui::EndMenu();
                 }
-
+    
+                if (ImGui::MenuItem("Save Project", "CTRL+S")) {
+                    SaveProject();
+                }
+    
                 ImGui::EndMenu();
             }
-            
-            ImGui::EndMenu();
+    
+            ImGui::EndMenuBar();
         }
+        
+        ImGui::End();
+    
+        if (m_ShowNewProjectWindow) {
+            UI_NewProject();
+        }
+    
+        if (m_ShowNewSceneWindow) {
+            UI_NewScene();
+        }
+    
+        UI_AssetManager();
+        UI_Explorer();
+        UI_Properties();
+        UI_Viewport();
+    
+        if (m_ShowDemoWindow) {
+            ImGui::ShowDemoWindow(&m_ShowDemoWindow);
+        }
+    }
+    
+    void EditorLayer::OnEvent(const Blackberry::Event& event) {
+        if (event.GetEventType() == Blackberry::EventType::WindowResize) {
+            auto& wr = BL_EVENT_CAST(WindowResizeEvent);
+    
+            // m_RenderTexture.Delete();
+            // m_RenderTexture.Create(wr.GetWidth(), wr.GetHeight());
+        }
+    
+        if (event.GetEventType() == Blackberry::EventType::KeyPressed) {
+            auto& kp = BL_EVENT_CAST(KeyPressedEvent);
+            if (kp.GetKeyCode() == KeyCode::F3) {
+                m_ShowDemoWindow = true;
+            }
 
-        ImGui::EndMenuBar();
+            if (kp.GetKeyCode() == KeyCode::F) {
+                BL_INFO("Switched to playing scene.");
+                m_EditorState = EditorState::Play;
+                m_ActiveScene = Blackberry::Scene::Copy(m_EditingScene);
+                m_CurrentScene = m_ActiveScene;
+            }
+            if (kp.GetKeyCode() == KeyCode::G) {
+                BL_INFO("Reverted to editing scene.");
+                m_EditorState = EditorState::Edit;
+                m_CurrentScene = m_EditingScene;
+
+                delete m_ActiveScene;
+                m_ActiveScene = nullptr;
+            }
+        }
     }
 
-    ImGui::Image(m_RenderTexture.Texture.ID, ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
+#pragma endregion
 
-    if (ImGui::BeginDragDropTarget()) {
-        if (auto payload = ImGui::AcceptDragDropPayload("ASSET_DRAG_DROP")) {
-            bool sceneExists = false;
-
-            std::string strPath = (char*)payload->Data;
-            std::filesystem::path path(strPath);
-            path = m_BaseDirectory / path;
-            
-            for (auto& scene : m_CurrentProject.Scenes) {
-                if (scene.ScenePath == path) {
-                    m_EditingScene = &scene.Scene;
-                    sceneExists = true;
+#pragma region UIFunctions
+    
+    void EditorLayer::UI_AssetManager() {
+        namespace fs = std::filesystem;
+    
+        ImGui::Begin("Asset Manager");
+    
+        if (m_CurrentDirectory != m_BaseDirectory) {
+            if (ImGui::ImageButton("##BackDirectory", m_BackDirectoryIcon.ID, ImVec2(32.0f, 32.0f))) {
+                m_CurrentDirectory = m_CurrentDirectory.parent_path();
+            }
+        }
+    
+        static f32 padding = 16.0f;
+        static f32 thumbnailSize = 128.0f;
+        f32 cellSize = thumbnailSize + padding;
+    
+        f32 panelWidth = ImGui::GetContentRegionAvail().x;
+        u32 columnCount = (u32)(panelWidth / cellSize);
+        if (columnCount < 1) {
+            columnCount = 1;
+        }
+    
+        ImGui::Columns(columnCount, 0, false);
+    
+        for (const auto& file : fs::directory_iterator(m_CurrentDirectory)) {
+            const auto& path = file.path();
+            std::string name = path.filename().string();
+    
+            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
+    
+            if (file.is_directory()) {
+                ImGui::ImageButton(name.c_str(), m_DirectoryIcon.ID, ImVec2(thumbnailSize, thumbnailSize));
+            } else {
+                ImGui::ImageButton(name.c_str(), m_FileIcon.ID, ImVec2(thumbnailSize, thumbnailSize));
+            }
+    
+            ImGui::PopStyleVar();
+    
+            if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_AcceptNoDrawDefaultRect)) {
+                auto relative = fs::relative(path, m_BaseDirectory);
+                std::string filePath = relative.string();
+                ImGui::SetDragDropPayload("ASSET_DRAG_DROP", filePath.c_str(), filePath.size() + 1);
+                ImGui::Text("%s", name.c_str());
+                ImGui::EndDragDropSource();
+            }
+    
+            if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+                if (file.is_directory()) {
+                    m_CurrentDirectory /= path.filename();
                 }
             }
-
-            if (!sceneExists) {
-                m_EditingScene = LoadSceneFromFile(path);
-            }
+    
+            ImGui::TextWrapped(name.c_str());
+    
+            ImGui::NextColumn();
         }
-        ImGui::EndDragDropTarget();
-    };
+    
+        ImGui::Columns(1);
+    
+        ImGui::End();
+    }
+    
+    void EditorLayer::UI_Explorer() {
+        ImGui::Begin("Explorer");
 
-    ImGui::End();
-}
+        if (ImGui::BeginPopupContextWindow("ExplorerContextMenu")) {
+            if (ImGui::MenuItem("Add Entity")) {
+                memset(s_Buffer, 0, 512);
+                ImGui::OpenPopup("EntityName");
+            }
+            ImGui::EndPopup();
+        };
+    
+        if (ImGui::Button("Add Entity")) {
+            memset(s_Buffer, 0, 512);
+            ImGui::OpenPopup("EntityName");
+        }
+    
+        if (ImGui::BeginPopup("EntityName")) {
+            ImGui::InputText("Name: ", s_Buffer, 512);
+            if (ImGui::Button("OK")) {
+                Blackberry::Entity entity(m_CurrentScene->CreateEntity(s_Buffer), m_EditingScene);
+                
+                ImGui::CloseCurrentPopup();
+            }
+    
+            ImGui::EndPopup();
+        }
+    
+        ImGui::NewLine();
+        
+        for (auto id : m_CurrentScene->GetEntities()) {
+            ImGui::PushID(id);
+    
+            Blackberry::Entity entity(id, m_CurrentScene);
+            if (ImGui::Button(entity.GetComponent<Blackberry::Components::Tag>().Name.c_str())) {
+                m_IsEntitySelected = true;
+                m_SelectedEntity = id;
+            }
+    
+            ImGui::PopID();
+        }
+    
+        ImGui::End();
+    }
+    
+    void EditorLayer::UI_Properties() {
+        using namespace Blackberry::Components;
+    
+        ImGui::Begin("Properties");
+    
+        if (m_IsEntitySelected) {
+            Blackberry::Entity entity(m_SelectedEntity, m_CurrentScene);
+    
+            if (ImGui::Button("Add Component")) {
+                ImGui::OpenPopup("AddComponent");
+            }
+    
+            if (ImGui::BeginPopup("AddComponent")) {
+                AddComponentListOption<Transform>("Transform", entity);
+                AddComponentListOption<Drawable>("Drawable", entity);
+                AddComponentListOption<Text>("Text", entity, {&m_EditorFont});
+                AddComponentListOption<Material>("Material", entity);
+                AddComponentListOption<Script>("Script", entity);
+                AddComponentListOption<Velocity>("Velocity", entity);
+    
+                ImGui::EndPopup();
+            }
+    
+            DrawComponent<Tag>("Tag", entity, [](Tag& tag) {
+                ImGui::Text("Name: ");
+                ImGui::SameLine();
+                ImGui::InputText("##Name", &tag.Name);
+    
+                ImGui::Text("UUID: ");
+                ImGui::SameLine();
+                ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 0.6f), "%llu", tag.UUID);
+            });
+            DrawComponent<Text>("Text", entity, [](Text& text) {
+                int size = text.FontSize;
+    
+                ImGui::InputText("Cotents: ", &text.Contents); 
+                ImGui::InputInt("Font size", &size);
+    
+                text.FontSize = size;
+            });
+            DrawComponent<Transform>("Transform", entity, [](Transform& transform) {
+                DrawVec2Control("Position: ", &transform.Position);
+                DrawVec2Control("Dimensions: ", &transform.Dimensions);
+            });
+            DrawComponent<Drawable>("Drawable", entity, [](Drawable& drawable) {
+                DrawColorControl("Color: ", &drawable.Color);
+            });
+            DrawComponent<Material>("Material", entity, [this](Material& material) {
+                ImGui::Button("Drop Texture Here!");
+    
+                if (ImGui::BeginDragDropTarget()) {
+                    // we don't want to create a new texture if one already exists
+                    if (!material.Texture.ID) {
+                        if (auto payload = ImGui::AcceptDragDropPayload("ASSET_DRAG_DROP")) {
+                            std::string strPath = (char*)payload->Data;
+                            std::filesystem::path path(strPath);
+                            path = m_BaseDirectory / path;
+    
+                            BlTexture tex;
+                            tex.Create(path);
+                            material.Texture = tex;
+                            material.Area = BlRec(0.0f, 0.0f, tex.Width, tex.Height);
+                            material.TexturePath = std::filesystem::relative(path, m_BaseDirectory);
+                        }
+                        
+                        ImGui::EndDragDropTarget();
+                    }
+                }
+    
+                ImGui::SameLine();
+                if (ImGui::Button("Remove Texture")) {
+                    material.Texture.Delete();
+                    material.TexturePath = "";
+                }
+    
+                DrawRecControl("Area", &material.Area);
+            });
+            DrawComponent<Script>("Script", entity, [](Script& script) {
+                auto stringPath = script.ModulePath.string();
 
-void EditorLayer::UI_NewProject() {
-    static std::string projectName = "Example";
-    static std::string projectPath;
-    static std::string assetPath = "Assets/";
+                ImGui::Text("Module Path: "); ImGui::SameLine();
+                ImGui::InputText("##ModulePath", &stringPath);
 
-    ImGui::Begin("New Project", &m_ShowNewProjectWindow);
+                script.ModulePath = std::filesystem::path(stringPath);
+            });
+            DrawComponent<Velocity>("Velocity", entity, [](Velocity& velocity) {
+                DrawVec2Control("Acceleration: ", &velocity.Acceleration);
+            });
+        }
+    
+        ImGui::End();
+    }
+    
+    void EditorLayer::UI_Viewport() {
+        static int currentViewportSize = 1;
+        static const char* viewportSizes[] = { "960x540", "1280x720", "1920x1280", "2048x1080", "2560x1440", "3840x2160", "7680x4320" };
+        static bool showViewportOptionsWindow = false;
+    
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+        ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_MenuBar);
+        ImGui::PopStyleVar();
+    
+        if (ImGui::BeginMenuBar()) {
+            if (ImGui::BeginMenu("Viewport options")) {
+                if (ImGui::BeginMenu("Size")) {
+                    if (ImGui::Combo("Viewport size", &currentViewportSize, viewportSizes, IM_ARRAYSIZE(viewportSizes))) {
+                        u32 width = 0;
+                        u32 height = 0;
+                
+                        if (currentViewportSize == 0) {
+                            width = 960;
+                            height = 540;
+                        } else if (currentViewportSize == 1) {
+                            width = 1280;
+                            height = 720;
+                        } else if (currentViewportSize == 2) {
+                            width = 1920;
+                            height = 1280;
+                        } else if (currentViewportSize == 3) {
+                            width = 2048;
+                            height = 1080;
+                        } else if (currentViewportSize == 4) {
+                            width = 2560;
+                            height = 1440;
+                        } else if (currentViewportSize == 5) {
+                            width = 3840;
+                            height = 2160;
+                        } else if (currentViewportSize == 6) {
+                            width = 7680;
+                            height = 4320;
+                        }
+                
+                        m_RenderTexture.Rezize(width, height);
+                    }
+    
+                    ImGui::EndMenu();
+                }
+                
+                ImGui::EndMenu();
+            }
+    
+            ImGui::EndMenuBar();
+        }
+    
+        ImGui::Image(m_RenderTexture.Texture.ID, ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
+    
+        if (ImGui::BeginDragDropTarget()) {
+            if (auto payload = ImGui::AcceptDragDropPayload("ASSET_DRAG_DROP")) {
+                bool sceneExists = false;
+    
+                std::string strPath = (char*)payload->Data;
+                std::filesystem::path path(strPath);
+                path = m_BaseDirectory / path;
+                
+                for (auto& scene : m_CurrentProject.Scenes) {
+                    if (scene.ScenePath == path) {
+                        m_EditingScene = &scene.Scene;
+                        sceneExists = true;
+                    }
+                }
+    
+                if (!sceneExists) {
+                    m_EditingScene = LoadSceneFromFile(path);
+                }
 
-    ImGui::Text("Name: "); ImGui::SameLine();
-    ImGui::InputText("##ProjectName", &projectName);
-
-    ImGui::Text("Root Directory: "); ImGui::SameLine();
-    ImGui::InputText("##FilePath", &projectPath); ImGui::SameLine();
-    if (ImGui::SmallButton("...")) {
-        projectPath = Blackberry::FileDialogs::OpenFile("Blackberry Project (*.blproj)");
+                m_CurrentScene = m_EditingScene;
+            }
+            ImGui::EndDragDropTarget();
+        };
+    
+        ImGui::End();
+    }
+    
+    void EditorLayer::UI_NewProject() {
+        static std::string projectName = "Example";
+        static std::string projectPath;
+        static std::string assetPath = "Assets/";
+    
+        ImGui::Begin("New Project", &m_ShowNewProjectWindow);
+    
+        ImGui::Text("Name: "); ImGui::SameLine();
+        ImGui::InputText("##ProjectName", &projectName);
+    
+        ImGui::Text("Root Directory: "); ImGui::SameLine();
+        ImGui::InputText("##FilePath", &projectPath); ImGui::SameLine();
+        if (ImGui::SmallButton("...")) {
+            projectPath = Blackberry::FileDialogs::OpenFile("Blackberry Project (*.blproj)");
+        }
+    
+        ImGui::Text("Asset Directory: "); ImGui::SameLine();
+        ImGui::InputText("##AssetDirectory", &assetPath);
+    
+        if (ImGui::Button("Create")) {
+            m_CurrentProject.Name = projectName;
+            m_CurrentProject.ProjectDirectory = std::filesystem::path(projectPath).parent_path();
+            m_CurrentProject.AssetDirectory = m_CurrentProject.ProjectDirectory / assetPath;
+        }
+    
+        ImGui::End();
+    }
+    
+    void EditorLayer::UI_NewScene() {
+        static std::string scenePath;
+    
+        ImGui::Begin("New Scene", &m_ShowNewSceneWindow);
+    
+        ImGui::InputText("Scene Path: ", &scenePath); ImGui::SameLine();
+    
+        if (ImGui::Button("...")) {
+            scenePath = Blackberry::FileDialogs::OpenFile("Blackberry Scene (*.blscene)");
+        }
+    
+        if (ImGui::Button("Create")) {
+            EditorScene scene;
+            scene.ScenePath = scenePath;
+            scene.Name = "New Scene";
+            auto& newScene = m_CurrentProject.Scenes.emplace_back(scene);
+            m_EditingScene = &newScene.Scene;
+            m_CurrentScene = m_EditingScene;
+    
+            std::ofstream file(scenePath);
+            file.close();
+    
+            m_ShowNewSceneWindow = false;
+        };
+    
+        ImGui::End();
     }
 
-    ImGui::Text("Asset Directory: "); ImGui::SameLine();
-    ImGui::InputText("##AssetDirectory", &assetPath);
+#pragma endregion
 
-    if (ImGui::Button("Create")) {
-        m_CurrentProject.Name = projectName;
-        m_CurrentProject.ProjectDirectory = std::filesystem::path(projectPath).parent_path();
-        m_CurrentProject.AssetDirectory = m_CurrentProject.ProjectDirectory / assetPath;
+#pragma region ProjectFunctions
+    
+    void EditorLayer::LoadProject() {
+        std::string path = Blackberry::FileDialogs::OpenFile("Blackberry Project (*.blproj)");
+    
+        LoadProjectFromPath(path);
     }
-
-    ImGui::End();
-}
-
-void EditorLayer::UI_NewScene() {
-    static std::string scenePath;
-
-    ImGui::Begin("New Scene", &m_ShowNewSceneWindow);
-
-    ImGui::InputText("Scene Path: ", &scenePath); ImGui::SameLine();
-
-    if (ImGui::Button("...")) {
-        scenePath = Blackberry::FileDialogs::OpenFile("Blackberry Scene (*.blscene)");
+    
+    void EditorLayer::LoadProjectFromPath(const std::filesystem::path& path) {
+        std::string contents = Blackberry::ReadEntireFile(path);
+    
+        json j = json::parse(contents);
+        m_CurrentProject.ProjectDirectory = path.parent_path();
+        std::string assetDir = j.at("AssetsDirectory");
+        m_CurrentProject.AssetDirectory = path.parent_path() / assetDir;
+    
+        std::string startScene = j.at("StartScene");
+        std::filesystem::path scenePath = m_CurrentProject.AssetDirectory / startScene;
+        auto scene = LoadSceneFromFile(scenePath);
+    
+        m_EditingScene = scene;
+        m_CurrentScene = m_EditingScene;
+    } 
+    
+    void EditorLayer::SaveProject() {
+        for (auto& scene : m_CurrentProject.Scenes) {
+            SaveSceneToFile(scene.Scene, scene.ScenePath);
+        }
     }
-
-    if (ImGui::Button("Create")) {
+    
+    Blackberry::Scene* EditorLayer::LoadSceneFromFile(const std::filesystem::path& path) {
         EditorScene scene;
-        scene.ScenePath = scenePath;
-        scene.Name = "New Scene";
-        auto& newScene = m_CurrentProject.Scenes.emplace_back(scene);
-        m_EditingScene = &newScene.Scene;
-
-        std::ofstream file(scenePath);
-        file.close();
-
-        m_ShowNewSceneWindow = false;
-    };
-
-    ImGui::End();
-}
-
-void EditorLayer::LoadProject() {
-    std::string path = Blackberry::FileDialogs::OpenFile("Blackberry Project (*.blproj)");
-
-    LoadProjectFromPath(path);
-}
-
-void EditorLayer::LoadProjectFromPath(const std::filesystem::path& path) {
-    std::string contents = Blackberry::ReadEntireFile(path);
-
-    json j = json::parse(contents);
-    m_CurrentProject.ProjectDirectory = path.parent_path();
-    std::string assetDir = j.at("AssetsDirectory");
-    m_CurrentProject.AssetDirectory = path.parent_path() / assetDir;
-
-    std::string startScene = j.at("StartScene");
-    std::filesystem::path scenePath = m_CurrentProject.AssetDirectory / startScene;
-    auto scene = LoadSceneFromFile(scenePath);
-
-    m_EditingScene = scene;
-} 
-
-void EditorLayer::SaveProject() {
-    for (auto& scene : m_CurrentProject.Scenes) {
-        SaveSceneToFile(scene.Scene, scene.ScenePath);
+        scene.ScenePath = path;
+    
+        Blackberry::SceneSerializer serializer(&scene.Scene, m_CurrentProject.AssetDirectory);
+        serializer.Deserialize(path);
+    
+        m_CurrentProject.Scenes.emplace_back(scene);
+    
+        return &m_CurrentProject.Scenes.back().Scene;
     }
-}
+    
+    void EditorLayer::SaveSceneToFile(Blackberry::Scene& scene, const std::filesystem::path& path) {
+        Blackberry::SceneSerializer serializer(&scene, m_CurrentProject.AssetDirectory);
+        serializer.Serialize(path);
+    }
+    
+    void EditorLayer::NewProject() {
+        SaveProject();
+    
+        m_ShowNewProjectWindow = true;
+    }
+    
+    void EditorLayer::NewScene() {
+        m_ShowNewSceneWindow = true;
+    }
 
-Blackberry::Scene* EditorLayer::LoadSceneFromFile(const std::filesystem::path& path) {
-    EditorScene scene;
-    scene.ScenePath = path;
+#pragma endregion
 
-    Blackberry::SceneSerializer serializer(&scene.Scene, m_CurrentProject.AssetDirectory);
-    serializer.Deserialize(path);
-
-    m_CurrentProject.Scenes.push_back(std::move(scene));
-
-    return &m_CurrentProject.Scenes.back().Scene;
-}
-
-void EditorLayer::SaveSceneToFile(Blackberry::Scene& scene, const std::filesystem::path& path) {
-    Blackberry::SceneSerializer serializer(&scene, m_CurrentProject.AssetDirectory);
-    serializer.Serialize(path);
-}
-
-void EditorLayer::NewProject() {
-    SaveProject();
-
-    m_ShowNewProjectWindow = true;
-}
-
-void EditorLayer::NewScene() {
-    m_ShowNewSceneWindow = true;
-}
+} // namespace BlackberryEditor

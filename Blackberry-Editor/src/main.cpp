@@ -10,7 +10,7 @@ Blackberry::Application* Blackberry::Application::CreateApplication(const Comman
     spec.Height = 720;
 
     Blackberry::Application* app = new Blackberry::Application(spec);
-    app->PushLayer(new EditorLayer);
+    app->PushLayer(new BlackberryEditor::EditorLayer);
 
     return app;
 }

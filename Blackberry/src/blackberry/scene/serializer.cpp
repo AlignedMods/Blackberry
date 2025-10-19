@@ -51,6 +51,22 @@ namespace Blackberry {
                     {"Area", {material.Area.x, material.Area.y, material.Area.w, material.Area.h}}
                 };
             }
+
+            if (entity.HasComponent<Script>()) {
+                Script& script = entity.GetComponent<Script>();
+
+                j["Entities"][name]["ScriptComponent"] = { 
+                    {"ModulePath", script.ModulePath.string()}
+                };
+            }
+
+            if (entity.HasComponent<Velocity>()) {
+                Velocity& velocity = entity.GetComponent<Velocity>();
+
+                j["Entities"][name]["VelocityComponent"] = { 
+                    {"Acceleration", {velocity.Acceleration.x, velocity.Acceleration.y}}
+                };
+            }
         }
 
         std::ofstream stream(path);
@@ -105,6 +121,18 @@ namespace Blackberry {
                 tex.Create(m_AssetDirectory / filePath);
 
                 entity.AddComponent<Material>({ filePath, tex, BlRec(area[0], area[1], area[2], area[3]) });
+            }
+
+            if (jsonEntity.contains("ScriptComponent")) {
+                auto& jsonScript = jsonEntity.at("ScriptComponent");
+                std::filesystem::path modulePath = jsonScript.at("ModulePath");
+                entity.AddComponent<Script>({ modulePath });
+            }
+
+            if (jsonEntity.contains("VelocityComponent")) {
+                auto& jsonVelocity = jsonEntity.at("VelocityComponent");
+                std::array<f32, 2> acceleration = jsonVelocity.at("Acceleration");
+                entity.AddComponent<Velocity>({ BlVec2(acceleration[0], acceleration[1]) });
             }
         }
     }

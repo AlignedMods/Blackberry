@@ -106,18 +106,20 @@ namespace Blackberry {
     public:
         virtual void Update(f32 ts) {}
         virtual void Render() {}
+
+        virtual void RuntimeUpdate(f32 ts) {}
     public:
         Coordinator* m_Coordinator = nullptr;
-    };
-
-    class PhysicsSystem : public __System {
-    public:
-        virtual void Update(f32 ts) override {};
     };
 
     class RenderSystem : public __System {
     public:
         virtual void Render() override;
+    };
+
+    class PhysicsSystem : public __System {
+    public:
+        virtual void RuntimeUpdate(f32 ts) override;
     };
 
     class SystemManager {
@@ -143,6 +145,12 @@ namespace Blackberry {
             }
         }
 
+        void RuntimeUpdateAllSystems() {
+            for (auto&[_, system] : m_Systems) {
+                system->RuntimeUpdate(BL_APP.GetDeltaTime());
+            }
+        }
+
         void RenderAllSystems() {
             for (auto&[_, system] : m_Systems) {
                 system->Render();
@@ -164,6 +172,7 @@ namespace Blackberry {
 
             // systems
             RegisterSystem<RenderSystem>();
+            RegisterSystem<PhysicsSystem>();
 
             // components
             RegisterComponent<Drawable>();
@@ -171,6 +180,8 @@ namespace Blackberry {
             RegisterComponent<Material>();
             RegisterComponent<Text>();
             RegisterComponent<Tag>();
+            RegisterComponent<Script>();
+            RegisterComponent<Velocity>();
 
             m_Entities.reserve(200);
         }
@@ -213,6 +224,10 @@ namespace Blackberry {
 
         void Update() {
             m_SystemManager->UpdateAllSystems();
+        }
+        
+        void RuntimeUpdate() {
+            m_SystemManager->RuntimeUpdateAllSystems();
         }
 
         void Render() {

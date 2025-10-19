@@ -32,6 +32,30 @@
                     102.0
                 ]
             }
+        },
+        "ID - 1": {
+            "DrawableComponent": {
+                "Color": [
+                    255,
+                    255,
+                    255,
+                    255
+                ]
+            },
+            "TagComponent": {
+                "Name": "rabbit",
+                "UUID": 447502440251368817
+            },
+            "TransformComponent": {
+                "Dimensions": [
+                    291.0,
+                    316.0
+                ],
+                "Position": [
+                    1155.0,
+                    453.0
+                ]
+            }
         }
     }
 }

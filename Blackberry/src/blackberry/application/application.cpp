@@ -35,7 +35,7 @@ namespace Blackberry {
         m_LastTime = m_Window->GetTime();
 
         for (auto& layer : m_LayerStack.GetAllLayers()) {
-            layer->OnInit();
+            layer->OnAttach();
         }
 
         m_Initalized = true;

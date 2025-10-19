@@ -7,6 +7,7 @@ namespace Blackberry {
 
     LayerStack::~LayerStack() {
         for (auto ptr : m_Layers) {
+            ptr->OnDetach();
             delete ptr; // we must free up all the memory
         }
     }
@@ -14,10 +15,12 @@ namespace Blackberry {
     void LayerStack::PushLayer(Layer* layer)
     {
         m_Layers.push_back(layer);
-        m_Layers.back()->OnInit();
+        m_Layers.back()->OnAttach();
     }
 
     void LayerStack::PopLayer() {
+        m_Layers.back()->OnDetach();
+        delete m_Layers.back();
         m_Layers.pop_back();
     }
 
@@ -25,6 +28,7 @@ namespace Blackberry {
         auto layer = GetLayer(name);
 
         if (*layer) {
+            (*layer)->OnDetach();
             delete *layer;
             m_Layers.erase(layer);
         }

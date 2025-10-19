@@ -52,8 +52,14 @@
                     657.0
                 ],
                 "Position": [
-                    834.0,
+                    611.694580078125,
                     253.0
+                ]
+            },
+            "VelocityComponent": {
+                "Acceleration": [
+                    269.0,
+                    0.0
                 ]
             }
         },
@@ -73,7 +79,7 @@
                     736.0,
                     981.0
                 ],
-                "TexturePath": ""
+                "TexturePath": "Textures\\MANGODIDDYBLUD.jpg"
             },
             "TagComponent": {
                 "Name": "black rectangle",
@@ -87,6 +93,33 @@
                 "Position": [
                     1480.0,
                     752.0
+                ]
+            }
+        },
+        "ID - 3": {
+            "DrawableComponent": {
+                "Color": [
+                    255,
+                    255,
+                    255,
+                    255
+                ]
+            },
+            "ScriptComponent": {
+                "ModulePath": "Scripts/test.lua"
+            },
+            "TagComponent": {
+                "Name": "entity with a script",
+                "UUID": 98242770179166450
+            },
+            "TransformComponent": {
+                "Dimensions": [
+                    248.0,
+                    204.0
+                ],
+                "Position": [
+                    1397.0,
+                    113.0
                 ]
             }
         }

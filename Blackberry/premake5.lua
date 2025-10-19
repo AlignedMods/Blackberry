@@ -2,7 +2,7 @@ group "dependencies"
     include "external.lua"
 group ""
 
-BlackberryLinks = { "Blackberry", "glfw", "glad", "imgui", "freetype", "msdfgen", "msdf-atlas-gen" }
+BlackberryLinks = { "Blackberry", "glfw", "glad", "imgui", "freetype", "msdfgen", "msdf-atlas-gen", "lua" }
 
 project "Blackberry" -- The game engine
     language "C++"

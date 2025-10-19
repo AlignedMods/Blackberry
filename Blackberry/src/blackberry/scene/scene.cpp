@@ -4,10 +4,53 @@
 namespace Blackberry {
 
     Scene::Scene()
-        : m_Coordinator(new Coordinator) {}
+        : m_Coordinator(new Coordinator) {
+        BL_INFO("Scene created.");
+    }
+
+    Scene::~Scene() {
+        // Delete();
+        BL_INFO("Scene destroyed.");
+    }
+
+    template <typename T>
+    static void CopyComponent(Coordinator* dest, Coordinator* src, EntityID destEntity, EntityID srcEntity) {
+        if (src->HasComponent<T>(srcEntity)) {
+            T& component = src->GetComponent<T>(srcEntity);
+            dest->AddComponent<T>(destEntity, component);
+        }
+    }
+
+    Scene* Scene::Copy(Scene* current) {
+        Scene* scene = new Scene();
+
+        for (auto&[uuid, entity] : current->m_EntityMap) {
+            scene->CreateEntityWithUUID(uuid);
+
+            EntityID otherEntity = scene->m_EntityMap.at(uuid);
+
+            // copy components
+            using namespace Components;
+            CopyComponent<Tag>(scene->m_Coordinator, current->m_Coordinator, otherEntity, entity);
+            CopyComponent<Transform>(scene->m_Coordinator, current->m_Coordinator, otherEntity, entity);
+            CopyComponent<Material>(scene->m_Coordinator, current->m_Coordinator, otherEntity, entity);
+            CopyComponent<Drawable>(scene->m_Coordinator, current->m_Coordinator, otherEntity, entity);
+            CopyComponent<Text>(scene->m_Coordinator, current->m_Coordinator, otherEntity, entity);
+            CopyComponent<Script>(scene->m_Coordinator, current->m_Coordinator, otherEntity, entity);
+            CopyComponent<Velocity>(scene->m_Coordinator, current->m_Coordinator, otherEntity, entity);
+        }
+
+        return scene;
+    }
+
+    void Scene::Delete() {}
 
     void Scene::OnUpdate() {
         m_Coordinator->Update();
+    }
+
+    void Scene::OnRuntimeUpdate() {
+        m_Coordinator->RuntimeUpdate();
     }
 
     void Scene::OnRender() {

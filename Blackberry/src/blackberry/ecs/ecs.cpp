@@ -33,4 +33,21 @@ namespace Blackberry {
 
 #pragma endregion
 
+#pragma region PhysicsSystem
+
+    void PhysicsSystem::RuntimeUpdate(f32 ts) {
+        using namespace Components;
+
+        for (EntityID entity : m_Coordinator->GetEntities()) {
+            if (m_Coordinator->HasComponent<Transform>(entity) && m_Coordinator->HasComponent<Velocity>(entity)) {
+                Transform& transform = m_Coordinator->GetComponent<Transform>(entity);
+
+                transform.Position.x += m_Coordinator->GetComponent<Velocity>(entity).Acceleration.x * ts;
+                transform.Position.y += m_Coordinator->GetComponent<Velocity>(entity).Acceleration.y * ts;
+            }
+        }
+    }
+
+#pragma endregion
+
 } // namespace Blackberry

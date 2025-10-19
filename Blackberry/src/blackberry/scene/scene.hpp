@@ -11,8 +11,13 @@ namespace Blackberry {
     class Scene {
     public:
         Scene();
+        ~Scene();
+
+        static Scene* Copy(Scene* current);
+        void Delete();
 
         void OnUpdate();
+        void OnRuntimeUpdate();
         void OnRender();
 
         EntityID CreateEntity(const std::string& name);

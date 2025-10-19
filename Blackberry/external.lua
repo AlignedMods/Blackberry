@@ -174,3 +174,17 @@ project "msdf-atlas-gen"
 		"vendor/msdf-atlas-gen/msdf-atlas-gen/",
 		"vendor/msdf-atlas-gen/msdfgen/",
 		"vendor/msdf-atlas-gen/msdfgen/include/" }
+
+project "lua"
+	language "C"
+	cdialect "C89"
+	kind "StaticLib"
+    staticruntime "On"
+
+	targetdir ("../build/bin/" .. OutputDir .. "/%{prj.name}")
+	objdir ("../build/obj/" .. OutputDir .. "/%{prj.name}")
+
+	files { "vendor/lua/src/**.c", "vendor/lua/src/**.h" }
+	removefiles { "vendor/lua/src/lua.c" }
+
+	includedirs { "vendor/lua/src/" }
