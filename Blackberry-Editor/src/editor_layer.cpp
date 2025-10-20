@@ -137,6 +137,9 @@ namespace BlackberryEditor {
         m_DirectoryIcon.Create("Assets/icons/directory.png");
         m_FileIcon.Create("Assets/icons/file.png");
         m_BackDirectoryIcon.Create("Assets/icons/back_directory.png");
+        m_PlayIcon.Create("Assets/icons/play.png");
+        m_StopIcon.Create("Assets/icons/stop.png");
+        m_PauseIcon.Create("Assets/icons/pause.png");
     
         LoadProject();
     
@@ -222,6 +225,7 @@ namespace BlackberryEditor {
             UI_NewScene();
         }
     
+        UI_Toolbar();
         UI_AssetManager();
         UI_Explorer();
         UI_Properties();
@@ -247,18 +251,10 @@ namespace BlackberryEditor {
             }
 
             if (kp.GetKeyCode() == KeyCode::F) {
-                BL_INFO("Switched to playing scene.");
-                m_EditorState = EditorState::Play;
-                m_ActiveScene = Blackberry::Scene::Copy(m_EditingScene);
-                m_CurrentScene = m_ActiveScene;
+                OnScenePlay();
             }
             if (kp.GetKeyCode() == KeyCode::G) {
-                BL_INFO("Reverted to editing scene.");
-                m_EditorState = EditorState::Edit;
-                m_CurrentScene = m_EditingScene;
-
-                delete m_ActiveScene;
-                m_ActiveScene = nullptr;
+                OnSceneStop();
             }
         }
     }
@@ -267,6 +263,54 @@ namespace BlackberryEditor {
 
 #pragma region UIFunctions
     
+    void EditorLayer::UI_Toolbar() {
+        ImGuiWindowClass windowClass;
+        windowClass.DockNodeFlagsOverrideSet = ImGuiDockNodeFlags_AutoHideTabBar | ImGuiDockNodeFlags_NoUndocking;
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+
+        ImGui::SetNextWindowClass(&windowClass);
+        ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
+        ImGui::Begin("##Toolbar", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar);
+        ImGui::PopStyleColor();
+
+        auto playIcon = (m_EditorState == EditorState::Edit) ? m_PlayIcon : m_StopIcon;
+        auto pauseIcon = m_PauseIcon;
+
+        f32 size = ImGui::GetWindowHeight() - 4.0f;
+        f32 firstButtonPos = (ImGui::GetWindowContentRegionMax().x * 0.5f);
+
+        if (m_EditorState == EditorState::Play) {
+            firstButtonPos -= size * 0.5f;
+        }
+
+		ImGui::SetCursorPosX(firstButtonPos);
+    
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.2f, 0.2f, 0.0f));
+
+        if (ImGui::ImageButton("##PlayButton", playIcon.ID, ImVec2(size, size))) {
+            if (m_EditorState == EditorState::Edit) {
+                OnScenePlay();
+            } else {
+                OnSceneStop();
+            }
+        }
+
+        ImGui::SameLine();
+
+        if (m_EditorState == EditorState::Play) {
+            if (ImGui::ImageButton("##PauseButton", pauseIcon.ID, ImVec2(size, size))) {
+                // OnScenePause();
+            }
+        }
+
+        ImGui::PopStyleColor();
+    
+        ImGui::End();
+
+        ImGui::PopStyleVar();
+    }
+
     void EditorLayer::UI_AssetManager() {
         namespace fs = std::filesystem;
     
@@ -469,7 +513,7 @@ namespace BlackberryEditor {
         static int currentViewportSize = 1;
         static const char* viewportSizes[] = { "960x540", "1280x720", "1920x1280", "2048x1080", "2560x1440", "3840x2160", "7680x4320" };
         static bool showViewportOptionsWindow = false;
-    
+
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
         ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_MenuBar);
         ImGui::PopStyleVar();
@@ -506,13 +550,13 @@ namespace BlackberryEditor {
                 
                         m_RenderTexture.Rezize(width, height);
                     }
-    
+        
                     ImGui::EndMenu();
                 }
                 
                 ImGui::EndMenu();
             }
-    
+        
             ImGui::EndMenuBar();
         }
     
@@ -658,6 +702,28 @@ namespace BlackberryEditor {
     
     void EditorLayer::NewScene() {
         m_ShowNewSceneWindow = true;
+    }
+
+#pragma endregion
+
+#pragma region SceneFunctions
+
+    void EditorLayer::OnScenePlay() {
+        BL_INFO("Switched to playing scene.");
+        m_EditorState = EditorState::Play;
+        m_ActiveScene = Blackberry::Scene::Copy(m_EditingScene);
+        m_CurrentScene = m_ActiveScene;
+    }
+
+    void EditorLayer::OnSceneStop() {
+        BL_INFO("Reverted to editing scene.");
+        m_EditorState = EditorState::Edit;
+        m_CurrentScene = m_EditingScene;
+        delete m_ActiveScene;
+        m_ActiveScene = nullptr;
+    }
+
+    void EditorLayer::OnScenePause() {
     }
 
 #pragma endregion

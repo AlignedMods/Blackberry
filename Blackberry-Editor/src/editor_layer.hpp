@@ -34,6 +34,7 @@ namespace BlackberryEditor {
         virtual void OnEvent(const Blackberry::Event& event) override;
     
     private:
+        void UI_Toolbar();
         void UI_AssetManager();
         void UI_Explorer();
         void UI_Properties();
@@ -51,6 +52,10 @@ namespace BlackberryEditor {
     
         void NewProject();
         void NewScene();
+
+        void OnScenePlay();
+        void OnSceneStop();
+        void OnScenePause();
     
     private:
         bool m_ShowNewProjectWindow = false;
@@ -76,6 +81,9 @@ namespace BlackberryEditor {
         BlTexture m_DirectoryIcon;
         BlTexture m_FileIcon;
         BlTexture m_BackDirectoryIcon;
+        BlTexture m_PlayIcon;
+        BlTexture m_StopIcon;
+        BlTexture m_PauseIcon;
     
         bool m_ShowDemoWindow = false;
     };
