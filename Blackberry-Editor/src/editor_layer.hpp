@@ -63,7 +63,7 @@ namespace BlackberryEditor {
     
         Blackberry::Font m_EditorFont;
     
-        Blackberry::EntityID m_SelectedEntity = 0;
+        Blackberry::EntityID m_SelectedEntity = entt::null;
         bool m_IsEntitySelected = false;
     
         BlRenderTexture m_RenderTexture;

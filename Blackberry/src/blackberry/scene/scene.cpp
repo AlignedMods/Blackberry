@@ -1,10 +1,13 @@
 #include "blackberry/scene/scene.hpp"
 #include "blackberry/ecs/ecs.hpp"
+#include "blackberry/core/log.hpp"
+#include "blackberry/rendering/rendering.hpp"
+#include "blackberry/core/util.hpp"
 
 namespace Blackberry {
 
     Scene::Scene()
-        : m_Coordinator(new Coordinator) {
+        : m_ECS(new ECS) {
         BL_INFO("Scene created.");
     }
 
@@ -13,32 +16,10 @@ namespace Blackberry {
         BL_INFO("Scene destroyed.");
     }
 
-    template <typename T>
-    static void CopyComponent(Coordinator* dest, Coordinator* src, EntityID destEntity, EntityID srcEntity) {
-        if (src->HasComponent<T>(srcEntity)) {
-            T& component = src->GetComponent<T>(srcEntity);
-            dest->AddComponent<T>(destEntity, component);
-        }
-    }
-
     Scene* Scene::Copy(Scene* current) {
         Scene* scene = new Scene();
 
-        for (auto&[uuid, entity] : current->m_EntityMap) {
-            scene->CreateEntityWithUUID(uuid);
-
-            EntityID otherEntity = scene->m_EntityMap.at(uuid);
-
-            // copy components
-            using namespace Components;
-            CopyComponent<Tag>(scene->m_Coordinator, current->m_Coordinator, otherEntity, entity);
-            CopyComponent<Transform>(scene->m_Coordinator, current->m_Coordinator, otherEntity, entity);
-            CopyComponent<Material>(scene->m_Coordinator, current->m_Coordinator, otherEntity, entity);
-            CopyComponent<Drawable>(scene->m_Coordinator, current->m_Coordinator, otherEntity, entity);
-            CopyComponent<Text>(scene->m_Coordinator, current->m_Coordinator, otherEntity, entity);
-            CopyComponent<Script>(scene->m_Coordinator, current->m_Coordinator, otherEntity, entity);
-            CopyComponent<Velocity>(scene->m_Coordinator, current->m_Coordinator, otherEntity, entity);
-        }
+        scene->m_ECS = ECS::Copy(current->m_ECS);
 
         return scene;
     }
@@ -46,15 +27,30 @@ namespace Blackberry {
     void Scene::Delete() {}
 
     void Scene::OnUpdate() {
-        m_Coordinator->Update();
+        
     }
 
     void Scene::OnRuntimeUpdate() {
-        m_Coordinator->RuntimeUpdate();
+        
     }
 
     void Scene::OnRender() {
-        m_Coordinator->Render();
+        using namespace Components;
+
+        // Render
+
+        auto view = m_ECS->GetEntitiesWithComponents<Transform, Drawable>();
+
+        view.each([&](auto entity, Transform& transform, Drawable& drawable) {
+            if (m_ECS->HasComponent<Material>(entity)) {
+                Blackberry::Material& material = m_ECS->GetComponent<Material>(entity);
+
+                Blackberry::DrawTextureArea(transform.Position, transform.Dimensions, material.Area, material.Texture, drawable.Color);
+            } else {
+                Blackberry::DrawRectangle(transform.Position, transform.Dimensions, drawable.Color);
+            }
+
+        });
     }
 
     EntityID Scene::CreateEntity(const std::string& name) {
@@ -62,18 +58,25 @@ namespace Blackberry {
         CreateEntityWithUUID(id);
         m_NamedEntityMap[name] = id;
 
-        Components::Tag& tag = m_Coordinator->GetComponent<Components::Tag>(m_EntityMap.at(id));
+        Components::Tag& tag = m_ECS->GetComponent<Components::Tag>(m_EntityMap.at(id));
         tag.Name = name;
         
         return m_EntityMap.at(id);
     }
 
     EntityID Scene::CreateEntityWithUUID(u64 uuid) {
-        m_EntityMap[uuid] = m_Coordinator->CreateEntity();
+        m_EntityMap[uuid] = m_ECS->CreateEntity();
 
-        m_Coordinator->AddComponent<Components::Tag>(m_EntityMap.at(uuid), { "", uuid });
+        m_ECS->AddComponent<Components::Tag>(m_EntityMap.at(uuid), { "", uuid });
 
         return m_EntityMap.at(uuid);
+    }
+
+    void Scene::DestroyEntity(u64 uuid) {
+        BL_ASSERT(m_EntityMap.contains(uuid), "Entity with UUID {} does not exist!", uuid);
+
+        m_ECS->DestroyEntity(m_EntityMap.at(uuid));
+        m_EntityMap.erase(uuid);
     }
 
     EntityID Scene::GetEntity(const std::string& name) {
@@ -84,8 +87,8 @@ namespace Blackberry {
         return m_EntityMap.at(m_NamedEntityMap.at(name));
     }
 
-    std::vector<EntityID>& Scene::GetEntities() {
-        return m_Coordinator->GetEntities();
+    std::vector<EntityID> Scene::GetEntities() {
+        return m_ECS->GetAllEntities();
     }
 
 } // namespace Blackberry

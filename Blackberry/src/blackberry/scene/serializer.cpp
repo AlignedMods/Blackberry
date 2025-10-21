@@ -1,5 +1,6 @@
 #include "blackberry/scene/serializer.hpp"
 #include "blackberry/scene/entity.hpp"
+#include "blackberry/core/util.hpp"
 
 #include "json.hpp"
 using json = nlohmann::json;
@@ -17,7 +18,7 @@ namespace Blackberry {
             using namespace Components;
 
             Entity entity(id, m_Scene);
-            std::string name = "ID - " + std::to_string(id);
+            std::string name = "ID - " + std::to_string(static_cast<u32>(id));
             
             if (entity.HasComponent<Tag>()) {
                 Tag& tag = entity.GetComponent<Tag>();

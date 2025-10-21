@@ -18,7 +18,6 @@
 #include "blackberry/event/window_events.hpp"
 
 // ecs
-#include "blackberry/ecs/ecs.hpp"
 #include "blackberry/ecs/components.hpp"
 
 // scenes

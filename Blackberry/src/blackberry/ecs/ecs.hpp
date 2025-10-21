@@ -1,245 +1,86 @@
 #pragma once
 
-#include "blackberry/core/types.hpp"
-#include "blackberry/application/application.hpp"
 #include "blackberry/ecs/components.hpp"
-#include "blackberry/core/util.hpp"
+#include "blackberry/core/log.hpp"
 
-#include <unordered_map>
-#include <unordered_set>
-#include <memory>
-#include <string>
-#include <type_traits>
+#include "../vendor/entt/entt.hpp"
 
-// (aligned) TODO: redo everything
 namespace Blackberry {
 
-    using EntityID = u32;
+    using namespace Components;
 
-    // we need to have some sort of generic component array
-    class __ComponentArray {
+    using EntityID = entt::entity;
+
+    template <typename T>
+    inline static void CopyComponent(entt::registry* dest, entt::registry* src, entt::entity destEntity, entt::entity srcEntity) {
+        if (src->any_of<T>(srcEntity)) {
+            BL_INFO("Copying component {}", typeid(T).name());
+            dest->emplace<T>(destEntity, src->get<T>(srcEntity));
+        }
+    }
+
+    class ECS {
     public:
-        virtual void OnEntityDestroyed(EntityID entity) {}
-    };
+        ECS() = default;
+        ~ECS() = default;
 
-    template<typename T>
-    class ComponentArray : public __ComponentArray {
-    public:
-        void AddComponent(EntityID entity, const T& component) {
-            m_Components[entity] = component;
-        }
+        static ECS* Copy(ECS* current) {
+            ECS* newECS = new ECS();
 
-        T& GetComponent(EntityID entity) {
-            BL_ASSERT(m_Components.contains(entity), "Trying to get component that wanted entity doesn't contain!");
-            return m_Components.at(entity);
-        }
+            current->m_Registry.view<entt::entity>().each([&](auto entity) {
+                BL_INFO("Copying entity {}", static_cast<u32>(entity));
+                const auto newEntity = newECS->m_Registry.create(entity);
 
-        bool HasComponent(EntityID entity) {
-            return m_Components.contains(entity);
-        }
+                CopyComponent<Tag>(&newECS->m_Registry, &current->m_Registry, newEntity, entity);
+                CopyComponent<Transform>(&newECS->m_Registry, &current->m_Registry, newEntity, entity);
+                CopyComponent<Drawable>(&newECS->m_Registry, &current->m_Registry, newEntity, entity);
+                CopyComponent<Material>(&newECS->m_Registry, &current->m_Registry, newEntity, entity);
+                CopyComponent<Text>(&newECS->m_Registry, &current->m_Registry, newEntity, entity);
+                CopyComponent<Script>(&newECS->m_Registry, &current->m_Registry, newEntity, entity);
+                CopyComponent<Velocity>(&newECS->m_Registry, &current->m_Registry, newEntity, entity);
+            });
 
-        void RemoveComponent(EntityID entity) {
-            BL_ASSERT(m_Components.contains(entity), "Trying to remove component that wanted entity doesn't contain!");
-            m_Components.erase(entity);
-        }
-
-        virtual void OnEntityDestroyed(EntityID entity) {
-            if (!m_Components.contains(entity)) { return; }
-
-            m_Components.erase(entity);
-        }
-
-    private:
-        std::unordered_map<EntityID, T> m_Components;
-    };
-
-    class ComponentManager {
-    public:
-        template<typename T>
-        void RegisterComponent() {
-            const char* type = typeid(T).name();
-
-            m_ComponentArrays[type] = std::make_shared<ComponentArray<T>>();
-        }
-
-        template<typename T>
-        void AddComponent(EntityID entity, const T& component) {
-            auto comp = GetCompArray<T>();
-            comp->AddComponent(entity, component);
-        }
-
-        template<typename T>
-        T& GetComponent(EntityID entity) {
-            auto comp = GetCompArray<T>();
-            return comp->GetComponent(entity);
-        }
-
-        template<typename T>
-        bool HasComponent(EntityID entity) {
-            auto comp = GetCompArray<T>();
-            return comp->HasComponent(entity);
-        }
-
-        template<typename T>
-        void RemoveComponent(EntityID entity) {
-            auto comp = GetCompArray<T>();
-            comp->RemoveComponent(entity);
-        }
-
-        void OnEntityDestroyed(EntityID entity) {
-            for (auto&[_, componentArray] : m_ComponentArrays) {
-                componentArray->OnEntityDestroyed(entity);
-            }
-        }
-
-    private:
-        template<typename T>
-        std::shared_ptr<ComponentArray<T>> GetCompArray() {
-            return std::static_pointer_cast<ComponentArray<T>>(m_ComponentArrays.at(typeid(T).name()));
-        }
-
-    private:
-        std::unordered_map<const char*, std::shared_ptr<__ComponentArray>> m_ComponentArrays;
-    };
-
-    class __System {
-    public:
-        virtual void Update(f32 ts) {}
-        virtual void Render() {}
-
-        virtual void RuntimeUpdate(f32 ts) {}
-    public:
-        Coordinator* m_Coordinator = nullptr;
-    };
-
-    class RenderSystem : public __System {
-    public:
-        virtual void Render() override;
-    };
-
-    class PhysicsSystem : public __System {
-    public:
-        virtual void RuntimeUpdate(f32 ts) override;
-    };
-
-    class SystemManager {
-    public:
-        SystemManager() {
-            m_Coordinator = nullptr;
-        }
-
-        SystemManager(Coordinator* coordinator) {
-            m_Coordinator = coordinator;
-        }
-
-        template<typename T>
-        void RegisterSystem() {
-            const char* type = typeid(T).name();
-            m_Systems[type] = std::make_shared<T>();
-            m_Systems.at(type)->m_Coordinator = m_Coordinator;
-        }
-
-        void UpdateAllSystems() {
-            for (auto&[_, system] : m_Systems) {
-                system->Update(BL_APP.GetDeltaTime());
-            }
-        }
-
-        void RuntimeUpdateAllSystems() {
-            for (auto&[_, system] : m_Systems) {
-                system->RuntimeUpdate(BL_APP.GetDeltaTime());
-            }
-        }
-
-        void RenderAllSystems() {
-            for (auto&[_, system] : m_Systems) {
-                system->Render();
-            }
-        }
-
-    private:
-        std::unordered_map<const char*, std::shared_ptr<__System>> m_Systems;
-        Coordinator* m_Coordinator = nullptr;
-    };
-
-    class Coordinator {
-    public:
-        Coordinator() {
-            using namespace Components;
-
-            m_ComponentManager = std::make_unique<ComponentManager>();
-            m_SystemManager = std::make_unique<SystemManager>(this);
-
-            // systems
-            RegisterSystem<RenderSystem>();
-            RegisterSystem<PhysicsSystem>();
-
-            // components
-            RegisterComponent<Drawable>();
-            RegisterComponent<Transform>();
-            RegisterComponent<Material>();
-            RegisterComponent<Text>();
-            RegisterComponent<Tag>();
-            RegisterComponent<Script>();
-            RegisterComponent<Velocity>();
-
-            m_Entities.reserve(200);
+            return newECS;
         }
 
         EntityID CreateEntity() {
-            m_Entities.push_back(m_CurrentEntityID);
-            EntityID id = m_CurrentEntityID;
-            m_CurrentEntityID++;
-            return id;
+            return m_Registry.create();
         }
 
-        std::vector<EntityID>& GetEntities() {
-            return m_Entities;
+        void DestroyEntity(EntityID entity) {
+            m_Registry.destroy(entity);
         }
 
-        template<typename T>
-        void RegisterSystem() {
-            m_SystemManager->RegisterSystem<T>();
+        template <typename T>
+        void AddComponent(EntityID entity, const T& component) {
+            m_Registry.emplace<T>(entity, component);
         }
 
-        template<typename T>
-        void RegisterComponent() {
-            m_ComponentManager->RegisterComponent<T>();
-        }
-
-        template<typename T>
-        void AddComponent(EntityID entity, const T& component = T{}) {
-            m_ComponentManager->AddComponent<T>(entity, component);
-        }
-
-        template<typename T>
+        template <typename T>
         bool HasComponent(EntityID entity) {
-            return m_ComponentManager->HasComponent<T>(entity);
+            return m_Registry.any_of<T>(entity);
         }
 
-        template<typename T>
+        template <typename T>
         T& GetComponent(EntityID entity) {
-            return m_ComponentManager->GetComponent<T>(entity);
+            return m_Registry.get<T>(entity);
         }
 
-        void Update() {
-            m_SystemManager->UpdateAllSystems();
-        }
-        
-        void RuntimeUpdate() {
-            m_SystemManager->RuntimeUpdateAllSystems();
+        std::vector<EntityID> GetAllEntities() {
+            std::vector<EntityID> entities;
+            m_Registry.view<entt::entity>().each([&](auto entity) {
+                entities.push_back(entity);
+            });
+            return entities;
         }
 
-        void Render() {
-            m_SystemManager->RenderAllSystems();
+        template <typename... T>
+        auto GetEntitiesWithComponents() {
+            return m_Registry.view<T...>();
         }
 
     private:
-        std::unique_ptr<ComponentManager> m_ComponentManager;
-        std::unique_ptr<SystemManager> m_SystemManager;
-
-        EntityID m_CurrentEntityID = 0;
-        std::vector<EntityID> m_Entities;
+        entt::registry m_Registry;
     };
 
 } // namespace Blackberry

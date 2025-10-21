@@ -375,40 +375,49 @@ namespace BlackberryEditor {
     void EditorLayer::UI_Explorer() {
         ImGui::Begin("Explorer");
 
+        ImGui::SeparatorText("Entities: ");
+
         if (ImGui::BeginPopupContextWindow("ExplorerContextMenu")) {
-            if (ImGui::MenuItem("Add Entity")) {
-                memset(s_Buffer, 0, 512);
-                ImGui::OpenPopup("EntityName");
+            if (ImGui::MenuItem("Add Empty Entity")) {
+                m_CurrentScene->CreateEntity("Blank Entity");
             }
+
             ImGui::EndPopup();
         };
-    
-        if (ImGui::Button("Add Entity")) {
-            memset(s_Buffer, 0, 512);
-            ImGui::OpenPopup("EntityName");
-        }
-    
-        if (ImGui::BeginPopup("EntityName")) {
-            ImGui::InputText("Name: ", s_Buffer, 512);
-            if (ImGui::Button("OK")) {
-                Blackberry::Entity entity(m_CurrentScene->CreateEntity(s_Buffer), m_EditingScene);
-                
-                ImGui::CloseCurrentPopup();
-            }
-    
-            ImGui::EndPopup();
-        }
-    
-        ImGui::NewLine();
         
         for (auto id : m_CurrentScene->GetEntities()) {
-            ImGui::PushID(id);
+            ImGui::PushID(static_cast<u32>(id));
     
             Blackberry::Entity entity(id, m_CurrentScene);
-            if (ImGui::Button(entity.GetComponent<Blackberry::Components::Tag>().Name.c_str())) {
-                m_IsEntitySelected = true;
-                m_SelectedEntity = id;
+
+            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(16, 0));
+
+            if (m_SelectedEntity == id) {
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.26f, 0.59f, 0.98f, 0.4f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.26f, 0.59f, 0.98f, 0.7f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.26f, 0.59f, 0.98f, 1.0f));
+                
+                ImGui::Button(entity.GetComponent<Blackberry::Components::Tag>().Name.c_str(), ImVec2(ImGui::GetContentRegionAvail().x - 32.0f, 0));
+                
+                ImGui::PopStyleColor(3);
+            } else {
+                if (ImGui::Button(entity.GetComponent<Blackberry::Components::Tag>().Name.c_str(), ImVec2(ImGui::GetContentRegionAvail().x - 32.0f, 0))) {
+                    m_IsEntitySelected = true;
+                    m_SelectedEntity = id;
+                }
             }
+
+            ImGui::SameLine();
+            if (ImGui::Button("-")) {
+                m_CurrentScene->DestroyEntity(entity.GetComponent<Blackberry::Components::Tag>().UUID);
+
+                if (m_SelectedEntity == id) {
+                    m_IsEntitySelected = false;
+                    m_SelectedEntity = entt::null;
+                }
+            }
+
+            ImGui::PopStyleVar();
     
             ImGui::PopID();
         }
@@ -423,31 +432,30 @@ namespace BlackberryEditor {
     
         if (m_IsEntitySelected) {
             Blackberry::Entity entity(m_SelectedEntity, m_CurrentScene);
-    
-            if (ImGui::Button("Add Component")) {
-                ImGui::OpenPopup("AddComponent");
-            }
-    
-            if (ImGui::BeginPopup("AddComponent")) {
-                AddComponentListOption<Transform>("Transform", entity);
-                AddComponentListOption<Drawable>("Drawable", entity);
-                AddComponentListOption<Text>("Text", entity, {&m_EditorFont});
-                AddComponentListOption<Material>("Material", entity);
-                AddComponentListOption<Script>("Script", entity);
-                AddComponentListOption<Velocity>("Velocity", entity);
-    
+
+            if (ImGui::BeginPopupContextWindow("PropertiesContextMenu")) {
+                if (ImGui::BeginMenu("AddComponent")) {
+                    AddComponentListOption<Transform>("Transform", entity);
+                    AddComponentListOption<Drawable>("Drawable", entity);
+                    AddComponentListOption<Text>("Text", entity, {&m_EditorFont});
+                    AddComponentListOption<Material>("Material", entity);
+                    AddComponentListOption<Script>("Script", entity);
+                    AddComponentListOption<Velocity>("Velocity", entity);
+                    
+                    ImGui::EndMenu();
+                }
+
                 ImGui::EndPopup();
             }
     
-            DrawComponent<Tag>("Tag", entity, [](Tag& tag) {
-                ImGui::Text("Name: ");
-                ImGui::SameLine();
-                ImGui::InputText("##Name", &tag.Name);
-    
-                ImGui::Text("UUID: ");
-                ImGui::SameLine();
-                ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 0.6f), "%llu", tag.UUID);
-            });
+            Tag& tag = entity.GetComponent<Tag>();
+
+            ImGui::Text("Name: "); ImGui::SameLine();
+            ImGui::InputText("##EntityName", &tag.Name);
+            ImGui::TextDisabled("UUID: %llu", tag.UUID);
+
+            ImGui::SeparatorText("Components: ");
+
             DrawComponent<Text>("Text", entity, [](Text& text) {
                 int size = text.FontSize;
     

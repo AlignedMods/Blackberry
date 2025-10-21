@@ -13,21 +13,21 @@ namespace Blackberry {
 
         template <typename T>
         void AddComponent(const T& component = T{}) {
-            m_Scene->m_Coordinator->AddComponent<T>(ID, component);
+            m_Scene->m_ECS->AddComponent<T>(ID, component);
         }
 
         template <typename T>
         bool HasComponent() {
-            return m_Scene->m_Coordinator->HasComponent<T>(ID);
+            return m_Scene->m_ECS->HasComponent<T>(ID);
         }
 
         template <typename T>
         T& GetComponent() {
-            return m_Scene->m_Coordinator->GetComponent<T>(ID);
+            return m_Scene->m_ECS->GetComponent<T>(ID);
         }
 
     public:
-        EntityID ID = 0;
+        EntityID ID = entt::null;
 
     private:
         Scene* m_Scene = nullptr;

@@ -24,7 +24,8 @@ project "Blackberry" -- The game engine
                   "vendor/json/",
                   "vendor/msdf-atlas-gen/",
                   "vendor/msdf-atlas-gen/msdfgen/",
-                  "vendor/msdf-atlas-gen/msdfgen/include/" }
+                  "vendor/msdf-atlas-gen/msdfgen/include/",
+                  "vendor/entt/" }
 
     files { "src/platform/opengl/**.cpp", "src/platform/opengl/**.hpp" }
 
