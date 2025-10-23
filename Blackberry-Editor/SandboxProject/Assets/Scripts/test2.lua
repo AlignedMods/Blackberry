@@ -1,7 +1,7 @@
 local Script = {}
 
 function Script:OnAttach()
-    print("Script 1 attached!")
+    print("Script 2 attached!")
 end
 
 function Script:OnDetach()
@@ -9,7 +9,7 @@ function Script:OnDetach()
 end
 
 function Script:OnUpdate(dt)
-    print("Script 1 updating!")
+    print("Script 2 updating")
 end
 
 return Script

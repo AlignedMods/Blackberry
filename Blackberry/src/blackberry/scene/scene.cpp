@@ -27,6 +27,34 @@ namespace Blackberry {
 
     void Scene::Delete() {}
 
+    void Scene::OnPlay() {
+        auto view = m_ECS->GetEntitiesWithComponents<Script>();
+
+        view.each([&](auto entity, Script& script) {
+            // Execute script
+            Lua::RunFile(script.FilePath, script.ModulePath.string());
+            Lua::SetExecutionContext(script.ModulePath.string());
+
+            Lua::PushMember("OnAttach");
+            Lua::CallFunction(0, 0);
+
+            script.IsLoaded = true;
+        });
+    }
+
+    void Scene::OnStop() {
+        auto view = m_ECS->GetEntitiesWithComponents<Script>();
+
+        view.each([&](auto entity, Script& script) {
+            if (script.IsLoaded) {
+                Lua::SetExecutionContext(script.ModulePath.string());
+
+                Lua::PushMember("OnDetach");
+                Lua::CallFunction(0, 0);
+            }
+        });
+    }
+
     void Scene::OnUpdate() {
         
     }
@@ -37,12 +65,11 @@ namespace Blackberry {
         auto view = m_ECS->GetEntitiesWithComponents<Script>();
 
         view.each([&](auto entity, Script& script) {
-            // Execute script
-            if (!script.IsLoaded) {
-                Lua::RunFile(script.FilePath);
+            Lua::SetExecutionContext(script.ModulePath.string());
 
-                script.IsLoaded = true;
-            }
+            Lua::PushMember("OnUpdate");
+            Lua::PushNumber(BL_APP.GetDeltaTime());
+            Lua::CallFunction(1, 0);
         });
     }
 

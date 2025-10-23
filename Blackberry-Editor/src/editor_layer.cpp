@@ -725,9 +725,13 @@ namespace BlackberryEditor {
         m_EditorState = EditorState::Play;
         m_ActiveScene = Blackberry::Scene::Copy(m_EditingScene);
         m_CurrentScene = m_ActiveScene;
+
+        m_CurrentScene->OnPlay();
     }
 
     void EditorLayer::OnSceneStop() {
+        m_CurrentScene->OnStop();
+
         BL_INFO("Reverted to editing scene.");
         m_EditorState = EditorState::Edit;
         m_CurrentScene = m_EditingScene;

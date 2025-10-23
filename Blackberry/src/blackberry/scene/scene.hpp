@@ -16,6 +16,9 @@ namespace Blackberry {
         static Scene* Copy(Scene* current);
         void Delete();
 
+        void OnPlay();
+        void OnStop();
+
         void OnUpdate();
         void OnRuntimeUpdate();
         void OnRender();

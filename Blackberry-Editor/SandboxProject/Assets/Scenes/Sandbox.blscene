@@ -18,6 +18,9 @@
                 ],
                 "TexturePath": "Textures\\cat.jpg"
             },
+            "ScriptComponent": {
+                "ModulePath": "Scripts/test2.lua"
+            },
             "TagComponent": {
                 "Name": "cat",
                 "UUID": 4591843464429008100
