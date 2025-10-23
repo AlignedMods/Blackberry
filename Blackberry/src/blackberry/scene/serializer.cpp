@@ -127,7 +127,8 @@ namespace Blackberry {
             if (jsonEntity.contains("ScriptComponent")) {
                 auto& jsonScript = jsonEntity.at("ScriptComponent");
                 std::filesystem::path modulePath = jsonScript.at("ModulePath");
-                entity.AddComponent<Script>({ modulePath });
+                std::filesystem::path filePath = m_AssetDirectory / modulePath;
+                entity.AddComponent<Script>({ modulePath, filePath });
             }
 
             if (jsonEntity.contains("VelocityComponent")) {

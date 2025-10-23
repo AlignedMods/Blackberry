@@ -407,21 +407,24 @@ namespace BlackberryEditor {
                 }
             }
 
-            ImGui::SameLine();
-            if (ImGui::Button("-")) {
-                m_CurrentScene->DestroyEntity(entity.GetComponent<Blackberry::Components::Tag>().UUID);
+            if (ImGui::BeginPopupContextItem("EntityPopup")) {
+                if (ImGui::MenuItem("Delete Entity")) {
+                    m_CurrentScene->DestroyEntity(entity.GetComponent<Blackberry::Components::Tag>().UUID);
 
-                if (m_SelectedEntity == id) {
-                    m_IsEntitySelected = false;
-                    m_SelectedEntity = entt::null;
+                    if (m_SelectedEntity == id) {
+                        m_IsEntitySelected = false;
+                        m_SelectedEntity = entt::null;
+                    }
                 }
+
+                ImGui::EndPopup();
             }
 
             ImGui::PopStyleVar();
     
             ImGui::PopID();
         }
-    
+
         ImGui::End();
     }
     
@@ -434,7 +437,7 @@ namespace BlackberryEditor {
             Blackberry::Entity entity(m_SelectedEntity, m_CurrentScene);
 
             if (ImGui::BeginPopupContextWindow("PropertiesContextMenu")) {
-                if (ImGui::BeginMenu("AddComponent")) {
+                if (ImGui::BeginMenu("Add Component")) {
                     AddComponentListOption<Transform>("Transform", entity);
                     AddComponentListOption<Drawable>("Drawable", entity);
                     AddComponentListOption<Text>("Text", entity, {&m_EditorFont});
@@ -501,13 +504,14 @@ namespace BlackberryEditor {
     
                 DrawRecControl("Area", &material.Area);
             });
-            DrawComponent<Script>("Script", entity, [](Script& script) {
+            DrawComponent<Script>("Script", entity, [this](Script& script) {
                 auto stringPath = script.ModulePath.string();
 
                 ImGui::Text("Module Path: "); ImGui::SameLine();
                 ImGui::InputText("##ModulePath", &stringPath);
 
                 script.ModulePath = std::filesystem::path(stringPath);
+                script.FilePath = m_BaseDirectory / script.ModulePath;
             });
             DrawComponent<Velocity>("Velocity", entity, [](Velocity& velocity) {
                 DrawVec2Control("Acceleration: ", &velocity.Acceleration);

@@ -40,6 +40,8 @@ namespace Blackberry::Components {
 
     struct Script {
         std::filesystem::path ModulePath;
+        std::filesystem::path FilePath;
+        bool IsLoaded = false;
     };
 
 } // namespace Blackberry::Components

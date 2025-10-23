@@ -8,7 +8,7 @@
 #define BL_INFO(...) Blackberry::Log(Blackberry::LogLevel::Info, __VA_ARGS__)
 #define BL_DEBUG(...) Blackberry::Log(Blackberry::LogLevel::Debug, __VA_ARGS__)
 #define BL_WARNING(...) Blackberry::Log(Blackberry::LogLevel::Warning, __VA_ARGS__)
-#define BL_ERROR(...) Blackberry::Log(Blackberry::LogLevel::Error, __VA_ARGS__)
+#define BL_ERROR(...) Blackberry::Log(Blackberry::LogLevel::Error, __VA_ARGS__);
 #define BL_CRITICAL(...) Blackberry::Log(Blackberry::LogLevel::Critical, __VA_ARGS__); exit(1)
 
 namespace Blackberry {

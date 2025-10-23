@@ -3,6 +3,7 @@
 #include "blackberry/core/log.hpp"
 #include "blackberry/rendering/rendering.hpp"
 #include "blackberry/core/util.hpp"
+#include "blackberry/lua/lua.hpp"
 
 namespace Blackberry {
 
@@ -31,7 +32,18 @@ namespace Blackberry {
     }
 
     void Scene::OnRuntimeUpdate() {
-        
+        using namespace Components;
+
+        auto view = m_ECS->GetEntitiesWithComponents<Script>();
+
+        view.each([&](auto entity, Script& script) {
+            // Execute script
+            if (!script.IsLoaded) {
+                Lua::RunFile(script.FilePath);
+
+                script.IsLoaded = true;
+            }
+        });
     }
 
     void Scene::OnRender() {
