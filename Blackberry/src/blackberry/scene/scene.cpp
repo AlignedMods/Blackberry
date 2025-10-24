@@ -4,6 +4,13 @@
 #include "blackberry/rendering/rendering.hpp"
 #include "blackberry/core/util.hpp"
 #include "blackberry/lua/lua.hpp"
+#include "blackberry/scene/entity.hpp"
+
+extern "C" {
+    #include "lua.h"
+    #include "lauxlib.h"
+    #include "lualib.h"
+}
 
 namespace Blackberry {
 
@@ -35,8 +42,10 @@ namespace Blackberry {
             Lua::RunFile(script.FilePath, script.ModulePath.string());
             Lua::SetExecutionContext(script.ModulePath.string());
 
-            Lua::PushMember("OnAttach");
+            Lua::GetMember("OnAttach");
             Lua::CallFunction(0, 0);
+
+            Lua::Pop(1);
 
             script.IsLoaded = true;
         });
@@ -49,8 +58,10 @@ namespace Blackberry {
             if (script.IsLoaded) {
                 Lua::SetExecutionContext(script.ModulePath.string());
 
-                Lua::PushMember("OnDetach");
+                Lua::GetMember("OnDetach");
                 Lua::CallFunction(0, 0);
+
+                Lua::Pop(1);
             }
         });
     }
@@ -65,11 +76,19 @@ namespace Blackberry {
         auto view = m_ECS->GetEntitiesWithComponents<Script>();
 
         view.each([&](auto entity, Script& script) {
-            Lua::SetExecutionContext(script.ModulePath.string());
+            Entity e(entity, this);
 
-            Lua::PushMember("OnUpdate");
+            Lua::SetExecutionContext(script.ModulePath.string());
+            
+            Lua::GetMember("OnUpdate");
+
+            Lua::PushValue(-2); // push the table (self)
             Lua::PushNumber(BL_APP.GetDeltaTime());
-            Lua::CallFunction(1, 0);
+            Lua::PushLightUserData(&e); // entity pointer
+
+            Lua::CallFunction(3, 0);
+
+            Lua::Pop(1);
         });
     }
 

@@ -66,6 +66,11 @@ namespace Blackberry {
             return m_Registry.get<T>(entity);
         }
 
+        template <typename T>
+        void RemoveComponent(EntityID entity) {
+            m_Registry.remove<T>(entity);
+        }
+
         std::vector<EntityID> GetAllEntities() {
             std::vector<EntityID> entities;
             m_Registry.view<entt::entity>().each([&](auto entity) {

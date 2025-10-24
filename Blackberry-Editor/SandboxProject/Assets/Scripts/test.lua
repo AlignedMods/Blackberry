@@ -1,15 +1,20 @@
+local bl = require("Blackberry")
+
 local Script = {}
 
-function Script:OnAttach()
-    print("Script 1 attached!")
+function Script:OnAttach(entity)
+
 end
 
 function Script:OnDetach()
-    print("Script detached!")
+
 end
 
-function Script:OnUpdate(dt)
-    print("Script 1 updating!")
+function Script:OnUpdate(dt, entity)
+    local trans = bl.Entity.GetComponent(entity, "Transform")
+    trans.Position.x = trans.Position.x + 200.0 * dt
+
+    bl.Entity.SetComponent(entity, "Transform", trans)
 end
 
 return Script

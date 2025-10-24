@@ -10,13 +10,31 @@ namespace BlackberryEditor {
     
     template <typename T, typename F>
     static void DrawComponent(const std::string& name, Blackberry::Entity entity, F uiFunction) {
+        bool useUIFunction = false;
+
+        ImGui::PushID(name.c_str());
+
         if (entity.HasComponent<T>()) {
             T& component = entity.GetComponent<T>();
     
             if (ImGui::CollapsingHeader(name.c_str())) {
+                useUIFunction = true;
+            }
+
+            if (ImGui::BeginPopupContextItem("ComponentPopup")) {
+                if (ImGui::MenuItem("Remove Component")) {
+                    entity.RemoveComponent<T>();
+                }
+
+                ImGui::EndPopup();
+            }
+
+            if (useUIFunction) {
                 uiFunction(component);
             }
         }
+
+        ImGui::PopID();
     }
     
     template <typename T>

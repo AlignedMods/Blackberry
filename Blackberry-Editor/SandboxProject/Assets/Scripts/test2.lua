@@ -8,8 +8,8 @@ function Script:OnDetach()
     print("Script detached!")
 end
 
-function Script:OnUpdate(dt)
-    print("Script 2 updating")
+function Script:OnUpdate()
+    -- print("Script 2 updating")
 end
 
 return Script

@@ -26,6 +26,11 @@ namespace Blackberry {
             return m_Scene->m_ECS->GetComponent<T>(ID);
         }
 
+        template <typename T>
+        void RemoveComponent() {
+            m_Scene->m_ECS->RemoveComponent<T>(ID);
+        }
+
     public:
         EntityID ID = entt::null;
 
