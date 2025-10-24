@@ -174,38 +174,40 @@ namespace Blackberry {
         colors[ImGuiCol_HeaderActive] = ImVec4(0.3f, 0.3f, 0.3f, 1.0f);
 
         // checkboxes
-        colors[ImGuiCol_CheckMark] = ImVec4(0.9f, 0.2f, 0.2f, 1.0f);
+        colors[ImGuiCol_CheckMark] = ImVec4(0.9f, 0.9f, 0.9f, 1.0f);
 
         // frame backgrounds (checkbox, radio)
-        colors[ImGuiCol_FrameBg] = ImVec4(0.6f, 0.3f, 0.3f, 0.7f);
-        colors[ImGuiCol_FrameBgHovered] = ImVec4(0.7f, 0.3f, 0.3f, 0.8f);
-        colors[ImGuiCol_FrameBgActive] = ImVec4(0.8f, 0.4f, 0.4f, 0.9f);
+        colors[ImGuiCol_FrameBg] = ImVec4(0.4f, 0.4f, 0.4f, 1.0f);
+        colors[ImGuiCol_FrameBgHovered] = ImVec4(0.45f, 0.45f, 0.45f, 1.0f);
+        colors[ImGuiCol_FrameBgActive] = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
 
         // sliders
-        colors[ImGuiCol_SliderGrab] = ImVec4(0.7f, 0.4f, 0.4f, 0.7f);
-        colors[ImGuiCol_SliderGrabActive] = ImVec4(0.7f, 0.4f, 0.4f, 0.9f);
+        colors[ImGuiCol_SliderGrab] = ImVec4(0.7f, 0.7f, 0.7f, 1.0f);
+        colors[ImGuiCol_SliderGrabActive] = ImVec4(0.6f, 0.6f, 0.6f, 1.0f);
 
         // docking
         colors[ImGuiCol_DockingPreview] = ImVec4(0.6f, 0.3f, 0.3f, 0.7f);
 
         // tabs
-        colors[ImGuiCol_Tab] = ImVec4(0.3f, 0.1f, 0.1f, 0.3f);
-        colors[ImGuiCol_TabHovered] = ImVec4(0.3f, 0.1f, 0.1f, 0.5f);
-        colors[ImGuiCol_TabSelected] = ImVec4(0.3f, 0.1f, 0.1f, 0.6f);
+        colors[ImGuiCol_Tab] = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);
+        colors[ImGuiCol_TabHovered] = ImVec4(0.3f, 0.3f, 0.3f, 1.0f);
+        colors[ImGuiCol_TabSelected] = ImVec4(0.4f, 0.4f, 0.4f, 1.0f);
         colors[ImGuiCol_TabSelectedOverline] = ImVec4(0.4f, 0.1f, 0.1f, 1.0f);
-        colors[ImGuiCol_TabDimmed] = ImVec4(0.2f, 0.1f, 0.1f, 0.2f);
-        colors[ImGuiCol_TabDimmedSelected] = ImVec4(0.2f, 0.1f, 0.1f, 0.4f);
+
+        // tabs used by docking!
+        colors[ImGuiCol_TabDimmed] = ImVec4(0.3f, 0.3f, 0.3f, 1.0f);
+        colors[ImGuiCol_TabDimmedSelected] = ImVec4(0.4f, 0.4f, 0.4f, 1.0f);
 
         // windows
         colors[ImGuiCol_WindowBg] = ImVec4(0.05f, 0.05f, 0.05f, 1.0f);
-        colors[ImGuiCol_TitleBg] = ImVec4(0.5f, 0.2f, 0.2f, 1.0f);
-        colors[ImGuiCol_TitleBgActive] = ImVec4(0.8f, 0.2f, 0.2f, 1.0f);
-        colors[ImGuiCol_ResizeGrip] = ImVec4(0.4f, 0.2f, 0.2f, 0.8f);
+        colors[ImGuiCol_TitleBg] = ImVec4(0.1f, 0.1f, 0.1f, 1.0f);
+        colors[ImGuiCol_TitleBgActive] = ImVec4(0.6f, 0.2f, 0.2f, 1.0f);
+        colors[ImGuiCol_ResizeGrip] = ImVec4(0.1f, 0.2f, 0.8f, 1.0f);
         colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.5f, 0.2f, 0.2f, 0.9f);
         colors[ImGuiCol_ResizeGripActive] = ImVec4(0.6f, 0.2f, 0.2f, 1.0f);
 
         // the resize thingy on the edge on windows!
-        colors[ImGuiCol_SeparatorActive] = ImVec4(0.8f, 0.25f, 0.25f, 1.0f);
+        colors[ImGuiCol_SeparatorActive] = ImVec4(0.1f, 0.2f, 0.8f, 1.0f);
         colors[ImGuiCol_SeparatorHovered] = ImVec4(0.7f, 0.3f, 0.3f, 1.0f);
 
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;

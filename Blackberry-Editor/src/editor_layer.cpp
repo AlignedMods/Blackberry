@@ -147,8 +147,8 @@ namespace BlackberryEditor {
         // m_EditorFont.CreateFont();
     
         ImGuiIO& io = ImGui::GetIO();
-        io.Fonts->AddFontFromFileTTF("Assets/arial/arial.ttf", 16);
-        io.Fonts->AddFontFromFileTTF("Assets/arial/arial-bold.ttf", 16);
+        io.Fonts->AddFontFromFileTTF("Assets/creato_display/CreatoDisplay-Medium.otf", 18);
+        io.Fonts->AddFontFromFileTTF("Assets/creato_display/CreatoDisplay-Bold.otf", 18);
     
         m_RenderTexture.Create(1280, 720);
     
@@ -187,7 +187,16 @@ namespace BlackberryEditor {
         Blackberry::AttachRenderTexture(m_RenderTexture);
         
         Blackberry::Clear();
+
         m_CurrentScene->OnRender();
+
+        if (m_IsEntitySelected) {
+            Blackberry::Entity selectedEntity = Blackberry::Entity(m_SelectedEntity, m_CurrentScene);
+            if (selectedEntity.HasComponent<Blackberry::Components::Transform>()) {
+                auto& transform = selectedEntity.GetComponent<Blackberry::Components::Transform>();
+                Blackberry::DrawRectangle(BlVec2(transform.Position.x - 10.0f, transform.Position.y - 10.0f), BlVec2(transform.Dimensions.x + 20.0f, transform.Dimensions.y + 20.0f), BlColor(255, 0, 0, 255));
+            }
+        }
     
         Blackberry::DetachRenderTexture();
     }
@@ -248,6 +257,7 @@ namespace BlackberryEditor {
         UI_Explorer();
         UI_Properties();
         UI_Viewport();
+        UI_RendererStats();
     
         if (m_ShowDemoWindow) {
             ImGui::ShowDemoWindow(&m_ShowDemoWindow);
@@ -589,8 +599,23 @@ namespace BlackberryEditor {
         
             ImGui::EndMenuBar();
         }
+
+        ImVec2 area = ImGui::GetContentRegionAvail();
+
+        f32 scale = area.x / static_cast<f32>(m_RenderTexture.Texture.Width);
+        f32 y = m_RenderTexture.Texture.Height * scale;
+
+        if (y > area.y) {
+            scale = area.y / static_cast<f32>(m_RenderTexture.Texture.Height);
+        }
+
+        f32 sizeX = m_RenderTexture.Texture.Width * scale;
+        f32 sizeY = m_RenderTexture.Texture.Height * scale;
+
+        ImGui::SetCursorPosX(area.x / 2.0f - sizeX / 2.0f);
+        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + (area.y / 2.0f - sizeY / 2.0f));
     
-        ImGui::Image(m_RenderTexture.Texture.ID, ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
+        ImGui::Image(m_RenderTexture.Texture.ID, ImVec2(sizeX, sizeY), ImVec2(0, 1), ImVec2(1, 0));
     
         if (ImGui::BeginDragDropTarget()) {
             if (auto payload = ImGui::AcceptDragDropPayload("ASSET_DRAG_DROP")) {
@@ -616,6 +641,14 @@ namespace BlackberryEditor {
             ImGui::EndDragDropTarget();
         };
     
+        ImGui::End();
+    }
+
+    void EditorLayer::UI_RendererStats() {
+        ImGui::Begin("Renderer Stats");
+
+        ImGui::Text("Draw Calls: %u", BL_APP.GetRenderer().GetDrawCalls());
+
         ImGui::End();
     }
     

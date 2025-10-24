@@ -39,6 +39,7 @@ namespace BlackberryEditor {
         void UI_Explorer();
         void UI_Properties();
         void UI_Viewport();
+        void UI_RendererStats();
     
         void UI_NewProject();
         void UI_NewScene();
