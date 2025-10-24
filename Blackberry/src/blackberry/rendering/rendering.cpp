@@ -142,4 +142,9 @@ namespace Blackberry {
         return BL_APP.GetWindow().OpenFile(filter);
     }
 
+    std::string Directories::GetAppDataDirectory() {
+        auto& window = BL_APP.GetWindow();
+        return window.GetAppDataDirectory();
+    }
+
 } // namespace Blackberry

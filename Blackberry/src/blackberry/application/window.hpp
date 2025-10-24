@@ -31,6 +31,7 @@ namespace Blackberry {
         void SleepMilli(f64 milliseconds) const { SleepSeconds(milliseconds / 1000.0); }
 
         virtual std::string OpenFile(const char* filter) = 0;
+        virtual std::string GetAppDataDirectory() { return ""; }
 
         virtual void SetWindowIcon(const Image& image) = 0;
 

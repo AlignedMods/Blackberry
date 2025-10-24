@@ -14,6 +14,7 @@ namespace BlackberryEditor {
         std::string Name;
         std::filesystem::path AssetDirectory;
         std::filesystem::path ProjectDirectory;
+        std::filesystem::path ProjectFilePath;
     
         std::vector<EditorScene> Scenes;
     };
@@ -57,6 +58,10 @@ namespace BlackberryEditor {
         void OnScenePlay();
         void OnSceneStop();
         void OnScenePause();
+
+        // editor specific functions
+        void SaveEditorState();
+        void LoadEditorState();
     
     private:
         bool m_ShowNewProjectWindow = false;
@@ -87,6 +92,8 @@ namespace BlackberryEditor {
         BlTexture m_PauseIcon;
     
         bool m_ShowDemoWindow = false;
+
+        std::filesystem::path m_AppDataDirectory;
     };
 
 } // namespace BlackberryEditor

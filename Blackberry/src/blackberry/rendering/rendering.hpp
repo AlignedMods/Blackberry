@@ -37,4 +37,10 @@ namespace Blackberry {
 
     } // namespace FileDialogs
 
+    namespace Directories {
+
+        std::string GetAppDataDirectory();
+
+    } // namespace Directories
+
 } // namespace Blackberry

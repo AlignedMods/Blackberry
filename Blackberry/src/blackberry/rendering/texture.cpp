@@ -99,7 +99,7 @@ void BlRenderTexture::Create(u32 width, u32 height) {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void BlRenderTexture::Rezize(u32 width, u32 height) {
+void BlRenderTexture::Resize(u32 width, u32 height) {
     Delete();
     Create(width, height);
 }

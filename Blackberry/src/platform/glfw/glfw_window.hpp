@@ -23,6 +23,7 @@ namespace Blackberry {
         virtual void SetWindowIcon(const Image& image) override;
 
         virtual std::string OpenFile(const char* filter) override;
+        virtual std::string GetAppDataDirectory() override;
 
         virtual void* GetHandle() const override;
 

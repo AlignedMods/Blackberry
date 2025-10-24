@@ -305,7 +305,7 @@ namespace Blackberry {
     }
 
     std::string Window_GLFW::OpenFile(const char* filter) {
-        #ifdef BL_WINDOWS_BUILD
+#ifdef BL_WINDOWS_BUILD
 
         OPENFILENAMEA ofn;
         CHAR szFile[260]{};
@@ -325,7 +325,20 @@ namespace Blackberry {
 
         return std::string{};
 
-        #endif
+#endif
+    }
+
+    std::string Window_GLFW::GetAppDataDirectory() {
+#ifdef BL_WINDOWS_BUILD
+
+        CHAR path[MAX_PATH]{};
+        if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_APPDATA | CSIDL_FLAG_CREATE, NULL, 0, path))) {
+            return std::string(path);
+        }
+
+        return std::string{};
+
+#endif
     }
 
     void* Window_GLFW::GetHandle() const {

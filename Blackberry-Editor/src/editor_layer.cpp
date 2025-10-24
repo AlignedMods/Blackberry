@@ -144,13 +144,15 @@ namespace BlackberryEditor {
 #pragma region OverridenFunctions
 
     void EditorLayer::OnAttach() {
-        // m_EditorFont.CreateFont();
+        m_AppDataDirectory = Blackberry::Directories::GetAppDataDirectory();
     
         ImGuiIO& io = ImGui::GetIO();
         io.Fonts->AddFontFromFileTTF("Assets/creato_display/CreatoDisplay-Medium.otf", 18);
         io.Fonts->AddFontFromFileTTF("Assets/creato_display/CreatoDisplay-Bold.otf", 18);
     
         m_RenderTexture.Create(1280, 720);
+
+        LoadEditorState();
     
         m_DirectoryIcon.Create("Assets/icons/directory.png");
         m_FileIcon.Create("Assets/icons/file.png");
@@ -159,20 +161,19 @@ namespace BlackberryEditor {
         m_StopIcon.Create("Assets/icons/stop.png");
         m_PauseIcon.Create("Assets/icons/pause.png");
     
-        LoadProject();
-    
         m_CurrentDirectory = m_CurrentProject.AssetDirectory;
         m_BaseDirectory = m_CurrentProject.AssetDirectory;
     }
 
     void EditorLayer::OnDetach() {
+        SaveProject();
+        SaveEditorState();
+
         m_RenderTexture.Delete();
     
         m_DirectoryIcon.Delete();
         m_FileIcon.Delete();
         m_BackDirectoryIcon.Delete();
-
-        SaveProject();
     }
     
     void EditorLayer::OnUpdate(f32 ts) {
@@ -588,7 +589,7 @@ namespace BlackberryEditor {
                             height = 4320;
                         }
                 
-                        m_RenderTexture.Rezize(width, height);
+                        m_RenderTexture.Resize(width, height);
                     }
         
                     ImGui::EndMenu();
@@ -719,6 +720,11 @@ namespace BlackberryEditor {
     }
     
     void EditorLayer::LoadProjectFromPath(const std::filesystem::path& path) {
+        if (!std::filesystem::exists(path)) {
+            LoadProject();
+            return;
+        }
+
         std::string contents = Blackberry::ReadEntireFile(path);
     
         json j = json::parse(contents);
@@ -729,6 +735,8 @@ namespace BlackberryEditor {
         std::string startScene = j.at("StartScene");
         std::filesystem::path scenePath = m_CurrentProject.AssetDirectory / startScene;
         auto scene = LoadSceneFromFile(scenePath);
+
+        m_CurrentProject.ProjectFilePath = path;
     
         m_EditingScene = scene;
         m_CurrentScene = m_EditingScene;
@@ -791,6 +799,33 @@ namespace BlackberryEditor {
     }
 
     void EditorLayer::OnScenePause() {
+    }
+
+    void EditorLayer::SaveEditorState() {
+        if (!std::filesystem::exists(m_AppDataDirectory / "Blackberry-Editor")) {
+            std::filesystem::create_directory(m_AppDataDirectory / "Blackberry-Editor");
+        }
+
+        json j;
+        j["LastProjectPath"] = m_CurrentProject.ProjectFilePath.string();
+        j["ViewportDimensions"] = { m_RenderTexture.Texture.Width, m_RenderTexture.Texture.Height };
+
+        std::ofstream file(m_AppDataDirectory / "Blackberry-Editor" / "editor_state.blsettings");
+        file << j.dump(4);
+    }
+
+    void EditorLayer::LoadEditorState() {
+        if (!std::filesystem::exists(m_AppDataDirectory / "Blackberry-Editor" / "editor_state.blsettings")) {
+            return;
+        }
+
+        std::string contents = Blackberry::ReadEntireFile(m_AppDataDirectory / "Blackberry-Editor" / "editor_state.blsettings");
+        json j = json::parse(contents);
+
+        std::string lastProjectPath = j.at("LastProjectPath");
+        LoadProjectFromPath(lastProjectPath);
+        std::array<u32, 2> viewportDimensions = j.at("ViewportDimensions");
+        m_RenderTexture.Resize(viewportDimensions[0], viewportDimensions[1]);
     }
 
 #pragma endregion
