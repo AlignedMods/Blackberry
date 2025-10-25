@@ -103,18 +103,22 @@ namespace Blackberry {
             if (m_ECS->HasComponent<Material>(entity)) {
                 Blackberry::Material& material = m_ECS->GetComponent<Material>(entity);
 
-                Blackberry::DrawTextureArea(transform.Position, transform.Dimensions, material.Area, material.Texture, transform.Rotation, drawable.Color);
+                // Blackberry::DrawTextureArea(transform.Position, transform.Dimensions, material.Area, material.Texture, transform.Rotation, drawable.Color);
             } else {
                 switch (drawable.ShapeType) {
                     case Shape::Triangle:
-                        Blackberry::DrawTriangle(transform.Position, transform.Dimensions, transform.Rotation, drawable.Color);
+                        Renderer2D::DrawTriangle(transform.Position, transform.Dimensions, transform.Rotation, drawable.Color);
+
+                        // Blackberry::DrawTriangle(transform.Position, transform.Dimensions, transform.Rotation, drawable.Color);
                         break;
                     case Shape::Rectangle:
-                        Blackberry::DrawRectangle(transform.Position, transform.Dimensions, transform.Rotation, drawable.Color);
+                        // Blackberry::DrawRectangle(transform.Position, transform.Dimensions, transform.Rotation, drawable.Color);
                         break;
                 }
             }
         });
+
+        Renderer2D::Render();
     }
 
     EntityID Scene::CreateEntity(const std::string& name) {

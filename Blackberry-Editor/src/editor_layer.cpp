@@ -185,13 +185,13 @@ namespace BlackberryEditor {
     }
     
     void EditorLayer::OnRender() {
-        Blackberry::AttachRenderTexture(m_RenderTexture);
+        Blackberry::Renderer2D::AttachRenderTexture(m_RenderTexture);
         
-        Blackberry::Clear();
+        Blackberry::Renderer2D::Clear();
 
         m_CurrentScene->OnRender();
 
-        Blackberry::DetachRenderTexture();
+        Blackberry::Renderer2D::DetachRenderTexture();
     }
     
     void EditorLayer::OnUIRender() {
@@ -720,7 +720,7 @@ namespace BlackberryEditor {
     void EditorLayer::UI_RendererStats() {
         ImGui::Begin("Renderer Stats");
 
-        ImGui::Text("Draw Calls: %u", BL_APP.GetRenderer().GetDrawCalls());
+        // ImGui::Text("Draw Calls: %u", BL_APP.GetRenderer().GetDrawCalls());
 
         ImGui::End();
     }

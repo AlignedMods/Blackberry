@@ -1,8 +1,8 @@
 #pragma once
 
 #include "blackberry/application/renderer.hpp"
-
 #include "blackberry/core/types.hpp"
+
 #include "glm/glm.hpp"
 
 #include <vector>
@@ -16,32 +16,27 @@ namespace Blackberry {
         virtual void UpdateViewport(BlVec2 viewport) override;
 
         virtual void NewFrame() override;
+        virtual void EndFrame() override;
 
-        virtual void Begin(RenderingMode mode) override;
-        virtual void End() override;
+        virtual void Clear(BlColor color) const override;
 
-        virtual void SubVertex(const BlVertex& vert) override;
+        virtual void SetBufferLayout(const BlDrawBufferLayout& layout) override;
 
+        virtual void SubmitDrawBuffer(const BlDrawBuffer& buffer) override;
+        virtual void DrawIndexed(u32 count) override;
+        
         virtual void AttachDefaultShader(DefaultShader shader) override;
 
-        virtual void Clear() const override;
-
-        virtual void AttachTexture(const BlTexture tex) override;
-        virtual void DettachTexture() override;
-
         virtual void AttachRenderTexture(const BlRenderTexture texture) override;
-        virtual void DettachRenderTexture() override;
-
-        virtual u32 GetDrawCalls() const override { return m_DrawCalls; }
+        virtual void DetachRenderTexture() override;
 
     private:
-        virtual void Render() override;
-
         void CompileDefaultShaders();
 
     private:
         u32 m_VAO;
         u32 m_VBO;
+        u32 m_EBO;
     
         // shaders
         u32 m_ShapeShader;
@@ -50,21 +45,10 @@ namespace Blackberry {
 
         u32 m_CurrentShader;
 
-        f32 m_Vertices[2000];
-        u64 m_VertexIndex = 0;
-        u64 m_CurrentVertex = 0;
-
-        glm::mat4 m_Projection;
-
-        RenderingMode m_Mode;
-
-        bool m_UsingTexture = false;
-        BlTexture m_CurrentTexture;
-
-        u32 m_DrawCalls = 0;
-
         BlVec2 m_CurrentViewportSize;
         BlVec2 m_PrevViewportSize;
+
+        glm::mat4 m_Projection;
     };
 
 } // namespace Blackberry

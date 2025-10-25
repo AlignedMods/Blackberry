@@ -8,6 +8,7 @@
 #include "blackberry/ecs/ecs.hpp"
 #include "platform/glfw/glfw_window.hpp"
 #include "platform/opengl/opengl3_renderer.hpp"
+#include "blackberry/rendering/rendering.hpp"
 
 #include "imgui.h"
 #include "glad/glad.h"
@@ -123,12 +124,13 @@ namespace Blackberry {
     }
 
     void Application::OnRender() {
-        m_Renderer->NewFrame();
-        m_Renderer->Clear();
+        Renderer2D::Clear(Colors::Black);
 
         for (auto layer : m_LayerStack.GetAllLayers()) {
             layer->OnRender();
         }
+
+        Renderer2D::Render();
     }
 
     void Application::OnUIRender() {
