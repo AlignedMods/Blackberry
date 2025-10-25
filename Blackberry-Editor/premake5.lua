@@ -11,4 +11,4 @@ project "Blackberry-Editor"
 
     includedirs { "../Blackberry/src/" }
     
-    links { BlackberryLinks }
+    links { BlackberryLinks, "imguizmo" }

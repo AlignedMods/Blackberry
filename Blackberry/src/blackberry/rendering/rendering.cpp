@@ -6,18 +6,14 @@
 
 namespace Blackberry {
 
-    static void CalculateRotation(BlVertex& vertex, BlVec2 pos, f32 rotation) {
+    static void CalculateRotation(BlVec2& vertexPos, BlVec2 pos, f32 rotation) {
         f32 sinR = glm::sin(glm::radians(rotation));
         f32 cosR = glm::cos(glm::radians(rotation));
         
-        vertex.pos = BlVec2(
-            pos.x + (vertex.pos.x - pos.x) * cosR - (vertex.pos.y - pos.y) * sinR,
-            pos.y + (vertex.pos.x - pos.x) * sinR + (vertex.pos.y - pos.y) * cosR
+        vertexPos = BlVec2(
+            pos.x + (vertexPos.x - pos.x) * cosR - (vertexPos.y - pos.y) * sinR,
+            pos.y + (vertexPos.x - pos.x) * sinR + (vertexPos.y - pos.y) * cosR
         );
-    }
-
-    static void CalculateVertexPositionsRect(BlVertex& bl, BlVertex& tr, BlVertex& br, BlVertex& tl, BlVec2 pos, BlVec2 dimensions) {
-        
     }
 
     void Clear() {
@@ -32,6 +28,20 @@ namespace Blackberry {
 
     void DrawRectangle(BlVec2 pos, BlVec2 dimensions, f32 rotation, BlColor color) {
         DrawTexturedQuad(pos, dimensions, nullptr, BlRec(0.0f, 0.0f, 0.0f, 0.0f), rotation, color);
+    }
+
+    void DrawTriangle(BlVec2 pos, BlVec2 dimensions, f32 rotation, BlColor color) {
+        BlVec2 bl = BlVec2(pos.x - dimensions.x / 2.0f, pos.y + dimensions.y / 2.0f);
+        BlVec2 t = BlVec2(pos.x, pos.y - dimensions.y / 2.0f);
+        BlVec2 br = BlVec2(pos.x + dimensions.x / 2.0f, pos.y + dimensions.y / 2.0f);
+
+        if (rotation != 0.0f) {
+            CalculateRotation(bl, pos, rotation);
+            CalculateRotation(t, pos, rotation);
+            CalculateRotation(br, pos, rotation);
+        }
+
+        DrawTriangle(bl, t, br, color);
     }
 
     void DrawTriangle(BlVec2 bl, BlVec2 t, BlVec2 br, BlColor color) {
@@ -74,10 +84,10 @@ namespace Blackberry {
         BlVertex tl = BlVertex(BlVec2(pos.x - dimensions.x / 2.0f, pos.y - dimensions.y / 2.0f), color, BlVec2(area.x / texSize.x, area.y / texSize.y));
 
         if (rotation != 0.0f) {
-            CalculateRotation(bl, pos, rotation);
-            CalculateRotation(tr, pos, rotation);
-            CalculateRotation(br, pos, rotation);
-            CalculateRotation(tl, pos, rotation);
+            CalculateRotation(bl.pos, pos, rotation);
+            CalculateRotation(tr.pos, pos, rotation);
+            CalculateRotation(br.pos, pos, rotation);
+            CalculateRotation(tl.pos, pos, rotation);
         }
 
         if (texture) {

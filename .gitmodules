@@ -11,3 +11,6 @@
 [submodule "Blackberry/vendor/msdf-atlas-gen"]
 	path = Blackberry/vendor/msdf-atlas-gen
 	url = https://github.com/TheCherno/msdf-atlas-gen.git
+[submodule "Blackberry/vendor/imguizmo"]
+	path = Blackberry/vendor/imguizmo
+	url = https://github.com/CedricGuillemet/ImGuizmo.git

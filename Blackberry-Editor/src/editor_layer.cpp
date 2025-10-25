@@ -191,14 +191,6 @@ namespace BlackberryEditor {
 
         m_CurrentScene->OnRender();
 
-        if (m_IsEntitySelected) {
-            // Blackberry::Entity selectedEntity = Blackberry::Entity(m_SelectedEntity, m_CurrentScene);
-            // if (selectedEntity.HasComponent<Blackberry::Components::Transform>()) {
-            //     auto& transform = selectedEntity.GetComponent<Blackberry::Components::Transform>();
-            //     Blackberry::DrawRectangle(BlVec2(transform.Position.x - 10.0f, transform.Position.y - 10.0f), BlVec2(transform.Dimensions.x + 20.0f, transform.Dimensions.y + 20.0f), BlColor(255, 0, 0, 255));
-            // }
-        }
-    
         Blackberry::DetachRenderTexture();
     }
     
@@ -263,6 +255,33 @@ namespace BlackberryEditor {
         if (m_ShowDemoWindow) {
             ImGui::ShowDemoWindow(&m_ShowDemoWindow);
         }
+
+#if 0
+
+        if (m_IsEntitySelected) {
+            Blackberry::Entity entity(m_SelectedEntity, m_CurrentScene);
+
+            if (entity.HasComponent<Blackberry::Components::Transform>() && entity.HasComponent<Blackberry::Components::Drawable>()) {
+                auto& transform = entity.GetComponent<Blackberry::Components::Transform>();
+                auto& drawable = entity.GetComponent<Blackberry::Components::Drawable>();
+                ImDrawList* drawList = ImGui::GetForegroundDrawList();
+
+                // Outline around selected entity
+                if (drawable.ShapeType == Blackberry::Components::Shape::Rectangle) {
+                    drawList->AddRect(ImVec2(m_ViewportBounds.x + (transform.Position.x - transform.Dimensions.x / 2.0f) * m_ViewportScale, 
+                                         m_ViewportBounds.y + (transform.Position.y - transform.Dimensions.y / 2.0f) * m_ViewportScale), 
+                                  ImVec2(m_ViewportBounds.x + (transform.Position.x + transform.Dimensions.x / 2.0f) * m_ViewportScale, 
+                                         m_ViewportBounds.y + (transform.Position.y + transform.Dimensions.y / 2.0f) * m_ViewportScale), 
+                    IM_COL32(37, 184, 252, 255), 0.0f, ImDrawFlags_None, 1.5f);
+                }
+
+                
+
+                
+            }
+        }
+
+#endif
     }
     
     void EditorLayer::OnEvent(const Blackberry::Event& event) {
@@ -642,6 +661,9 @@ namespace BlackberryEditor {
             ImGui::EndMenuBar();
         }
 
+        auto viewportMin = ImGui::GetWindowContentRegionMin();
+        auto viewportMax = ImGui::GetWindowContentRegionMax();
+
         ImVec2 area = ImGui::GetContentRegionAvail();
 
         f32 scale = area.x / static_cast<f32>(m_RenderTexture.Texture.Width);
@@ -654,11 +676,20 @@ namespace BlackberryEditor {
         f32 sizeX = m_RenderTexture.Texture.Width * scale;
         f32 sizeY = m_RenderTexture.Texture.Height * scale;
 
-        ImGui::SetCursorPosX(area.x / 2.0f - sizeX / 2.0f);
-        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + (area.y / 2.0f - sizeY / 2.0f));
+        f32 cursorX = area.x / 2.0f - sizeX / 2.0f;
+        f32 cursorY = ImGui::GetCursorPosY() + (area.y / 2.0f - sizeY / 2.0f);
+
+        ImGui::SetCursorPosX(cursorX);
+        ImGui::SetCursorPosY(cursorY);
     
         ImGui::Image(m_RenderTexture.Texture.ID, ImVec2(sizeX, sizeY), ImVec2(0, 1), ImVec2(1, 0));
-    
+
+        m_ViewportScale = scale;
+        m_ViewportBounds.x = ImGui::GetWindowPos().x + cursorX;
+        m_ViewportBounds.y = ImGui::GetWindowPos().y + cursorY;
+        m_ViewportBounds.w = viewportMax.x - viewportMin.x;
+        m_ViewportBounds.h = viewportMax.y - viewportMin.y;
+
         if (ImGui::BeginDragDropTarget()) {
             if (auto payload = ImGui::AcceptDragDropPayload("ASSET_DRAG_DROP")) {
                 bool sceneExists = false;

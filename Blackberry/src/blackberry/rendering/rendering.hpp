@@ -16,6 +16,7 @@ namespace Blackberry {
     // shapes
     void DrawRectangle(BlVec2 pos, BlVec2 dimensions, BlColor color);
     void DrawRectangle(BlVec2 pos, BlVec2 dimensions, f32 rotation, BlColor color);
+    void DrawTriangle(BlVec2 pos, BlVec2 dimensions, f32 rotation = 0.0f, BlColor color = White);
     void DrawTriangle(BlVec2 bl, BlVec2 t, BlVec2 br, BlColor color);
 
     // loading and drawing textures

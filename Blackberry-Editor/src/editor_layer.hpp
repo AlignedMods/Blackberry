@@ -73,6 +73,8 @@ namespace BlackberryEditor {
         bool m_IsEntitySelected = false;
     
         BlRenderTexture m_RenderTexture;
+        BlRec m_ViewportBounds;
+        f32 m_ViewportScale = 1.0f;
     
         EditorProject m_CurrentProject;
         Blackberry::Scene* m_EditingScene = nullptr;

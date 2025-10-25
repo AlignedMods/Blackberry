@@ -8,11 +8,11 @@
 
 namespace Blackberry::Components {
 
-    enum class Shape {
-        Triangle,
-        Rectangle,
-        Circle,
-        Polygon
+    enum class Shape : u16 {
+        Triangle = 0,
+        Rectangle = 1,
+        Circle = 2,
+        Polygon = 3
     };
 
     struct Tag {

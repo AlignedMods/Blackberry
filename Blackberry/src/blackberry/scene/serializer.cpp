@@ -41,7 +41,10 @@ namespace Blackberry {
             if (entity.HasComponent<Drawable>()) {
                 Drawable& drawable = entity.GetComponent<Drawable>();
 
-                j["Entities"][name]["DrawableComponent"] = { {"Color", {drawable.Color.r, drawable.Color.g, drawable.Color.b, drawable.Color.a}} };
+                j["Entities"][name]["DrawableComponent"] = { 
+                    {"Color", {drawable.Color.r, drawable.Color.g, drawable.Color.b, drawable.Color.a}},
+                    {"ShapeType", static_cast<u16>(drawable.ShapeType) }
+                };
             }
 
             if (entity.HasComponent<Material>()) {
@@ -108,8 +111,9 @@ namespace Blackberry {
             if (jsonEntity.contains("DrawableComponent")) {
                 auto& jsonDrawable = jsonEntity.at("DrawableComponent");
                 std::array<u8, 4> color = jsonDrawable.at("Color");
+                u16 shapeType = jsonDrawable.at("ShapeType");
 
-                entity.AddComponent<Drawable>({ BlColor(color[0], color[1], color[2], color[3]) });
+                entity.AddComponent<Drawable>({ BlColor(color[0], color[1], color[2], color[3]), static_cast<Shape>(shapeType) });
             }
 
             // MaterialComponent

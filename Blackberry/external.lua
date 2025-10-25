@@ -188,3 +188,17 @@ project "lua"
 	removefiles { "vendor/lua/src/lua.c" }
 
 	includedirs { "vendor/lua/src/" }
+
+project "imguizmo"
+	language "C++"
+    cppdialect "C++20"
+    kind "StaticLib"
+    staticruntime "On"
+
+    targetdir("../build/bin/" .. OutputDir .. "/%{prj.name}")
+    objdir("../build/obj/" .. OutputDir .. "/%{prj.name}")
+
+	files { "vendor/imguizmo/ImGuizmo.h",
+			"vendor/imguizmo/ImGuizmo.cpp" }
+
+	includedirs { "vendor/imguizmo/", "vendor/imgui/" }
