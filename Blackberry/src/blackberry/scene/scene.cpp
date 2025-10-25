@@ -103,11 +103,20 @@ namespace Blackberry {
             if (m_ECS->HasComponent<Material>(entity)) {
                 Blackberry::Material& material = m_ECS->GetComponent<Material>(entity);
 
-                Blackberry::DrawTextureArea(transform.Position, transform.Dimensions, material.Area, material.Texture, drawable.Color);
+                Blackberry::DrawTextureArea(transform.Position, transform.Dimensions, material.Area, material.Texture, transform.Rotation, drawable.Color);
             } else {
-                Blackberry::DrawRectangle(transform.Position, transform.Dimensions, drawable.Color);
+                switch (drawable.ShapeType) {
+                    case Shape::Triangle:
+                        Blackberry::DrawTriangle(BlVec2(transform.Position.x, transform.Position.y + transform.Dimensions.y), 
+                                                 BlVec2(transform.Position.x + transform.Dimensions.x / 2.0f, transform.Position.y), 
+                                                 BlVec2(transform.Position.x + transform.Dimensions.x, transform.Position.y + transform.Dimensions.y), 
+                                                 drawable.Color);
+                        break;
+                    case Shape::Rectangle:
+                        Blackberry::DrawRectangle(transform.Position, transform.Dimensions, transform.Rotation, drawable.Color);
+                        break;
+                }
             }
-
         });
     }
 

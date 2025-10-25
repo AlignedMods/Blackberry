@@ -14,13 +14,16 @@ namespace Blackberry {
     void Clear();
 
     // shapes
-    void DrawRectangle(BlVec2 pos, BlVec2 dimensions, const BlColor& color);
-    void DrawTriangle(BlVec2 bl, BlVec2 t, BlVec2 br, const BlColor& color);
+    void DrawRectangle(BlVec2 pos, BlVec2 dimensions, BlColor color);
+    void DrawRectangle(BlVec2 pos, BlVec2 dimensions, f32 rotation, BlColor color);
+    void DrawTriangle(BlVec2 bl, BlVec2 t, BlVec2 br, BlColor color);
 
     // loading and drawing textures
-    void DrawTexture(BlVec2 pos, BlTexture texture, BlColor color = White);
-    void DrawTextureEx(BlVec2 pos, BlVec2 dimensions, BlTexture texture, BlColor color = White);
-    void DrawTextureArea(BlVec2 pos, BlVec2 dimensions, BlRec area, BlTexture texture, BlColor color = White); // draw only a part of the texture
+    void DrawTexture(BlVec2 pos, BlTexture texture, f32 rotation = 0.0f, BlColor color = White);
+    void DrawTextureEx(BlVec2 pos, BlVec2 dimensions, BlTexture texture, f32 rotation = 0.0f, BlColor color = White);
+    void DrawTextureArea(BlVec2 pos, BlVec2 dimensions, BlRec area, BlTexture texture, f32 rotation = 0.0f, BlColor color = White); // draw only a part of the texture
+
+    void DrawTexturedQuad(BlVec2 pos, BlVec2 dimensions, BlTexture* texture, BlRec area, f32 rotation = 0.0f, BlColor color = White);
 
     // render textures
     void DrawRenderTexture(BlVec2 pos, BlVec2 dimensions, BlRenderTexture texture);

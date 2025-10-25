@@ -5,6 +5,8 @@
 #include "blackberry/rendering/texture.hpp"
 
 struct BlVertex {
+    BlVertex() = default;
+
     inline explicit BlVertex(BlVec2 pos, BlColor color, BlVec2 texCoord)
         : pos(pos), color(color), texCoord(texCoord) {}
 

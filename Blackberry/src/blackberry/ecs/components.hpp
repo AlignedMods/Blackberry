@@ -8,6 +8,13 @@
 
 namespace Blackberry::Components {
 
+    enum class Shape {
+        Triangle,
+        Rectangle,
+        Circle,
+        Polygon
+    };
+
     struct Tag {
         std::string Name;
         u64 UUID;
@@ -15,6 +22,7 @@ namespace Blackberry::Components {
 
     struct Transform {
         BlVec2 Position;
+        f32 Rotation = 0.0f; // in degrees
         BlVec2 Dimensions;
     };
 
@@ -26,6 +34,7 @@ namespace Blackberry::Components {
 
     struct Drawable {
         BlColor Color = BlColor(0xff, 0xff, 0xff, 0xff);
+        Shape ShapeType = Shape::Rectangle;
     };
 
     struct Velocity {

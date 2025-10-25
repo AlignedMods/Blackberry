@@ -24,12 +24,12 @@
             },
             "TransformComponent": {
                 "Dimensions": [
-                    406.0,
+                    512.0,
                     503.0
                 ],
                 "Position": [
-                    30.0,
-                    185.0
+                    422.0,
+                    324.0
                 ]
             }
         },
@@ -48,12 +48,12 @@
             },
             "TransformComponent": {
                 "Dimensions": [
-                    290.0,
-                    657.0
+                    616.0,
+                    458.0
                 ],
                 "Position": [
-                    611.694580078125,
-                    253.0
+                    882.6950073242188,
+                    645.0
                 ]
             },
             "VelocityComponent": {
@@ -120,6 +120,30 @@
                 "Position": [
                     1397.0,
                     113.0
+                ]
+            }
+        },
+        "ID - 4": {
+            "DrawableComponent": {
+                "Color": [
+                    178,
+                    149,
+                    255,
+                    255
+                ]
+            },
+            "TagComponent": {
+                "Name": "Triangle",
+                "UUID": 8878740542775559736
+            },
+            "TransformComponent": {
+                "Dimensions": [
+                    464.0,
+                    303.0
+                ],
+                "Position": [
+                    1710.0,
+                    364.0
                 ]
             }
         }

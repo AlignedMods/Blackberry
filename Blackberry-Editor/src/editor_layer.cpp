@@ -192,11 +192,11 @@ namespace BlackberryEditor {
         m_CurrentScene->OnRender();
 
         if (m_IsEntitySelected) {
-            Blackberry::Entity selectedEntity = Blackberry::Entity(m_SelectedEntity, m_CurrentScene);
-            if (selectedEntity.HasComponent<Blackberry::Components::Transform>()) {
-                auto& transform = selectedEntity.GetComponent<Blackberry::Components::Transform>();
-                Blackberry::DrawRectangle(BlVec2(transform.Position.x - 10.0f, transform.Position.y - 10.0f), BlVec2(transform.Dimensions.x + 20.0f, transform.Dimensions.y + 20.0f), BlColor(255, 0, 0, 255));
-            }
+            // Blackberry::Entity selectedEntity = Blackberry::Entity(m_SelectedEntity, m_CurrentScene);
+            // if (selectedEntity.HasComponent<Blackberry::Components::Transform>()) {
+            //     auto& transform = selectedEntity.GetComponent<Blackberry::Components::Transform>();
+            //     Blackberry::DrawRectangle(BlVec2(transform.Position.x - 10.0f, transform.Position.y - 10.0f), BlVec2(transform.Dimensions.x + 20.0f, transform.Dimensions.y + 20.0f), BlColor(255, 0, 0, 255));
+            // }
         }
     
         Blackberry::DetachRenderTexture();
@@ -411,6 +411,26 @@ namespace BlackberryEditor {
                 m_CurrentScene->CreateEntity("Blank Entity");
             }
 
+            ImGui::Separator();
+
+            if (ImGui::BeginMenu("Add")) {
+                using namespace Blackberry::Components;
+
+                if (ImGui::MenuItem("Rectangle")) {
+                    Blackberry::Entity entity(m_CurrentScene->CreateEntity("Rectangle"), m_CurrentScene);
+                    entity.AddComponent<Drawable>();
+                    entity.AddComponent<Transform>({BlVec2(m_RenderTexture.Texture.Width / 2.0f - 100.0f, m_RenderTexture.Texture.Height / 2.0f - 50.0f), 0.0f, BlVec2(200.0f, 100.0f)});
+                };
+
+                if (ImGui::MenuItem("Triangle")) {
+                    Blackberry::Entity entity(m_CurrentScene->CreateEntity("Triangle"), m_CurrentScene);
+                    entity.AddComponent<Drawable>({.ShapeType = Shape::Triangle});
+                    entity.AddComponent<Transform>({BlVec2(m_RenderTexture.Texture.Width / 2.0f - 100.0f, m_RenderTexture.Texture.Height / 2.0f - 50.0f), 0.0f, BlVec2(200.0f, 100.0f)});
+                };
+                
+                ImGui::EndMenu();
+            }
+
             ImGui::EndPopup();
         };
         
@@ -498,10 +518,31 @@ namespace BlackberryEditor {
             });
             DrawComponent<Transform>("Transform", entity, [](Transform& transform) {
                 DrawVec2Control("Position: ", &transform.Position);
+
+                ImGui::DragFloat("Rotation: ", &transform.Rotation);
+
                 DrawVec2Control("Dimensions: ", &transform.Dimensions);
             });
             DrawComponent<Drawable>("Drawable", entity, [](Drawable& drawable) {
                 DrawColorControl("Color: ", &drawable.Color);
+
+                ImGuiIO& io = ImGui::GetIO();
+
+                ImGui::PushFont(io.Fonts->Fonts[1], 16);
+                if (ImGui::TreeNode("Shape")) {
+                    ImGui::PopFont();
+
+                    const char* shapeNames[] = { "Triangle", "Rectangle", "Circle", "Polygon" };
+                    int currentShape = static_cast<int>(drawable.ShapeType);
+    
+                    if (ImGui::Combo("Shape Type", &currentShape, shapeNames, IM_ARRAYSIZE(shapeNames))) {
+                        drawable.ShapeType = static_cast<Shape>(currentShape);
+                    }
+    
+                    ImGui::TreePop();
+                } else {
+                    ImGui::PopFont();
+                }
             });
             DrawComponent<Material>("Material", entity, [this](Material& material) {
                 ImGui::Button("Drop Texture Here!");

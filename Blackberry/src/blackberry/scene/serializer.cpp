@@ -101,7 +101,7 @@ namespace Blackberry {
                 std::array<f32, 2> position = jsonTransform.at("Position");
                 std::array<f32, 2> dimensions = jsonTransform.at("Dimensions");
                 
-                entity.AddComponent<Transform>({ BlVec2(position[0], position[1]), BlVec2(dimensions[0], dimensions[1]) });
+                entity.AddComponent<Transform>({ BlVec2(position[0], position[1]), 0.0f, BlVec2(dimensions[0], dimensions[1]) });
             }
 
             // DrawableComponent
