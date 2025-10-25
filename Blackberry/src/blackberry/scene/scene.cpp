@@ -101,18 +101,16 @@ namespace Blackberry {
 
         view.each([&](auto entity, Transform& transform, Drawable& drawable) {
             if (m_ECS->HasComponent<Material>(entity)) {
-                Blackberry::Material& material = m_ECS->GetComponent<Material>(entity);
+                Material& material = m_ECS->GetComponent<Material>(entity);
 
-                // Blackberry::DrawTextureArea(transform.Position, transform.Dimensions, material.Area, material.Texture, transform.Rotation, drawable.Color);
+                Renderer2D::DrawTextureArea(transform.Position, transform.Dimensions, material.Area, material.Texture, transform.Rotation, drawable.Color);
             } else {
                 switch (drawable.ShapeType) {
                     case Shape::Triangle:
                         Renderer2D::DrawTriangle(transform.Position, transform.Dimensions, transform.Rotation, drawable.Color);
-
-                        // Blackberry::DrawTriangle(transform.Position, transform.Dimensions, transform.Rotation, drawable.Color);
                         break;
                     case Shape::Rectangle:
-                        // Blackberry::DrawRectangle(transform.Position, transform.Dimensions, transform.Rotation, drawable.Color);
+                        Renderer2D::DrawRectangle(transform.Position, transform.Dimensions, transform.Rotation, drawable.Color);
                         break;
                 }
             }

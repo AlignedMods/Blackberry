@@ -29,7 +29,7 @@
                     503.0
                 ],
                 "Position": [
-                    396.0,
+                    359.0,
                     401.0
                 ]
             }
@@ -38,7 +38,7 @@
             "DrawableComponent": {
                 "Color": [
                     0,
-                    160,
+                    149,
                     142,
                     255
                 ],
@@ -95,14 +95,14 @@
                 ],
                 "Position": [
                     1480.0,
-                    752.0
+                    488.0
                 ]
             }
         },
         "ID - 3": {
             "DrawableComponent": {
                 "Color": [
-                    255,
+                    10,
                     255,
                     255,
                     255
@@ -147,8 +147,33 @@
                     250.0
                 ],
                 "Position": [
-                    1710.0,
-                    364.0
+                    1249.0,
+                    322.0
+                ]
+            }
+        },
+        "ID - 5": {
+            "DrawableComponent": {
+                "Color": [
+                    99,
+                    208,
+                    65,
+                    255
+                ],
+                "ShapeType": 1
+            },
+            "TagComponent": {
+                "Name": "Rectangle",
+                "UUID": 489132617593815136
+            },
+            "TransformComponent": {
+                "Dimensions": [
+                    200.0,
+                    100.0
+                ],
+                "Position": [
+                    639.0,
+                    478.0
                 ]
             }
         }

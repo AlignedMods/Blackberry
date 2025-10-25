@@ -7,10 +7,13 @@
 struct BlDrawBuffer {
     std::string DebugName;
 
-    std::vector<u32> Indices;
     void* Vertices; // vertex data could be any struct, so we use void*
     u32 VertexCount = 0;
     u32 VertexSize = 0; // size of a single vertex (bytes)
+
+    u32* Indices = nullptr; // index data (u32 array)
+    u32 IndexCount = 0;
+    u32 IndexSize = 0; // size of a single index (bytes)
 
     BlTexture* Texture = nullptr; // NOTE: sadly for now we have to bind texture per buffer (although this does allow for a lot of the same textures to be drawn at once)
 };
@@ -56,6 +59,9 @@ namespace Blackberry {
         virtual void DrawIndexed(u32 count) = 0;
 
         virtual void AttachDefaultShader(DefaultShader shader) = 0;
+
+        virtual void AttachTexture(BlTexture texture) = 0;
+        virtual void DetachTexture() = 0;
 
         virtual void AttachRenderTexture(const BlRenderTexture texture) = 0;
         virtual void DetachRenderTexture() = 0;

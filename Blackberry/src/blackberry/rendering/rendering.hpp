@@ -31,8 +31,6 @@ namespace Blackberry {
         static void DrawTextureEx(BlVec2 pos, BlVec2 dimensions, BlTexture texture, f32 rotation = 0.0f, BlColor color = Colors::White);
         static void DrawTextureArea(BlVec2 pos, BlVec2 dimensions, BlRec area, BlTexture texture, f32 rotation = 0.0f, BlColor color = Colors::White);
 
-        static void DrawTexturedQuad(BlVec2 pos, BlVec2 dimensions, BlTexture* texture, BlRec area, f32 rotation = 0.0f, BlColor color = Colors::White);
-
         static void DrawRenderTexture(BlVec2 pos, BlVec2 dimensions, BlRenderTexture texture);
 
         static void AttachRenderTexture(BlRenderTexture texture);

@@ -27,6 +27,9 @@ namespace Blackberry {
         
         virtual void AttachDefaultShader(DefaultShader shader) override;
 
+        virtual void AttachTexture(BlTexture texture) override;
+        virtual void DetachTexture() override;
+
         virtual void AttachRenderTexture(const BlRenderTexture texture) override;
         virtual void DetachRenderTexture() override;
 
