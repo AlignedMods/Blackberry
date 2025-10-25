@@ -33,7 +33,7 @@ namespace Blackberry {
                 Transform& transform = entity.GetComponent<Transform>();
 
                 j["Entities"][name]["TransformComponent"] = { 
-                    {"Position", {transform.Position.x, transform.Position.y} },
+                    {"Position", {transform.Position.x, transform.Position.y, transform.Position.z} },
                     {"Dimensions", {transform.Dimensions.x, transform.Dimensions.y} }
                 };
             }
@@ -101,10 +101,10 @@ namespace Blackberry {
             // TransformComponent
             if (jsonEntity.contains("TransformComponent")) {
                 auto& jsonTransform = jsonEntity.at("TransformComponent");
-                std::array<f32, 2> position = jsonTransform.at("Position");
+                std::array<f32, 3> position = jsonTransform.at("Position");
                 std::array<f32, 2> dimensions = jsonTransform.at("Dimensions");
                 
-                entity.AddComponent<Transform>({ BlVec2(position[0], position[1]), 0.0f, BlVec2(dimensions[0], dimensions[1]) });
+                entity.AddComponent<Transform>({ BlVec3(position[0], position[1], position[2]), 0.0f, BlVec2(dimensions[0], dimensions[1]) });
             }
 
             // DrawableComponent

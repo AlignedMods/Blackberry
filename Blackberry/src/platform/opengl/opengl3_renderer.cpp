@@ -13,7 +13,7 @@ namespace Blackberry {
     static const char* s_VertexShapeShaderSource = BL_STR(
         // we cannot use '#' since the c preprocesser gets mad at us (actually only lsp cared but yknow)
         \x23version 460 core\n
-        layout (location = 0) in vec2 a_Pos;
+        layout (location = 0) in vec3 a_Pos;
         layout (location = 1) in vec4 a_Color;
     
         out vec4 col;
@@ -21,14 +21,14 @@ namespace Blackberry {
         uniform mat4 u_Projection;
     
         void main() {
-            gl_Position = u_Projection * vec4(a_Pos.x, a_Pos.y, 0.0, 1.0);
+            gl_Position = u_Projection * vec4(a_Pos.x, a_Pos.y, a_Pos.z, 1.0);
             col = a_Color;
         }
     );
 
     static const char* s_VertexTextureShaderSource = BL_STR(
         \x23version 460 core\n
-        layout (location = 0) in vec2 a_Pos;
+        layout (location = 0) in vec3 a_Pos;
         layout (location = 1) in vec4 a_Color;
         layout (location = 2) in vec2 a_TexCoord;
     
@@ -38,7 +38,7 @@ namespace Blackberry {
         uniform mat4 u_Projection;
     
         void main() {
-            gl_Position = u_Projection * vec4(a_Pos.x, a_Pos.y, 0.0, 1.0);
+            gl_Position = u_Projection * vec4(a_Pos.x, a_Pos.y, a_Pos.z, 1.0);
             col = a_Color;
             texCoord = a_TexCoord;
         }
@@ -64,10 +64,10 @@ namespace Blackberry {
 
         out vec4 FragColor;
 
-        uniform sampler2D u_Sampler;
+        uniform sampler2D u_Texture;
 
         void main() {
-            vec4 texColor = texture(u_Sampler, texCoord);
+            vec4 texColor = texture(u_Texture, texCoord);
             FragColor = texColor * col;
         }
     );
@@ -141,6 +141,9 @@ namespace Blackberry {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glEnable(GL_MULTISAMPLE);
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LEQUAL);
+        glDepthRange(0.0, 1.0);
 
         // compile shaders
         CompileDefaultShaders();
@@ -168,7 +171,7 @@ namespace Blackberry {
             (f32)viewport.x, // right
             (f32)viewport.y, // bottom
             0.0f,            // top
-            -1.0f, 1.0f      // near-far
+            -10.0f, 10.0f      // near-far
         );
     }
 
@@ -202,7 +205,7 @@ namespace Blackberry {
 
     void Renderer_OpenGL3::Clear(BlColor color) const {
         glClearColor(color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
     void Renderer_OpenGL3::SetBufferLayout(const BlDrawBufferLayout& layout) {

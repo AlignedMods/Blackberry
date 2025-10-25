@@ -47,7 +47,7 @@ namespace Blackberry::Lua {
                 
                 lua_newtable(L);
                 lua_pushstring(L, "Position");
-                Lua::PushVec2(transform.Position);
+                Lua::PushVec3(transform.Position);
                 lua_settable(L, -3);
                 
                 lua_pushstring(L, "Dimensions");

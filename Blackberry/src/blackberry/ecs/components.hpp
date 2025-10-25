@@ -21,7 +21,7 @@ namespace Blackberry::Components {
     };
 
     struct Transform {
-        BlVec2 Position;
+        BlVec3 Position;
         f32 Rotation = 0.0f; // in degrees
         BlVec2 Dimensions;
     };

@@ -27,4 +27,5 @@ struct BlRenderTexture {
 
     u32 ID = 0;
     BlTexture Texture;
+    BlTexture DepthTexture;
 };

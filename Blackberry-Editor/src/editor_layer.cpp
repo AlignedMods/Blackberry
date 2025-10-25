@@ -89,6 +89,61 @@ namespace BlackberryEditor {
     
         ImGui::PopID();
     }
+
+    static void DrawVec3Control(const std::string& label, BlVec3* vec, const char* fmtX = "X", const char* fmtY = "Y", const char* fmtZ = "Z") {
+        ImGuiIO& io = ImGui::GetIO();
+    
+        ImGui::PushID(label.c_str());
+    
+        // label
+    
+        ImGui::PushFont(io.Fonts->Fonts[1], 16);
+        if (ImGui::TreeNode(label.c_str())) {
+            ImGui::PopFont();
+    
+            // x axis control
+            ImGui::PushFont(io.Fonts->Fonts[1], 16);
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.0f, 0.0f, 0.7f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 0.0f, 0.0f, 0.4f));
+            ImGui::Button(fmtX);
+            ImGui::PopStyleColor(3);
+            ImGui::PopFont();
+    
+            ImGui::SameLine();
+            ImGui::DragFloat("##DragX", &vec->x, 1.0f);
+    
+            // y axis control
+            ImGui::PushFont(io.Fonts->Fonts[1], 16);
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 1.0f, 0.0f, 0.7f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 1.0f, 0.0f, 0.4f));
+            ImGui::Button(fmtY);
+            ImGui::PopStyleColor(3);
+            ImGui::PopFont();
+    
+            ImGui::SameLine();
+            ImGui::DragFloat("##DragY", &vec->y);
+
+            // z axis control
+            ImGui::PushFont(io.Fonts->Fonts[1], 16);
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 1.0f, 0.7f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 0.0f, 1.0f, 0.4f));
+            ImGui::Button(fmtZ);
+            ImGui::PopStyleColor(3);
+            ImGui::PopFont();
+    
+            ImGui::SameLine();
+            ImGui::DragFloat("##DragZ", &vec->z);
+    
+            ImGui::TreePop();
+        } else {
+            ImGui::PopFont();
+        }
+    
+        ImGui::PopID();
+    }
     
     static void DrawRecControl(const std::string& label, BlRec* rec) {
         BlVec2 xy = BlVec2(rec->x, rec->y);
@@ -124,7 +179,7 @@ namespace BlackberryEditor {
             ImGui::PopFont();
     
             ImGui::ColorEdit4("##ColorEdit", &imGuiColor.x);
-    
+        
             ImGui::TreePop();
         } else {
             ImGui::PopFont();
@@ -438,13 +493,13 @@ namespace BlackberryEditor {
                 if (ImGui::MenuItem("Rectangle")) {
                     Blackberry::Entity entity(m_CurrentScene->CreateEntity("Rectangle"), m_CurrentScene);
                     entity.AddComponent<Drawable>();
-                    entity.AddComponent<Transform>({BlVec2(m_RenderTexture.Texture.Width / 2.0f - 100.0f, m_RenderTexture.Texture.Height / 2.0f - 50.0f), 0.0f, BlVec2(200.0f, 100.0f)});
+                    entity.AddComponent<Transform>({BlVec3(m_RenderTexture.Texture.Width / 2.0f - 100.0f, m_RenderTexture.Texture.Height / 2.0f - 50.0f, 0.0f), 0.0f, BlVec2(200.0f, 100.0f)});
                 };
 
                 if (ImGui::MenuItem("Triangle")) {
                     Blackberry::Entity entity(m_CurrentScene->CreateEntity("Triangle"), m_CurrentScene);
                     entity.AddComponent<Drawable>({.ShapeType = Shape::Triangle});
-                    entity.AddComponent<Transform>({BlVec2(m_RenderTexture.Texture.Width / 2.0f - 100.0f, m_RenderTexture.Texture.Height / 2.0f - 50.0f), 0.0f, BlVec2(200.0f, 100.0f)});
+                    entity.AddComponent<Transform>({BlVec3(m_RenderTexture.Texture.Width / 2.0f - 100.0f, m_RenderTexture.Texture.Height / 2.0f - 50.0f, 0.0f), 0.0f, BlVec2(200.0f, 100.0f)});
                 };
                 
                 ImGui::EndMenu();
@@ -536,7 +591,7 @@ namespace BlackberryEditor {
                 text.FontSize = size;
             });
             DrawComponent<Transform>("Transform", entity, [](Transform& transform) {
-                DrawVec2Control("Position: ", &transform.Position);
+                DrawVec3Control("Position: ", &transform.Position);
 
                 ImGui::DragFloat("Rotation: ", &transform.Rotation);
 

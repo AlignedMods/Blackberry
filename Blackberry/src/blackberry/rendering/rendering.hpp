@@ -21,17 +21,17 @@ namespace Blackberry {
     public:
         static void Clear(BlColor = Colors::White);
 
-        static void DrawRectangle(BlVec2 pos, BlVec2 dimensions, BlColor color);
-        static void DrawRectangle(BlVec2 pos, BlVec2 dimensions, f32 rotation, BlColor color);
+        static void DrawRectangle(BlVec3 pos, BlVec2 dimensions, BlColor color);
+        static void DrawRectangle(BlVec3 pos, BlVec2 dimensions, f32 rotation, BlColor color);
 
-        static void DrawTriangle(BlVec2 pos, BlVec2 dimensions, f32 rotation = 0.0f, BlColor color = Colors::White);
-        static void DrawTriangle(BlVec2 bl, BlVec2 t, BlVec2 br, BlColor color);
+        static void DrawTriangle(BlVec3 pos, BlVec2 dimensions, f32 rotation = 0.0f, BlColor color = Colors::White);
+        static void DrawTriangle(BlVec3 bl, BlVec3 t, BlVec3 br, BlColor color);
 
-        static void DrawTexture(BlVec2 pos, BlTexture texture, f32 rotation = 0.0f, BlColor color = Colors::White);
-        static void DrawTextureEx(BlVec2 pos, BlVec2 dimensions, BlTexture texture, f32 rotation = 0.0f, BlColor color = Colors::White);
-        static void DrawTextureArea(BlVec2 pos, BlVec2 dimensions, BlRec area, BlTexture texture, f32 rotation = 0.0f, BlColor color = Colors::White);
+        static void DrawTexture(BlVec3 pos, BlTexture texture, f32 rotation = 0.0f, BlColor color = Colors::White);
+        static void DrawTextureEx(BlVec3 pos, BlVec2 dimensions, BlTexture texture, f32 rotation = 0.0f, BlColor color = Colors::White);
+        static void DrawTextureArea(BlVec3 pos, BlVec2 dimensions, BlRec area, BlTexture texture, f32 rotation = 0.0f, BlColor color = Colors::White);
 
-        static void DrawRenderTexture(BlVec2 pos, BlVec2 dimensions, BlRenderTexture texture);
+        static void DrawRenderTexture(BlVec3 pos, BlVec2 dimensions, BlRenderTexture texture);
 
         static void AttachRenderTexture(BlRenderTexture texture);
         static void DetachRenderTexture();

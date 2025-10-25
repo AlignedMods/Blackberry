@@ -32,6 +32,16 @@ struct BlVec2 {
     f32 x, y;
 };
 
+struct BlVec3 {
+    inline BlVec3()
+        : x(0.0f), y(0.0f), z(0.0f) {}
+
+    inline explicit BlVec3(f32 x, f32 y, f32 z)
+        : x(x), y(y), z(z) {}
+
+    f32 x, y, z;
+};
+
 struct BlVec4 {
     inline BlVec4()
         : x(0.0f), y(0.0f), z(0.0f), w(0.0f) {}

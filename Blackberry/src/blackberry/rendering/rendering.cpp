@@ -5,12 +5,12 @@
 #include <glm/gtc/type_ptr.hpp>
 
 struct BlShapeVertex {
-    BlVec2 Pos;
+    BlVec3 Pos;
     BlVec4 Color;
 };
 
 struct BlTextureVertex {
-    BlVec2 Pos;
+    BlVec3 Pos;
     BlVec4 Color;
     BlVec2 TexCoord;
 };
@@ -36,21 +36,22 @@ namespace Blackberry {
 
     static Renderer2DState State;
 
-    static void CalculateRotation(BlVec2& vertexPos, BlVec2 pos, f32 rotation) {
+    static void CalculateRotation(BlVec3& vertexPos, BlVec3 pos, f32 rotation) {
         f32 sinR = glm::sin(glm::radians(rotation));
         f32 cosR = glm::cos(glm::radians(rotation));
         
-        vertexPos = BlVec2(
+        vertexPos = BlVec3(
             pos.x + (vertexPos.x - pos.x) * cosR - (vertexPos.y - pos.y) * sinR,
-            pos.y + (vertexPos.x - pos.x) * sinR + (vertexPos.y - pos.y) * cosR
+            pos.y + (vertexPos.x - pos.x) * sinR + (vertexPos.y - pos.y) * cosR,
+            pos.z
         );
     }
 
-    static void SetupQuad(BlVec2 pos, BlVec2 dimensions, f32 rotation, BlColor color, BlVec2* bl, BlVec2* tr, BlVec2* br, BlVec2* tl) {
-        BlVec2 _bl = BlVec2(pos.x - dimensions.x / 2.0f, pos.y + dimensions.y / 2.0f);
-        BlVec2 _tr = BlVec2(pos.x + dimensions.x / 2.0f, pos.y - dimensions.y / 2.0f);
-        BlVec2 _br = BlVec2(pos.x + dimensions.x / 2.0f, pos.y + dimensions.y / 2.0f);
-        BlVec2 _tl = BlVec2(pos.x - dimensions.x / 2.0f, pos.y - dimensions.y / 2.0f);
+    static void SetupQuad(BlVec3 pos, BlVec2 dimensions, f32 rotation, BlColor color, BlVec3* bl, BlVec3* tr, BlVec3* br, BlVec3* tl) {
+        BlVec3 _bl = BlVec3(pos.x - dimensions.x / 2.0f, pos.y + dimensions.y / 2.0f, pos.z);
+        BlVec3 _tr = BlVec3(pos.x + dimensions.x / 2.0f, pos.y - dimensions.y / 2.0f, pos.z);
+        BlVec3 _br = BlVec3(pos.x + dimensions.x / 2.0f, pos.y + dimensions.y / 2.0f, pos.z);
+        BlVec3 _tl = BlVec3(pos.x - dimensions.x / 2.0f, pos.y - dimensions.y / 2.0f, pos.z);
 
         if (rotation != 0.0f) {
             CalculateRotation(_bl, pos, rotation);
@@ -80,12 +81,12 @@ namespace Blackberry {
         renderer.Clear(color);
     }
 
-    void Renderer2D::DrawRectangle(BlVec2 pos, BlVec2 dimensions, BlColor color) {
+    void Renderer2D::DrawRectangle(BlVec3 pos, BlVec2 dimensions, BlColor color) {
         DrawRectangle(pos, dimensions, 0.0f, color);
     }
 
-    void Renderer2D::DrawRectangle(BlVec2 pos, BlVec2 dimensions, f32 rotation, BlColor color) {
-        BlVec2 bl, tr, br, tl;
+    void Renderer2D::DrawRectangle(BlVec3 pos, BlVec2 dimensions, f32 rotation, BlColor color) {
+        BlVec3 bl, tr, br, tl;
         BlVec4 normalizedColor;
 
         SetupQuad(pos, dimensions, rotation, color, &bl, &tr, &br, &tl);
@@ -116,10 +117,10 @@ namespace Blackberry {
         State.ShapeVertexCount += 4;
     }
 
-    void Renderer2D::DrawTriangle(BlVec2 pos, BlVec2 dimensions, f32 rotation, BlColor color) {
-        BlVec2 bl = BlVec2(pos.x - dimensions.x / 2.0f, pos.y + dimensions.y / 2.0f);
-        BlVec2 t = BlVec2(pos.x, pos.y - dimensions.y / 2.0f);
-        BlVec2 br = BlVec2(pos.x + dimensions.x / 2.0f, pos.y + dimensions.y / 2.0f);
+    void Renderer2D::DrawTriangle(BlVec3 pos, BlVec2 dimensions, f32 rotation, BlColor color) {
+        BlVec3 bl = BlVec3(pos.x - dimensions.x / 2.0f, pos.y + dimensions.y / 2.0f, pos.z);
+        BlVec3 t = BlVec3(pos.x, pos.y - dimensions.y / 2.0f, pos.z);
+        BlVec3 br = BlVec3(pos.x + dimensions.x / 2.0f, pos.y + dimensions.y / 2.0f, pos.z);
 
         if (rotation != 0.0f) {
             CalculateRotation(bl, pos, rotation);
@@ -130,7 +131,7 @@ namespace Blackberry {
         DrawTriangle(bl, t, br, color);
     }
 
-    void Renderer2D::DrawTriangle(BlVec2 bl, BlVec2 t, BlVec2 br, BlColor color) {
+    void Renderer2D::DrawTriangle(BlVec3 bl, BlVec3 t, BlVec3 br, BlColor color) {
         BlVec4 normalizedColor = BlVec4(
             static_cast<f32>(color.r) / 255.0f,
             static_cast<f32>(color.g) / 255.0f,
@@ -154,16 +155,20 @@ namespace Blackberry {
         State.ShapeVertexCount += 3;
     }
 
-    void Renderer2D::DrawTexture(BlVec2 pos, BlTexture texture, f32 rotation, BlColor color) {
+    void Renderer2D::DrawTexture(BlVec3 pos, BlTexture texture, f32 rotation, BlColor color) {
         DrawTextureEx(pos, BlVec2(static_cast<f32>(texture.Width), static_cast<f32>(texture.Height)), texture, rotation, color);
     }
 
-    void Renderer2D::DrawTextureEx(BlVec2 pos, BlVec2 dimensions, BlTexture texture, f32 rotation, BlColor color)  {
+    void Renderer2D::DrawTextureEx(BlVec3 pos, BlVec2 dimensions, BlTexture texture, f32 rotation, BlColor color)  {
         DrawTextureArea(pos, dimensions, BlRec(0.0f, 0.0f, static_cast<f32>(texture.Width), static_cast<f32>(texture.Height)), texture, rotation, color);
     }
 
-    void Renderer2D::DrawTextureArea(BlVec2 pos, BlVec2 dimensions, BlRec area, BlTexture texture, f32 rotation, BlColor color) {
-        BlVec2 bl, tr, br, tl;
+    void Renderer2D::DrawTextureArea(BlVec3 pos, BlVec2 dimensions, BlRec area, BlTexture texture, f32 rotation, BlColor color) {
+        if (State.CurrentTexture.ID != texture.ID) {
+            Render();
+        }
+
+        BlVec3 bl, tr, br, tl;
         BlVec4 normalizedColor;
 
         SetupQuad(pos, dimensions, rotation, color, &bl, &tr, &br, &tl);
@@ -196,7 +201,7 @@ namespace Blackberry {
         State.TextureVertexCount += 4;
     }
 
-    void Renderer2D::DrawRenderTexture(BlVec2 pos, BlVec2 dimensions, BlRenderTexture texture) {
+    void Renderer2D::DrawRenderTexture(BlVec3 pos, BlVec2 dimensions, BlRenderTexture texture) {
         DrawTextureArea(pos, dimensions, BlRec(0.0f, 0.0f, texture.Texture.Width, texture.Texture.Height * -1.0f), texture.Texture);
     }
 
@@ -218,17 +223,17 @@ namespace Blackberry {
         if (State.ShapeIndexCount > 0) {
             BlDrawBufferLayout vertPosLayout;
             vertPosLayout.Index = 0;
-            vertPosLayout.Count = 2;
+            vertPosLayout.Count = 3;
             vertPosLayout.Type = BlDrawBufferLayout::ElementType::Float;
             vertPosLayout.Stride = sizeof(BlShapeVertex);
-            vertPosLayout.Offset = 0;
+            vertPosLayout.Offset = offsetof(BlShapeVertex, Pos);
 
             BlDrawBufferLayout vertColorLayout;
             vertColorLayout.Index = 1;
             vertColorLayout.Count = 4;
             vertColorLayout.Type = BlDrawBufferLayout::ElementType::Float;
             vertColorLayout.Stride = sizeof(BlShapeVertex);
-            vertColorLayout.Offset = sizeof(BlShapeVertex::Pos);
+            vertColorLayout.Offset = offsetof(BlShapeVertex, Color);
 
             State.ShapeDrawBuffer.Vertices = State.ShapeVertices.data();
             State.ShapeDrawBuffer.VertexCount = State.ShapeVertexCount;
@@ -257,7 +262,7 @@ namespace Blackberry {
         if (State.TextureIndexCount > 0) {
             BlDrawBufferLayout vertPosLayout;
             vertPosLayout.Index = 0;
-            vertPosLayout.Count = 2;
+            vertPosLayout.Count = 3;
             vertPosLayout.Type = BlDrawBufferLayout::ElementType::Float;
             vertPosLayout.Stride = sizeof(BlTextureVertex);
             vertPosLayout.Offset = offsetof(BlTextureVertex, Pos);

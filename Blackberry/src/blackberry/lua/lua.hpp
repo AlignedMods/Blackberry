@@ -26,6 +26,7 @@ namespace Blackberry::Lua {
     void PushLightUserData(void* data);
     void PushValue(i32 value);
     void PushVec2(BlVec2 vec);
+    void PushVec3(BlVec3 vec);
 
     i32 ToInteger(i32 index);
     f64 ToNumber(i32 index);

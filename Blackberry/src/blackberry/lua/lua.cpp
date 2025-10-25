@@ -94,8 +94,24 @@ namespace Blackberry::Lua {
         lua_pushstring(s_LState, "x");
         lua_pushnumber(s_LState, vec.x);
         lua_settable(s_LState, -3);
+
         lua_pushstring(s_LState, "y");
         lua_pushnumber(s_LState, vec.y);
+        lua_settable(s_LState, -3);
+    }
+
+    void PushVec3(BlVec3 vec) {
+        lua_newtable(s_LState);
+        lua_pushstring(s_LState, "x");
+        lua_pushnumber(s_LState, vec.x);
+        lua_settable(s_LState, -3);
+
+        lua_pushstring(s_LState, "y");
+        lua_pushnumber(s_LState, vec.y);
+        lua_settable(s_LState, -3);
+
+        lua_pushstring(s_LState, "z");
+        lua_pushnumber(s_LState, vec.z);
         lua_settable(s_LState, -3);
     }
 

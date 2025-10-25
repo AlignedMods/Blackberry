@@ -104,6 +104,7 @@ namespace Blackberry {
                 Material& material = m_ECS->GetComponent<Material>(entity);
 
                 Renderer2D::DrawTextureArea(transform.Position, transform.Dimensions, material.Area, material.Texture, transform.Rotation, drawable.Color);
+                Renderer2D::Render();
             } else {
                 switch (drawable.ShapeType) {
                     case Shape::Triangle:

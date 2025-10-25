@@ -201,6 +201,7 @@ namespace Blackberry {
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
         glfwWindowHint(GLFW_SAMPLES, 4);
+        glfwWindowHint(GLFW_DEPTH_BITS, 24);
         m_Handle = glfwCreateWindow(data.Width, data.Height, data.Name.c_str(), nullptr, nullptr);
 
         glfwSwapInterval(0);
