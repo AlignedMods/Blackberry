@@ -17,7 +17,7 @@ namespace Blackberry::Lua {
     static int WLogDebug(lua_State* L) {
         const char* msg = luaL_checkstring(L, 1);
         
-        BL_DEBUG("[Lua] {}", msg);
+        BL_TRACE("[Lua] {}", msg);
         return 0;
     }
 

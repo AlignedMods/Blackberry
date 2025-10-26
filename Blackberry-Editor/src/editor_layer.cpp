@@ -199,7 +199,7 @@ namespace BlackberryEditor {
 #pragma region OverridenFunctions
 
     void EditorLayer::OnAttach() {
-        m_AppDataDirectory = Blackberry::Directories::GetAppDataDirectory();
+        m_AppDataDirectory = Blackberry::OS::GetAppDataDirectory();
     
         ImGuiIO& io = ImGui::GetIO();
         io.Fonts->AddFontFromFileTTF("Assets/creato_display/CreatoDisplay-Medium.otf", 18);
@@ -793,7 +793,7 @@ namespace BlackberryEditor {
         ImGui::Text("Root Directory: "); ImGui::SameLine();
         ImGui::InputText("##FilePath", &projectPath); ImGui::SameLine();
         if (ImGui::SmallButton("...")) {
-            projectPath = Blackberry::FileDialogs::OpenFile("Blackberry Project (*.blproj)");
+            projectPath = Blackberry::OS::OpenFile("Blackberry Project (*.blproj)");
         }
     
         ImGui::Text("Asset Directory: "); ImGui::SameLine();
@@ -816,7 +816,7 @@ namespace BlackberryEditor {
         ImGui::InputText("Scene Path: ", &scenePath); ImGui::SameLine();
     
         if (ImGui::Button("...")) {
-            scenePath = Blackberry::FileDialogs::OpenFile("Blackberry Scene (*.blscene)");
+            scenePath = Blackberry::OS::OpenFile("Blackberry Scene (*.blscene)");
         }
     
         if (ImGui::Button("Create")) {
@@ -841,7 +841,7 @@ namespace BlackberryEditor {
 #pragma region ProjectFunctions
     
     void EditorLayer::LoadProject() {
-        std::string path = Blackberry::FileDialogs::OpenFile("Blackberry Project (*.blproj)");
+        std::string path = Blackberry::OS::OpenFile("Blackberry Project (*.blproj)");
     
         LoadProjectFromPath(path);
     }

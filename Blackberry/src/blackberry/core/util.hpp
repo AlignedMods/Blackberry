@@ -20,11 +20,19 @@
     #define BL_DEBUGBREAK()
 #endif
 
+#if !0
+
 // NOTE: blackberry asserts (BL_ASSERT) will always run the if statement AND exit program!
 #if defined(BL_DEBUG_BUILD)
     #define BL_ASSERT(condition, message) if (!(condition)) { BL_ERROR("Assertion failed (Line: {}, File: {})!\nMessage: {}", __LINE__, __FILE__, message); BL_DEBUGBREAK(); }
 #elif defined(BL_RELEASE_BUILD)
     #define BL_ASSERT(condition, message) if (!(condition)) { BL_ERROR("Assertion failed (Line: {}, File: {})!\nMessage: {}", __LINE__, __FILE__, message); exit(1); }
+#endif
+
+#else
+
+#define BL_ASSERT(condition, message)
+
 #endif
 
 namespace Blackberry {

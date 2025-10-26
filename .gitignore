@@ -17,3 +17,6 @@ compile_commands.json
 compile_commands/
 .cache/
 .clangd
+
+# Engine generated files
+**.log

@@ -39,6 +39,9 @@
 #include "blackberry/scene/serializer.hpp"
 #include "blackberry/assets/serializer.hpp"
 
+// os
+#include "blackberry/os/os.hpp"
+
 // imgui
 #include "../vendor/imgui/imgui.h"
 #include "../vendor/imgui/misc/cpp/imgui_stdlib.h"

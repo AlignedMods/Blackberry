@@ -7,6 +7,8 @@
 #include "glm/gtc/type_ptr.hpp"
 #include "stb_image.h"
 
+#include <iostream>
+
 namespace Blackberry {
 
     // shaders
@@ -271,7 +273,7 @@ namespace Blackberry {
 
         if (!errorCode) {
             glGetShaderInfoLog(vertexShape, 512, nullptr, buf);
-            BL_ERROR("Failed to compile default vertex shape shader! Error: {}", buf);
+            BL_CORE_ERROR("Failed to compile default vertex shape shader! Error: {}", buf);
         }
 
         u32 fragmentShape = glCreateShader(GL_FRAGMENT_SHADER);
@@ -282,7 +284,7 @@ namespace Blackberry {
 
         if (!errorCode) {
             glGetShaderInfoLog(fragmentShape, 512, nullptr, buf);
-            BL_ERROR("Failed to compile default fragment shape shader! Error: {}", buf);
+            BL_CORE_ERROR("Failed to compile default fragment shape shader! Error: {}", buf);
         }
 
         m_ShapeShader = glCreateProgram();
@@ -294,7 +296,7 @@ namespace Blackberry {
 
         if (!errorCode) {
             glGetProgramInfoLog(m_ShapeShader, 512, nullptr, buf);
-            BL_ERROR("Failed to link default shape shader program! Error: {}", buf);
+            BL_CORE_ERROR("Failed to link default shape shader program! Error: {}", buf);
         }
         glDeleteShader(fragmentShape);
         glDeleteShader(vertexShape);
@@ -311,7 +313,7 @@ namespace Blackberry {
 
         if (!errorCode) {
             glGetShaderInfoLog(vertexTexture, 512, nullptr, buf);
-            BL_ERROR("Failed to compile default vertex texture shader! Error: {}", buf);
+            BL_CORE_ERROR("Failed to compile default vertex texture shader! Error: {}", buf);
         }
 
         u32 fragmentTexture = glCreateShader(GL_FRAGMENT_SHADER);
@@ -322,7 +324,7 @@ namespace Blackberry {
 
         if (!errorCode) {
             glGetShaderInfoLog(fragmentTexture, 512, nullptr, buf);
-            BL_ERROR("Failed to compile default fragment texture shader! Error: {}", buf);
+            BL_CORE_ERROR("Failed to compile default fragment texture shader! Error: {}", buf);
         }
 
         m_TextureShader = glCreateProgram();
@@ -334,7 +336,7 @@ namespace Blackberry {
 
         if (!errorCode) {
             glGetProgramInfoLog(m_TextureShader, 512, nullptr, buf);
-            BL_ERROR("Failed to link default texture shader program! Error: {}", buf);
+            BL_CORE_ERROR("Failed to link default texture shader program! Error: {}", buf);
         }
 
 #pragma endregion

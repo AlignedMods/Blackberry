@@ -39,7 +39,6 @@ namespace Blackberry {
     }
 
     Image::~Image() {
-        BL_INFO("Destructing Image!");
         stbi_image_free(m_Data);
 
         m_Data = nullptr;
@@ -50,7 +49,7 @@ namespace Blackberry {
         m_Format = ImageFormat::RGBA8;
 
         if (!m_Data) {
-            BL_ERROR("Failed to load image %s!", path.string().c_str());
+            BL_CORE_ERROR("Failed to load image %s!", path.string().c_str());
         }
     }
 

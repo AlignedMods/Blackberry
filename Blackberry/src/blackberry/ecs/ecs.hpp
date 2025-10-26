@@ -14,7 +14,7 @@ namespace Blackberry {
     template <typename T>
     inline static void CopyComponent(entt::registry* dest, entt::registry* src, entt::entity destEntity, entt::entity srcEntity) {
         if (src->any_of<T>(srcEntity)) {
-            BL_INFO("Copying component {}", typeid(T).name());
+            BL_CORE_TRACE("Copying component {} of entity {}", typeid(T).name(), static_cast<u32>(srcEntity));
             dest->emplace<T>(destEntity, src->get<T>(srcEntity));
         }
     }
@@ -28,7 +28,7 @@ namespace Blackberry {
             ECS* newECS = new ECS();
 
             current->m_Registry.view<entt::entity>().each([&](auto entity) {
-                BL_INFO("Copying entity {}", static_cast<u32>(entity));
+                BL_CORE_INFO("Copying entity {}", static_cast<u32>(entity));
                 const auto newEntity = newECS->m_Registry.create(entity);
 
                 CopyComponent<Tag>(&newECS->m_Registry, &current->m_Registry, newEntity, entity);

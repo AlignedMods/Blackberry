@@ -16,12 +16,12 @@ namespace Blackberry {
 
     Scene::Scene()
         : m_ECS(new ECS) {
-        BL_INFO("Scene created.");
+        BL_CORE_TRACE("New scene created ({})", reinterpret_cast<void*>(this));
     }
 
     Scene::~Scene() {
         // Delete();
-        BL_INFO("Scene destroyed.");
+        BL_CORE_TRACE("Scene destroyed ({})", reinterpret_cast<void*>(this));
     }
 
     Scene* Scene::Copy(Scene* current) {

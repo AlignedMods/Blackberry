@@ -44,8 +44,8 @@ namespace Blackberry {
         msdfgen::FontHandle* m_Handle;
         std::filesystem::path m_Path = "Assets/arial/arial.ttf";
 
-        std::vector<msdf_atlas::GlyphGeometry> m_Glyphs; // internal glyphs
-        std::unordered_map<u8, BlGlyphInfo> m_UserGlyphs; // user land glyphs
+        // std::vector<msdf_atlas::GlyphGeometry> m_Glyphs; // internal glyphs
+        // std::unordered_map<u8, BlGlyphInfo> m_UserGlyphs; // user land glyphs
 
         BlTexture m_Texture;
     };

@@ -9,6 +9,10 @@ project "Blackberry-Editor"
 
     files { "src/**.cpp", "src/**.hpp" }
 
-    includedirs { "../Blackberry/src/" }
+    includedirs { "../Blackberry/src/",
+                  "%{BlackberryIncludes.spdlog}"}
     
-    links { BlackberryLinks, "imguizmo" }
+    links { BlackberryLinks }
+
+    filter "system:windows"
+        buildoptions { "/utf-8" }

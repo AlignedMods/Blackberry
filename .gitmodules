@@ -14,3 +14,6 @@
 [submodule "Blackberry/vendor/imguizmo"]
 	path = Blackberry/vendor/imguizmo
 	url = https://github.com/CedricGuillemet/ImGuizmo.git
+[submodule "Blackberry/vendor/spdlog"]
+	path = Blackberry/vendor/spdlog
+	url = https://github.com/gabime/spdlog.git

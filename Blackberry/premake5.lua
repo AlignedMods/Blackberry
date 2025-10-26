@@ -16,16 +16,17 @@ project "Blackberry" -- The game engine
     files { "src/blackberry/**.cpp", "src/blackberry/**.hpp", "src/blackberry.hpp" }
 
     includedirs { "src/", 
-                  "vendor/glfw/include/", 
-                  "vendor/imgui/", 
-                  "vendor/glad/include/", 
-                  "vendor/glm/", 
+                  "%{BlackberryIncludes.glfw}", 
+                  "%{BlackberryIncludes.imgui}", 
+                  "%{BlackberryIncludes.glad}", 
+                  "%{BlackberryIncludes.glm}", 
+                  "%{BlackberryIncludes.json}",
+                  "%{BlackberryIncludes.entt}",
+                  "%{BlackberryIncludes.spdlog}",
                   "vendor/stb/",
-                  "vendor/json/",
                   "vendor/msdf-atlas-gen/",
                   "vendor/msdf-atlas-gen/msdfgen/",
                   "vendor/msdf-atlas-gen/msdfgen/include/",
-                  "vendor/entt/",
                   "vendor/lua/src/" }
 
     files { "src/platform/opengl/**.cpp", "src/platform/opengl/**.hpp" }
@@ -36,5 +37,8 @@ project "Blackberry" -- The game engine
         table.insert(BlackberryLinks, 1, "opengl32")
 
         files { "src/platform/glfw/**.cpp", "src/platform/glfw/**.hpp" }
+        files { "src/platform/win32/win32_platform.cpp" }
+
+        buildoptions { "/utf-8" }
 
     -- since this is a static library it doesn't need to link with anything, all linking is done with the "BlackberryLinks" variable

@@ -1,3 +1,12 @@
+BlackberryIncludes = {}
+BlackberryIncludes["glfw"] = "%{wks.location}/Blackberry/vendor/glfw/include/"
+BlackberryIncludes["imgui"] = "%{wks.location}/Blackberry/vendor/imgui/"
+BlackberryIncludes["glad"] = "%{wks.location}/Blackberry/vendor/glad/include/"
+BlackberryIncludes["glm"] = "%{wks.location}/Blackberry/vendor/glm"
+BlackberryIncludes["json"] = "%{wks.location}/Blackberry/vendor/json/"
+BlackberryIncludes["entt"] = "%{wks.location}/Blackberry/vendor/entt"
+BlackberryIncludes["spdlog"] = "%{wks.location}/Blackberry/vendor/spdlog/include/"
+
 project "glfw"
     language "C"
     cdialect "C99"
