@@ -27,7 +27,12 @@ namespace Blackberry {
 
         EntityID CreateEntity(const std::string& name);
         EntityID CreateEntityWithUUID(u64 uuid);
+
+        void DuplicateEntity(EntityID entity);
+        void CopyEntity(EntityID entity);
+
         void DestroyEntity(u64 uuid);
+
         EntityID GetEntity(const std::string& name);
         std::vector<EntityID> GetEntities();
 

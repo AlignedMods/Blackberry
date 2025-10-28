@@ -142,6 +142,14 @@ namespace Blackberry {
         return m_EntityMap.at(uuid);
     }
 
+    void Scene::DuplicateEntity(EntityID entity) {
+        ECS::DuplicateEntity(entity, &m_ECS->m_Registry, &m_ECS->m_Registry);
+    }
+
+    void Scene::CopyEntity(EntityID entity) {
+        ECS::CopyEntity(entity, &m_ECS->m_Registry, &m_ECS->m_Registry);
+    }
+
     void Scene::DestroyEntity(u64 uuid) {
         BL_ASSERT(m_EntityMap.contains(uuid), "Entity with UUID {} does not exist!", uuid);
 

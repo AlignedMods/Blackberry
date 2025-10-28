@@ -655,7 +655,7 @@ namespace BlackberryEditor {
                 ImGui::Button(entity.GetComponent<Blackberry::Components::Tag>().Name.c_str(), ImVec2(ImGui::GetContentRegionAvail().x - 32.0f, 0));
                 
                 ImGui::PopStyleColor(3);
-            } else {
+            } else if (entity.HasComponent<Blackberry::Components::Tag>()) {
                 if (ImGui::Button(entity.GetComponent<Blackberry::Components::Tag>().Name.c_str(), ImVec2(ImGui::GetContentRegionAvail().x - 32.0f, 0))) {
                     m_IsEntitySelected = true;
                     m_SelectedEntity = id;
@@ -670,6 +670,12 @@ namespace BlackberryEditor {
                         m_IsEntitySelected = false;
                         m_SelectedEntity = entt::null;
                     }
+                }
+
+                if (ImGui::MenuItem("Duplicate Entity")) {
+                    // NOTE: calling Scene::DuplicateEntity causes a lot of issues regarding UUIDs
+                    // it is fine to call it when duplicating entire scenes but not when duplicating one entity!
+                    m_CurrentScene->CopyEntity(m_SelectedEntity);
                 }
 
                 ImGui::EndPopup();
