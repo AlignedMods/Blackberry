@@ -4,6 +4,13 @@
 
 #include <string>
 
+struct BlRenderer2DInfo {
+    u32 DrawCalls = 0;
+    u32 Vertices = 0;
+    u32 Indicies = 0;
+    f64 RenderTime = 0.0;
+};
+
 namespace Blackberry {
 
     namespace Colors
@@ -15,11 +22,12 @@ namespace Blackberry {
         inline BlColor Blue = BlColor(25, 25, 225, 255);
 
     } // namespace Colors
-    
 
     class Renderer2D {
     public:
         static void Clear(BlColor = Colors::White);
+
+        static void NewFrame();
 
         static void DrawRectangle(BlVec3 pos, BlVec2 dimensions, BlColor color);
         static void DrawRectangle(BlVec3 pos, BlVec2 dimensions, f32 rotation, BlColor color);
@@ -37,6 +45,8 @@ namespace Blackberry {
         static void DetachRenderTexture();
 
         static void Render();
+
+        static BlRenderer2DInfo GetRenderingInfo();
     };
 
     // font rendering and utilities

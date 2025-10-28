@@ -140,12 +140,20 @@ namespace Blackberry {
             glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
         }
 
+        // blending
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glEnable(GL_MULTISAMPLE);
+
+        // depth
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LEQUAL);
         glDepthRange(0.0, 1.0);
+
+        BL_CORE_INFO("Using OpenGL backend");
+        BL_CORE_INFO("    Vendor: {}", reinterpret_cast<const char*>(glGetString(GL_VENDOR)));
+        BL_CORE_INFO("    Renderer: {}", reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
+        BL_CORE_INFO("    Version: {}", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 
         // compile shaders
         CompileDefaultShaders();
@@ -179,7 +187,7 @@ namespace Blackberry {
 
     void Renderer_OpenGL3::NewFrame() {}
 
-    void Renderer_OpenGL3::AttachDefaultShader(DefaultShader shader) {
+    void Renderer_OpenGL3::BindDefaultShader(DefaultShader shader) {
         switch (shader) {
             case DefaultShader::Shape:
                 m_CurrentShader = m_ShapeShader;
@@ -188,13 +196,18 @@ namespace Blackberry {
                 m_CurrentShader = m_TextureShader;
                 break;
             case DefaultShader::Font:
-                m_CurrentShader = m_FontShader;
+                // m_CurrentShader = m_FontShader;
                 break;
         }
     }
 
-    void Renderer_OpenGL3::AttachTexture(BlTexture texture) {
-        glActiveTexture(GL_TEXTURE0);
+    void Renderer_OpenGL3::BindShader(BlShader shader) {
+        m_CurrentShader = shader;
+        glUseProgram(shader.ID);
+    }
+
+    void Renderer_OpenGL3::AttachTexture(BlTexture texture, u32 slot) {
+        glActiveTexture(GL_TEXTURE0 + slot);
         glBindTexture(GL_TEXTURE_2D, texture.ID);
         // glUniform1i(glGetUniformLocation(m_TextureShader, "u_Sampler"), 0);
     }
@@ -241,10 +254,10 @@ namespace Blackberry {
     }
 
     void Renderer_OpenGL3::DrawIndexed(u32 count) {
-        glUseProgram(m_CurrentShader);
+        glUseProgram(m_CurrentShader.ID);
         glBindVertexArray(m_VAO);
 
-        glUniformMatrix4fv(glGetUniformLocation(m_CurrentShader, "u_Projection"), 1, GL_FALSE, glm::value_ptr(m_Projection));
+        m_CurrentShader.SetMatrix("u_Projection", glm::value_ptr(m_Projection));
 
         glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(count), GL_UNSIGNED_INT, nullptr);
         // glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -265,79 +278,83 @@ namespace Blackberry {
         char buf[512];
 
 #pragma region ShapeShader
-        u32 vertexShape = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(vertexShape, 1, &s_VertexShapeShaderSource, nullptr);
-        glCompileShader(vertexShape);
+        // u32 vertexShape = glCreateShader(GL_VERTEX_SHADER);
+        // glShaderSource(vertexShape, 1, &s_VertexShapeShaderSource, nullptr);
+        // glCompileShader(vertexShape);
+        // 
+        // glGetShaderiv(vertexShape, GL_COMPILE_STATUS, &errorCode);
+        // 
+        // if (!errorCode) {
+        //     glGetShaderInfoLog(vertexShape, 512, nullptr, buf);
+        //     BL_CORE_ERROR("Failed to compile default vertex shape shader! Error: {}", buf);
+        // }
+        // 
+        // u32 fragmentShape = glCreateShader(GL_FRAGMENT_SHADER);
+        // glShaderSource(fragmentShape, 1, &s_FragmentShapeShaderSource, nullptr);
+        // glCompileShader(fragmentShape);
+        // 
+        // glGetShaderiv(fragmentShape, GL_COMPILE_STATUS, &errorCode);
+        // 
+        // if (!errorCode) {
+        //     glGetShaderInfoLog(fragmentShape, 512, nullptr, buf);
+        //     BL_CORE_ERROR("Failed to compile default fragment shape shader! Error: {}", buf);
+        // }
+        // 
+        // m_ShapeShader = glCreateProgram();
+        // glAttachShader(m_ShapeShader, vertexShape);
+        // glAttachShader(m_ShapeShader, fragmentShape);
+        // glLinkProgram(m_ShapeShader);
+        // 
+        // glGetProgramiv(m_ShapeShader, GL_LINK_STATUS, &errorCode);
+        // 
+        // if (!errorCode) {
+        //     glGetProgramInfoLog(m_ShapeShader, 512, nullptr, buf);
+        //     BL_CORE_ERROR("Failed to link default shape shader program! Error: {}", buf);
+        // }
+        // glDeleteShader(fragmentShape);
+        // glDeleteShader(vertexShape);
 
-        glGetShaderiv(vertexShape, GL_COMPILE_STATUS, &errorCode);
-
-        if (!errorCode) {
-            glGetShaderInfoLog(vertexShape, 512, nullptr, buf);
-            BL_CORE_ERROR("Failed to compile default vertex shape shader! Error: {}", buf);
-        }
-
-        u32 fragmentShape = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(fragmentShape, 1, &s_FragmentShapeShaderSource, nullptr);
-        glCompileShader(fragmentShape);
-
-        glGetShaderiv(fragmentShape, GL_COMPILE_STATUS, &errorCode);
-
-        if (!errorCode) {
-            glGetShaderInfoLog(fragmentShape, 512, nullptr, buf);
-            BL_CORE_ERROR("Failed to compile default fragment shape shader! Error: {}", buf);
-        }
-
-        m_ShapeShader = glCreateProgram();
-        glAttachShader(m_ShapeShader, vertexShape);
-        glAttachShader(m_ShapeShader, fragmentShape);
-        glLinkProgram(m_ShapeShader);
-
-        glGetProgramiv(m_ShapeShader, GL_LINK_STATUS, &errorCode);
-
-        if (!errorCode) {
-            glGetProgramInfoLog(m_ShapeShader, 512, nullptr, buf);
-            BL_CORE_ERROR("Failed to link default shape shader program! Error: {}", buf);
-        }
-        glDeleteShader(fragmentShape);
-        glDeleteShader(vertexShape);
+        m_ShapeShader.Create(s_VertexShapeShaderSource, s_FragmentShapeShaderSource);
 
 #pragma endregion
 
 #pragma region TextureShader
 
-        u32 vertexTexture = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(vertexTexture, 1, &s_VertexTextureShaderSource, nullptr);
-        glCompileShader(vertexTexture);
+        // u32 vertexTexture = glCreateShader(GL_VERTEX_SHADER);
+        // glShaderSource(vertexTexture, 1, &s_VertexTextureShaderSource, nullptr);
+        // glCompileShader(vertexTexture);
+        // 
+        // glGetShaderiv(vertexTexture, GL_COMPILE_STATUS, &errorCode);
+        // 
+        // if (!errorCode) {
+        //     glGetShaderInfoLog(vertexTexture, 512, nullptr, buf);
+        //     BL_CORE_ERROR("Failed to compile default vertex texture shader! Error: {}", buf);
+        // }
+        // 
+        // u32 fragmentTexture = glCreateShader(GL_FRAGMENT_SHADER);
+        // glShaderSource(fragmentTexture, 1, &s_FragmentTextureShaderSource, nullptr);
+        // glCompileShader(fragmentTexture);
+        // 
+        // glGetShaderiv(fragmentTexture, GL_COMPILE_STATUS, &errorCode);
+        // 
+        // if (!errorCode) {
+        //     glGetShaderInfoLog(fragmentTexture, 512, nullptr, buf);
+        //     BL_CORE_ERROR("Failed to compile default fragment texture shader! Error: {}", buf);
+        // }
+        // 
+        // m_TextureShader = glCreateProgram();
+        // glAttachShader(m_TextureShader, vertexTexture);
+        // glAttachShader(m_TextureShader, fragmentTexture);
+        // glLinkProgram(m_TextureShader);
+        // 
+        // glGetProgramiv(m_TextureShader, GL_LINK_STATUS, &errorCode);
+        // 
+        // if (!errorCode) {
+        //     glGetProgramInfoLog(m_TextureShader, 512, nullptr, buf);
+        //     BL_CORE_ERROR("Failed to link default texture shader program! Error: {}", buf);
+        // }
 
-        glGetShaderiv(vertexTexture, GL_COMPILE_STATUS, &errorCode);
-
-        if (!errorCode) {
-            glGetShaderInfoLog(vertexTexture, 512, nullptr, buf);
-            BL_CORE_ERROR("Failed to compile default vertex texture shader! Error: {}", buf);
-        }
-
-        u32 fragmentTexture = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(fragmentTexture, 1, &s_FragmentTextureShaderSource, nullptr);
-        glCompileShader(fragmentTexture);
-
-        glGetShaderiv(fragmentTexture, GL_COMPILE_STATUS, &errorCode);
-
-        if (!errorCode) {
-            glGetShaderInfoLog(fragmentTexture, 512, nullptr, buf);
-            BL_CORE_ERROR("Failed to compile default fragment texture shader! Error: {}", buf);
-        }
-
-        m_TextureShader = glCreateProgram();
-        glAttachShader(m_TextureShader, vertexTexture);
-        glAttachShader(m_TextureShader, fragmentTexture);
-        glLinkProgram(m_TextureShader);
-
-        glGetProgramiv(m_TextureShader, GL_LINK_STATUS, &errorCode);
-
-        if (!errorCode) {
-            glGetProgramInfoLog(m_TextureShader, 512, nullptr, buf);
-            BL_CORE_ERROR("Failed to link default texture shader program! Error: {}", buf);
-        }
+        m_TextureShader.Create(s_VertexTextureShaderSource, s_FragmentTextureShaderSource);
 
 #pragma endregion
     }

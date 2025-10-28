@@ -2,6 +2,7 @@
 
 #include "blackberry/application/renderer.hpp"
 #include "blackberry/core/types.hpp"
+#include "blackberry/rendering/shader.hpp"
 
 #include "glm/glm.hpp"
 
@@ -25,9 +26,10 @@ namespace Blackberry {
         virtual void SubmitDrawBuffer(const BlDrawBuffer& buffer) override;
         virtual void DrawIndexed(u32 count) override;
         
-        virtual void AttachDefaultShader(DefaultShader shader) override;
+        virtual void BindDefaultShader(DefaultShader shader) override;
+        virtual void BindShader(BlShader shader) override;
 
-        virtual void AttachTexture(BlTexture texture) override;
+        virtual void AttachTexture(BlTexture texture, u32 slot = 0) override;
         virtual void DetachTexture() override;
 
         virtual void AttachRenderTexture(const BlRenderTexture texture) override;
@@ -42,11 +44,10 @@ namespace Blackberry {
         u32 m_EBO;
     
         // shaders
-        u32 m_ShapeShader;
-        u32 m_TextureShader;
-        u32 m_FontShader;
+        BlShader m_ShapeShader;
+        BlShader m_TextureShader;
 
-        u32 m_CurrentShader;
+        BlShader m_CurrentShader;
 
         BlVec2 m_CurrentViewportSize;
         BlVec2 m_PrevViewportSize;

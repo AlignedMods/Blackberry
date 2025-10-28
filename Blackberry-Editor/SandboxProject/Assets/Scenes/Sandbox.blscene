@@ -3,41 +3,6 @@
         "ID - 0": {
             "DrawableComponent": {
                 "Color": [
-                    255,
-                    255,
-                    255,
-                    255
-                ],
-                "ShapeType": 1
-            },
-            "MaterialComponent": {
-                "Area": [
-                    0.0,
-                    0.0,
-                    3072.0,
-                    4096.0
-                ],
-                "TexturePath": "Textures\\cat.jpg"
-            },
-            "TagComponent": {
-                "Name": "cat",
-                "UUID": 4591843464429008100
-            },
-            "TransformComponent": {
-                "Dimensions": [
-                    512.0,
-                    503.0
-                ],
-                "Position": [
-                    359.0,
-                    401.0,
-                    3.5
-                ]
-            }
-        },
-        "ID - 1": {
-            "DrawableComponent": {
-                "Color": [
                     0,
                     149,
                     142,
@@ -51,18 +16,44 @@
             },
             "TransformComponent": {
                 "Dimensions": [
-                    610.0,
-                    458.0
+                    542.0,
+                    295.0
                 ],
                 "Position": [
-                    2039.6949462890625,
-                    804.0,
+                    512.6950073242188,
+                    728.0,
                     0.0
                 ]
             },
             "VelocityComponent": {
                 "Acceleration": [
                     269.0,
+                    0.0
+                ]
+            }
+        },
+        "ID - 1": {
+            "DrawableComponent": {
+                "Color": [
+                    206,
+                    129,
+                    70,
+                    255
+                ],
+                "ShapeType": 1
+            },
+            "TagComponent": {
+                "Name": "Rectangle",
+                "UUID": 7800517283642256273
+            },
+            "TransformComponent": {
+                "Dimensions": [
+                    200.0,
+                    100.0
+                ],
+                "Position": [
+                    1180.0,
+                    670.0,
                     0.0
                 ]
             }
@@ -81,23 +72,23 @@
                 "Area": [
                     0.0,
                     0.0,
-                    736.0,
-                    981.0
+                    3072.0,
+                    4096.0
                 ],
-                "TexturePath": "Textures\\MANGODIDDYBLUD.jpg"
+                "TexturePath": "Textures\\cat.jpg"
             },
             "TagComponent": {
-                "Name": "black rectangle",
-                "UUID": 13357212114625220805
+                "Name": "Cat",
+                "UUID": 13781431752699742974
             },
             "TransformComponent": {
                 "Dimensions": [
-                    350.0,
-                    350.0
+                    346.0,
+                    477.0
                 ],
                 "Position": [
-                    1480.0,
-                    488.0,
+                    255.0,
+                    319.0,
                     0.0
                 ]
             }
@@ -125,8 +116,8 @@
                     211.0
                 ],
                 "Position": [
-                    860.0,
-                    313.0,
+                    891.0,
+                    274.0,
                     1.0
                 ]
             }
@@ -151,35 +142,9 @@
                     250.0
                 ],
                 "Position": [
-                    1249.0,
+                    1261.0,
                     322.0,
-                    1.0
-                ]
-            }
-        },
-        "ID - 5": {
-            "DrawableComponent": {
-                "Color": [
-                    99,
-                    208,
-                    65,
-                    255
-                ],
-                "ShapeType": 1
-            },
-            "TagComponent": {
-                "Name": "Rectangle",
-                "UUID": 489132617593815136
-            },
-            "TransformComponent": {
-                "Dimensions": [
-                    200.0,
-                    100.0
-                ],
-                "Position": [
-                    639.0,
-                    478.0,
-                    0.0
+                    4.0
                 ]
             }
         }

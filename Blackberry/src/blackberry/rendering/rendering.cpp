@@ -32,6 +32,8 @@ namespace Blackberry {
         std::vector<u32> TextureIndices;
         BlDrawBuffer TextureDrawBuffer; // buffer for textures
         BlTexture CurrentTexture;
+
+        BlRenderer2DInfo Info;
     };
 
     static Renderer2DState State;
@@ -79,6 +81,12 @@ namespace Blackberry {
         auto& renderer = BL_APP.GetRenderer();
 
         renderer.Clear(color);
+    }
+
+    void Renderer2D::NewFrame() {
+        State.Info.DrawCalls = 0;
+        State.Info.Vertices = 0;
+        State.Info.Indicies = 0;
     }
 
     void Renderer2D::DrawRectangle(BlVec3 pos, BlVec2 dimensions, BlColor color) {
@@ -186,14 +194,14 @@ namespace Blackberry {
         State.TextureVertices.push_back(vertexTL);
 
         // first triangle (bl, tr, br)
-        State.TextureIndices.push_back(State.ShapeVertexCount + 0);
-        State.TextureIndices.push_back(State.ShapeVertexCount + 1);
-        State.TextureIndices.push_back(State.ShapeVertexCount + 2);
+        State.TextureIndices.push_back(State.TextureVertexCount + 0);
+        State.TextureIndices.push_back(State.TextureVertexCount + 1);
+        State.TextureIndices.push_back(State.TextureVertexCount + 2);
 
         // second triangle (bl, tl, tr)
-        State.TextureIndices.push_back(State.ShapeVertexCount + 0);
-        State.TextureIndices.push_back(State.ShapeVertexCount + 3);
-        State.TextureIndices.push_back(State.ShapeVertexCount + 1);
+        State.TextureIndices.push_back(State.TextureVertexCount + 0);
+        State.TextureIndices.push_back(State.TextureVertexCount + 3);
+        State.TextureIndices.push_back(State.TextureVertexCount + 1);
 
         State.CurrentTexture = texture;
 
@@ -218,6 +226,9 @@ namespace Blackberry {
     }
 
     void Renderer2D::Render() {
+        State.Info.Vertices = State.ShapeVertexCount + State.TextureVertexCount;
+        State.Info.Indicies = State.ShapeIndexCount + State.TextureIndexCount;
+
         auto& renderer = BL_APP.GetRenderer();
         // draw shape buffer
         if (State.ShapeIndexCount > 0) {
@@ -248,9 +259,11 @@ namespace Blackberry {
             renderer.SetBufferLayout(vertPosLayout);
             renderer.SetBufferLayout(vertColorLayout);
             
-            renderer.AttachDefaultShader(DefaultShader::Shape);
+            renderer.BindDefaultShader(DefaultShader::Shape);
 
             renderer.DrawIndexed(State.ShapeIndexCount);
+
+            State.Info.DrawCalls++;
 
             // clear buffer after rendering
             State.ShapeIndices.clear();
@@ -295,10 +308,12 @@ namespace Blackberry {
             renderer.SetBufferLayout(vertColorLayout);
             renderer.SetBufferLayout(vertTexCoordLayout);
             
-            renderer.AttachDefaultShader(DefaultShader::Texture);
+            renderer.BindDefaultShader(DefaultShader::Texture);
             renderer.AttachTexture(State.CurrentTexture);
 
             renderer.DrawIndexed(State.TextureIndexCount);
+
+            State.Info.DrawCalls++;
 
             renderer.DetachTexture();
 
@@ -308,6 +323,10 @@ namespace Blackberry {
             State.TextureIndexCount = 0;
             State.TextureVertexCount = 0;
         }
+    }
+
+    BlRenderer2DInfo Renderer2D::GetRenderingInfo() {
+        return State.Info;
     }
 
 } // namespace Blackberry

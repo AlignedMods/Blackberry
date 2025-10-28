@@ -13,6 +13,7 @@
 #include "imgui.h"
 #include "glad/glad.h"
 #include "stb_image.h"
+#include "backends/imgui_impl_opengl3.h"
 
 namespace Blackberry {
 
@@ -60,6 +61,8 @@ namespace Blackberry {
 
             OnRender();
             OnUIRender();
+
+            OnOverlayRender();
 
             m_Window->OnRenderFinish();
 
@@ -124,6 +127,7 @@ namespace Blackberry {
     }
 
     void Application::OnRender() {
+        Renderer2D::NewFrame();
         Renderer2D::Clear(Colors::Black);
 
         for (auto layer : m_LayerStack.GetAllLayers()) {
@@ -139,6 +143,17 @@ namespace Blackberry {
         for (auto layer : m_LayerStack.GetAllLayers()) {
             layer->OnUIRender();
         }
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    }
+
+    void Application::OnOverlayRender() {
+        for (auto layer : m_LayerStack.GetAllLayers()) {
+            layer->OnOverlayRender();
+        }
+
+        Renderer2D::Render();
     }
 
     void Application::OnEvent(const Event& event) {

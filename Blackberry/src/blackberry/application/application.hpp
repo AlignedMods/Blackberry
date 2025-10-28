@@ -76,6 +76,7 @@ namespace Blackberry {
         void OnUpdate();
         void OnRender();
         void OnUIRender();
+        void OnOverlayRender();
         void OnEvent(const Event& event);
 
         void InitImGui();

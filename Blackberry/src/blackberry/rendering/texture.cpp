@@ -80,6 +80,18 @@ void BlTexture::Delete() {
     Height = 0;
 }
 
+void* BlTexture::ReadPixels() {
+    u8* pixels = new u8[Width * Height * 4];
+
+    glBindTexture(GL_TEXTURE_2D, ID);
+
+    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    return pixels;
+}
+
 BlRenderTexture::BlRenderTexture() {}
 
 void BlRenderTexture::Create(u32 width, u32 height) {

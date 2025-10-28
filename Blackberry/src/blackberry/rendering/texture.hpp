@@ -12,6 +12,8 @@ struct BlTexture {
     void Create(const Blackberry::Image& image);
     void Delete();
 
+    void* ReadPixels();
+
     u32 ID = 0;
     u32 Width = 0;
     u32 Height = 0;

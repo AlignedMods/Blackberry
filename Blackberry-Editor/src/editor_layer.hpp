@@ -32,6 +32,7 @@ namespace BlackberryEditor {
         virtual void OnUpdate(f32 ts) override;
         virtual void OnRender() override;
         virtual void OnUIRender() override;
+        virtual void OnOverlayRender() override;
         virtual void OnEvent(const Blackberry::Event& event) override;
     
     private:
@@ -75,6 +76,12 @@ namespace BlackberryEditor {
         BlRenderTexture m_RenderTexture;
         BlRec m_ViewportBounds;
         f32 m_ViewportScale = 1.0f;
+
+        BlRenderTexture m_MaskTexture;
+
+        BlShader m_OutlineShader;
+
+        BlRenderTexture m_OutlineTexture;
     
         EditorProject m_CurrentProject;
         Blackberry::Scene* m_EditingScene = nullptr;

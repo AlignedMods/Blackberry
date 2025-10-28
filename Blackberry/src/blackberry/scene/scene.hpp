@@ -23,6 +23,8 @@ namespace Blackberry {
         void OnRuntimeUpdate();
         void OnRender();
 
+        void RenderEntity(EntityID entity, Blackberry::Components::Transform& transform, Blackberry::Components::Drawable& drawable);
+
         EntityID CreateEntity(const std::string& name);
         EntityID CreateEntityWithUUID(u64 uuid);
         void DestroyEntity(u64 uuid);

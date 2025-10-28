@@ -100,24 +100,27 @@ namespace Blackberry {
         auto view = m_ECS->GetEntitiesWithComponents<Transform, Drawable>();
 
         view.each([&](auto entity, Transform& transform, Drawable& drawable) {
-            if (m_ECS->HasComponent<Material>(entity)) {
-                Material& material = m_ECS->GetComponent<Material>(entity);
-
-                Renderer2D::DrawTextureArea(transform.Position, transform.Dimensions, material.Area, material.Texture, transform.Rotation, drawable.Color);
-                Renderer2D::Render();
-            } else {
-                switch (drawable.ShapeType) {
-                    case Shape::Triangle:
-                        Renderer2D::DrawTriangle(transform.Position, transform.Dimensions, transform.Rotation, drawable.Color);
-                        break;
-                    case Shape::Rectangle:
-                        Renderer2D::DrawRectangle(transform.Position, transform.Dimensions, transform.Rotation, drawable.Color);
-                        break;
-                }
-            }
+            RenderEntity(entity, transform, drawable);
         });
 
         Renderer2D::Render();
+    }
+
+    void Scene::RenderEntity(EntityID entity, Blackberry::Components::Transform& transform, Blackberry::Components::Drawable& drawable) {
+        if (m_ECS->HasComponent<Material>(entity)) {
+            Material& material = m_ECS->GetComponent<Material>(entity);
+
+            Renderer2D::DrawTextureArea(transform.Position, transform.Dimensions, material.Area, material.Texture, transform.Rotation, drawable.Color);
+        } else {
+            switch (drawable.ShapeType) {
+                case Shape::Triangle:
+                    Renderer2D::DrawTriangle(transform.Position, transform.Dimensions, transform.Rotation, drawable.Color);
+                    break;
+                case Shape::Rectangle:
+                    Renderer2D::DrawRectangle(transform.Position, transform.Dimensions, transform.Rotation, drawable.Color);
+                    break;
+            }
+        }
     }
 
     EntityID Scene::CreateEntity(const std::string& name) {

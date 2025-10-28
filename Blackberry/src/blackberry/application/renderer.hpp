@@ -3,6 +3,7 @@
 #include "blackberry/core/types.hpp"
 #include "blackberry/image/image.hpp"
 #include "blackberry/rendering/texture.hpp"
+#include "blackberry/rendering/shader.hpp"
 
 struct BlDrawBuffer {
     std::string DebugName;
@@ -58,9 +59,10 @@ namespace Blackberry {
         virtual void SubmitDrawBuffer(const BlDrawBuffer& buffer) = 0;
         virtual void DrawIndexed(u32 count) = 0;
 
-        virtual void AttachDefaultShader(DefaultShader shader) = 0;
+        virtual void BindDefaultShader(DefaultShader shader) = 0;
+        virtual void BindShader(BlShader shader) = 0;
 
-        virtual void AttachTexture(BlTexture texture) = 0;
+        virtual void AttachTexture(BlTexture texture, u32 slot = 0) = 0;
         virtual void DetachTexture() = 0;
 
         virtual void AttachRenderTexture(const BlRenderTexture texture) = 0;
