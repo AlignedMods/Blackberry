@@ -391,6 +391,7 @@ namespace BlackberryEditor {
         }
     
         UI_Toolbar();
+        UI_FileBrowser();
         UI_AssetManager();
         UI_Explorer();
         UI_Properties();
@@ -546,10 +547,10 @@ namespace BlackberryEditor {
         ImGui::PopStyleVar();
     }
 
-    void EditorLayer::UI_AssetManager() {
+    void EditorLayer::UI_FileBrowser() {
         namespace fs = std::filesystem;
     
-        ImGui::Begin("Asset Manager");
+        ImGui::Begin("File Browser");
     
         if (m_CurrentDirectory != m_BaseDirectory) {
             if (ImGui::ImageButton("##BackDirectory", m_BackDirectoryIcon.ID, ImVec2(32.0f, 32.0f))) {
@@ -562,7 +563,7 @@ namespace BlackberryEditor {
         f32 cellSize = thumbnailSize + padding;
     
         f32 panelWidth = ImGui::GetContentRegionAvail().x;
-        u32 columnCount = (u32)(panelWidth / cellSize);
+        u32 columnCount = static_cast<u32>(panelWidth / cellSize);
         if (columnCount < 1) {
             columnCount = 1;
         }
@@ -583,10 +584,10 @@ namespace BlackberryEditor {
     
             ImGui::PopStyleVar();
     
-            if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
+            if (ImGui::BeginDragDropSource()) {
                 auto relative = fs::relative(path, m_BaseDirectory);
                 std::string filePath = relative.string();
-                ImGui::SetDragDropPayload("ASSET_DRAG_DROP", filePath.c_str(), filePath.size() + 1);
+                ImGui::SetDragDropPayload("FILE_BROWSER_DRAG_DROP", filePath.c_str(), filePath.size() + 1);
                 ImGui::Text("%s", name.c_str());
                 ImGui::EndDragDropSource();
             }
@@ -599,7 +600,7 @@ namespace BlackberryEditor {
 
             if (ImGui::BeginPopupContextItem()) {
                 if (ImGui::MenuItem("Create asset handle")) {
-                    m_CurrentScene->GetAssetManager().AddTextureFromPath("cart", file.path());
+                    m_CurrentScene->GetAssetManager().AddTextureFromPath("cart", std::filesystem::relative(file.path(), m_BaseDirectory));
                 }
 
                 ImGui::EndPopup();
@@ -612,6 +613,52 @@ namespace BlackberryEditor {
     
         ImGui::Columns(1);
     
+        ImGui::End();
+    }
+
+    void EditorLayer::UI_AssetManager() {
+        ImGui::Begin("AssetManager");
+
+        static f32 padding = 16.0f;
+        static f32 thumbnailSize = 128.0f;
+        f32 cellSize = thumbnailSize + padding;
+    
+        f32 panelWidth = ImGui::GetContentRegionAvail().x;
+        u32 columnCount = static_cast<u32>(panelWidth / cellSize);
+        if (columnCount < 1) {
+            columnCount = 1;
+        }
+    
+        ImGui::Columns(columnCount, 0, false);
+
+        for (const auto&[handle, asset] : m_EditingScene->GetAssetManager().GetAllAssets()) {
+            ImGui::PushID(asset.FilePath.string().c_str());
+
+            ImGui::ImageButton(asset.FilePath.string().c_str(), std::get<BlTexture>(asset.Data).ID, ImVec2(128.0f, 128.0f));
+
+            if (ImGui::BeginDragDropSource()) {
+                ImGui::SetDragDropPayload("ASSET_MANAGER_DRAG_DROP", &handle, sizeof(handle));
+                ImGui::Text(asset.FilePath.string().c_str()); // text that appears while dragging
+                ImGui::EndDragDropSource();
+            }
+
+            if (ImGui::BeginPopupContextItem("AssetManagerItemPopup")) {
+                if (ImGui::MenuItem("Copy asset handle")) {
+                    std::string strHandle = std::to_string(handle);
+
+                    ImGui::SetClipboardText(strHandle.c_str());
+                }
+
+                ImGui::EndPopup();
+            }
+
+            ImGui::NextColumn();
+
+            ImGui::PopID();
+        }
+
+        ImGui::Columns(1);
+
         ImGui::End();
     }
     
@@ -765,8 +812,38 @@ namespace BlackberryEditor {
                 }
             });
             DrawComponent<Material>("Material", entity, [this](Material& material) {
-                ImGui::InputScalar("##TextureHandle", ImGuiDataType_U64, &material.TextureHandle);
-    
+                std::string mat;
+                if (m_CurrentScene->GetAssetManager().ContainsAsset(material.TextureHandle)) {
+                    mat = m_CurrentScene->GetAssetManager().GetAsset(material.TextureHandle).FilePath.stem().string();
+                } else {
+                    mat = "NULL";
+                }
+
+                f32 size = ImGui::GetContentRegionAvail().x;
+                if (mat == "NULL") {
+                    ImGui::PushStyleColor(ImGuiCol_Text, 0xff0000ff);
+                    ImGui::Button(mat.c_str(), ImVec2(size, 0.0f));
+                    ImGui::PopStyleColor();
+                } else {
+                    ImGui::Button(mat.c_str(), ImVec2(size, 0.0f));
+                }
+
+                if (ImGui::BeginPopupContextItem("TextureHandlePopup")) {
+                    if (ImGui::MenuItem("Remove Texture")) {
+                        material.TextureHandle = 0;
+                    }
+
+                    ImGui::EndPopup();
+                }
+
+                if (ImGui::BeginDragDropTarget()) {
+                    const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_MANAGER_DRAG_DROP");
+
+                    if (payload) {
+                        material.TextureHandle = *reinterpret_cast<u64*>(payload->Data); // seems sus
+                    }
+                }
+
                 DrawRecControl("Area", &material.Area);
             });
             DrawComponent<Script>("Script", entity, [this](Script& script) {

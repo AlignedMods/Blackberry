@@ -32,7 +32,7 @@ namespace Blackberry::Components {
 
     struct Material {
         u64 TextureHandle = 0;
-        BlRec Area; // (aligned) NOTE: very sketchy, this depends on texture being initialized first!
+        BlRec Area;
     };
 
     struct Drawable {

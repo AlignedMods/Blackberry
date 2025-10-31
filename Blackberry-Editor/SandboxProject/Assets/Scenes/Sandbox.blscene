@@ -1,5 +1,9 @@
 {
     "Assets": {
+        "Handle - 10803928294860902758": {
+            "AssetPath": "Textures\\rabbit.jpg",
+            "Handle": 10803928294860902758
+        },
         "Handle - 15162507589004987079": {
             "AssetPath": "Textures\\cat.jpg",
             "Handle": 15162507589004987079
