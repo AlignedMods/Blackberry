@@ -68,9 +68,12 @@ namespace Blackberry {
         static ECS* Copy(ECS* current) {
             ECS* newECS = new ECS();
 
-            current->m_Registry.view<entt::entity>().each([&](auto entity) {
+            auto view = current->m_Registry.view<entt::entity>();
+
+            for (auto it = view.rbegin(); it < view.rend(); it++) {
+                auto entity = *it;
                 DuplicateEntity(entity, &current->m_Registry, &newECS->m_Registry);
-            });
+            }
 
             return newECS;
         }

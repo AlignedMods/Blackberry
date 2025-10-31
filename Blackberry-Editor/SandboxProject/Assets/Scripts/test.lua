@@ -1,9 +1,8 @@
 local bl = require("Blackberry")
 
-local Script = {}
+Script = {}
 
 function Script:OnAttach(entity)
-
 end
 
 function Script:OnDetach()
