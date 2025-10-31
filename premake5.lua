@@ -1,5 +1,5 @@
 workspace "Blackberry"
-    configurations { "Debug", "Release" }
+    configurations { "Debug", "Release", "Dist" }
     platforms { "x86", "x86_64" }
 
     OutputDir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
@@ -8,10 +8,16 @@ workspace "Blackberry"
     defines { "_CRT_SECURE_NO_WARNINGS" }
 
     filter "configurations:Debug"
+        symbols "On"
         defines { "BL_DEBUG_BUILD" }
 
     filter "configurations:Release"
+        optimize "On"
         defines { "BL_RELEASE_BUILD" }
+
+    filter "configurations:Dist"
+        optimize "Full"
+        defines { "BL_DIST_BUILD" }
 
     filter ""
 

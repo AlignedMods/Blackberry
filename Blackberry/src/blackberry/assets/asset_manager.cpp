@@ -2,9 +2,11 @@
 
 namespace Blackberry {
 
-    AssetHandle AssetManager::AddAsset(const Asset& asset) {
+    AssetHandle AssetManager::AddAsset(const std::string& name, const Asset& asset) {
         AssetHandle handle = UUID();
         AddAssetWithHandle(handle, asset);
+
+        m_AssetHandleMap[name] = handle;
 
         return handle;
     }
@@ -13,11 +15,19 @@ namespace Blackberry {
         m_AssetMap[handle] = asset;
     }
 
-    Asset& AssetManager::GetAsset(AssetHandle handle) {
+    const Asset& AssetManager::GetAsset(AssetHandle handle) const {
         return m_AssetMap.at(handle);
     }
 
-    const std::unordered_map<AssetHandle, Asset>& AssetManager::GetAllAssets() const {
+    const bool AssetManager::ContainsAsset(AssetHandle handle) const {
+        return m_AssetMap.contains(handle);
+    }
+
+    AssetHandle AssetManager::GetAssetHandle(const std::string& name) const {
+        return m_AssetHandleMap.at(name);
+    }
+
+    const AssetManager::HandleMap& AssetManager::GetAllAssets() const {
         return m_AssetMap;
     }
 
@@ -32,7 +42,7 @@ namespace Blackberry {
         BlTexture tex;
         tex.Create(image);
 
-        AddAsset({relative, AssetType::Texture, tex});
+        AddAsset(name, {relative, AssetType::Texture, tex});
     }
 
 } // namespace Blackberry

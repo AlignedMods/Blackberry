@@ -24,19 +24,24 @@ namespace Blackberry {
 
     class AssetManager {
     public:
+        using HandleMap = std::unordered_map<AssetHandle, Asset>;
+
         AssetManager() = default;
 
-        AssetHandle AddAsset(const Asset& asset);
+        AssetHandle AddAsset(const std::string& name, const Asset& asset);
         void AddAssetWithHandle(AssetHandle handle, const Asset& asset);
 
-        Asset& GetAsset(AssetHandle handle);
-        const std::unordered_map<AssetHandle, Asset>& GetAllAssets() const;
+        const Asset& GetAsset(AssetHandle handle) const;
+        const bool ContainsAsset(AssetHandle handle) const;
+        AssetHandle GetAssetHandle(const std::string& name) const;
+        const HandleMap& GetAllAssets() const;
 
         // helper functions (all you really need is AddAsset)
         void AddTextureFromPath(const std::string& name, const std::filesystem::path& path);
 
     private:
-        std::unordered_map<AssetHandle, Asset> m_AssetMap;
+        HandleMap m_AssetMap;
+        std::unordered_map<std::string, AssetHandle> m_AssetHandleMap;
     };
 
 } // namespace Blackberry

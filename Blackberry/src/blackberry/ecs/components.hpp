@@ -4,6 +4,10 @@
 #include "blackberry/font/font.hpp"
 #include "blackberry/assets/asset_manager.hpp"
 
+#include "glm/glm.hpp"
+#include "glm/ext/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
+
 #define BL_SYMBOLIC_COMPONENT(name) using name = u8
 
 namespace Blackberry::Components {
@@ -27,9 +31,8 @@ namespace Blackberry::Components {
     };
 
     struct Material {
-        std::filesystem::path TexturePath;
-        BlTexture Texture;
-        BlRec Area = BlRec(0, 0, Texture.Width, Texture.Height); // (aligned) NOTE: very sketchy, this depends on texture being initialized first!
+        u64 TextureHandle = 0;
+        BlRec Area; // (aligned) NOTE: very sketchy, this depends on texture being initialized first!
     };
 
     struct Drawable {

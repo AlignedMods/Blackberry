@@ -5,6 +5,8 @@
 #include "blackberry/rendering/texture.hpp"
 #include "blackberry/rendering/shader.hpp"
 
+#include "glm/glm.hpp"
+
 struct BlDrawBuffer {
     std::string DebugName;
 
@@ -67,6 +69,9 @@ namespace Blackberry {
 
         virtual void AttachRenderTexture(const BlRenderTexture texture) = 0;
         virtual void DetachRenderTexture() = 0;
+
+        virtual void SetProjection(glm::mat4 projection) = 0;
+        virtual void ResetProjection() = 0;
     };
 
 } // namespace Blackberry

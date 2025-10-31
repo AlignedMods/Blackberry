@@ -44,6 +44,9 @@ namespace Blackberry {
         static void AttachRenderTexture(BlRenderTexture texture);
         static void DetachRenderTexture();
 
+        static void SetProjection(glm::mat4 projection);
+        static void ResetProjection();
+
         static void Render();
 
         static BlRenderer2DInfo GetRenderingInfo();

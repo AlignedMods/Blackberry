@@ -2,6 +2,7 @@
 
 #include "blackberry/scene/uuid.hpp"
 #include "blackberry/ecs/ecs.hpp"
+#include "blackberry/assets/asset_manager.hpp"
 
 #include <unordered_map>
 #include <string>
@@ -35,9 +36,11 @@ namespace Blackberry {
 
         EntityID GetEntity(const std::string& name);
         std::vector<EntityID> GetEntities();
+        AssetManager& GetAssetManager();
 
     private:
         ECS* m_ECS;
+        AssetManager* m_AssetManager;
         std::unordered_map<u64, EntityID> m_EntityMap;
         std::unordered_map<std::string, u64> m_NamedEntityMap;
 

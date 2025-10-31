@@ -176,13 +176,15 @@ namespace Blackberry {
         m_CurrentViewportSize = viewport;
         glViewport(0, 0, static_cast<GLsizei>(viewport.x), static_cast<GLsizei>(viewport.y));
 
-        m_Projection = glm::ortho(
-            0.0f,            // left
-            (f32)viewport.x, // right
-            (f32)viewport.y, // bottom
-            0.0f,            // top
-            -10.0f, 10.0f      // near-far
+        m_DefaultProjection = glm::ortho(
+            0.0f,                               // left
+            static_cast<f32>(viewport.x),       // right
+            static_cast<f32>(viewport.y),       // bottom
+            0.0f,                               // top
+            -1000.0f, 1000.0f                   // near-far
         );
+
+        m_Projection = m_DefaultProjection;
     }
 
     void Renderer_OpenGL3::NewFrame() {}
@@ -254,6 +256,10 @@ namespace Blackberry {
     }
 
     void Renderer_OpenGL3::DrawIndexed(u32 count) {
+        if (count == 0) {
+            BL_CORE_WARN("Submiting draw call with ZERO elements!");
+        }
+
         glUseProgram(m_CurrentShader.ID);
         glBindVertexArray(m_VAO);
 
@@ -271,6 +277,14 @@ namespace Blackberry {
     void Renderer_OpenGL3::DetachRenderTexture() {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         UpdateViewport(m_PrevViewportSize);
+    }
+
+    void Renderer_OpenGL3::SetProjection(glm::mat4 projection) {
+        m_Projection = projection;
+    }
+
+    void Renderer_OpenGL3::ResetProjection() {
+        m_Projection = m_DefaultProjection;
     }
 
     void Renderer_OpenGL3::CompileDefaultShaders() {

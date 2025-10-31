@@ -35,6 +35,9 @@ namespace Blackberry {
         virtual void AttachRenderTexture(const BlRenderTexture texture) override;
         virtual void DetachRenderTexture() override;
 
+        virtual void SetProjection(glm::mat4 projection) override;
+        virtual void ResetProjection() override;
+
     private:
         void CompileDefaultShaders();
 
@@ -53,6 +56,7 @@ namespace Blackberry {
         BlVec2 m_PrevViewportSize;
 
         glm::mat4 m_Projection;
+        glm::mat4 m_DefaultProjection;
     };
 
 } // namespace Blackberry

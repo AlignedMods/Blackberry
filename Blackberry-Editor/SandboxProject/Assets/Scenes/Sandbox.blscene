@@ -1,4 +1,10 @@
 {
+    "Assets": {
+        "Handle - 15162507589004987079": {
+            "AssetPath": "Textures\\cat.jpg",
+            "Handle": 15162507589004987079
+        }
+    },
     "Entities": {
         "ID - 0": {
             "DrawableComponent": {
@@ -72,10 +78,10 @@
                 "Area": [
                     0.0,
                     0.0,
-                    3072.0,
-                    4096.0
+                    0.0,
+                    0.0
                 ],
-                "TexturePath": "Textures\\cat.jpg"
+                "TextureHandle": 15162507589004987079
             },
             "TagComponent": {
                 "Name": "Cat",

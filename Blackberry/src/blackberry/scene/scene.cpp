@@ -15,7 +15,7 @@ extern "C" {
 namespace Blackberry {
 
     Scene::Scene()
-        : m_ECS(new ECS) {
+        : m_ECS(new ECS), m_AssetManager(new AssetManager) {
         BL_CORE_TRACE("New scene created ({})", reinterpret_cast<void*>(this));
     }
 
@@ -109,8 +109,12 @@ namespace Blackberry {
     void Scene::RenderEntity(EntityID entity, Blackberry::Components::Transform& transform, Blackberry::Components::Drawable& drawable) {
         if (m_ECS->HasComponent<Material>(entity)) {
             Material& material = m_ECS->GetComponent<Material>(entity);
+            if (material.TextureHandle > 0 && m_AssetManager->ContainsAsset(material.TextureHandle)) {
+                Asset asset = m_AssetManager->GetAsset(material.TextureHandle);
+                BlTexture tex = std::get<BlTexture>(asset.Data);
 
-            Renderer2D::DrawTextureArea(transform.Position, transform.Dimensions, material.Area, material.Texture, transform.Rotation, drawable.Color);
+                Renderer2D::DrawTextureArea(transform.Position, transform.Dimensions, material.Area, tex, transform.Rotation, drawable.Color);
+            }
         } else {
             switch (drawable.ShapeType) {
                 case Shape::Triangle:
@@ -167,6 +171,10 @@ namespace Blackberry {
 
     std::vector<EntityID> Scene::GetEntities() {
         return m_ECS->GetAllEntities();
+    }
+
+    AssetManager& Scene::GetAssetManager() {
+        return *m_AssetManager;
     }
 
 } // namespace Blackberry

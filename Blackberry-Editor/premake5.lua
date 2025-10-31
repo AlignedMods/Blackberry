@@ -10,7 +10,8 @@ project "Blackberry-Editor"
     files { "src/**.cpp", "src/**.hpp" }
 
     includedirs { "../Blackberry/src/",
-                  "%{BlackberryIncludes.spdlog}"}
+                  "%{BlackberryIncludes.spdlog}",
+                  "%{BlackberryIncludes.glm}" }
     
     links { BlackberryLinks }
 

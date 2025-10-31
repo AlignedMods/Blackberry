@@ -7,6 +7,7 @@
 #include "blackberry/event/window_events.hpp"
 #include "blackberry/input/keycodes.hpp"
 #include "blackberry/input/mousecodes.hpp"
+#include "blackberry/input/input.hpp"
 
 #include "GLFW/glfw3.h"
 #include "glad/glad.h"
@@ -39,12 +40,15 @@ namespace Blackberry {
 
         if (action == GLFW_PRESS) {
             dispatcher.Post(KeyPressedEvent(keyCode, false));
+            Input::SetKeyState(keyCode, true);
         }
         else if (action == GLFW_REPEAT) {
             dispatcher.Post(KeyPressedEvent(keyCode, true));
+            Input::SetKeyState(keyCode, true);
         }
         else if (action == GLFW_RELEASE) {
             dispatcher.Post(KeyReleasedEvent(keyCode));
+            Input::SetKeyState(keyCode, false);
         }
     }
 
@@ -277,6 +281,8 @@ namespace Blackberry {
             ImGui::RenderPlatformWindowsDefault();
             glfwMakeContextCurrent(backup_current_context);
         }
+
+        Input::ResetKeyState();
 
         glfwSwapBuffers(m_Handle);
     }

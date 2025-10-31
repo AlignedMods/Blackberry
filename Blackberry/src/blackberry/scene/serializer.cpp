@@ -14,6 +14,7 @@ namespace Blackberry {
         if (m_Scene->GetEntities().size() == 0) { return; }
         json j;
 
+        // entities
         for (auto& id : m_Scene->GetEntities()) {
             using namespace Components;
 
@@ -51,7 +52,7 @@ namespace Blackberry {
                 Material& material = entity.GetComponent<Material>();
 
                 j["Entities"][name]["MaterialComponent"] = { 
-                    {"TexturePath", material.TexturePath.string()},
+                    {"TextureHandle", material.TextureHandle},
                     {"Area", {material.Area.x, material.Area.y, material.Area.w, material.Area.h}}
                 };
             }
@@ -73,6 +74,16 @@ namespace Blackberry {
             }
         }
 
+        // assets
+        for (const auto&[handle, asset] : m_Scene->GetAssetManager().GetAllAssets()) {
+            std::string name = "Handle - " + std::to_string(handle);
+
+            j["Assets"][name] = {
+                { "Handle", handle },
+                { "AssetPath", asset.FilePath }
+            };
+        }
+
         std::ofstream stream(path);
         stream << j.dump(4);
     }
@@ -84,7 +95,24 @@ namespace Blackberry {
 
         json j = json::parse(contents);
         auto& entities = j.at("Entities");
+        auto& assets = j.at("Assets");
 
+        // assets (NOTE: must happen before entity loading, incase of entities depending on texture handles)
+        for (auto& jsonAsset : assets) {
+            Asset asset;
+            asset.Type = AssetType::Texture;
+
+            std::filesystem::path path = jsonAsset.at("AssetPath");
+            asset.FilePath = path;
+            
+            BlTexture tex;
+            tex.Create(m_AssetDirectory / jsonAsset.at("AssetPath"));
+            asset.Data = tex;
+
+            m_Scene->GetAssetManager().AddAssetWithHandle(jsonAsset.at("Handle"), asset);
+        }
+
+        // entities
         for (auto& jsonEntity : entities) {
             Entity entity;
 
@@ -119,13 +147,12 @@ namespace Blackberry {
             // MaterialComponent
             if (jsonEntity.contains("MaterialComponent")) {
                 auto& jsonMaterial = jsonEntity.at("MaterialComponent");
-                std::filesystem::path filePath = jsonMaterial.at("TexturePath");
+                u64 textureHandle = jsonMaterial.at("TextureHandle");
                 std::array<f32, 4> area = jsonMaterial.at("Area");
 
-                BlTexture tex;
-                tex.Create(m_AssetDirectory / filePath);
+                BlTexture tex = std::get<BlTexture>(m_Scene->GetAssetManager().GetAsset(textureHandle).Data);
 
-                entity.AddComponent<Material>({ filePath, tex, BlRec(area[0], area[1], area[2], area[3]) });
+                entity.AddComponent<Material>({ textureHandle, BlRec(area[0], area[1], area[2], area[3]) });
             }
 
             if (jsonEntity.contains("ScriptComponent")) {

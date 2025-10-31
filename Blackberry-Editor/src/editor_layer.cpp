@@ -583,7 +583,7 @@ namespace BlackberryEditor {
     
             ImGui::PopStyleVar();
     
-            if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_AcceptNoDrawDefaultRect)) {
+            if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
                 auto relative = fs::relative(path, m_BaseDirectory);
                 std::string filePath = relative.string();
                 ImGui::SetDragDropPayload("ASSET_DRAG_DROP", filePath.c_str(), filePath.size() + 1);
@@ -595,6 +595,14 @@ namespace BlackberryEditor {
                 if (file.is_directory()) {
                     m_CurrentDirectory /= path.filename();
                 }
+            }
+
+            if (ImGui::BeginPopupContextItem()) {
+                if (ImGui::MenuItem("Create asset handle")) {
+                    m_CurrentScene->GetAssetManager().AddTextureFromPath("cart", file.path());
+                }
+
+                ImGui::EndPopup();
             }
     
             ImGui::TextWrapped(name.c_str());
@@ -757,32 +765,7 @@ namespace BlackberryEditor {
                 }
             });
             DrawComponent<Material>("Material", entity, [this](Material& material) {
-                ImGui::Button("Drop Texture Here!");
-    
-                if (ImGui::BeginDragDropTarget()) {
-                    // we don't want to create a new texture if one already exists
-                    if (!material.Texture.ID) {
-                        if (auto payload = ImGui::AcceptDragDropPayload("ASSET_DRAG_DROP")) {
-                            std::string strPath = (char*)payload->Data;
-                            std::filesystem::path path(strPath);
-                            path = m_BaseDirectory / path;
-    
-                            BlTexture tex;
-                            tex.Create(path);
-                            material.Texture = tex;
-                            material.Area = BlRec(0.0f, 0.0f, tex.Width, tex.Height);
-                            material.TexturePath = std::filesystem::relative(path, m_BaseDirectory);
-                        }
-                        
-                        ImGui::EndDragDropTarget();
-                    }
-                }
-    
-                ImGui::SameLine();
-                if (ImGui::Button("Remove Texture")) {
-                    material.Texture.Delete();
-                    material.TexturePath = "";
-                }
+                ImGui::InputScalar("##TextureHandle", ImGuiDataType_U64, &material.TextureHandle);
     
                 DrawRecControl("Area", &material.Area);
             });

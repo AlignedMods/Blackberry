@@ -172,7 +172,7 @@ namespace Blackberry {
     }
 
     void Renderer2D::DrawTextureArea(BlVec3 pos, BlVec2 dimensions, BlRec area, BlTexture texture, f32 rotation, BlColor color) {
-        if (State.CurrentTexture.ID != texture.ID) {
+        if (State.CurrentTexture.ID != texture.ID && State.CurrentTexture.ID != 0) {
             Render();
         }
 
@@ -223,6 +223,18 @@ namespace Blackberry {
         auto& renderer = BL_APP.GetRenderer();
 
         renderer.DetachRenderTexture();
+    }
+
+    void Renderer2D::SetProjection(glm::mat4 projection) {
+        auto& renderer = BL_APP.GetRenderer();
+
+        renderer.SetProjection(projection);
+    }
+
+    void Renderer2D::ResetProjection() {
+        auto& renderer = BL_APP.GetRenderer();
+
+        renderer.ResetProjection();
     }
 
     void Renderer2D::Render() {

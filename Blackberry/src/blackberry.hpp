@@ -9,6 +9,7 @@
 #include "blackberry/application/layer.hpp"
 #include "blackberry/input/keycodes.hpp"
 #include "blackberry/input/mousecodes.hpp"
+#include "blackberry/input/input.hpp"
 #include "blackberry/font/font.hpp"
 
 // events
@@ -37,7 +38,6 @@
 
 // serializing
 #include "blackberry/scene/serializer.hpp"
-#include "blackberry/assets/serializer.hpp"
 
 // os
 #include "blackberry/os/os.hpp"
