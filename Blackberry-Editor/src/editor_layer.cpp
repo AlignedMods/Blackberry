@@ -568,50 +568,56 @@ namespace BlackberryEditor {
             columnCount = 1;
         }
     
-        ImGui::Columns(columnCount, 0, false);
+        // ImGui::Columns(columnCount, 0, false);
+
+        if (ImGui::BeginTable("##FunnyTable", columnCount)) {
+            for (const auto& file : fs::directory_iterator(m_CurrentDirectory)) {
+                ImGui::TableNextColumn();
+
+                const auto& path = file.path();
+                std::string name = path.filename().string();
     
-        for (const auto& file : fs::directory_iterator(m_CurrentDirectory)) {
-            const auto& path = file.path();
-            std::string name = path.filename().string();
+                ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
     
-            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
-    
-            if (file.is_directory()) {
-                ImGui::ImageButton(name.c_str(), m_DirectoryIcon.ID, ImVec2(thumbnailSize, thumbnailSize));
-            } else {
-                ImGui::ImageButton(name.c_str(), m_FileIcon.ID, ImVec2(thumbnailSize, thumbnailSize));
-            }
-    
-            ImGui::PopStyleVar();
-    
-            if (ImGui::BeginDragDropSource()) {
-                auto relative = fs::relative(path, m_BaseDirectory);
-                std::string filePath = relative.string();
-                ImGui::SetDragDropPayload("FILE_BROWSER_DRAG_DROP", filePath.c_str(), filePath.size() + 1);
-                ImGui::Text("%s", name.c_str());
-                ImGui::EndDragDropSource();
-            }
-    
-            if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
                 if (file.is_directory()) {
-                    m_CurrentDirectory /= path.filename();
+                    ImGui::ImageButton(name.c_str(), m_DirectoryIcon.ID, ImVec2(thumbnailSize, thumbnailSize));
+                } else {
+                    ImGui::ImageButton(name.c_str(), m_FileIcon.ID, ImVec2(thumbnailSize, thumbnailSize));
                 }
-            }
-
-            if (ImGui::BeginPopupContextItem()) {
-                if (ImGui::MenuItem("Create asset handle")) {
-                    m_CurrentScene->GetAssetManager().AddTextureFromPath("cart", std::filesystem::relative(file.path(), m_BaseDirectory));
+    
+                ImGui::PopStyleVar();
+    
+                if (ImGui::BeginDragDropSource()) {
+                    auto relative = fs::relative(path, m_BaseDirectory);
+                    std::string filePath = relative.string();
+                    ImGui::SetDragDropPayload("FILE_BROWSER_DRAG_DROP", filePath.c_str(), filePath.size() + 1);
+                    ImGui::Text("%s", name.c_str());
+                    ImGui::EndDragDropSource();
+                }
+    
+                if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+                    if (file.is_directory()) {
+                        m_CurrentDirectory /= path.filename();
+                    }
                 }
 
-                ImGui::EndPopup();
+                if (ImGui::BeginPopupContextItem()) {
+                    if (ImGui::MenuItem("Create asset handle")) {
+                        m_CurrentScene->GetAssetManager().AddTextureFromPath("cart", std::filesystem::relative(file.path(), m_BaseDirectory));
+                    }
+
+                    ImGui::EndPopup();
+                }
+    
+                ImGui::TextWrapped(name.c_str());
+    
+                // ImGui::NextColumn();
             }
-    
-            ImGui::TextWrapped(name.c_str());
-    
-            ImGui::NextColumn();
+            
+            ImGui::EndTable();
         }
-    
-        ImGui::Columns(1);
+
+        // ImGui::Columns(1);
     
         ImGui::End();
     }
@@ -629,35 +635,35 @@ namespace BlackberryEditor {
             columnCount = 1;
         }
     
-        ImGui::Columns(columnCount, 0, false);
+        if (ImGui::BeginTable("##FunnyTable", columnCount)) {
+            for (const auto&[handle, asset] : m_EditingScene->GetAssetManager().GetAllAssets()) {
+                ImGui::TableNextColumn();
 
-        for (const auto&[handle, asset] : m_EditingScene->GetAssetManager().GetAllAssets()) {
-            ImGui::PushID(asset.FilePath.string().c_str());
+                ImGui::PushID(asset.FilePath.string().c_str());
 
-            ImGui::ImageButton(asset.FilePath.string().c_str(), std::get<BlTexture>(asset.Data).ID, ImVec2(128.0f, 128.0f));
+                ImGui::ImageButton(asset.FilePath.string().c_str(), std::get<BlTexture>(asset.Data).ID, ImVec2(128.0f, 128.0f));
 
-            if (ImGui::BeginDragDropSource()) {
-                ImGui::SetDragDropPayload("ASSET_MANAGER_DRAG_DROP", &handle, sizeof(handle));
-                ImGui::Text(asset.FilePath.string().c_str()); // text that appears while dragging
-                ImGui::EndDragDropSource();
-            }
-
-            if (ImGui::BeginPopupContextItem("AssetManagerItemPopup")) {
-                if (ImGui::MenuItem("Copy asset handle")) {
-                    std::string strHandle = std::to_string(handle);
-
-                    ImGui::SetClipboardText(strHandle.c_str());
+                if (ImGui::BeginDragDropSource()) {
+                    ImGui::SetDragDropPayload("ASSET_MANAGER_DRAG_DROP", &handle, sizeof(handle));
+                    ImGui::Text(asset.FilePath.string().c_str()); // text that appears while dragging
+                    ImGui::EndDragDropSource();
                 }
 
-                ImGui::EndPopup();
+                if (ImGui::BeginPopupContextItem("AssetManagerItemPopup")) {
+                    if (ImGui::MenuItem("Copy asset handle")) {
+                        std::string strHandle = std::to_string(handle);
+
+                        ImGui::SetClipboardText(strHandle.c_str());
+                    }
+
+                    ImGui::EndPopup();
+                }
+
+                ImGui::PopID();
             }
 
-            ImGui::NextColumn();
-
-            ImGui::PopID();
+            ImGui::EndTable();
         }
-
-        ImGui::Columns(1);
 
         ImGui::End();
     }

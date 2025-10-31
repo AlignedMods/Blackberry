@@ -28,6 +28,8 @@ namespace Blackberry {
 
         AssetManager() = default;
 
+        static AssetManager* Copy(AssetManager* current);
+
         AssetHandle AddAsset(const std::string& name, const Asset& asset);
         void AddAssetWithHandle(AssetHandle handle, const Asset& asset);
 

@@ -28,6 +28,7 @@ namespace Blackberry {
         Scene* scene = new Scene();
 
         scene->m_ECS = ECS::Copy(current->m_ECS);
+        scene->m_AssetManager = AssetManager::Copy(current->m_AssetManager);
 
         return scene;
     }

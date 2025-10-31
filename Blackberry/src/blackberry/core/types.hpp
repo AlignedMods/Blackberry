@@ -1,7 +1,7 @@
 #pragma once
 
-#include <stddef.h>
-#include <stdint.h>
+#include <cstddef>
+#include <cstdint>
 
 // rust style types (no i still don't like rust, although type names is something they got right)
 
@@ -20,56 +20,56 @@ using f32 = float;
 using f64 = double;
 
 struct BlVec2 {
-    inline BlVec2() 
+    constexpr inline BlVec2() 
         : x(0.0f), y(0.0f) {}
 
-    inline explicit BlVec2(f32 x, f32 y) 
+    constexpr inline explicit BlVec2(f32 x, f32 y) 
         : x(x), y(y) {}
 
-    inline explicit BlVec2(i32 x, i32 y)
+    constexpr inline explicit BlVec2(i32 x, i32 y)
         : BlVec2(static_cast<f32>(x), static_cast<f32>(y)) {}
 
     f32 x, y;
 };
 
 struct BlVec3 {
-    inline BlVec3()
+    constexpr inline BlVec3()
         : x(0.0f), y(0.0f), z(0.0f) {}
 
-    inline explicit BlVec3(f32 x, f32 y, f32 z)
+    constexpr inline explicit BlVec3(f32 x, f32 y, f32 z)
         : x(x), y(y), z(z) {}
 
     f32 x, y, z;
 };
 
 struct BlVec4 {
-    inline BlVec4()
+    constexpr inline BlVec4()
         : x(0.0f), y(0.0f), z(0.0f), w(0.0f) {}
 
-    inline explicit BlVec4(f32 x, f32 y, f32 z, f32 w)
+    constexpr inline explicit BlVec4(f32 x, f32 y, f32 z, f32 w)
         : x(x), y(y), z(z), w(w) {}
 
     f32 x, y, z, w;
 };
 
 struct BlColor {
-    inline BlColor()
+    constexpr inline BlColor()
         : r(0), g(0), b(0), a(0xff) {}
 
-    inline explicit BlColor(u8 r, u8 g, u8 b, u8 a)
+    constexpr inline explicit BlColor(u8 r, u8 g, u8 b, u8 a)
         : r(r), g(g), b(b), a(a) {}
 
     u8 r, g, b, a;
 };
 
 struct BlRec {
-    inline BlRec()
+    constexpr inline BlRec()
         : x(0.0f), y(0.0f), w(0.0f), h(0.0f) {}
 
-    inline explicit BlRec(f32 x, f32 y, f32 w, f32 h)
+    constexpr inline explicit BlRec(f32 x, f32 y, f32 w, f32 h)
         : x(x), y(y), w(w), h(h) {}
 
-    inline explicit BlRec(i32 x, i32 y, i32 w, i32 h)
+    constexpr inline explicit BlRec(i32 x, i32 y, i32 w, i32 h)
         : x(static_cast<f32>(x)), y(static_cast<f32>(y)), w(static_cast<f32>(w)), h(static_cast<f32>(h)) {}
     
     f32 x, y, w, h;

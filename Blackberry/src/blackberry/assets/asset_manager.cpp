@@ -2,6 +2,16 @@
 
 namespace Blackberry {
 
+    AssetManager* AssetManager::Copy(AssetManager* current) {
+        AssetManager* newAssetManager = new AssetManager();
+
+        for (const auto&[handle, asset] : current->m_AssetMap) {
+            newAssetManager->AddAssetWithHandle(handle, asset);
+        }
+
+        return newAssetManager;
+    }
+
     AssetHandle AssetManager::AddAsset(const std::string& name, const Asset& asset) {
         AssetHandle handle = UUID();
         AddAssetWithHandle(handle, asset);
