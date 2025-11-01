@@ -9,6 +9,7 @@
 #include "platform/glfw/glfw_window.hpp"
 #include "platform/opengl/opengl3_renderer.hpp"
 #include "blackberry/rendering/rendering.hpp"
+#include "blackberry/lua/lua.hpp"
 
 #include "imgui.h"
 #include "glad/glad.h"
@@ -40,11 +41,17 @@ namespace Blackberry {
             layer->OnAttach();
         }
 
+        Lua::Init();
+        Renderer2D::Init();
+
         m_Initalized = true;
         s_Instance = this;
     }
 
     Application::~Application() {
+        Lua::Shutdown();
+        Renderer2D::Shutdown();
+
         delete m_Window;
     }
 

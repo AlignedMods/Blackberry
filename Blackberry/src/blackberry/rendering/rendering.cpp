@@ -1,39 +1,77 @@
 #include "rendering.hpp"
+#include "blackberry/core/util.hpp"
 
 #include "glm/glm.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-struct BlShapeVertex {
-    BlVec3 Pos;
-    BlVec4 Color;
-};
-
-struct BlTextureVertex {
+struct BlQuadVertex {
     BlVec3 Pos;
     BlVec4 Color;
     BlVec2 TexCoord;
-    f32 TexIndex = 0.0f; // OpenGL is weird with passing integers to shaders
+    f32 TexIndex = 0.0f; // OpenGL is weird with passing integers to shaders (also -1 means no texture in shader)
 };
 
 namespace Blackberry {
 
-    struct Renderer2DState {
-        // Shape buffer data
-        u32 ShapeIndexCount = 0;
-        u32 ShapeVertexCount = 0;
-        std::vector<BlShapeVertex> ShapeVertices;
-        std::vector<u32> ShapeIndices;
-        BlDrawBuffer ShapeDrawBuffer; // buffer for shapes (rectangles, triangles, etc)
+    static u8 s_WhiteTextureData[] = {0xff, 0xff, 0xff, 0xff}; // dead simple white texture (1x1 pixel)
 
-        // Texture buffer data
-        u32 TextureIndexCount = 0;
-        u32 TextureVertexCount = 0;
-        std::vector<BlTextureVertex> TextureVertices;
-        std::vector<u32> TextureIndices;
-        BlDrawBuffer TextureDrawBuffer; // buffer for textures
-        // used for batching
-        u32 CurrentTexIndex = 0;
+    static const char* s_VertexShaderQuadSource = BL_STR(
+        \x23version 460 core\n
+
+        layout (location = 0) in vec3 a_Pos; // BlQuadVertex.Pos (also we can have comments like this because preproccesor ignores them!)
+        layout (location = 1) in vec4 a_Color; // BlQuadVertex.Color
+        layout (location = 2) in vec2 a_TexCoord; // BlQuadVertex.TexCoord
+        layout (location = 3) in float a_TexIndex; // BlQuadVertex.TexIndex
+
+        uniform mat4 u_Projection;
+
+        layout (location = 0) out vec4 o_Color;
+        layout (location = 1) out vec2 o_TexCoord;
+        layout (location = 2) out float o_TexIndex;
+
+        void main() {
+            gl_Position = u_Projection * vec4(a_Pos, 1.0f);
+
+            o_Color = a_Color;
+            o_TexCoord = a_TexCoord;
+            o_TexIndex = a_TexIndex;
+        }
+    );
+
+    static const char* s_FragmentShaderQuadSource = BL_STR(
+        \x23version 460 core\n
+
+        layout (location = 0) in vec4 a_Color;
+        layout (location = 1) in vec2 a_TexCoord;
+        layout (location = 2) in float a_TexIndex;
+
+        uniform sampler2D u_Textures[16];
+
+        out vec4 o_FragColor;
+
+        void main() {
+            int index = int(a_TexIndex);
+            
+            vec4 texel = texture(u_Textures[index], a_TexCoord);
+            o_FragColor = texel * a_Color;
+        }
+    );
+
+    struct Renderer2DState {
+        // shader
+        BlShader QuadShader;
+
+        BlTexture WhiteTexture;
+
+        // Quad buffer data
+        u32 QuadIndexCount = 0;
+        u32 QuadVertexCount = 0;
+        std::vector<BlQuadVertex> QuadVertices;
+        std::vector<u32> QuadIndices;
+        BlDrawBuffer QuadDrawBuffer;
+        // for textured quads
+        u32 CurrentTexIndex = 1; // NOTE: 0 is reserved for a blank white texture!!!
         std::array<BlTexture, 16> CurrentAttachedTextures;
 
         BlRenderer2DInfo Info;
@@ -80,6 +118,17 @@ namespace Blackberry {
         );
     }
 
+    void Renderer2D::Init() {
+        State.QuadShader.Create(s_VertexShaderQuadSource, s_FragmentShaderQuadSource);
+        State.WhiteTexture.Create(s_WhiteTextureData, 1, 1, ImageFormat::RGBA8);
+
+        State.CurrentAttachedTextures[0] = State.WhiteTexture; // 0 is reserved for white
+    }
+
+    void Renderer2D::Shutdown() {
+        State.QuadShader.Delete();
+    }
+
     void Renderer2D::Clear(BlColor color) {
         auto& renderer = BL_APP.GetRenderer();
 
@@ -98,35 +147,7 @@ namespace Blackberry {
     }
 
     void Renderer2D::DrawRectangle(BlVec3 pos, BlVec2 dimensions, f32 rotation, BlColor color) {
-        BlVec3 bl, tr, br, tl;
-        BlVec4 normalizedColor;
-
-        SetupQuad(pos, dimensions, rotation, color, &bl, &tr, &br, &tl);
-        NormalizeColor(color, &normalizedColor);
-
-        BlShapeVertex vertexBL = BlShapeVertex(bl, normalizedColor);
-        BlShapeVertex vertexTR = BlShapeVertex(tr, normalizedColor);
-        BlShapeVertex vertexBR = BlShapeVertex(br, normalizedColor);
-        BlShapeVertex vertexTL = BlShapeVertex(tl, normalizedColor);
-
-        // push all vertices (bl, tr, br, tl)
-        State.ShapeVertices.push_back(vertexBL);
-        State.ShapeVertices.push_back(vertexTR);
-        State.ShapeVertices.push_back(vertexBR);
-        State.ShapeVertices.push_back(vertexTL);
-
-        // first triangle (bl, tr, br)
-        State.ShapeIndices.push_back(State.ShapeVertexCount + 0);
-        State.ShapeIndices.push_back(State.ShapeVertexCount + 1);
-        State.ShapeIndices.push_back(State.ShapeVertexCount + 2);
-
-        // second triangle (bl, tl, tr)
-        State.ShapeIndices.push_back(State.ShapeVertexCount + 0);
-        State.ShapeIndices.push_back(State.ShapeVertexCount + 3);
-        State.ShapeIndices.push_back(State.ShapeVertexCount + 1);
-
-        State.ShapeIndexCount += 6;
-        State.ShapeVertexCount += 4;
+        DrawTexturedQuad(pos, dimensions, BlRec(0, 0, 1, 1), State.WhiteTexture, rotation, color);
     }
 
     void Renderer2D::DrawTriangle(BlVec3 pos, BlVec2 dimensions, f32 rotation, BlColor color) {
@@ -144,6 +165,8 @@ namespace Blackberry {
     }
 
     void Renderer2D::DrawTriangle(BlVec3 bl, BlVec3 t, BlVec3 br, BlColor color) {
+#if 0
+
         BlVec4 normalizedColor = BlVec4(
             static_cast<f32>(color.r) / 255.0f,
             static_cast<f32>(color.g) / 255.0f,
@@ -165,6 +188,8 @@ namespace Blackberry {
 
         State.ShapeIndexCount += 3;
         State.ShapeVertexCount += 3;
+
+#endif
     }
 
     void Renderer2D::DrawTexture(BlVec3 pos, BlTexture texture, f32 rotation, BlColor color) {
@@ -176,11 +201,16 @@ namespace Blackberry {
     }
 
     void Renderer2D::DrawTextureArea(BlVec3 pos, BlVec2 dimensions, BlRec area, BlTexture texture, f32 rotation, BlColor color) {
+        DrawTexturedQuad(pos, dimensions, area, texture, rotation, color);
+    }
+
+    void Renderer2D::DrawTexturedQuad(BlVec3 pos, BlVec2 dimensions, BlRec area, BlTexture texture, f32 rotation, BlColor color) {
+        f32 texIndex = 0.0f;
+
         if (State.CurrentTexIndex >= 16) {
             Render();
         }
 
-        f32 texIndex = 0.0f;
         bool texAlreadyExists = false;
 
         for (u32 i = 0; i < State.CurrentTexIndex; i++) {
@@ -197,39 +227,38 @@ namespace Blackberry {
 
             State.CurrentAttachedTextures[State.CurrentTexIndex] = texture;
             State.CurrentTexIndex++;
-
             texAlreadyExists = true;
         }
-
+        
         BlVec3 bl, tr, br, tl;
         BlVec4 normalizedColor;
 
         SetupQuad(pos, dimensions, rotation, color, &bl, &tr, &br, &tl);
         NormalizeColor(color, &normalizedColor);
 
-        BlTextureVertex vertexBL = BlTextureVertex(bl, normalizedColor, BlVec2(0.0f, 1.0f), texIndex);
-        BlTextureVertex vertexTR = BlTextureVertex(tr, normalizedColor, BlVec2(1.0f, 0.0f), texIndex);
-        BlTextureVertex vertexBR = BlTextureVertex(br, normalizedColor, BlVec2(1.0f, 1.0f), texIndex);
-        BlTextureVertex vertexTL = BlTextureVertex(tl, normalizedColor, BlVec2(0.0f, 0.0f), texIndex);
+        BlQuadVertex vertexBL = BlQuadVertex(bl, normalizedColor, BlVec2(0.0f, 1.0f), texIndex);
+        BlQuadVertex vertexTR = BlQuadVertex(tr, normalizedColor, BlVec2(1.0f, 0.0f), texIndex);
+        BlQuadVertex vertexBR = BlQuadVertex(br, normalizedColor, BlVec2(1.0f, 1.0f), texIndex);
+        BlQuadVertex vertexTL = BlQuadVertex(tl, normalizedColor, BlVec2(0.0f, 0.0f), texIndex);
 
         // push all vertices (bl, tr, br, tl)
-        State.TextureVertices.push_back(vertexBL);
-        State.TextureVertices.push_back(vertexTR);
-        State.TextureVertices.push_back(vertexBR);
-        State.TextureVertices.push_back(vertexTL);
+        State.QuadVertices.push_back(vertexBL);
+        State.QuadVertices.push_back(vertexTR);
+        State.QuadVertices.push_back(vertexBR);
+        State.QuadVertices.push_back(vertexTL);
 
         // first triangle (bl, tr, br)
-        State.TextureIndices.push_back(State.TextureVertexCount + 0);
-        State.TextureIndices.push_back(State.TextureVertexCount + 1);
-        State.TextureIndices.push_back(State.TextureVertexCount + 2);
+        State.QuadIndices.push_back(State.QuadVertexCount + 0);
+        State.QuadIndices.push_back(State.QuadVertexCount + 1);
+        State.QuadIndices.push_back(State.QuadVertexCount + 2);
 
         // second triangle (bl, tl, tr)
-        State.TextureIndices.push_back(State.TextureVertexCount + 0);
-        State.TextureIndices.push_back(State.TextureVertexCount + 3);
-        State.TextureIndices.push_back(State.TextureVertexCount + 1);
+        State.QuadIndices.push_back(State.QuadVertexCount + 0);
+        State.QuadIndices.push_back(State.QuadVertexCount + 3);
+        State.QuadIndices.push_back(State.QuadVertexCount + 1);
 
-        State.TextureIndexCount += 6;
-        State.TextureVertexCount += 4;
+        State.QuadIndexCount += 6;
+        State.QuadVertexCount += 4;
     }
 
     void Renderer2D::DrawRenderTexture(BlVec3 pos, BlVec2 dimensions, BlRenderTexture texture) {
@@ -261,97 +290,57 @@ namespace Blackberry {
     }
 
     void Renderer2D::Render() {
-        State.Info.Vertices = State.ShapeVertexCount + State.TextureVertexCount;
-        State.Info.Indicies = State.ShapeIndexCount + State.TextureIndexCount;
+        State.Info.Vertices = State.QuadVertexCount;
+        State.Info.Indicies = State.QuadIndexCount;
 
         auto& renderer = BL_APP.GetRenderer();
-        // draw shape buffer
-        if (State.ShapeIndexCount > 0) {
+
+        // quad buffer
+        if (State.QuadIndexCount > 0) {
             BlDrawBufferLayout vertPosLayout;
             vertPosLayout.Index = 0;
             vertPosLayout.Count = 3;
             vertPosLayout.Type = BlDrawBufferLayout::ElementType::Float;
-            vertPosLayout.Stride = sizeof(BlShapeVertex);
-            vertPosLayout.Offset = offsetof(BlShapeVertex, Pos);
+            vertPosLayout.Stride = sizeof(BlQuadVertex);
+            vertPosLayout.Offset = offsetof(BlQuadVertex, Pos);
 
             BlDrawBufferLayout vertColorLayout;
             vertColorLayout.Index = 1;
             vertColorLayout.Count = 4;
             vertColorLayout.Type = BlDrawBufferLayout::ElementType::Float;
-            vertColorLayout.Stride = sizeof(BlShapeVertex);
-            vertColorLayout.Offset = offsetof(BlShapeVertex, Color);
-
-            State.ShapeDrawBuffer.Vertices = State.ShapeVertices.data();
-            State.ShapeDrawBuffer.VertexCount = State.ShapeVertexCount;
-            State.ShapeDrawBuffer.VertexSize = sizeof(BlShapeVertex);
-
-            State.ShapeDrawBuffer.Indices = State.ShapeIndices.data();
-            State.ShapeDrawBuffer.IndexCount = State.ShapeIndexCount;
-            State.ShapeDrawBuffer.IndexSize = sizeof(u32);
-            
-            renderer.SubmitDrawBuffer(State.ShapeDrawBuffer);
-            
-            renderer.SetBufferLayout(vertPosLayout);
-            renderer.SetBufferLayout(vertColorLayout);
-            
-            renderer.BindDefaultShader(DefaultShader::Shape);
-
-            renderer.DrawIndexed(State.ShapeIndexCount);
-
-            State.Info.DrawCalls++;
-
-            // clear buffer after rendering
-            State.ShapeIndices.clear();
-            State.ShapeVertices.clear();
-            State.ShapeIndexCount = 0;
-            State.ShapeVertexCount = 0;
-        }
-
-        if (State.TextureIndexCount > 0) {
-            BlDrawBufferLayout vertPosLayout;
-            vertPosLayout.Index = 0;
-            vertPosLayout.Count = 3;
-            vertPosLayout.Type = BlDrawBufferLayout::ElementType::Float;
-            vertPosLayout.Stride = sizeof(BlTextureVertex);
-            vertPosLayout.Offset = offsetof(BlTextureVertex, Pos);
-
-            BlDrawBufferLayout vertColorLayout;
-            vertColorLayout.Index = 1;
-            vertColorLayout.Count = 4;
-            vertColorLayout.Type = BlDrawBufferLayout::ElementType::Float;
-            vertColorLayout.Stride = sizeof(BlTextureVertex);
-            vertColorLayout.Offset = offsetof(BlTextureVertex, Color);
+            vertColorLayout.Stride = sizeof(BlQuadVertex);
+            vertColorLayout.Offset = offsetof(BlQuadVertex, Color);
 
             BlDrawBufferLayout vertTexCoordLayout;
             vertTexCoordLayout.Index = 2;
             vertTexCoordLayout.Count = 2;
             vertTexCoordLayout.Type = BlDrawBufferLayout::ElementType::Float;
-            vertTexCoordLayout.Stride = sizeof(BlTextureVertex);
-            vertTexCoordLayout.Offset = offsetof(BlTextureVertex, TexCoord);
+            vertTexCoordLayout.Stride = sizeof(BlQuadVertex);
+            vertTexCoordLayout.Offset = offsetof(BlQuadVertex, TexCoord);
 
             BlDrawBufferLayout vertTexIndexLayout;
             vertTexIndexLayout.Index = 3;
             vertTexIndexLayout.Count = 1;
             vertTexIndexLayout.Type = BlDrawBufferLayout::ElementType::Float;
-            vertTexIndexLayout.Stride = sizeof(BlTextureVertex);
-            vertTexIndexLayout.Offset = offsetof(BlTextureVertex, TexIndex);
+            vertTexIndexLayout.Stride = sizeof(BlQuadVertex);
+            vertTexIndexLayout.Offset = offsetof(BlQuadVertex, TexIndex);
 
-            State.TextureDrawBuffer.Vertices = State.TextureVertices.data();
-            State.TextureDrawBuffer.VertexCount = State.TextureVertexCount;
-            State.TextureDrawBuffer.VertexSize = sizeof(BlTextureVertex);
+            State.QuadDrawBuffer.Vertices = State.QuadVertices.data();
+            State.QuadDrawBuffer.VertexCount = State.QuadVertexCount;
+            State.QuadDrawBuffer.VertexSize = sizeof(BlQuadVertex);
 
-            State.TextureDrawBuffer.Indices = State.TextureIndices.data();
-            State.TextureDrawBuffer.IndexCount = State.TextureIndexCount;
-            State.TextureDrawBuffer.IndexSize = sizeof(u32);
+            State.QuadDrawBuffer.Indices = State.QuadIndices.data();
+            State.QuadDrawBuffer.IndexCount = State.QuadIndexCount;
+            State.QuadDrawBuffer.IndexSize = sizeof(u32);
 
-            renderer.SubmitDrawBuffer(State.TextureDrawBuffer);
+            renderer.SubmitDrawBuffer(State.QuadDrawBuffer);
             
             renderer.SetBufferLayout(vertPosLayout);
             renderer.SetBufferLayout(vertColorLayout);
             renderer.SetBufferLayout(vertTexCoordLayout);
             renderer.SetBufferLayout(vertTexIndexLayout);
             
-            renderer.BindDefaultShader(DefaultShader::Texture);
+            renderer.BindShader(State.QuadShader);
             for (u32 i = 0; i < State.CurrentTexIndex; i++) {
                 renderer.AttachTexture(State.CurrentAttachedTextures[i], i);
             }
@@ -361,10 +350,10 @@ namespace Blackberry {
                 samplers[i] = i;
             }
 
-            BlShader shader = renderer.GetDefaultShader(DefaultShader::Texture);
+            BlShader shader = State.QuadShader;
             shader.SetIntArray("u_Textures", 16, samplers);
 
-            renderer.DrawIndexed(State.TextureIndexCount);
+            renderer.DrawIndexed(State.QuadIndexCount);
 
             renderer.DetachTexture();
 
@@ -372,11 +361,11 @@ namespace Blackberry {
             State.Info.ActiveTextures = State.CurrentTexIndex;
 
             // clear buffer after rendering
-            State.TextureIndices.clear();
-            State.TextureVertices.clear();
-            State.TextureIndexCount = 0;
-            State.TextureVertexCount = 0;
-            State.CurrentTexIndex = 0;
+            State.QuadIndices.clear();
+            State.QuadVertices.clear();
+            State.QuadIndexCount = 0;
+            State.QuadVertexCount = 0;
+            State.CurrentTexIndex = 1; // 0 is reserved and never changes
         }
     }
 

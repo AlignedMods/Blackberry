@@ -11,89 +11,6 @@
 
 namespace Blackberry {
 
-    // shaders
-    static const char* s_VertexShapeShaderSource = BL_STR(
-        // we cannot use '#' since the c preprocesser gets mad at us (actually only lsp cared but yknow)
-        \x23version 460 core\n
-        layout (location = 0) in vec3 a_Pos;
-        layout (location = 1) in vec4 a_Color;
-    
-        out vec4 col;
-
-        uniform mat4 u_Projection;
-    
-        void main() {
-            gl_Position = u_Projection * vec4(a_Pos.x, a_Pos.y, a_Pos.z, 1.0);
-            col = a_Color;
-        }
-    );
-
-    static const char* s_VertexTextureShaderSource = BL_STR(
-        \x23version 460 core\n
-        layout (location = 0) in vec3 a_Pos;
-        layout (location = 1) in vec4 a_Color;
-        layout (location = 2) in vec2 a_TexCoord;
-        layout (location = 3) in float a_TexIndex;
-    
-        out vec4 col;
-        out vec2 texCoord;
-        out float texIndex;
-
-        uniform mat4 u_Projection;
-    
-        void main() {
-            gl_Position = u_Projection * vec4(a_Pos.x, a_Pos.y, a_Pos.z, 1.0);
-            col = a_Color;
-            texCoord = a_TexCoord;
-            texIndex = a_TexIndex;
-        }
-    );
-
-    static const char* s_FragmentShapeShaderSource = BL_STR(
-        \x23version 460 core\n
-
-        in vec4 col;
-
-        out vec4 FragColor;
-
-        void main() {
-            FragColor = col;
-        }
-    );
-
-    static const char* s_FragmentTextureShaderSource = BL_STR(
-        \x23version 460 core\n
-
-        in vec4 col;
-        in vec2 texCoord;
-        in float texIndex;
-
-        out vec4 FragColor;
-
-        uniform sampler2D u_Textures[16];
-
-        void main() {
-            int index = int(texIndex);
-            vec4 texColor = texture(u_Textures[index], texCoord);
-            FragColor = texColor * col;
-        }
-    );
-
-    static const char* s_FragmentFontShaderSource = BL_STR(
-        \x23version 330 core\n
-
-        in vec4 col;
-        in vec2 texCoord;
-
-        out vec4 FragColor;
-
-        uniform sampler2D u_FontAtlas;
-
-        void main() {
-            FragColor = vec4(0, 0, 0, 0);
-        }
-    );
-
     static void GLAPIENTRY glDebugCallbackFunction(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
         // Filter out notifications or spammy messages if you like
         if (severity == GL_DEBUG_SEVERITY_NOTIFICATION)
@@ -164,9 +81,6 @@ namespace Blackberry {
         glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxUnits);
         printf("Max texture units: %d\n", maxUnits);
 
-        // compile shaders
-        CompileDefaultShaders();
-
         // generate VAOs and VBOs
         glGenVertexArrays(1, &m_VAO);
         glGenBuffers(1, &m_VBO);
@@ -198,38 +112,9 @@ namespace Blackberry {
 
     void Renderer_OpenGL3::NewFrame() {}
 
-    void Renderer_OpenGL3::BindDefaultShader(DefaultShader shader) {
-        switch (shader) {
-            case DefaultShader::Shape:
-                m_CurrentShader = m_ShapeShader;
-                break;
-            case DefaultShader::Texture:
-                m_CurrentShader = m_TextureShader;
-                break;
-            case DefaultShader::Font:
-                // m_CurrentShader = m_FontShader;
-                break;
-        }
-
-        glUseProgram(m_CurrentShader.ID);
-    }
-
     void Renderer_OpenGL3::BindShader(BlShader shader) {
         m_CurrentShader = shader;
         glUseProgram(shader.ID);
-    }
-
-    BlShader Renderer_OpenGL3::GetDefaultShader(DefaultShader shader) {
-        switch (shader) {
-            case DefaultShader::Shape:
-                return m_ShapeShader;
-            case DefaultShader::Texture:
-                return m_TextureShader;
-            case DefaultShader::Font:
-                return {};
-        }
-
-        return {};
     }
 
     void Renderer_OpenGL3::AttachTexture(BlTexture texture, u32 slot) {
@@ -308,92 +193,6 @@ namespace Blackberry {
 
     void Renderer_OpenGL3::ResetProjection() {
         m_Projection = m_DefaultProjection;
-    }
-
-    void Renderer_OpenGL3::CompileDefaultShaders() {
-        i32 errorCode = 0;
-        char buf[512];
-
-#pragma region ShapeShader
-        // u32 vertexShape = glCreateShader(GL_VERTEX_SHADER);
-        // glShaderSource(vertexShape, 1, &s_VertexShapeShaderSource, nullptr);
-        // glCompileShader(vertexShape);
-        // 
-        // glGetShaderiv(vertexShape, GL_COMPILE_STATUS, &errorCode);
-        // 
-        // if (!errorCode) {
-        //     glGetShaderInfoLog(vertexShape, 512, nullptr, buf);
-        //     BL_CORE_ERROR("Failed to compile default vertex shape shader! Error: {}", buf);
-        // }
-        // 
-        // u32 fragmentShape = glCreateShader(GL_FRAGMENT_SHADER);
-        // glShaderSource(fragmentShape, 1, &s_FragmentShapeShaderSource, nullptr);
-        // glCompileShader(fragmentShape);
-        // 
-        // glGetShaderiv(fragmentShape, GL_COMPILE_STATUS, &errorCode);
-        // 
-        // if (!errorCode) {
-        //     glGetShaderInfoLog(fragmentShape, 512, nullptr, buf);
-        //     BL_CORE_ERROR("Failed to compile default fragment shape shader! Error: {}", buf);
-        // }
-        // 
-        // m_ShapeShader = glCreateProgram();
-        // glAttachShader(m_ShapeShader, vertexShape);
-        // glAttachShader(m_ShapeShader, fragmentShape);
-        // glLinkProgram(m_ShapeShader);
-        // 
-        // glGetProgramiv(m_ShapeShader, GL_LINK_STATUS, &errorCode);
-        // 
-        // if (!errorCode) {
-        //     glGetProgramInfoLog(m_ShapeShader, 512, nullptr, buf);
-        //     BL_CORE_ERROR("Failed to link default shape shader program! Error: {}", buf);
-        // }
-        // glDeleteShader(fragmentShape);
-        // glDeleteShader(vertexShape);
-
-        m_ShapeShader.Create(s_VertexShapeShaderSource, s_FragmentShapeShaderSource);
-
-#pragma endregion
-
-#pragma region TextureShader
-
-        // u32 vertexTexture = glCreateShader(GL_VERTEX_SHADER);
-        // glShaderSource(vertexTexture, 1, &s_VertexTextureShaderSource, nullptr);
-        // glCompileShader(vertexTexture);
-        // 
-        // glGetShaderiv(vertexTexture, GL_COMPILE_STATUS, &errorCode);
-        // 
-        // if (!errorCode) {
-        //     glGetShaderInfoLog(vertexTexture, 512, nullptr, buf);
-        //     BL_CORE_ERROR("Failed to compile default vertex texture shader! Error: {}", buf);
-        // }
-        // 
-        // u32 fragmentTexture = glCreateShader(GL_FRAGMENT_SHADER);
-        // glShaderSource(fragmentTexture, 1, &s_FragmentTextureShaderSource, nullptr);
-        // glCompileShader(fragmentTexture);
-        // 
-        // glGetShaderiv(fragmentTexture, GL_COMPILE_STATUS, &errorCode);
-        // 
-        // if (!errorCode) {
-        //     glGetShaderInfoLog(fragmentTexture, 512, nullptr, buf);
-        //     BL_CORE_ERROR("Failed to compile default fragment texture shader! Error: {}", buf);
-        // }
-        // 
-        // m_TextureShader = glCreateProgram();
-        // glAttachShader(m_TextureShader, vertexTexture);
-        // glAttachShader(m_TextureShader, fragmentTexture);
-        // glLinkProgram(m_TextureShader);
-        // 
-        // glGetProgramiv(m_TextureShader, GL_LINK_STATUS, &errorCode);
-        // 
-        // if (!errorCode) {
-        //     glGetProgramInfoLog(m_TextureShader, 512, nullptr, buf);
-        //     BL_CORE_ERROR("Failed to link default texture shader program! Error: {}", buf);
-        // }
-
-        m_TextureShader.Create(s_VertexTextureShaderSource, s_FragmentTextureShaderSource);
-
-#pragma endregion
     }
 
 } // namespace Blackberry

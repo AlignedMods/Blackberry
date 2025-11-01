@@ -16,7 +16,7 @@ namespace Blackberry::Lua {
 
     static lua_State* s_LState = nullptr;
 
-    void Initialize() {
+    void Init() {
         s_LState = luaL_newstate();
         luaL_openlibs(s_LState);
 

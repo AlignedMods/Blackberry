@@ -10,6 +10,7 @@ struct BlTexture {
     void Create(u32 width, u32 height);
     void Create(const std::filesystem::path& path);
     void Create(const Blackberry::Image& image);
+    void Create(void* pixels, u32 width, u32 height, Blackberry::ImageFormat pixelFormat);
     void Delete();
 
     void* ReadPixels();

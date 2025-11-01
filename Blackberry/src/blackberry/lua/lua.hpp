@@ -6,7 +6,7 @@
 
 namespace Blackberry::Lua {
 
-    void Initialize();
+    void Init();
     void Shutdown();
 
     void RunFile(const std::filesystem::path& path, const std::string& moduleName);

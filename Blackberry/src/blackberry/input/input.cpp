@@ -12,14 +12,14 @@ namespace Blackberry {
         f32 ScrollLevel = 0.0f;
     };
 
-    static InputState State;
+    static InputState s_State;
 
     bool Input::IsKeyDown(KeyCode key) {
-        return State.CurrentKeyState[static_cast<u32>(key)] == 1;
+        return s_State.CurrentKeyState[static_cast<u32>(key)] == 1;
     }
 
     bool Input::IsKeyPressed(KeyCode key) {
-        return State.CurrentKeyState[static_cast<u32>(key)] == 1 && State.PreviousKeyState[static_cast<u32>(key)] == 0;
+        return s_State.CurrentKeyState[static_cast<u32>(key)] == 1 && s_State.PreviousKeyState[static_cast<u32>(key)] == 0;
     }
 
     f32 Input::GetScrollLevel()
@@ -28,17 +28,17 @@ namespace Blackberry {
     }
 
     void Input::SetKeyState(KeyCode key, bool state) {
-        State.CurrentKeyState[static_cast<u32>(key)] = state;
+        s_State.CurrentKeyState[static_cast<u32>(key)] = state;
     }
 
     void Input::ResetKeyState() {
-        for (auto&[key, state] : State.CurrentKeyState) {
-            State.PreviousKeyState[key] = state;
+        for (auto&[key, state] : s_State.CurrentKeyState) {
+            s_State.PreviousKeyState[key] = state;
         }
     }
 
     void Input::SetScrollLevel(f32 level) {
-        State.ScrollLevel = level;
+        s_State.ScrollLevel = level;
     }
 
 } // namespace Blackberry

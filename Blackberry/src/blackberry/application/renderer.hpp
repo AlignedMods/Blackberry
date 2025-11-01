@@ -39,12 +39,6 @@ struct BlDrawBufferLayout {
 
 namespace Blackberry {
 
-    enum class DefaultShader {
-        Shape,
-        Texture,
-        Font
-    };
-
     class Renderer {
     public:
         virtual ~Renderer() = default;
@@ -61,9 +55,7 @@ namespace Blackberry {
         virtual void SubmitDrawBuffer(const BlDrawBuffer& buffer) = 0;
         virtual void DrawIndexed(u32 count) = 0;
 
-        virtual void BindDefaultShader(DefaultShader shader) = 0; // (aligned) TODO: move to Renderer2D
         virtual void BindShader(BlShader shader) = 0;
-        virtual BlShader GetDefaultShader(DefaultShader shader) = 0;
 
         virtual void AttachTexture(BlTexture texture, u32 slot = 0) = 0;
         virtual void DetachTexture() = 0;

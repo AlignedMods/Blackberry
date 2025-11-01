@@ -25,6 +25,9 @@ namespace Blackberry {
 
     class Renderer2D {
     public:
+        static void Init();
+        static void Shutdown();
+
         static void Clear(BlColor = Colors::White);
 
         static void NewFrame();
@@ -38,6 +41,8 @@ namespace Blackberry {
         static void DrawTexture(BlVec3 pos, BlTexture texture, f32 rotation = 0.0f, BlColor color = Colors::White);
         static void DrawTextureEx(BlVec3 pos, BlVec2 dimensions, BlTexture texture, f32 rotation = 0.0f, BlColor color = Colors::White);
         static void DrawTextureArea(BlVec3 pos, BlVec2 dimensions, BlRec area, BlTexture texture, f32 rotation = 0.0f, BlColor color = Colors::White);
+
+        static void DrawTexturedQuad(BlVec3 pos, BlVec2 dimensions, BlRec area, BlTexture texture, f32 rotation, BlColor color);
 
         static void DrawRenderTexture(BlVec3 pos, BlVec2 dimensions, BlRenderTexture texture);
 

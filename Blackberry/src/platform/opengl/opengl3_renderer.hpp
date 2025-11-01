@@ -26,9 +26,7 @@ namespace Blackberry {
         virtual void SubmitDrawBuffer(const BlDrawBuffer& buffer) override;
         virtual void DrawIndexed(u32 count) override;
         
-        virtual void BindDefaultShader(DefaultShader shader) override;
         virtual void BindShader(BlShader shader) override;
-        virtual BlShader GetDefaultShader(DefaultShader shader) override;
 
         virtual void AttachTexture(BlTexture texture, u32 slot = 0) override;
         virtual void DetachTexture() override;
@@ -38,9 +36,6 @@ namespace Blackberry {
 
         virtual void SetProjection(glm::mat4 projection) override;
         virtual void ResetProjection() override;
-
-    private:
-        void CompileDefaultShaders();
 
     private:
         u32 m_VAO;

@@ -36,9 +36,13 @@ void BlTexture::Create(const std::filesystem::path& path) {
 }
 
 void BlTexture::Create(const Blackberry::Image& image) {
-    Width = image.GetWidth();
-    Height = image.GetHeight();
-    Format = image.GetFormat();
+    Create(image.GetData(), image.GetWidth(), image.GetHeight(), image.GetFormat());
+}
+
+void BlTexture::Create(void* pixels, u32 width, u32 height, Blackberry::ImageFormat pixelFormat) {
+    Width = width;
+    Height = height;
+    Format = pixelFormat;
 
     glGenTextures(1, &ID);
     glBindTexture(GL_TEXTURE_2D, ID);
@@ -52,7 +56,7 @@ void BlTexture::Create(const Blackberry::Image& image) {
     GLuint format = GL_RGBA;
     GLuint glFormat = GL_RGBA;
 
-    switch (image.GetFormat()) {
+    switch (pixelFormat) {
         case Blackberry::ImageFormat::U8:
             format = GL_RED;
             glFormat = GL_R8;
@@ -67,7 +71,7 @@ void BlTexture::Create(const Blackberry::Image& image) {
             break;
     }
 
-    glTexImage2D(GL_TEXTURE_2D, 0, glFormat, Width, Height, 0, format, GL_UNSIGNED_BYTE, image.GetData());
+    glTexImage2D(GL_TEXTURE_2D, 0, glFormat, Width, Height, 0, format, GL_UNSIGNED_BYTE, pixels);
     glGenerateMipmap(GL_TEXTURE_2D);
 
     glBindTexture(GL_TEXTURE_2D, 0);
