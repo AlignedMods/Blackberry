@@ -57,6 +57,10 @@ void BlShader::SetFloat(const std::string& uniform, f32 val) {
     glUniform1f(glGetUniformLocation(ID, uniform.c_str()), val);
 }
 
+void BlShader::SetIntArray(const std::string& uniform, u32 count, int* array) {
+    glUniform1iv(glGetUniformLocation(ID, uniform.c_str()), count, array);
+}
+
 void BlShader::SetVec2(const std::string& uniform, BlVec2 val) {
     glUniform2f(glGetUniformLocation(ID, uniform.c_str()), val.x, val.y);
 }

@@ -106,12 +106,21 @@
         "ID - 3": {
             "DrawableComponent": {
                 "Color": [
-                    10,
+                    255,
                     255,
                     255,
                     255
                 ],
                 "ShapeType": 1
+            },
+            "MaterialComponent": {
+                "Area": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "TextureHandle": 10803928294860902758
             },
             "ScriptComponent": {
                 "ModulePath": "Scripts/test.lua"

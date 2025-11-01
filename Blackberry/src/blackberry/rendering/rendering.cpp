@@ -13,6 +13,7 @@ struct BlTextureVertex {
     BlVec3 Pos;
     BlVec4 Color;
     BlVec2 TexCoord;
+    f32 TexIndex = 0.0f; // OpenGL is weird with passing integers to shaders
 };
 
 namespace Blackberry {
@@ -31,7 +32,9 @@ namespace Blackberry {
         std::vector<BlTextureVertex> TextureVertices;
         std::vector<u32> TextureIndices;
         BlDrawBuffer TextureDrawBuffer; // buffer for textures
-        BlTexture CurrentTexture;
+        // used for batching
+        u32 CurrentTexIndex = 0;
+        std::array<BlTexture, 16> CurrentAttachedTextures;
 
         BlRenderer2DInfo Info;
     };
@@ -87,6 +90,7 @@ namespace Blackberry {
         State.Info.DrawCalls = 0;
         State.Info.Vertices = 0;
         State.Info.Indicies = 0;
+        State.Info.ActiveTextures = 0;
     }
 
     void Renderer2D::DrawRectangle(BlVec3 pos, BlVec2 dimensions, BlColor color) {
@@ -172,8 +176,29 @@ namespace Blackberry {
     }
 
     void Renderer2D::DrawTextureArea(BlVec3 pos, BlVec2 dimensions, BlRec area, BlTexture texture, f32 rotation, BlColor color) {
-        if (State.CurrentTexture.ID != texture.ID && State.CurrentTexture.ID != 0) {
+        if (State.CurrentTexIndex >= 16) {
             Render();
+        }
+
+        f32 texIndex = 0.0f;
+        bool texAlreadyExists = false;
+
+        for (u32 i = 0; i < State.CurrentTexIndex; i++) {
+            if (texture.ID == State.CurrentAttachedTextures[i].ID) {
+                texIndex = static_cast<f32>(i);
+                texAlreadyExists = true;
+
+                break;
+            }
+        }
+
+        if (!texAlreadyExists) {
+            texIndex = State.CurrentTexIndex;
+
+            State.CurrentAttachedTextures[State.CurrentTexIndex] = texture;
+            State.CurrentTexIndex++;
+
+            texAlreadyExists = true;
         }
 
         BlVec3 bl, tr, br, tl;
@@ -182,10 +207,10 @@ namespace Blackberry {
         SetupQuad(pos, dimensions, rotation, color, &bl, &tr, &br, &tl);
         NormalizeColor(color, &normalizedColor);
 
-        BlTextureVertex vertexBL = BlTextureVertex(bl, normalizedColor, BlVec2(0.0f, 1.0f));
-        BlTextureVertex vertexTR = BlTextureVertex(tr, normalizedColor, BlVec2(1.0f, 0.0f));
-        BlTextureVertex vertexBR = BlTextureVertex(br, normalizedColor, BlVec2(1.0f, 1.0f));
-        BlTextureVertex vertexTL = BlTextureVertex(tl, normalizedColor, BlVec2(0.0f, 0.0f));
+        BlTextureVertex vertexBL = BlTextureVertex(bl, normalizedColor, BlVec2(0.0f, 1.0f), texIndex);
+        BlTextureVertex vertexTR = BlTextureVertex(tr, normalizedColor, BlVec2(1.0f, 0.0f), texIndex);
+        BlTextureVertex vertexBR = BlTextureVertex(br, normalizedColor, BlVec2(1.0f, 1.0f), texIndex);
+        BlTextureVertex vertexTL = BlTextureVertex(tl, normalizedColor, BlVec2(0.0f, 0.0f), texIndex);
 
         // push all vertices (bl, tr, br, tl)
         State.TextureVertices.push_back(vertexBL);
@@ -202,8 +227,6 @@ namespace Blackberry {
         State.TextureIndices.push_back(State.TextureVertexCount + 0);
         State.TextureIndices.push_back(State.TextureVertexCount + 3);
         State.TextureIndices.push_back(State.TextureVertexCount + 1);
-
-        State.CurrentTexture = texture;
 
         State.TextureIndexCount += 6;
         State.TextureVertexCount += 4;
@@ -306,6 +329,13 @@ namespace Blackberry {
             vertTexCoordLayout.Stride = sizeof(BlTextureVertex);
             vertTexCoordLayout.Offset = offsetof(BlTextureVertex, TexCoord);
 
+            BlDrawBufferLayout vertTexIndexLayout;
+            vertTexIndexLayout.Index = 3;
+            vertTexIndexLayout.Count = 1;
+            vertTexIndexLayout.Type = BlDrawBufferLayout::ElementType::Float;
+            vertTexIndexLayout.Stride = sizeof(BlTextureVertex);
+            vertTexIndexLayout.Offset = offsetof(BlTextureVertex, TexIndex);
+
             State.TextureDrawBuffer.Vertices = State.TextureVertices.data();
             State.TextureDrawBuffer.VertexCount = State.TextureVertexCount;
             State.TextureDrawBuffer.VertexSize = sizeof(BlTextureVertex);
@@ -319,21 +349,34 @@ namespace Blackberry {
             renderer.SetBufferLayout(vertPosLayout);
             renderer.SetBufferLayout(vertColorLayout);
             renderer.SetBufferLayout(vertTexCoordLayout);
+            renderer.SetBufferLayout(vertTexIndexLayout);
             
             renderer.BindDefaultShader(DefaultShader::Texture);
-            renderer.AttachTexture(State.CurrentTexture);
+            for (u32 i = 0; i < State.CurrentTexIndex; i++) {
+                renderer.AttachTexture(State.CurrentAttachedTextures[i], i);
+            }
+
+            int samplers[16]; // opengl texture IDs
+            for (u32 i = 0; i < State.CurrentAttachedTextures.size(); i++) {
+                samplers[i] = i;
+            }
+
+            BlShader shader = renderer.GetDefaultShader(DefaultShader::Texture);
+            shader.SetIntArray("u_Textures", 16, samplers);
 
             renderer.DrawIndexed(State.TextureIndexCount);
 
-            State.Info.DrawCalls++;
-
             renderer.DetachTexture();
+
+            State.Info.DrawCalls++;
+            State.Info.ActiveTextures = State.CurrentTexIndex;
 
             // clear buffer after rendering
             State.TextureIndices.clear();
             State.TextureVertices.clear();
             State.TextureIndexCount = 0;
             State.TextureVertexCount = 0;
+            State.CurrentTexIndex = 0;
         }
     }
 

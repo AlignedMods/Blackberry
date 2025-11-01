@@ -8,7 +8,7 @@ struct BlRenderer2DInfo {
     u32 DrawCalls = 0;
     u32 Vertices = 0;
     u32 Indicies = 0;
-    f64 RenderTime = 0.0;
+    u32 ActiveTextures = 0;
 };
 
 namespace Blackberry {

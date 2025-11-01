@@ -33,9 +33,11 @@ namespace Blackberry {
         layout (location = 0) in vec3 a_Pos;
         layout (location = 1) in vec4 a_Color;
         layout (location = 2) in vec2 a_TexCoord;
+        layout (location = 3) in float a_TexIndex;
     
         out vec4 col;
         out vec2 texCoord;
+        out float texIndex;
 
         uniform mat4 u_Projection;
     
@@ -43,6 +45,7 @@ namespace Blackberry {
             gl_Position = u_Projection * vec4(a_Pos.x, a_Pos.y, a_Pos.z, 1.0);
             col = a_Color;
             texCoord = a_TexCoord;
+            texIndex = a_TexIndex;
         }
     );
 
@@ -59,17 +62,19 @@ namespace Blackberry {
     );
 
     static const char* s_FragmentTextureShaderSource = BL_STR(
-        \x23version 330 core\n
+        \x23version 460 core\n
 
         in vec4 col;
         in vec2 texCoord;
+        in float texIndex;
 
         out vec4 FragColor;
 
-        uniform sampler2D u_Texture;
+        uniform sampler2D u_Textures[16];
 
         void main() {
-            vec4 texColor = texture(u_Texture, texCoord);
+            int index = int(texIndex);
+            vec4 texColor = texture(u_Textures[index], texCoord);
             FragColor = texColor * col;
         }
     );
@@ -155,6 +160,10 @@ namespace Blackberry {
         BL_CORE_INFO("    Renderer: {}", reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
         BL_CORE_INFO("    Version: {}", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 
+        int maxUnits;
+        glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxUnits);
+        printf("Max texture units: %d\n", maxUnits);
+
         // compile shaders
         CompileDefaultShaders();
 
@@ -201,6 +210,8 @@ namespace Blackberry {
                 // m_CurrentShader = m_FontShader;
                 break;
         }
+
+        glUseProgram(m_CurrentShader.ID);
     }
 
     void Renderer_OpenGL3::BindShader(BlShader shader) {
@@ -208,10 +219,22 @@ namespace Blackberry {
         glUseProgram(shader.ID);
     }
 
+    BlShader Renderer_OpenGL3::GetDefaultShader(DefaultShader shader) {
+        switch (shader) {
+            case DefaultShader::Shape:
+                return m_ShapeShader;
+            case DefaultShader::Texture:
+                return m_TextureShader;
+            case DefaultShader::Font:
+                return {};
+        }
+
+        return {};
+    }
+
     void Renderer_OpenGL3::AttachTexture(BlTexture texture, u32 slot) {
         glActiveTexture(GL_TEXTURE0 + slot);
         glBindTexture(GL_TEXTURE_2D, texture.ID);
-        // glUniform1i(glGetUniformLocation(m_TextureShader, "u_Sampler"), 0);
     }
 
     void Renderer_OpenGL3::DetachTexture() {
@@ -260,7 +283,7 @@ namespace Blackberry {
             BL_CORE_WARN("Submiting draw call with ZERO elements!");
         }
 
-        glUseProgram(m_CurrentShader.ID);
+        // glUseProgram(m_CurrentShader.ID);
         glBindVertexArray(m_VAO);
 
         m_CurrentShader.SetMatrix("u_Projection", glm::value_ptr(m_Projection));
