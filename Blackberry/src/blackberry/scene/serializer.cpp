@@ -39,21 +39,23 @@ namespace Blackberry {
                 };
             }
 
-            if (entity.HasComponent<Drawable>()) {
-                Drawable& drawable = entity.GetComponent<Drawable>();
+            if (entity.HasComponent<ShapeRenderer>()) {
+                ShapeRenderer& shapeRenderer = entity.GetComponent<ShapeRenderer>();
 
-                j["Entities"][name]["DrawableComponent"] = { 
-                    {"Color", {drawable.Color.r, drawable.Color.g, drawable.Color.b, drawable.Color.a}},
-                    {"ShapeType", static_cast<u16>(drawable.ShapeType) }
+                j["Entities"][name]["ShapeRendererComponent"] = { 
+                    {"Color", {shapeRenderer.Color.r, shapeRenderer.Color.g, shapeRenderer.Color.b, shapeRenderer.Color.a}},
+                    {"ShapeType", static_cast<u16>(shapeRenderer.Shape) }
                 };
             }
 
-            if (entity.HasComponent<Material>()) {
-                Material& material = entity.GetComponent<Material>();
+            if (entity.HasComponent<SpriteRenderer>()) {
+                SpriteRenderer& spriteRenderer = entity.GetComponent<SpriteRenderer>();
 
-                j["Entities"][name]["MaterialComponent"] = { 
-                    {"TextureHandle", material.TextureHandle},
-                    {"Area", {material.Area.x, material.Area.y, material.Area.w, material.Area.h}}
+                j["Entities"][name]["SpriteRendererComponent"] = { 
+                    {"Color", {spriteRenderer.Color.r, spriteRenderer.Color.g, spriteRenderer.Color.b, spriteRenderer.Color.a}},
+                    {"ShapeType", static_cast<u16>(spriteRenderer.Shape) },
+                    {"TextureHandle", spriteRenderer.TextureHandle},
+                    {"TextureArea", {spriteRenderer.Area.x, spriteRenderer.Area.y, spriteRenderer.Area.w, spriteRenderer.Area.h}}
                 };
             }
 
@@ -135,24 +137,25 @@ namespace Blackberry {
                 entity.AddComponent<Transform>({ BlVec3(position[0], position[1], position[2]), 0.0f, BlVec2(dimensions[0], dimensions[1]) });
             }
 
-            // DrawableComponent
-            if (jsonEntity.contains("DrawableComponent")) {
-                auto& jsonDrawable = jsonEntity.at("DrawableComponent");
-                std::array<u8, 4> color = jsonDrawable.at("Color");
-                u16 shapeType = jsonDrawable.at("ShapeType");
+            // ShapeRendererComponent
+            if (jsonEntity.contains("ShapeRendererComponent")) {
+                auto& jsonShapeRenderer = jsonEntity.at("ShapeRendererComponent");
+                std::array<u8, 4> color = jsonShapeRenderer.at("Color");
+                u16 shapeType = jsonShapeRenderer.at("ShapeType");
 
-                entity.AddComponent<Drawable>({ BlColor(color[0], color[1], color[2], color[3]), static_cast<Shape>(shapeType) });
+                entity.AddComponent<ShapeRenderer>({ BlColor(color[0], color[1], color[2], color[3]), static_cast<ShapeType>(shapeType) });
             }
 
-            // MaterialComponent
-            if (jsonEntity.contains("MaterialComponent")) {
-                auto& jsonMaterial = jsonEntity.at("MaterialComponent");
-                u64 textureHandle = jsonMaterial.at("TextureHandle");
-                std::array<f32, 4> area = jsonMaterial.at("Area");
+            // SpriteRendererComponent
+            if (jsonEntity.contains("SpriteRendererComponent")) {
+                auto& jsonSpriteRenderer = jsonEntity.at("SpriteRendererComponent");
+                std::array<u8, 4> color = jsonSpriteRenderer.at("Color");
+                u16 shapeType = jsonSpriteRenderer.at("ShapeType");
+                u64 textureHandle = jsonSpriteRenderer.at("TextureHandle");
+                std::array<f32, 4> textureArea = jsonSpriteRenderer.at("TextureArea");
 
-                BlTexture tex = std::get<BlTexture>(m_Scene->GetAssetManager().GetAsset(textureHandle).Data);
-
-                entity.AddComponent<Material>({ textureHandle, BlRec(area[0], area[1], area[2], area[3]) });
+                entity.AddComponent<SpriteRenderer>({ BlColor(color[0], color[1], color[2], color[3]), static_cast<ShapeType>(shapeType), 
+                                                      textureHandle, BlRec(textureArea[0], textureArea[1], textureArea[2], textureArea[3]) });
             }
 
             if (jsonEntity.contains("ScriptComponent")) {

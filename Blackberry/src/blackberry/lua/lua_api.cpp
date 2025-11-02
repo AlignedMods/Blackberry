@@ -101,9 +101,17 @@ namespace Blackberry::Lua {
         return 0;
     }
 
+    static int WEntityAddComponent(lua_State* L) {
+        Entity* entity = static_cast<Entity*>(lua_touserdata(L, 1));
+        const char* componentName = lua_tostring(L, 2);
+
+        return 0;
+    }
+
     static luaL_Reg EntityModule[] = {
         { "GetComponent", WEntityGetComponent },
         { "SetComponent", WEntitySetComponent },
+        { "AddComponent", WEntityAddComponent },
         { nullptr, nullptr }
     };
 

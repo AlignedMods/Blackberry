@@ -36,8 +36,8 @@ namespace Blackberry {
 
             CopyComponent<Tag>(src, dest, target, newEntity);
             CopyComponent<Transform>(src, dest, target, newEntity);
-            CopyComponent<Drawable>(src, dest, target, newEntity);
-            CopyComponent<Material>(src, dest, target, newEntity);
+            CopyComponent<ShapeRenderer>(src, dest, target, newEntity);
+            CopyComponent<SpriteRenderer>(src, dest, target, newEntity);
             CopyComponent<Text>(src, dest, target, newEntity);
             CopyComponent<Script>(src, dest, target, newEntity);
             CopyComponent<Velocity>(src, dest, target, newEntity);
@@ -58,8 +58,8 @@ namespace Blackberry {
             dest->emplace<Tag>(newEntity, tag);
 
             CopyComponent<Transform>(src, dest, target, newEntity);
-            CopyComponent<Drawable>(src, dest, target, newEntity);
-            CopyComponent<Material>(src, dest, target, newEntity);
+            CopyComponent<ShapeRenderer>(src, dest, target, newEntity);
+            CopyComponent<SpriteRenderer>(src, dest, target, newEntity);
             CopyComponent<Text>(src, dest, target, newEntity);
             CopyComponent<Script>(src, dest, target, newEntity);
             CopyComponent<Velocity>(src, dest, target, newEntity);

@@ -21,6 +21,8 @@ namespace Blackberry {
         Window(const WindowData& data) { m_WindowData = data; }
         virtual ~Window() = default;
 
+        virtual BlVec2 GetWindowDims() const = 0;
+
         virtual bool ShouldClose() const = 0;
         virtual void OnUpdate() = 0;
         virtual void OnRenderStart() = 0;

@@ -685,13 +685,13 @@ namespace BlackberryEditor {
 
                 if (ImGui::MenuItem("Rectangle")) {
                     Blackberry::Entity entity(m_CurrentScene->CreateEntity("Rectangle"), m_CurrentScene);
-                    entity.AddComponent<Drawable>();
+                    entity.AddComponent<ShapeRenderer>();
                     entity.AddComponent<Transform>({BlVec3(m_RenderTexture.Texture.Width / 2.0f - 100.0f, m_RenderTexture.Texture.Height / 2.0f - 50.0f, 0.0f), 0.0f, BlVec2(200.0f, 100.0f)});
                 };
 
                 if (ImGui::MenuItem("Triangle")) {
                     Blackberry::Entity entity(m_CurrentScene->CreateEntity("Triangle"), m_CurrentScene);
-                    entity.AddComponent<Drawable>({.ShapeType = Shape::Triangle});
+                    entity.AddComponent<ShapeRenderer>({.Shape = ShapeType::Triangle});
                     entity.AddComponent<Transform>({BlVec3(m_RenderTexture.Texture.Width / 2.0f - 100.0f, m_RenderTexture.Texture.Height / 2.0f - 50.0f, 0.0f), 0.0f, BlVec2(200.0f, 100.0f)});
                 };
                 
@@ -761,9 +761,9 @@ namespace BlackberryEditor {
             if (ImGui::BeginPopupContextWindow("PropertiesContextMenu")) {
                 if (ImGui::BeginMenu("Add Component")) {
                     AddComponentListOption<Transform>("Transform", entity);
-                    AddComponentListOption<Drawable>("Drawable", entity);
                     AddComponentListOption<Text>("Text", entity, {&m_EditorFont});
-                    AddComponentListOption<Material>("Material", entity);
+                    AddComponentListOption<ShapeRenderer>("Shape Renderer", entity);
+                    AddComponentListOption<SpriteRenderer>("Sprite Renderer", entity);
                     AddComponentListOption<Script>("Script", entity);
                     AddComponentListOption<Velocity>("Velocity", entity);
                     
@@ -796,8 +796,8 @@ namespace BlackberryEditor {
 
                 DrawVec2Control("Dimensions: ", &transform.Dimensions);
             });
-            DrawComponent<Drawable>("Drawable", entity, [](Drawable& drawable) {
-                DrawColorControl("Color: ", &drawable.Color);
+            DrawComponent<ShapeRenderer>("Shape Renderer", entity, [](ShapeRenderer& shapeRenderer) {
+                DrawColorControl("Color: ", &shapeRenderer.Color);
 
                 ImGuiIO& io = ImGui::GetIO();
 
@@ -806,10 +806,10 @@ namespace BlackberryEditor {
                     ImGui::PopFont();
 
                     const char* shapeNames[] = { "Triangle", "Rectangle", "Circle", "Polygon" };
-                    int currentShape = static_cast<int>(drawable.ShapeType);
+                    int currentShape = static_cast<int>(shapeRenderer.Shape);
     
                     if (ImGui::Combo("Shape Type", &currentShape, shapeNames, IM_ARRAYSIZE(shapeNames))) {
-                        drawable.ShapeType = static_cast<Shape>(currentShape);
+                        shapeRenderer.Shape = static_cast<ShapeType>(currentShape);
                     }
     
                     ImGui::TreePop();
@@ -817,10 +817,30 @@ namespace BlackberryEditor {
                     ImGui::PopFont();
                 }
             });
-            DrawComponent<Material>("Material", entity, [this](Material& material) {
+            DrawComponent<SpriteRenderer>("Sprite Renderer", entity, [this](SpriteRenderer& spriteRenderer) {
+                DrawColorControl("Color: ", &spriteRenderer.Color);
+
+                ImGuiIO& io = ImGui::GetIO();
+
+                ImGui::PushFont(io.Fonts->Fonts[1], 16);
+                if (ImGui::TreeNode("Shape")) {
+                    ImGui::PopFont();
+
+                    const char* shapeNames[] = { "Triangle", "Rectangle", "Circle", "Polygon" };
+                    int currentShape = static_cast<int>(spriteRenderer.Shape);
+    
+                    if (ImGui::Combo("Shape Type", &currentShape, shapeNames, IM_ARRAYSIZE(shapeNames))) {
+                        spriteRenderer.Shape = static_cast<ShapeType>(currentShape);
+                    }
+    
+                    ImGui::TreePop();
+                } else {
+                    ImGui::PopFont();
+                }
+
                 std::string mat;
-                if (m_CurrentScene->GetAssetManager().ContainsAsset(material.TextureHandle)) {
-                    mat = m_CurrentScene->GetAssetManager().GetAsset(material.TextureHandle).FilePath.stem().string();
+                if (m_CurrentScene->GetAssetManager().ContainsAsset(spriteRenderer.TextureHandle)) {
+                    mat = m_CurrentScene->GetAssetManager().GetAsset(spriteRenderer.TextureHandle).FilePath.stem().string();
                 } else {
                     mat = "NULL";
                 }
@@ -836,7 +856,7 @@ namespace BlackberryEditor {
 
                 if (ImGui::BeginPopupContextItem("TextureHandlePopup")) {
                     if (ImGui::MenuItem("Remove Texture")) {
-                        material.TextureHandle = 0;
+                        spriteRenderer.TextureHandle = 0;
                     }
 
                     ImGui::EndPopup();
@@ -846,11 +866,11 @@ namespace BlackberryEditor {
                     const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_MANAGER_DRAG_DROP");
 
                     if (payload) {
-                        material.TextureHandle = *reinterpret_cast<u64*>(payload->Data); // seems sus
+                        spriteRenderer.TextureHandle = *reinterpret_cast<u64*>(payload->Data); // seems sus
                     }
                 }
 
-                DrawRecControl("Area", &material.Area);
+                DrawRecControl("Area", &spriteRenderer.Area);
             });
             DrawComponent<Script>("Script", entity, [this](Script& script) {
                 auto stringPath = script.ModulePath.string();

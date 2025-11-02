@@ -12,7 +12,7 @@
 
 namespace Blackberry::Components {
 
-    enum class Shape : u16 {
+    enum class ShapeType : u16 {
         Triangle = 0,
         Rectangle = 1,
         Circle = 2,
@@ -30,14 +30,17 @@ namespace Blackberry::Components {
         BlVec2 Dimensions;
     };
 
-    struct Material {
-        u64 TextureHandle = 0;
-        BlRec Area;
+    struct ShapeRenderer {
+        BlColor Color = BlColor(0xff, 0xff, 0xff, 0xff);
+        ShapeType Shape = ShapeType::Rectangle;
     };
 
-    struct Drawable {
+    struct SpriteRenderer {
         BlColor Color = BlColor(0xff, 0xff, 0xff, 0xff);
-        Shape ShapeType = Shape::Rectangle;
+        ShapeType Shape = ShapeType::Rectangle;
+
+        u64 TextureHandle = 0;
+        BlRec Area;
     };
 
     struct Velocity {

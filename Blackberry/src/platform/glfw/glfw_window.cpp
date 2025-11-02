@@ -204,7 +204,9 @@ namespace Blackberry {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
+        #ifdef BL_DEBUG_BUILD
+            glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
+        #endif
         glfwWindowHint(GLFW_SAMPLES, 4);
         glfwWindowHint(GLFW_DEPTH_BITS, 24);
         m_Handle = glfwCreateWindow(data.Width, data.Height, data.Name.c_str(), nullptr, nullptr);
@@ -251,6 +253,13 @@ namespace Blackberry {
 
         glfwDestroyWindow(m_Handle);
         glfwTerminate();
+    }
+
+    BlVec2 Window_GLFW::GetWindowDims() const {
+        int width, height;
+        glfwGetWindowSize(m_Handle, &width, &height);
+
+        return BlVec2(width, height);
     }
 
     bool Window_GLFW::ShouldClose() const {

@@ -11,11 +11,11 @@
     },
     "Entities": {
         "ID - 0": {
-            "DrawableComponent": {
+            "ShapeRendererComponent": {
                 "Color": [
-                    0,
-                    149,
-                    142,
+                    215,
+                    103,
+                    243,
                     255
                 ],
                 "ShapeType": 1
@@ -43,11 +43,11 @@
             }
         },
         "ID - 1": {
-            "DrawableComponent": {
+            "ShapeRendererComponent": {
                 "Color": [
-                    206,
-                    129,
-                    70,
+                    244,
+                    168,
+                    33,
                     255
                 ],
                 "ShapeType": 1
@@ -69,17 +69,15 @@
             }
         },
         "ID - 2": {
-            "DrawableComponent": {
+            "SpriteRendererComponent": {
                 "Color": [
                     255,
                     255,
                     255,
                     255
                 ],
-                "ShapeType": 1
-            },
-            "MaterialComponent": {
-                "Area": [
+                "ShapeType": 1,
+                "TextureArea": [
                     0.0,
                     0.0,
                     0.0,
@@ -104,26 +102,24 @@
             }
         },
         "ID - 3": {
-            "DrawableComponent": {
+            "ScriptComponent": {
+                "ModulePath": "Scripts/test.lua"
+            },
+            "SpriteRendererComponent": {
                 "Color": [
                     255,
                     255,
                     255,
                     255
                 ],
-                "ShapeType": 1
-            },
-            "MaterialComponent": {
-                "Area": [
+                "ShapeType": 1,
+                "TextureArea": [
                     0.0,
                     0.0,
                     0.0,
                     0.0
                 ],
                 "TextureHandle": 10803928294860902758
-            },
-            "ScriptComponent": {
-                "ModulePath": "Scripts/test.lua"
             },
             "TagComponent": {
                 "Name": "entity with a script",
@@ -142,10 +138,10 @@
             }
         },
         "ID - 4": {
-            "DrawableComponent": {
+            "ShapeRendererComponent": {
                 "Color": [
-                    178,
-                    149,
+                    133,
+                    204,
                     255,
                     255
                 ],

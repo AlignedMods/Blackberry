@@ -12,6 +12,8 @@ namespace Blackberry {
         Window_GLFW(const WindowData& data);
         ~Window_GLFW();
 
+        virtual BlVec2 GetWindowDims() const override;
+
         virtual bool ShouldClose() const override;
         virtual void OnUpdate() override;
         virtual void OnRenderStart() override;

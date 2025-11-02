@@ -98,31 +98,40 @@ namespace Blackberry {
 
         // Render
 
-        auto view = m_ECS->GetEntitiesWithComponents<Transform, Drawable>();
+        auto view = m_ECS->GetEntitiesWithComponents<Transform>();
 
-        view.each([&](auto entity, Transform& transform, Drawable& drawable) {
-            RenderEntity(entity, transform, drawable);
+        view.each([&](auto entity, Transform& transform) {
+            RenderEntity(entity);
         });
 
         Renderer2D::Render();
     }
 
-    void Scene::RenderEntity(EntityID entity, Blackberry::Components::Transform& transform, Blackberry::Components::Drawable& drawable) {
-        if (m_ECS->HasComponent<Material>(entity)) {
-            Material& material = m_ECS->GetComponent<Material>(entity);
-            if (material.TextureHandle > 0 && m_AssetManager->ContainsAsset(material.TextureHandle)) {
-                Asset asset = m_AssetManager->GetAsset(material.TextureHandle);
+    void Scene::RenderEntity(EntityID entity) {
+        using namespace Components;
+
+        Transform& transform = m_ECS->GetComponent<Transform>(entity);
+
+        if (m_ECS->HasComponent<SpriteRenderer>(entity)) {
+            SpriteRenderer& spriteRenderer = m_ECS->GetComponent<SpriteRenderer>(entity);
+
+            if (spriteRenderer.TextureHandle > 0 && m_AssetManager->ContainsAsset(spriteRenderer.TextureHandle)) {
+                Asset asset = m_AssetManager->GetAsset(spriteRenderer.TextureHandle);
                 BlTexture tex = std::get<BlTexture>(asset.Data);
 
-                Renderer2D::DrawTextureArea(transform.Position, transform.Dimensions, material.Area, tex, transform.Rotation, drawable.Color);
+                Renderer2D::DrawTextureArea(transform.Position, transform.Dimensions, spriteRenderer.Area, tex, transform.Rotation, spriteRenderer.Color);
             }
-        } else {
-            switch (drawable.ShapeType) {
-                case Shape::Triangle:
-                    Renderer2D::DrawTriangle(transform.Position, transform.Dimensions, transform.Rotation, drawable.Color);
+        }
+        
+        if (m_ECS->HasComponent<ShapeRenderer>(entity)) {
+            ShapeRenderer& shapeRenderer = m_ECS->GetComponent<ShapeRenderer>(entity);
+
+            switch (shapeRenderer.Shape) {
+                case ShapeType::Triangle:
+                    Renderer2D::DrawTriangle(transform.Position, transform.Dimensions, transform.Rotation, shapeRenderer.Color);
                     break;
-                case Shape::Rectangle:
-                    Renderer2D::DrawRectangle(transform.Position, transform.Dimensions, transform.Rotation, drawable.Color);
+                case ShapeType::Rectangle:
+                    Renderer2D::DrawRectangle(transform.Position, transform.Dimensions, transform.Rotation, shapeRenderer.Color);
                     break;
             }
         }

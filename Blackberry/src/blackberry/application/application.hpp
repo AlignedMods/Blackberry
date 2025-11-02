@@ -14,7 +14,7 @@ namespace Blackberry {
     struct ApplicationSpecification {
         const char* Name;
         u32 Width, Height;
-        u32 FPS;
+        u32 FPS = 0;
     };
 
     class CommandLineArgs {

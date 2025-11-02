@@ -385,6 +385,10 @@ namespace Blackberry {
             // clear buffer after rendering
             State.QuadIndices.clear();
             State.QuadVertices.clear();
+
+            // reserve memory again
+            State.QuadIndices.reserve(2048);
+            State.QuadVertices.reserve(2048);
             State.QuadIndexCount = 0;
             State.QuadVertexCount = 0;
             State.CurrentTexIndex = 1; // 0 is reserved and never changes

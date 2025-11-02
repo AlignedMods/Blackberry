@@ -31,8 +31,8 @@ workspace "Blackberry"
 
     include "Blackberry/"
 
-    group "examples"
-        include "examples/"
+    group "tests"
+        include "tests/"
     group ""
 
     group "tools"
