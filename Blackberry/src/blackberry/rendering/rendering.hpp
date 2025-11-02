@@ -9,6 +9,7 @@ struct BlRenderer2DInfo {
     u32 Vertices = 0;
     u32 Indicies = 0;
     u32 ActiveTextures = 0;
+    u32 ReservedTextures = 0;
 };
 
 namespace Blackberry {

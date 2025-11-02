@@ -986,7 +986,8 @@ namespace BlackberryEditor {
         ImGui::Text("Draw Calls: %u", stats.DrawCalls);
         ImGui::Text("Verticies: %u", stats.Vertices);
         ImGui::Text("Indicies: %u", stats.Indicies);
-        ImGui::Text("Active Textures %u", stats.ActiveTextures);
+        ImGui::Text("Active Textures: %u", stats.ActiveTextures);
+        ImGui::Text("Reserved Textures: %u", stats.ReservedTextures);
 
         ImGui::End();
     }

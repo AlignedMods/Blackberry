@@ -141,6 +141,9 @@ namespace Blackberry {
             case BlDrawBufferLayout::ElementType::Float:
                 type = GL_FLOAT;
                 break;
+            case BlDrawBufferLayout::ElementType::UInt:
+                type = GL_UNSIGNED_INT;
+                break;
             default:
                 type = GL_FLOAT;
                 break;

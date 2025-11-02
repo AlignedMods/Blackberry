@@ -28,7 +28,7 @@ namespace Blackberry {
 
         layout (location = 0) out vec4 o_Color;
         layout (location = 1) out vec2 o_TexCoord;
-        layout (location = 2) out float o_TexIndex;
+        layout (location = 2) out flat float o_TexIndex;
 
         void main() {
             gl_Position = u_Projection * vec4(a_Pos, 1.0f);
@@ -44,17 +44,38 @@ namespace Blackberry {
 
         layout (location = 0) in vec4 a_Color;
         layout (location = 1) in vec2 a_TexCoord;
-        layout (location = 2) in float a_TexIndex;
+        layout (location = 2) in flat float a_TexIndex;
 
         uniform sampler2D u_Textures[16];
 
         out vec4 o_FragColor;
 
         void main() {
-            int index = int(a_TexIndex);
-            
-            vec4 texel = texture(u_Textures[index], a_TexCoord);
-            o_FragColor = texel * a_Color;
+            vec4 texColor = a_Color;
+
+            switch(int(a_TexIndex))
+	        {
+	        	case  0: texColor *= texture(u_Textures[ 0], a_TexCoord); break;
+	        	case  1: texColor *= texture(u_Textures[ 1], a_TexCoord); break;
+	        	case  2: texColor *= texture(u_Textures[ 2], a_TexCoord); break;
+	        	case  3: texColor *= texture(u_Textures[ 3], a_TexCoord); break;
+	        	case  4: texColor *= texture(u_Textures[ 4], a_TexCoord); break;
+	        	case  5: texColor *= texture(u_Textures[ 5], a_TexCoord); break;
+	        	case  6: texColor *= texture(u_Textures[ 6], a_TexCoord); break;
+	        	case  7: texColor *= texture(u_Textures[ 7], a_TexCoord); break;
+	        	case  8: texColor *= texture(u_Textures[ 8], a_TexCoord); break;
+	        	case  9: texColor *= texture(u_Textures[ 9], a_TexCoord); break;
+	        	case 10: texColor *= texture(u_Textures[10], a_TexCoord); break;
+	        	case 11: texColor *= texture(u_Textures[11], a_TexCoord); break;
+	        	case 12: texColor *= texture(u_Textures[12], a_TexCoord); break;
+	        	case 13: texColor *= texture(u_Textures[13], a_TexCoord); break;
+	        	case 14: texColor *= texture(u_Textures[14], a_TexCoord); break;
+	        	case 15: texColor *= texture(u_Textures[15], a_TexCoord); break;
+	        }
+
+            if (texColor.a == 0.0) { discard; }
+
+            o_FragColor = texColor;
         }
     );
 
@@ -223,7 +244,7 @@ namespace Blackberry {
         }
 
         if (!texAlreadyExists) {
-            texIndex = State.CurrentTexIndex;
+            texIndex = static_cast<f32>(State.CurrentTexIndex);
 
             State.CurrentAttachedTextures[State.CurrentTexIndex] = texture;
             State.CurrentTexIndex++;
@@ -359,6 +380,7 @@ namespace Blackberry {
 
             State.Info.DrawCalls++;
             State.Info.ActiveTextures = State.CurrentTexIndex;
+            State.Info.ReservedTextures = 1;
 
             // clear buffer after rendering
             State.QuadIndices.clear();
