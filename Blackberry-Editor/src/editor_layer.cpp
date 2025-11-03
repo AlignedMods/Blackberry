@@ -7,56 +7,6 @@ namespace BlackberryEditor {
 
     static char s_Buffer[512];
 
-    static const char* s_VertexOutlineShaderSource = BL_STR(
-        \x23version 460 core\n
-        layout(location = 0) in vec2 a_Pos;
-        layout(location = 1) in vec2 a_TexCoord;
-        
-        out vec2 texCoord;
-
-        uniform mat4 u_Projection; // gets set automatically through the renderer
-        
-        void main() {
-            texCoord = a_TexCoord;
-            gl_Position = u_Projection * vec4(a_Pos, 0.0, 1.0);
-        }
-    );
-
-    static const char* s_FragmentOutlineShaderSource = BL_STR(
-        \x23version 460 core\n
-
-        in vec2 texCoord;
-        
-        uniform sampler2D u_Mask;       // mask of selected objects
-        uniform vec2 u_TexelSize;       // (1.0 / textureWidth, 1.0 / textureHeight)
-        uniform vec3 u_OutlineColor;    // RGB color of outline
-        uniform float u_OutlineThickness; // thickness in pixels (e.g., 1.0–4.0)
-        uniform float u_OutlineStrength;  // how visible (0.0–1.0)
-        
-        out vec4 fragColor;
-        
-        void main() {
-            float center = texture(u_Mask, texCoord).r;
-            float outline = 0.0;
-            if (center < 0.5) {
-                for (int y = -4; y <= 4; ++y) {
-                    for (int x = -4; x <= 4; ++x) {
-                        vec2 offset = vec2(x, y);
-                        if (length(offset) > 5) continue; // circular radius
-                        float neighbor = texture(u_Mask, texCoord + offset * u_TexelSize).r;
-                        if (neighbor > 0.5) {
-                            outline = 1.0;
-                            break;
-                        }
-                    }
-                    if (outline > 0.0) break;
-                }
-            }
-
-            fragColor = (outline > 0.0f) ? vec4(u_OutlineColor, 1.0f) : vec4(0.0f, 0.0f, 0.0f, 0.0f);
-        }
-    );
-
 #pragma region HelperFunctions
     
     template <typename T, typename F>
@@ -256,11 +206,13 @@ namespace BlackberryEditor {
         io.Fonts->AddFontFromFileTTF("Assets/creato_display/CreatoDisplay-Medium.otf", 18);
         io.Fonts->AddFontFromFileTTF("Assets/creato_display/CreatoDisplay-Bold.otf", 18);
     
-        m_RenderTexture.Create(1280, 720);
-        m_OutlineShader.Create(s_VertexOutlineShaderSource, s_FragmentOutlineShaderSource);
-        m_MaskTexture.Create(1280, 720);
+        m_RenderTexture.Create(1920, 1080);
+        m_MaskTexture.Create(1920, 1080);
+        m_OutlineTexture.Create(1920, 1080);
 
-        m_OutlineTexture.Create(1280, 720);
+        std::string vs = Blackberry::ReadEntireFile("Assets/shaders/OutlineShader.vs");
+        std::string fs = Blackberry::ReadEntireFile("Assets/shaders/OutlineShader.fs");
+        m_OutlineShader.Create(vs, fs);
 
         LoadEditorState();
     
@@ -303,40 +255,7 @@ namespace BlackberryEditor {
         m_CurrentScene->OnRender();
 
         Blackberry::Renderer2D::DetachRenderTexture();
-
-#if 0
-
-        // overlay (quite a bit of stuff here!)
-        Blackberry::Renderer2D::AttachRenderTexture(m_MaskTexture);
-        Blackberry::Renderer2D::Clear(BlColor(0, 0, 0, 255));
-
-        if (m_IsEntitySelected) {
-            Blackberry::Entity e(m_SelectedEntity, m_CurrentScene);
-
-            if (e.HasComponent<Transform>() && e.HasComponent<Drawable>()) {
-                auto& transform = e.GetComponent<Transform>();
-                auto& drawable = e.GetComponent<Drawable>();
-
-                BlColor color = BlColor(255, 255, 255, 255);
-
-                switch (drawable.ShapeType) {
-                    case Shape::Triangle:
-                        Blackberry::Renderer2D::DrawTriangle(transform.Position, transform.Dimensions, transform.Rotation, color);
-                        break;
-                    case Shape::Rectangle:
-                        Blackberry::Renderer2D::DrawRectangle(transform.Position, transform.Dimensions, transform.Rotation, color);
-                        break;
-                }
-            }
-        }
-
-        Blackberry::Renderer2D::Render();
-
-        Blackberry::Renderer2D::DetachRenderTexture();
-
-#endif
     }
-    
 
     void EditorLayer::OnUIRender() {
         using namespace Blackberry::Components;
@@ -404,25 +323,43 @@ namespace BlackberryEditor {
     }
 
     void BlackberryEditor::EditorLayer::OnOverlayRender() {
-#if 0
+        if (!m_IsEntitySelected) { return; }
 
-        // render a quad the size of the viewport which will be the outline (we must do this fully manually though)
-        f32 vertices[] = {
-            0.0f, m_ViewportBounds.h, 0.0f, 0.0f, // bl
-            m_ViewportBounds.w, 0.0f, 1.0f, 1.0f, // tr
-            m_ViewportBounds.w, m_ViewportBounds.h, 1.0f, 0.0f, // br
-            0.0f, 0.0f, 0.0f, 1.0f, // tl
+        using namespace Blackberry::Components;
+
+        Blackberry::Entity entity = Blackberry::Entity(m_SelectedEntity, m_CurrentScene);
+
+        // mask
+        Blackberry::Renderer2D::AttachRenderTexture(m_MaskTexture);
+
+        Blackberry::Renderer2D::Clear(BlColor(0, 0, 0, 255));
+
+        if (entity.HasComponent<Transform>()) {
+            Transform& transform = entity.GetComponent<Transform>();
+
+            Blackberry::Renderer2D::DrawRectangle(transform.Position, transform.Dimensions, transform.Rotation, Blackberry::Colors::White);
+        }
+
+        Blackberry::Renderer2D::Render();
+
+        Blackberry::Renderer2D::DetachRenderTexture();
+
+        Blackberry::Renderer2D::AttachRenderTexture(m_OutlineTexture);
+        Blackberry::Renderer2D::Clear(BlColor(0, 0, 0, 0));
+
+        // outline effect
+        static f32 quadVertices[] = {
+            // pos      // texCoord
+            -1.0f,  1.0f,  0.0f, 1.0f,   // top-left
+            -1.0f, -1.0f,  0.0f, 0.0f,   // bottom-left
+             1.0f, -1.0f,  1.0f, 0.0f,   // bottom-right
+        
+            -1.0f,  1.0f,  0.0f, 1.0f,   // top-left
+             1.0f, -1.0f,  1.0f, 0.0f,   // bottom-right
+             1.0f,  1.0f,  1.0f, 1.0f    // top-right
         };
 
-        // BlTextureVertex vertexBL = BlTextureVertex(bl, normalizedColor, BlVec2(0.0f, 1.0f));
-        // BlTextureVertex vertexTR = BlTextureVertex(tr, normalizedColor, BlVec2(1.0f, 0.0f));
-        // BlTextureVertex vertexBR = BlTextureVertex(br, normalizedColor, BlVec2(1.0f, 1.0f));
-        // BlTextureVertex vertexTL = BlTextureVertex(tl, normalizedColor, BlVec2(0.0f, 0.0f));
-
-        u32 indicies[] = {
-            0, 1, 2,
-            0, 1, 3
-        };
+        static u32 quadIndicies[] = { 0, 1, 2, 3, 4, 5 };
 
         BlDrawBufferLayout vertPosLayout;
         vertPosLayout.Index = 0;
@@ -439,37 +376,33 @@ namespace BlackberryEditor {
         vertTexCoordLayout.Offset = 2 * sizeof(f32);
 
         BlDrawBuffer buffer;
-        buffer.Vertices = vertices;
-        buffer.VertexSize = sizeof(f32);
-        buffer.VertexCount = 16;
+        buffer.Vertices = quadVertices;
+        buffer.VertexCount = 6;
+        buffer.VertexSize = 4 * sizeof(f32);
 
-        buffer.Indices = indicies;
-        buffer.IndexSize = sizeof(u32);
+        buffer.Indices = quadIndicies;
         buffer.IndexCount = 6;
+        buffer.IndexSize = sizeof(u32);
 
         auto& renderer = BL_APP.GetRenderer();
-        renderer.BindShader(m_OutlineShader);
 
-        m_OutlineShader.SetVec2("u_TexelSize", BlVec2(1.0f / m_RenderTexture.Texture.Width, 1.0f / m_RenderTexture.Texture.Height));
-        m_OutlineShader.SetVec3("u_OutlineColor", BlVec3(0.26f, 0.59f, 0.98f));
-        m_OutlineShader.SetFloat("u_OutlineThickness", 5.0f);
-        m_OutlineShader.SetFloat("u_OutlineStrength", 3.0f);
-
-        renderer.AttachRenderTexture(m_OutlineTexture);
-        renderer.Clear(BlColor(0, 0, 0, 255));
-
-        renderer.AttachTexture(m_MaskTexture.Texture);
+        renderer.SubmitDrawBuffer(buffer);
 
         renderer.SetBufferLayout(vertPosLayout);
         renderer.SetBufferLayout(vertTexCoordLayout);
 
-        renderer.SubmitDrawBuffer(buffer);
+        renderer.BindShader(m_OutlineShader);
+        renderer.AttachTexture(m_MaskTexture.Texture);
+
+        m_OutlineShader.SetVec2("u_TexelSize", BlVec2(1.0f / m_OutlineTexture.Texture.Width, 1.0f / m_OutlineTexture.Texture.Height));
+        m_OutlineShader.SetFloat("u_Thickness", 3.0f);
+        m_OutlineShader.SetVec3("u_OutlineColor", BlVec3(1.0f, 0.7f, 0.2f));
 
         renderer.DrawIndexed(6);
 
-        renderer.DetachRenderTexture();
+        renderer.DetachTexture();
 
-#endif
+        Blackberry::Renderer2D::DetachRenderTexture();
     }
     
     void EditorLayer::OnEvent(const Blackberry::Event& event) {
@@ -890,57 +823,9 @@ namespace BlackberryEditor {
     }
     
     void EditorLayer::UI_Viewport() {
-        static int currentViewportSize = 1;
-        static const char* viewportSizes[] = { "960x540", "1280x720", "1920x1080", "2048x1080", "2560x1440", "3840x2160", "7680x4320" };
-        static bool showViewportOptionsWindow = false;
-
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-        ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_MenuBar);
+        ImGui::Begin("Viewport");
         ImGui::PopStyleVar();
-    
-        if (ImGui::BeginMenuBar()) {
-            if (ImGui::BeginMenu("Viewport options")) {
-                if (ImGui::BeginMenu("Size")) {
-                    if (ImGui::Combo("Viewport size", &currentViewportSize, viewportSizes, IM_ARRAYSIZE(viewportSizes))) {
-                        u32 width = 0;
-                        u32 height = 0;
-                
-                        if (currentViewportSize == 0) {
-                            width = 960;
-                            height = 540;
-                        } else if (currentViewportSize == 1) {
-                            width = 1280;
-                            height = 720;
-                        } else if (currentViewportSize == 2) {
-                            width = 1920;
-                            height = 1080;
-                        } else if (currentViewportSize == 3) {
-                            width = 2048;
-                            height = 1080;
-                        } else if (currentViewportSize == 4) {
-                            width = 2560;
-                            height = 1440;
-                        } else if (currentViewportSize == 5) {
-                            width = 3840;
-                            height = 2160;
-                        } else if (currentViewportSize == 6) {
-                            width = 7680;
-                            height = 4320;
-                        }
-                
-                        m_RenderTexture.Resize(width, height);
-                        m_MaskTexture.Resize(width, height);
-                        m_OutlineTexture.Resize(width, height);
-                    }
-        
-                    ImGui::EndMenu();
-                }
-                
-                ImGui::EndMenu();
-            }
-        
-            ImGui::EndMenuBar();
-        }
 
         auto viewportMin = ImGui::GetWindowContentRegionMin();
         auto viewportMax = ImGui::GetWindowContentRegionMax();
@@ -964,6 +849,12 @@ namespace BlackberryEditor {
         ImGui::SetCursorPosY(cursorY);
     
         ImGui::Image(m_RenderTexture.Texture.ID, ImVec2(sizeX, sizeY), ImVec2(0, 1), ImVec2(1, 0));
+        
+        ImGui::SetCursorPosX(cursorX);
+        ImGui::SetCursorPosY(cursorY);
+
+        ImGui::Image(m_OutlineTexture.Texture.ID, ImVec2(sizeX, sizeY), ImVec2(0, 1), ImVec2(1, 0));
+        // ImGui::Image(m_MaskTexture.Texture.ID, ImVec2(sizeX, sizeY), ImVec2(0, 1), ImVec2(1, 0));
 
         m_ViewportScale = scale;
         m_ViewportBounds.x = ImGui::GetWindowPos().x + cursorX;
@@ -1167,7 +1058,6 @@ namespace BlackberryEditor {
 
         json j;
         j["LastProjectPath"] = m_CurrentProject.ProjectFilePath.string();
-        j["ViewportDimensions"] = { m_RenderTexture.Texture.Width, m_RenderTexture.Texture.Height };
 
         std::ofstream file(m_AppDataDirectory / "Blackberry-Editor" / "editor_state.blsettings");
         file << j.dump(4);
@@ -1183,9 +1073,6 @@ namespace BlackberryEditor {
 
         std::string lastProjectPath = j.at("LastProjectPath");
         LoadProjectFromPath(lastProjectPath);
-        std::array<u32, 2> viewportDimensions = j.at("ViewportDimensions");
-        m_RenderTexture.Resize(viewportDimensions[0], viewportDimensions[1]);
-        m_MaskTexture.Resize(viewportDimensions[0], viewportDimensions[1]);
     }
 
 #pragma endregion
