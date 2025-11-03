@@ -50,6 +50,8 @@ namespace Blackberry {
 
         virtual void Clear(BlColor color) const = 0;
 
+        virtual BlVec2 GetViewportSize() const = 0;
+
         virtual void SetBufferLayout(const BlDrawBufferLayout& layout) = 0;
 
         virtual void SubmitDrawBuffer(const BlDrawBuffer& buffer) = 0;

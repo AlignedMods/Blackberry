@@ -7,6 +7,10 @@
         "Handle - 15162507589004987079": {
             "AssetPath": "Textures\\cat.jpg",
             "Handle": 15162507589004987079
+        },
+        "Handle - 9023906316994206417": {
+            "AssetPath": "Textures\\MANGODIDDYBLUD.jpg",
+            "Handle": 9023906316994206417
         }
     },
     "Entities": {
@@ -45,9 +49,9 @@
         "ID - 1": {
             "ShapeRendererComponent": {
                 "Color": [
-                    244,
-                    168,
-                    33,
+                    251,
+                    193,
+                    31,
                     255
                 ],
                 "ShapeType": 1
@@ -160,6 +164,32 @@
                     1261.0,
                     322.0,
                     4.0
+                ]
+            }
+        },
+        "ID - 5": {
+            "ShapeRendererComponent": {
+                "Color": [
+                    173,
+                    173,
+                    255,
+                    255
+                ],
+                "ShapeType": 2
+            },
+            "TagComponent": {
+                "Name": "Circle",
+                "UUID": 8364094483482462239
+            },
+            "TransformComponent": {
+                "Dimensions": [
+                    400.0,
+                    400.0
+                ],
+                "Position": [
+                    1508.0,
+                    673.0,
+                    0.0
                 ]
             }
         }

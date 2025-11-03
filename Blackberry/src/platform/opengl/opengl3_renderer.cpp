@@ -133,6 +133,13 @@ namespace Blackberry {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
+    BlVec2 Renderer_OpenGL3::GetViewportSize() const {
+        int size[4];
+        glGetIntegerv(GL_VIEWPORT, size);
+
+        return BlVec2(size[2], size[3]);
+    }
+
     void Renderer_OpenGL3::SetBufferLayout(const BlDrawBufferLayout& layout) {
         GLenum type = GL_FLOAT;
 

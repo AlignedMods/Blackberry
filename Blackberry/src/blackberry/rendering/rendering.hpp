@@ -37,13 +37,16 @@ namespace Blackberry {
         static void DrawRectangle(BlVec3 pos, BlVec2 dimensions, f32 rotation, BlColor color);
 
         static void DrawTriangle(BlVec3 pos, BlVec2 dimensions, f32 rotation = 0.0f, BlColor color = Colors::White);
-        static void DrawTriangle(BlVec3 bl, BlVec3 t, BlVec3 br, BlColor color);
+
+        static void DrawCircle(BlVec3 pos, f32 radius, BlColor color = Colors::White);
+        static void DrawElipse(BlVec3 pos, BlVec2 dimensions, f32 rotation = 0.0f, BlColor color = Colors::White);
 
         static void DrawTexture(BlVec3 pos, BlTexture texture, f32 rotation = 0.0f, BlColor color = Colors::White);
         static void DrawTextureEx(BlVec3 pos, BlVec2 dimensions, BlTexture texture, f32 rotation = 0.0f, BlColor color = Colors::White);
         static void DrawTextureArea(BlVec3 pos, BlVec2 dimensions, BlRec area, BlTexture texture, f32 rotation = 0.0f, BlColor color = Colors::White);
 
         static void DrawTexturedQuad(BlVec3 pos, BlVec2 dimensions, BlRec area, BlTexture texture, f32 rotation, BlColor color);
+        static void DrawTexturedTriangle(BlVec3 pos, BlVec2 dimensions, BlRec area, BlTexture texture, f32 rotation, BlColor color);
 
         static void DrawRenderTexture(BlVec3 pos, BlVec2 dimensions, BlRenderTexture texture);
 

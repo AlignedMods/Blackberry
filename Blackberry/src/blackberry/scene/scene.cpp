@@ -119,7 +119,14 @@ namespace Blackberry {
                 Asset asset = m_AssetManager->GetAsset(spriteRenderer.TextureHandle);
                 BlTexture tex = std::get<BlTexture>(asset.Data);
 
-                Renderer2D::DrawTextureArea(transform.Position, transform.Dimensions, spriteRenderer.Area, tex, transform.Rotation, spriteRenderer.Color);
+                switch (spriteRenderer.Shape) {
+                    case ShapeType::Triangle:
+                        Renderer2D::DrawTexturedTriangle(transform.Position, transform.Dimensions, spriteRenderer.Area, tex, transform.Rotation, spriteRenderer.Color);
+                        break;
+                    case ShapeType::Rectangle:
+                        Renderer2D::DrawTexturedQuad(transform.Position, transform.Dimensions, spriteRenderer.Area, tex, transform.Rotation, spriteRenderer.Color);
+                        break;
+                }
             }
         }
         
@@ -133,6 +140,8 @@ namespace Blackberry {
                 case ShapeType::Rectangle:
                     Renderer2D::DrawRectangle(transform.Position, transform.Dimensions, transform.Rotation, shapeRenderer.Color);
                     break;
+                case ShapeType::Circle:
+                    Renderer2D::DrawElipse(transform.Position, transform.Dimensions, transform.Rotation, shapeRenderer.Color);
             }
         }
     }

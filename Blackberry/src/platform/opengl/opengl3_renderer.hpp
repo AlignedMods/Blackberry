@@ -21,6 +21,8 @@ namespace Blackberry {
 
         virtual void Clear(BlColor color) const override;
 
+        virtual BlVec2 GetViewportSize() const override;
+
         virtual void SetBufferLayout(const BlDrawBufferLayout& layout) override;
 
         virtual void SubmitDrawBuffer(const BlDrawBuffer& buffer) override;
