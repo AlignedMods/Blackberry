@@ -36,9 +36,6 @@ namespace Blackberry {
         virtual void AttachRenderTexture(const BlRenderTexture texture) override;
         virtual void DetachRenderTexture() override;
 
-        virtual void SetProjection(glm::mat4 projection) override;
-        virtual void ResetProjection() override;
-
     private:
         u32 m_VAO;
         u32 m_VBO;

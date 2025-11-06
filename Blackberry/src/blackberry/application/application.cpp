@@ -27,9 +27,11 @@ namespace Blackberry {
         data.Width = spec.Width;
         data.Height = spec.Height;
 
-        InitImGui();
+        if (spec.EnableImGui) {
+            InitImGui();
+        }
 
-        m_Window = new Window_GLFW(data);
+        m_Window = new Window_GLFW(data, spec.EnableImGui);
 
         BlVec2 viewport = BlVec2(static_cast<f32>(data.Width), static_cast<f32>(data.Height));
         m_Renderer = new Renderer_OpenGL3(viewport);
@@ -53,6 +55,7 @@ namespace Blackberry {
         Renderer2D::Shutdown();
 
         delete m_Window;
+        delete m_Renderer;
     }
 
     void Application::Run() {
@@ -145,6 +148,8 @@ namespace Blackberry {
     }
 
     void Application::OnUIRender() {
+        if (!m_Specification.EnableImGui) { return; }
+
         ImGuiIO& io = ImGui::GetIO();
 
         for (auto layer : m_LayerStack.GetAllLayers()) {

@@ -35,6 +35,4 @@ void main()
     edge = smoothstep(0.05, 0.2, edge); // tweak thresholds
 
     o_FragColor = vec4(u_OutlineColor, edge);
-
-    // o_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
 }

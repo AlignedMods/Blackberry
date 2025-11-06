@@ -18,7 +18,8 @@ namespace Blackberry {
     // we also don't want to directly include any platform specific code in application.hpp
     class Window {
     public:
-        Window(const WindowData& data) { m_WindowData = data; }
+        Window(const WindowData& data, bool imguiEnabled)
+            : m_WindowData(data), m_ImGuiEnabled(imguiEnabled) {}
         virtual ~Window() = default;
 
         virtual BlVec2 GetWindowDims() const = 0;
@@ -40,6 +41,7 @@ namespace Blackberry {
     protected:
         EventCallbackFn m_EventCallback;
         WindowData m_WindowData;
+        bool m_ImGuiEnabled = true;
     };
 
 } // namespace Blackberry

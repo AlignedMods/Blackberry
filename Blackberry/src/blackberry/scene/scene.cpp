@@ -142,6 +142,7 @@ namespace Blackberry {
                     break;
                 case ShapeType::Circle:
                     Renderer2D::DrawElipse(transform.Position, transform.Dimensions, transform.Rotation, shapeRenderer.Color);
+                    break;
             }
         }
     }

@@ -13,33 +13,10 @@ namespace Blackberry {
 
     struct ApplicationSpecification {
         const char* Name;
-        u32 Width, Height;
+        u32 Width = 0, Height = 0;
         u32 FPS = 0;
-    };
 
-    class CommandLineArgs {
-    public:
-        inline CommandLineArgs(u32 argc, char** argv) {
-            this->argc = argc;
-            this->argv = argv;
-        }
-
-        inline const char* at(const u32 i) {
-            if (i >= argc) {
-                BL_CORE_CRITICAL("Trying to access position in command line arguments that is out of bounds! {{Position {}, Size {}}}", i, argc);
-                exit(1);
-            }
-
-            return argv[i];
-        }
-
-        inline u32 size() const {
-            return argc;
-        }
-
-    private:
-        u32 argc;
-        char** argv;
+        bool EnableImGui = true;
     };
 
     class Application {
@@ -68,9 +45,6 @@ namespace Blackberry {
 
         f32 GetDeltaTime() const { return m_dt; }
         u32 GetFPS() const { return static_cast<u32>(1.0f / m_dt); }
-
-        // To be implemented by client!
-        static Application* CreateApplication(const CommandLineArgs& args);
 
     private:
         void OnUpdate();

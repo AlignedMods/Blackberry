@@ -1,6 +1,7 @@
 #include "blackberry/application/application.hpp"
 #include "blackberry/core/types.hpp"
 #include "blackberry/font/font.hpp"
+#include "blackberry/scene/camera.hpp"
 
 #include <string>
 
@@ -53,7 +54,7 @@ namespace Blackberry {
         static void AttachRenderTexture(BlRenderTexture texture);
         static void DetachRenderTexture();
 
-        static void SetProjection(glm::mat4 projection);
+        static void SetProjection(SceneCamera camera);
         static void ResetProjection();
 
         static void Render();

@@ -2,6 +2,9 @@
 #include "sdf_generation.hpp"
 
 #include <fstream>
+#include <algorithm>
+
+using namespace Blackberry; // don't care about your personal opinion, this is fine
 
 namespace BlackberryEditor {
 
@@ -10,7 +13,7 @@ namespace BlackberryEditor {
 #pragma region HelperFunctions
     
     template <typename T, typename F>
-    static void DrawComponent(const std::string& name, Blackberry::Entity entity, F uiFunction) {
+    static void DrawComponent(const std::string& name, Entity entity, F uiFunction) {
         bool useUIFunction = false;
 
         ImGui::PushID(name.c_str());
@@ -39,7 +42,7 @@ namespace BlackberryEditor {
     }
     
     template <typename T>
-    static void AddComponentListOption(const std::string& name, Blackberry::Entity& entity, const T& component = T{}) {
+    static void AddComponentListOption(const std::string& name, Entity& entity, const T& component = T{}) {
         if (entity.HasComponent<T>()) { return; }
     
         if (ImGui::Button(name.c_str())) {
@@ -200,7 +203,7 @@ namespace BlackberryEditor {
 #pragma region OverridenFunctions
 
     void EditorLayer::OnAttach() {
-        m_AppDataDirectory = Blackberry::OS::GetAppDataDirectory();
+        m_AppDataDirectory = OS::GetAppDataDirectory();
     
         ImGuiIO& io = ImGui::GetIO();
         io.Fonts->AddFontFromFileTTF("Assets/creato_display/CreatoDisplay-Medium.otf", 18);
@@ -210,8 +213,8 @@ namespace BlackberryEditor {
         m_MaskTexture.Create(1920, 1080);
         m_OutlineTexture.Create(1920, 1080);
 
-        std::string vs = Blackberry::ReadEntireFile("Assets/shaders/OutlineShader.vs");
-        std::string fs = Blackberry::ReadEntireFile("Assets/shaders/OutlineShader.fs");
+        std::string vs = ReadEntireFile("Assets/shaders/OutlineShader.vs");
+        std::string fs = ReadEntireFile("Assets/shaders/OutlineShader.fs");
         m_OutlineShader.Create(vs, fs);
 
         LoadEditorState();
@@ -239,26 +242,37 @@ namespace BlackberryEditor {
     }
     
     void EditorLayer::OnUpdate(f32 ts) {
+        m_EditorCamera.Offset = BlVec2(m_RenderTexture.Texture.Width / 2.0f, m_RenderTexture.Texture.Height / 2.0f);
+        m_EditorCamera.Position = BlVec2(m_RenderTexture.Texture.Width / 2.0f, m_RenderTexture.Texture.Height / 2.0f);
+
         if (m_EditorState == EditorState::Play) {
             m_CurrentScene->OnRuntimeUpdate();
         } else {
             m_CurrentScene->OnUpdate();
+
+            if (Input::IsKeyDown(KeyCode::Ctrl) && Input::GetScrollLevel() != 0.0f) {
+                f32 scale = 0.1f * Input::GetScrollLevel();
+
+                m_EditorCamera.Scale = std::clamp(std::exp(std::log(m_EditorCamera.Scale)+scale), 0.125f, 64.0f);
+            }
         }
     }
     
     void EditorLayer::OnRender() {
-        using namespace Blackberry::Components;
+        using namespace Components;
 
-        Blackberry::Renderer2D::AttachRenderTexture(m_RenderTexture);
-        Blackberry::Renderer2D::Clear(BlColor(0x69, 0x69, 0x69, 0xff));
+        Renderer2D::AttachRenderTexture(m_RenderTexture);
+        Renderer2D::Clear(BlColor(0x69, 0x69, 0x69, 0xff));
+        Renderer2D::SetProjection(m_EditorCamera);
 
         m_CurrentScene->OnRender();
 
-        Blackberry::Renderer2D::DetachRenderTexture();
+        Renderer2D::ResetProjection();
+        Renderer2D::DetachRenderTexture();
     }
 
     void EditorLayer::OnUIRender() {
-        using namespace Blackberry::Components;
+        using namespace Components;
     
         // set up dockspace
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
@@ -325,27 +339,49 @@ namespace BlackberryEditor {
     void BlackberryEditor::EditorLayer::OnOverlayRender() {
         if (!m_IsEntitySelected) { return; }
 
-        using namespace Blackberry::Components;
+        using namespace Components;
 
-        Blackberry::Entity entity = Blackberry::Entity(m_SelectedEntity, m_CurrentScene);
+        Entity entity = Entity(m_SelectedEntity, m_CurrentScene);
 
         // mask
-        Blackberry::Renderer2D::AttachRenderTexture(m_MaskTexture);
-
-        Blackberry::Renderer2D::Clear(BlColor(0, 0, 0, 255));
+        Renderer2D::AttachRenderTexture(m_MaskTexture);
+        Renderer2D::Clear(BlColor(0, 0, 0, 255));
+        Renderer2D::SetProjection(m_EditorCamera);
 
         if (entity.HasComponent<Transform>()) {
             Transform& transform = entity.GetComponent<Transform>();
 
-            Blackberry::Renderer2D::DrawRectangle(transform.Position, transform.Dimensions, transform.Rotation, Blackberry::Colors::White);
+            auto drawWhiteEntity = [&]<typename T>() -> bool {
+                if (!entity.HasComponent<T>()) { return false; }
+
+                T& ren = entity.GetComponent<T>();
+
+                switch (ren.Shape) {
+                    case ShapeType::Triangle:
+                        Renderer2D::DrawTriangle(transform.Position, transform.Dimensions, transform.Rotation, Colors::White);
+                        break;
+                    case ShapeType::Rectangle:
+                        Renderer2D::DrawRectangle(transform.Position, transform.Dimensions, transform.Rotation, Colors::White);
+                        break;
+                    case ShapeType::Circle:
+                        Renderer2D::DrawElipse(transform.Position, transform.Dimensions, transform.Rotation, Colors::White);
+                        break;
+                }
+            };
+
+            // wierd syntax honestly
+            if (!drawWhiteEntity.template operator()<SpriteRenderer>() && !drawWhiteEntity.template operator()<ShapeRenderer>()) {};
+
+            // Renderer2D::DrawRectangle(transform.Position, transform.Dimensions, transform.Rotation, Colors::White);
         }
 
-        Blackberry::Renderer2D::Render();
+        Renderer2D::Render();
 
-        Blackberry::Renderer2D::DetachRenderTexture();
+        Renderer2D::ResetProjection();
+        Renderer2D::DetachRenderTexture();
 
-        Blackberry::Renderer2D::AttachRenderTexture(m_OutlineTexture);
-        Blackberry::Renderer2D::Clear(BlColor(0, 0, 0, 0));
+        Renderer2D::AttachRenderTexture(m_OutlineTexture);
+        Renderer2D::Clear(BlColor(0, 0, 0, 0));
 
         // outline effect
         static f32 quadVertices[] = {
@@ -402,18 +438,18 @@ namespace BlackberryEditor {
 
         renderer.DetachTexture();
 
-        Blackberry::Renderer2D::DetachRenderTexture();
+        Renderer2D::DetachRenderTexture();
     }
     
-    void EditorLayer::OnEvent(const Blackberry::Event& event) {
-        if (event.GetEventType() == Blackberry::EventType::WindowResize) {
+    void EditorLayer::OnEvent(const Event& event) {
+        if (event.GetEventType() == EventType::WindowResize) {
             auto& wr = BL_EVENT_CAST(WindowResizeEvent);
     
             // m_RenderTexture.Delete();
             // m_RenderTexture.Create(wr.GetWidth(), wr.GetHeight());
         }
     
-        if (event.GetEventType() == Blackberry::EventType::KeyPressed) {
+        if (event.GetEventType() == EventType::KeyPressed) {
             auto& kp = BL_EVENT_CAST(KeyPressedEvent);
             if (kp.GetKeyCode() == KeyCode::F3) {
                 m_ShowDemoWindow = true;
@@ -614,16 +650,16 @@ namespace BlackberryEditor {
             ImGui::Separator();
 
             if (ImGui::BeginMenu("Add")) {
-                using namespace Blackberry::Components;
+                using namespace Components;
 
                 if (ImGui::MenuItem("Rectangle")) {
-                    Blackberry::Entity entity(m_CurrentScene->CreateEntity("Rectangle"), m_CurrentScene);
+                    Entity entity(m_CurrentScene->CreateEntity("Rectangle"), m_CurrentScene);
                     entity.AddComponent<ShapeRenderer>();
                     entity.AddComponent<Transform>({BlVec3(m_RenderTexture.Texture.Width / 2.0f - 100.0f, m_RenderTexture.Texture.Height / 2.0f - 50.0f, 0.0f), 0.0f, BlVec2(200.0f, 100.0f)});
                 };
 
                 if (ImGui::MenuItem("Triangle")) {
-                    Blackberry::Entity entity(m_CurrentScene->CreateEntity("Triangle"), m_CurrentScene);
+                    Entity entity(m_CurrentScene->CreateEntity("Triangle"), m_CurrentScene);
                     entity.AddComponent<ShapeRenderer>({.Shape = ShapeType::Triangle});
                     entity.AddComponent<Transform>({BlVec3(m_RenderTexture.Texture.Width / 2.0f - 100.0f, m_RenderTexture.Texture.Height / 2.0f - 50.0f, 0.0f), 0.0f, BlVec2(200.0f, 100.0f)});
                 };
@@ -637,7 +673,7 @@ namespace BlackberryEditor {
         for (auto id : m_CurrentScene->GetEntities()) {
             ImGui::PushID(static_cast<u32>(id));
     
-            Blackberry::Entity entity(id, m_CurrentScene);
+            Entity entity(id, m_CurrentScene);
 
             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(16, 0));
 
@@ -646,11 +682,11 @@ namespace BlackberryEditor {
                 ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.26f, 0.59f, 0.98f, 0.7f));
                 ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.26f, 0.59f, 0.98f, 1.0f));
                 
-                ImGui::Button(entity.GetComponent<Blackberry::Components::Tag>().Name.c_str(), ImVec2(ImGui::GetContentRegionAvail().x - 32.0f, 0));
+                ImGui::Button(entity.GetComponent<Components::Tag>().Name.c_str(), ImVec2(ImGui::GetContentRegionAvail().x - 32.0f, 0));
                 
                 ImGui::PopStyleColor(3);
-            } else if (entity.HasComponent<Blackberry::Components::Tag>()) {
-                if (ImGui::Button(entity.GetComponent<Blackberry::Components::Tag>().Name.c_str(), ImVec2(ImGui::GetContentRegionAvail().x - 32.0f, 0))) {
+            } else if (entity.HasComponent<Components::Tag>()) {
+                if (ImGui::Button(entity.GetComponent<Components::Tag>().Name.c_str(), ImVec2(ImGui::GetContentRegionAvail().x - 32.0f, 0))) {
                     m_IsEntitySelected = true;
                     m_SelectedEntity = id;
                 }
@@ -658,7 +694,7 @@ namespace BlackberryEditor {
 
             if (ImGui::BeginPopupContextItem("EntityPopup")) {
                 if (ImGui::MenuItem("Delete Entity")) {
-                    m_CurrentScene->DestroyEntity(entity.GetComponent<Blackberry::Components::Tag>().UUID);
+                    m_CurrentScene->DestroyEntity(entity.GetComponent<Components::Tag>().UUID);
 
                     if (m_SelectedEntity == id) {
                         m_IsEntitySelected = false;
@@ -684,12 +720,12 @@ namespace BlackberryEditor {
     }
     
     void EditorLayer::UI_Properties() {
-        using namespace Blackberry::Components;
+        using namespace Components;
     
         ImGui::Begin("Properties");
     
         if (m_IsEntitySelected) {
-            Blackberry::Entity entity(m_SelectedEntity, m_CurrentScene);
+            Entity entity(m_SelectedEntity, m_CurrentScene);
 
             if (ImGui::BeginPopupContextWindow("PropertiesContextMenu")) {
                 if (ImGui::BeginMenu("Add Component")) {
@@ -892,7 +928,7 @@ namespace BlackberryEditor {
     void EditorLayer::UI_RendererStats() {
         ImGui::Begin("Renderer Stats");
 
-        auto stats = Blackberry::Renderer2D::GetRenderingInfo();
+        auto stats = Renderer2D::GetRenderingInfo();
 
         ImGui::Text("Draw Calls: %u", stats.DrawCalls);
         ImGui::Text("Verticies: %u", stats.Vertices);
@@ -916,7 +952,7 @@ namespace BlackberryEditor {
         ImGui::Text("Root Directory: "); ImGui::SameLine();
         ImGui::InputText("##FilePath", &projectPath); ImGui::SameLine();
         if (ImGui::SmallButton("...")) {
-            projectPath = Blackberry::OS::OpenFile("Blackberry Project (*.blproj)");
+            projectPath = OS::OpenFile("Blackberry Project (*.blproj)");
         }
     
         ImGui::Text("Asset Directory: "); ImGui::SameLine();
@@ -939,7 +975,7 @@ namespace BlackberryEditor {
         ImGui::InputText("Scene Path: ", &scenePath); ImGui::SameLine();
     
         if (ImGui::Button("...")) {
-            scenePath = Blackberry::OS::OpenFile("Blackberry Scene (*.blscene)");
+            scenePath = OS::OpenFile("Blackberry Scene (*.blscene)");
         }
     
         if (ImGui::Button("Create")) {
@@ -964,7 +1000,7 @@ namespace BlackberryEditor {
 #pragma region ProjectFunctions
     
     void EditorLayer::LoadProject() {
-        std::string path = Blackberry::OS::OpenFile("Blackberry Project (*.blproj)");
+        std::string path = OS::OpenFile("Blackberry Project (*.blproj)");
     
         LoadProjectFromPath(path);
     }
@@ -975,7 +1011,7 @@ namespace BlackberryEditor {
             return;
         }
 
-        std::string contents = Blackberry::ReadEntireFile(path);
+        std::string contents = ReadEntireFile(path);
     
         json j = json::parse(contents);
         m_CurrentProject.ProjectDirectory = path.parent_path();
@@ -998,11 +1034,11 @@ namespace BlackberryEditor {
         }
     }
     
-    Blackberry::Scene* EditorLayer::LoadSceneFromFile(const std::filesystem::path& path) {
+    Scene* EditorLayer::LoadSceneFromFile(const std::filesystem::path& path) {
         EditorScene scene;
         scene.ScenePath = path;
     
-        Blackberry::SceneSerializer serializer(&scene.Scene, m_CurrentProject.AssetDirectory);
+        SceneSerializer serializer(&scene.Scene, m_CurrentProject.AssetDirectory);
         serializer.Deserialize(path);
     
         m_CurrentProject.Scenes.emplace_back(scene);
@@ -1010,8 +1046,8 @@ namespace BlackberryEditor {
         return &m_CurrentProject.Scenes.back().Scene;
     }
     
-    void EditorLayer::SaveSceneToFile(Blackberry::Scene& scene, const std::filesystem::path& path) {
-        Blackberry::SceneSerializer serializer(&scene, m_CurrentProject.AssetDirectory);
+    void EditorLayer::SaveSceneToFile(Scene& scene, const std::filesystem::path& path) {
+        SceneSerializer serializer(&scene, m_CurrentProject.AssetDirectory);
         serializer.Serialize(path);
     }
     
@@ -1032,7 +1068,7 @@ namespace BlackberryEditor {
     void EditorLayer::OnScenePlay() {
         BL_INFO("Switched to playing scene.");
         m_EditorState = EditorState::Play;
-        m_ActiveScene = Blackberry::Scene::Copy(m_EditingScene);
+        m_ActiveScene = Scene::Copy(m_EditingScene);
         m_CurrentScene = m_ActiveScene;
 
         m_CurrentScene->OnPlay();
@@ -1068,7 +1104,7 @@ namespace BlackberryEditor {
             return;
         }
 
-        std::string contents = Blackberry::ReadEntireFile(m_AppDataDirectory / "Blackberry-Editor" / "editor_state.blsettings");
+        std::string contents = ReadEntireFile(m_AppDataDirectory / "Blackberry-Editor" / "editor_state.blsettings");
         json j = json::parse(contents);
 
         std::string lastProjectPath = j.at("LastProjectPath");

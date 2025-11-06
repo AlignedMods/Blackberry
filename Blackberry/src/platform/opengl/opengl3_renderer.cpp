@@ -3,8 +3,6 @@
 #include "blackberry/core/log.hpp"
 
 #include "glad/glad.h"
-#include "glm/gtc/matrix_transform.hpp"
-#include "glm/gtc/type_ptr.hpp"
 #include "stb_image.h"
 
 #include <iostream>
@@ -98,16 +96,6 @@ namespace Blackberry {
         m_PrevViewportSize = m_CurrentViewportSize;
         m_CurrentViewportSize = viewport;
         glViewport(0, 0, static_cast<GLsizei>(viewport.x), static_cast<GLsizei>(viewport.y));
-
-        m_DefaultProjection = glm::ortho(
-            0.0f,                               // left
-            static_cast<f32>(viewport.x),       // right
-            static_cast<f32>(viewport.y),       // bottom
-            0.0f,                               // top
-            -1000.0f, 1000.0f                   // near-far
-        );
-
-        m_Projection = m_DefaultProjection;
     }
 
     void Renderer_OpenGL3::NewFrame() {}
@@ -134,10 +122,7 @@ namespace Blackberry {
     }
 
     BlVec2 Renderer_OpenGL3::GetViewportSize() const {
-        int size[4];
-        glGetIntegerv(GL_VIEWPORT, size);
-
-        return BlVec2(size[2], size[3]);
+        return m_CurrentViewportSize;
     }
 
     void Renderer_OpenGL3::SetBufferLayout(const BlDrawBufferLayout& layout) {
@@ -177,14 +162,9 @@ namespace Blackberry {
         if (count == 0) {
             BL_CORE_WARN("Submiting draw call with ZERO elements!");
         }
-
-        // glUseProgram(m_CurrentShader.ID);
         glBindVertexArray(m_VAO);
 
-        m_CurrentShader.SetMatrix("u_Projection", glm::value_ptr(m_Projection));
-
         glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(count), GL_UNSIGNED_INT, nullptr);
-        // glDrawArrays(GL_TRIANGLES, 0, 3);
     }
 
     void Renderer_OpenGL3::AttachRenderTexture(const BlRenderTexture texture) {
@@ -195,14 +175,6 @@ namespace Blackberry {
     void Renderer_OpenGL3::DetachRenderTexture() {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         UpdateViewport(m_PrevViewportSize);
-    }
-
-    void Renderer_OpenGL3::SetProjection(glm::mat4 projection) {
-        m_Projection = projection;
-    }
-
-    void Renderer_OpenGL3::ResetProjection() {
-        m_Projection = m_DefaultProjection;
     }
 
 } // namespace Blackberry

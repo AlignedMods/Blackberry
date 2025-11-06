@@ -1,5 +1,6 @@
-#include "rendering.hpp"
+#include "blackberry/rendering/rendering.hpp"
 #include "blackberry/core/util.hpp"
+#include "blackberry/scene/camera.hpp"
 
 #include "glm/glm.hpp"
 #include <glm/gtc/matrix_transform.hpp>
@@ -149,6 +150,9 @@ namespace Blackberry {
         // for textured shaped
         u32 CurrentTexIndex = 1; // NOTE: 0 is reserved for a blank white texture!!!
         std::array<BlTexture, 16> CurrentAttachedTextures;
+
+        SceneCamera Camera;
+        SceneCamera DefaultCamera; // by default the camera is initialized to a basic 1x scale pixel-by-pixel orthographic projection
 
         BlRenderer2DInfo Info;
     };
@@ -416,16 +420,12 @@ namespace Blackberry {
         renderer.DetachRenderTexture();
     }
 
-    void Renderer2D::SetProjection(glm::mat4 projection) {
-        auto& renderer = BL_APP.GetRenderer();
-
-        renderer.SetProjection(projection);
+    void Renderer2D::SetProjection(SceneCamera camera) {
+        State.Camera = camera;
     }
 
     void Renderer2D::ResetProjection() {
-        auto& renderer = BL_APP.GetRenderer();
-
-        renderer.ResetProjection();
+        State.Camera = State.DefaultCamera;
     }
 
     void Renderer2D::Render() {
@@ -491,6 +491,7 @@ namespace Blackberry {
 
             BlShader shader = State.ShapeShader;
             shader.SetIntArray("u_Textures", 16, samplers);
+            shader.SetMatrix("u_Projection", State.Camera.GetCameraMatrixFloat());
 
             renderer.DrawIndexed(State.ShapeIndexCount);
 
@@ -550,6 +551,8 @@ namespace Blackberry {
             renderer.SetBufferLayout(vertTexCoordLayout);
 
             renderer.BindShader(State.CircleShader);
+
+            State.CircleShader.SetMatrix("u_Projection", State.Camera.GetCameraMatrixFloat());
 
             renderer.DrawIndexed(State.CircleIndexCount);
 

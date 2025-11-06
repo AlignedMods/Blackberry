@@ -9,7 +9,7 @@ namespace Blackberry {
 
     class Window_GLFW : public Window {
     public:
-        Window_GLFW(const WindowData& data);
+        Window_GLFW(const WindowData& data, bool imguiEnabled);
         ~Window_GLFW();
 
         virtual BlVec2 GetWindowDims() const override;

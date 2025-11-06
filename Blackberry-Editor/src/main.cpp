@@ -3,7 +3,7 @@
 
 #include "editor_layer.hpp"
 
-Blackberry::Application* Blackberry::Application::CreateApplication(const CommandLineArgs &args) {
+Blackberry::Application* Blackberry::CreateApplication(u32 argc, char** argv) {
     Blackberry::ApplicationSpecification spec;
     spec.Name = "Blackberry Editor";
     spec.Width = 1280;

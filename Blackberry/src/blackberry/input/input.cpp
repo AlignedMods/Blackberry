@@ -1,4 +1,5 @@
 #include "blackberry/input/input.hpp"
+#include "blackberry/core/log.hpp"
 
 #include <unordered_map>
 
@@ -12,33 +13,34 @@ namespace Blackberry {
         f32 ScrollLevel = 0.0f;
     };
 
-    static InputState s_State;
+    static InputState IState;
 
     bool Input::IsKeyDown(KeyCode key) {
-        return s_State.CurrentKeyState[static_cast<u32>(key)] == 1;
+        return IState.CurrentKeyState[static_cast<u32>(key)] == 1;
     }
 
     bool Input::IsKeyPressed(KeyCode key) {
-        return s_State.CurrentKeyState[static_cast<u32>(key)] == 1 && s_State.PreviousKeyState[static_cast<u32>(key)] == 0;
+        return IState.CurrentKeyState[static_cast<u32>(key)] == 1 && IState.PreviousKeyState[static_cast<u32>(key)] == 0;
     }
 
-    f32 Input::GetScrollLevel()
-    {
-        return f32();
+    f32 Input::GetScrollLevel() {
+        return IState.ScrollLevel;
     }
 
     void Input::SetKeyState(KeyCode key, bool state) {
-        s_State.CurrentKeyState[static_cast<u32>(key)] = state;
+        IState.CurrentKeyState[static_cast<u32>(key)] = state;
     }
 
     void Input::ResetKeyState() {
-        for (auto&[key, state] : s_State.CurrentKeyState) {
-            s_State.PreviousKeyState[key] = state;
+        for (auto&[key, state] : IState.CurrentKeyState) {
+            IState.PreviousKeyState[key] = state;
         }
+
+        IState.ScrollLevel = 0.0f;
     }
 
     void Input::SetScrollLevel(f32 level) {
-        s_State.ScrollLevel = level;
+        IState.ScrollLevel = level;
     }
 
 } // namespace Blackberry

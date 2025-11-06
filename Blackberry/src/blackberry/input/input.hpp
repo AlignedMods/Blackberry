@@ -12,9 +12,9 @@ namespace Blackberry {
         static f32 GetScrollLevel();
 
         static void SetKeyState(KeyCode key, bool state);
+        static void SetScrollLevel(f32 level);
         static void ResetKeyState();
 
-        static void SetScrollLevel(f32 level);
     };
 
 } // namespace Blackberry

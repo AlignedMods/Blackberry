@@ -80,7 +80,8 @@ namespace Blackberry {
     static void CallbackScroll(GLFWwindow* window, f64 x, f64 y) {
         DISPATCHER;
 
-        dispatcher.Post(MouseScrolledEvent(static_cast<f32>(x)));
+        dispatcher.Post(MouseScrolledEvent(static_cast<f32>(y)));
+        Input::SetScrollLevel(static_cast<f32>(y));
     }
 
     static void CallbackWindowResize(GLFWwindow* window, i32 width, i32 height) {
@@ -193,8 +194,8 @@ namespace Blackberry {
 
 #pragma endregion
 
-    Window_GLFW::Window_GLFW(const WindowData& data)
-        : Window(data) {
+    Window_GLFW::Window_GLFW(const WindowData& data, bool imguiEnabled)
+        : Window(data, imguiEnabled) {
         if (!glfwInit()) {
             BL_CRITICAL("Failed to init GLFW!");
             glfwTerminate();
@@ -242,14 +243,18 @@ namespace Blackberry {
         glfwSetFramebufferSizeCallback(m_Handle, CallbackWindowResize);
         glfwSetWindowCloseCallback(m_Handle, CallbackWindowClose);
 
-        ImGui_ImplGlfw_InitForOpenGL(m_Handle, true);
-        ImGui_ImplOpenGL3_Init("#version 460");
+        if (m_ImGuiEnabled) {
+            ImGui_ImplGlfw_InitForOpenGL(m_Handle, true);
+            ImGui_ImplOpenGL3_Init("#version 460");
+        }
     }
 
     Window_GLFW::~Window_GLFW() {
-        ImGui_ImplGlfw_Shutdown();
-        ImGui_ImplOpenGL3_Shutdown();
-        ImGui::DestroyContext();
+        if (m_ImGuiEnabled) {
+            ImGui_ImplGlfw_Shutdown();
+            ImGui_ImplOpenGL3_Shutdown();
+            ImGui::DestroyContext();
+        }
 
         glfwDestroyWindow(m_Handle);
         glfwTerminate();
@@ -271,24 +276,26 @@ namespace Blackberry {
     }
 
     void Window_GLFW::OnRenderStart() {
+        if (!m_ImGuiEnabled) { return; }
+            
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
     }
 
     void Window_GLFW::OnRenderFinish() {
-        ImGuiIO& io = ImGui::GetIO();
-        // io.DeltaTime = Application::Get().GetDeltaTime();
+        if (m_ImGuiEnabled) {
+            ImGuiIO& io = ImGui::GetIO();
 
-        // Update and Render additional Platform Windows
-        // (Platform functions may change the current OpenGL context, so we save/restore it to make it easier to paste this code elsewhere.
-        //  For this specific demo app we could also call glfwMakeContextCurrent(window) directly)
-        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-        {
-            GLFWwindow* backup_current_context = glfwGetCurrentContext();
-            ImGui::UpdatePlatformWindows();
-            ImGui::RenderPlatformWindowsDefault();
-            glfwMakeContextCurrent(backup_current_context);
+            // Update and Render additional Platform Windows
+            // (Platform functions may change the current OpenGL context, so we save/restore it to make it easier to paste this code elsewhere.
+            //  For this specific demo app we could also call glfwMakeContextCurrent(window) directly)
+            if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+                GLFWwindow* backup_current_context = glfwGetCurrentContext();
+                ImGui::UpdatePlatformWindows();
+                ImGui::RenderPlatformWindowsDefault();
+                glfwMakeContextCurrent(backup_current_context);
+            }
         }
 
         Input::ResetKeyState();
