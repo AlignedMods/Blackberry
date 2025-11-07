@@ -36,9 +36,9 @@ namespace Blackberry {
     void Scene::Delete() {}
 
     void Scene::OnPlay() {
-        auto view = m_ECS->GetEntitiesWithComponents<Script>();
+        auto view = m_ECS->GetEntitiesWithComponents<ScriptComponent>();
 
-        view.each([&](auto entity, Script& script) {
+        view.each([&](auto entity, ScriptComponent& script) {
             // Execute script
             Lua::RunFile(script.FilePath, script.ModulePath.string());
             Lua::SetExecutionContext(script.ModulePath.string());
@@ -53,9 +53,9 @@ namespace Blackberry {
     }
 
     void Scene::OnStop() {
-        auto view = m_ECS->GetEntitiesWithComponents<Script>();
+        auto view = m_ECS->GetEntitiesWithComponents<ScriptComponent>();
 
-        view.each([&](auto entity, Script& script) {
+        view.each([&](auto entity, ScriptComponent& script) {
             if (script.IsLoaded) {
                 Lua::SetExecutionContext(script.ModulePath.string());
 
@@ -72,11 +72,9 @@ namespace Blackberry {
     }
 
     void Scene::OnRuntimeUpdate() {
-        using namespace Components;
+        auto view = m_ECS->GetEntitiesWithComponents<ScriptComponent>();
 
-        auto view = m_ECS->GetEntitiesWithComponents<Script>();
-
-        view.each([&](auto entity, Script& script) {
+        view.each([&](auto entity, ScriptComponent& script) {
             Entity e(entity, this);
 
             Lua::SetExecutionContext(script.ModulePath.string());
@@ -94,13 +92,10 @@ namespace Blackberry {
     }
 
     void Scene::OnRender() {
-        using namespace Components;
-
         // Render
+        auto view = m_ECS->GetEntitiesWithComponents<TransformComponent>();
 
-        auto view = m_ECS->GetEntitiesWithComponents<Transform>();
-
-        view.each([&](auto entity, Transform& transform) {
+        view.each([&](auto entity, TransformComponent& transform) {
             RenderEntity(entity);
         });
 
@@ -108,12 +103,10 @@ namespace Blackberry {
     }
 
     void Scene::RenderEntity(EntityID entity) {
-        using namespace Components;
+        TransformComponent& transform = m_ECS->GetComponent<TransformComponent>(entity);
 
-        Transform& transform = m_ECS->GetComponent<Transform>(entity);
-
-        if (m_ECS->HasComponent<SpriteRenderer>(entity)) {
-            SpriteRenderer& spriteRenderer = m_ECS->GetComponent<SpriteRenderer>(entity);
+        if (m_ECS->HasComponent<SpriteRendererComponent>(entity)) {
+            SpriteRendererComponent& spriteRenderer = m_ECS->GetComponent<SpriteRendererComponent>(entity);
 
             if (spriteRenderer.TextureHandle > 0 && m_AssetManager->ContainsAsset(spriteRenderer.TextureHandle)) {
                 Asset asset = m_AssetManager->GetAsset(spriteRenderer.TextureHandle);
@@ -130,8 +123,8 @@ namespace Blackberry {
             }
         }
         
-        if (m_ECS->HasComponent<ShapeRenderer>(entity)) {
-            ShapeRenderer& shapeRenderer = m_ECS->GetComponent<ShapeRenderer>(entity);
+        if (m_ECS->HasComponent<ShapeRendererComponent>(entity)) {
+            ShapeRendererComponent& shapeRenderer = m_ECS->GetComponent<ShapeRendererComponent>(entity);
 
             switch (shapeRenderer.Shape) {
                 case ShapeType::Triangle:
@@ -152,7 +145,7 @@ namespace Blackberry {
         CreateEntityWithUUID(id);
         m_NamedEntityMap[name] = id;
 
-        Components::Tag& tag = m_ECS->GetComponent<Components::Tag>(m_EntityMap.at(id));
+        TagComponent& tag = m_ECS->GetComponent<TagComponent>(m_EntityMap.at(id));
         tag.Name = name;
         
         return m_EntityMap.at(id);
@@ -161,7 +154,7 @@ namespace Blackberry {
     EntityID Scene::CreateEntityWithUUID(u64 uuid) {
         m_EntityMap[uuid] = m_ECS->CreateEntity();
 
-        m_ECS->AddComponent<Components::Tag>(m_EntityMap.at(uuid), { "", uuid });
+        m_ECS->AddComponent<TagComponent>(m_EntityMap.at(uuid), { "", uuid });
 
         return m_EntityMap.at(uuid);
     }

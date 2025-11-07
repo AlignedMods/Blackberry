@@ -40,6 +40,26 @@ namespace Blackberry {
             return &(GetCameraMatrix()[0].x); // debatable memory safety but glm does this under the hood (but value_ptr returns a const* which we don't want)
         }
 
+        BlVec2 GetScreenPosToWorld(BlVec2 position) {
+            auto& renderer = BL_APP.GetRenderer();
+            BlVec2 viewport = renderer.GetViewportSize();
+
+            // NDC
+            glm::vec2 ndc;
+            ndc.x =  2.0f * (position.x / viewport.x) - 1.0f;
+            ndc.y =  1.0f - 2.0f * (position.y / viewport.y);
+
+            // NDC -> pixel
+            glm::vec4 clipPos(ndc, 0.0f, 1.0f);
+
+            glm::mat4 invCam = GetCameraMatrix();
+            invCam = glm::inverse(invCam);
+
+            glm::vec4 worldPos = invCam * clipPos;
+
+            return BlVec2(worldPos.x, worldPos.y);
+        }
+
     public:
         BlVec2 Position;
         BlVec2 Offset;

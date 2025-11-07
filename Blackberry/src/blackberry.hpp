@@ -8,7 +8,7 @@
 #include "blackberry/application/renderer.hpp"
 #include "blackberry/application/layer.hpp"
 #include "blackberry/input/keycodes.hpp"
-#include "blackberry/input/mousecodes.hpp"
+#include "blackberry/input/mousebuttons.hpp"
 #include "blackberry/input/input.hpp"
 #include "blackberry/font/font.hpp"
 

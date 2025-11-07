@@ -16,13 +16,11 @@ namespace Blackberry {
 
         // entities
         for (auto& id : m_Scene->GetEntities()) {
-            using namespace Components;
-
             Entity entity(id, m_Scene);
             std::string name = "ID - " + std::to_string(static_cast<u32>(id));
             
-            if (entity.HasComponent<Tag>()) {
-                Tag& tag = entity.GetComponent<Tag>();
+            if (entity.HasComponent<TagComponent>()) {
+                TagComponent& tag = entity.GetComponent<TagComponent>();
 
                 j["Entities"][name]["TagComponent"] = { 
                     {"Name", tag.Name},
@@ -30,8 +28,8 @@ namespace Blackberry {
                 };
             }
 
-            if (entity.HasComponent<Transform>()) {
-                Transform& transform = entity.GetComponent<Transform>();
+            if (entity.HasComponent<TransformComponent>()) {
+                TransformComponent& transform = entity.GetComponent<TransformComponent>();
 
                 j["Entities"][name]["TransformComponent"] = { 
                     {"Position", {transform.Position.x, transform.Position.y, transform.Position.z} },
@@ -39,8 +37,8 @@ namespace Blackberry {
                 };
             }
 
-            if (entity.HasComponent<ShapeRenderer>()) {
-                ShapeRenderer& shapeRenderer = entity.GetComponent<ShapeRenderer>();
+            if (entity.HasComponent<ShapeRendererComponent>()) {
+                ShapeRendererComponent& shapeRenderer = entity.GetComponent<ShapeRendererComponent>();
 
                 j["Entities"][name]["ShapeRendererComponent"] = { 
                     {"Color", {shapeRenderer.Color.r, shapeRenderer.Color.g, shapeRenderer.Color.b, shapeRenderer.Color.a}},
@@ -48,8 +46,8 @@ namespace Blackberry {
                 };
             }
 
-            if (entity.HasComponent<SpriteRenderer>()) {
-                SpriteRenderer& spriteRenderer = entity.GetComponent<SpriteRenderer>();
+            if (entity.HasComponent<SpriteRendererComponent>()) {
+                SpriteRendererComponent& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
 
                 j["Entities"][name]["SpriteRendererComponent"] = { 
                     {"Color", {spriteRenderer.Color.r, spriteRenderer.Color.g, spriteRenderer.Color.b, spriteRenderer.Color.a}},
@@ -59,16 +57,16 @@ namespace Blackberry {
                 };
             }
 
-            if (entity.HasComponent<Script>()) {
-                Script& script = entity.GetComponent<Script>();
+            if (entity.HasComponent<ScriptComponent>()) {
+                ScriptComponent& script = entity.GetComponent<ScriptComponent>();
 
                 j["Entities"][name]["ScriptComponent"] = { 
                     {"ModulePath", script.ModulePath.string()}
                 };
             }
 
-            if (entity.HasComponent<Velocity>()) {
-                Velocity& velocity = entity.GetComponent<Velocity>();
+            if (entity.HasComponent<VelocityComponent>()) {
+                VelocityComponent& velocity = entity.GetComponent<VelocityComponent>();
 
                 j["Entities"][name]["VelocityComponent"] = { 
                     {"Acceleration", {velocity.Acceleration.x, velocity.Acceleration.y}}
@@ -91,8 +89,6 @@ namespace Blackberry {
     }
 
     void SceneSerializer::Deserialize(const std::filesystem::path& path) {
-        using namespace Components;
-
         std::string contents = ReadEntireFile(path);
 
         json j = json::parse(contents);
@@ -124,7 +120,7 @@ namespace Blackberry {
                 auto& jsonTag = jsonEntity.at("TagComponent");
 
                 entity = Entity(m_Scene->CreateEntityWithUUID(jsonTag.at("UUID")), m_Scene);
-                Tag& entityTag = entity.GetComponent<Tag>();
+                TagComponent& entityTag = entity.GetComponent<TagComponent>();
                 entityTag.Name = jsonTag.at("Name");
             }
 
@@ -134,7 +130,7 @@ namespace Blackberry {
                 std::array<f32, 3> position = jsonTransform.at("Position");
                 std::array<f32, 2> dimensions = jsonTransform.at("Dimensions");
                 
-                entity.AddComponent<Transform>({ BlVec3(position[0], position[1], position[2]), 0.0f, BlVec2(dimensions[0], dimensions[1]) });
+                entity.AddComponent<TransformComponent>({ BlVec3(position[0], position[1], position[2]), 0.0f, BlVec2(dimensions[0], dimensions[1]) });
             }
 
             // ShapeRendererComponent
@@ -143,7 +139,7 @@ namespace Blackberry {
                 std::array<u8, 4> color = jsonShapeRenderer.at("Color");
                 u16 shapeType = jsonShapeRenderer.at("ShapeType");
 
-                entity.AddComponent<ShapeRenderer>({ BlColor(color[0], color[1], color[2], color[3]), static_cast<ShapeType>(shapeType) });
+                entity.AddComponent<ShapeRendererComponent>({ BlColor(color[0], color[1], color[2], color[3]), static_cast<ShapeType>(shapeType) });
             }
 
             // SpriteRendererComponent
@@ -154,7 +150,7 @@ namespace Blackberry {
                 u64 textureHandle = jsonSpriteRenderer.at("TextureHandle");
                 std::array<f32, 4> textureArea = jsonSpriteRenderer.at("TextureArea");
 
-                entity.AddComponent<SpriteRenderer>({ BlColor(color[0], color[1], color[2], color[3]), static_cast<ShapeType>(shapeType), 
+                entity.AddComponent<SpriteRendererComponent>({ BlColor(color[0], color[1], color[2], color[3]), static_cast<ShapeType>(shapeType), 
                                                       textureHandle, BlRec(textureArea[0], textureArea[1], textureArea[2], textureArea[3]) });
             }
 
@@ -162,13 +158,13 @@ namespace Blackberry {
                 auto& jsonScript = jsonEntity.at("ScriptComponent");
                 std::filesystem::path modulePath = jsonScript.at("ModulePath");
                 std::filesystem::path filePath = m_AssetDirectory / modulePath;
-                entity.AddComponent<Script>({ modulePath, filePath });
+                entity.AddComponent<ScriptComponent>({ modulePath, filePath });
             }
 
             if (jsonEntity.contains("VelocityComponent")) {
                 auto& jsonVelocity = jsonEntity.at("VelocityComponent");
                 std::array<f32, 2> acceleration = jsonVelocity.at("Acceleration");
-                entity.AddComponent<Velocity>({ BlVec2(acceleration[0], acceleration[1]) });
+                entity.AddComponent<VelocityComponent>({ BlVec2(acceleration[0], acceleration[1]) });
             }
         }
     }

@@ -4,7 +4,7 @@
 #include "blackberry/event/window_events.hpp"
 #include "blackberry/event/mouse_events.hpp"
 #include "blackberry/input/keycodes.hpp"
-#include "blackberry/input/mousecodes.hpp"
+#include "blackberry/input/mousebuttons.hpp"
 #include "blackberry/ecs/ecs.hpp"
 #include "platform/glfw/glfw_window.hpp"
 #include "platform/opengl/opengl3_renderer.hpp"

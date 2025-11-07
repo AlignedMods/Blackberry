@@ -1,7 +1,7 @@
 #pragma once
 
 #include "blackberry/event/event.hpp"
-#include "blackberry/input/mousecodes.hpp"
+#include "blackberry/input/mousebuttons.hpp"
 
 #include <sstream>
 
@@ -9,30 +9,30 @@ namespace Blackberry {
 
     class MouseButtonPressedEvent : public Event {
     public:
-        MouseButtonPressedEvent(const MouseCode button)
+        MouseButtonPressedEvent(const MouseButton button)
             : m_Button(button) {}
 
-        MouseCode GetButton() const { return m_Button; }
+        MouseButton GetButton() const { return m_Button; }
 
         EVENT_CLASS_CATEGORY(EventCategory_Input | EventCategory_Mouse);
         EVENT_CLASS_TYPE(MouseButtonPressed);
 
     private:
-        MouseCode m_Button;
+        MouseButton m_Button;
     };
 
     class MouseButtonReleasedEvent : public Event {
     public:
-        MouseButtonReleasedEvent(const MouseCode button)
+        MouseButtonReleasedEvent(const MouseButton button)
             : m_Button(button) {}
 
-        MouseCode GetButton() const { return m_Button; }
+        MouseButton GetButton() const { return m_Button; }
 
         EVENT_CLASS_CATEGORY(EventCategory_Input | EventCategory_Mouse);
         EVENT_CLASS_TYPE(MouseButtonReleased);
 
     private:
-        MouseCode m_Button;
+        MouseButton m_Button;
     };
 
     class MouseMovedEvent : public Event {

@@ -228,6 +228,9 @@ namespace BlackberryEditor {
     
         m_CurrentDirectory = m_CurrentProject.AssetDirectory;
         m_BaseDirectory = m_CurrentProject.AssetDirectory;
+
+        m_EditorCamera.Offset = BlVec2(m_RenderTexture.Texture.Width / 2.0f, m_RenderTexture.Texture.Height / 2.0f);
+        m_EditorCamera.Position = BlVec2(m_RenderTexture.Texture.Width / 2.0f, m_RenderTexture.Texture.Height / 2.0f);
     }
 
     void EditorLayer::OnDetach() {
@@ -242,25 +245,27 @@ namespace BlackberryEditor {
     }
     
     void EditorLayer::OnUpdate(f32 ts) {
-        m_EditorCamera.Offset = BlVec2(m_RenderTexture.Texture.Width / 2.0f, m_RenderTexture.Texture.Height / 2.0f);
-        m_EditorCamera.Position = BlVec2(m_RenderTexture.Texture.Width / 2.0f, m_RenderTexture.Texture.Height / 2.0f);
-
         if (m_EditorState == EditorState::Play) {
             m_CurrentScene->OnRuntimeUpdate();
         } else {
             m_CurrentScene->OnUpdate();
 
             if (Input::IsKeyDown(KeyCode::Ctrl) && Input::GetScrollLevel() != 0.0f) {
-                f32 scale = 0.1f * Input::GetScrollLevel();
+                BlVec2 screenPos = Input::GetMousePosition();
+                BlVec2 worldPos = m_EditorCamera.GetScreenPosToWorld(screenPos);
 
+                m_EditorCamera.Offset = screenPos;
+                m_EditorCamera.Position = worldPos;
+
+                BL_INFO("World pos: {}, {}", worldPos.x, worldPos.y);
+
+                f32 scale = 0.1f * Input::GetScrollLevel();
                 m_EditorCamera.Scale = std::clamp(std::exp(std::log(m_EditorCamera.Scale)+scale), 0.125f, 64.0f);
             }
         }
     }
     
     void EditorLayer::OnRender() {
-        using namespace Components;
-
         Renderer2D::AttachRenderTexture(m_RenderTexture);
         Renderer2D::Clear(BlColor(0x69, 0x69, 0x69, 0xff));
         Renderer2D::SetProjection(m_EditorCamera);
@@ -272,8 +277,6 @@ namespace BlackberryEditor {
     }
 
     void EditorLayer::OnUIRender() {
-        using namespace Components;
-    
         // set up dockspace
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
     
@@ -339,8 +342,6 @@ namespace BlackberryEditor {
     void BlackberryEditor::EditorLayer::OnOverlayRender() {
         if (!m_IsEntitySelected) { return; }
 
-        using namespace Components;
-
         Entity entity = Entity(m_SelectedEntity, m_CurrentScene);
 
         // mask
@@ -348,8 +349,8 @@ namespace BlackberryEditor {
         Renderer2D::Clear(BlColor(0, 0, 0, 255));
         Renderer2D::SetProjection(m_EditorCamera);
 
-        if (entity.HasComponent<Transform>()) {
-            Transform& transform = entity.GetComponent<Transform>();
+        if (entity.HasComponent<TransformComponent>()) {
+            TransformComponent& transform = entity.GetComponent<TransformComponent>();
 
             auto drawWhiteEntity = [&]<typename T>() -> bool {
                 if (!entity.HasComponent<T>()) { return false; }
@@ -370,7 +371,7 @@ namespace BlackberryEditor {
             };
 
             // wierd syntax honestly
-            if (!drawWhiteEntity.template operator()<SpriteRenderer>() && !drawWhiteEntity.template operator()<ShapeRenderer>()) {};
+            if (!drawWhiteEntity.template operator()<SpriteRendererComponent>() && !drawWhiteEntity.template operator()<ShapeRendererComponent>()) {};
 
             // Renderer2D::DrawRectangle(transform.Position, transform.Dimensions, transform.Rotation, Colors::White);
         }
@@ -650,18 +651,16 @@ namespace BlackberryEditor {
             ImGui::Separator();
 
             if (ImGui::BeginMenu("Add")) {
-                using namespace Components;
-
                 if (ImGui::MenuItem("Rectangle")) {
                     Entity entity(m_CurrentScene->CreateEntity("Rectangle"), m_CurrentScene);
-                    entity.AddComponent<ShapeRenderer>();
-                    entity.AddComponent<Transform>({BlVec3(m_RenderTexture.Texture.Width / 2.0f - 100.0f, m_RenderTexture.Texture.Height / 2.0f - 50.0f, 0.0f), 0.0f, BlVec2(200.0f, 100.0f)});
+                    entity.AddComponent<ShapeRendererComponent>();
+                    entity.AddComponent<TransformComponent>({BlVec3(m_RenderTexture.Texture.Width / 2.0f - 100.0f, m_RenderTexture.Texture.Height / 2.0f - 50.0f, 0.0f), 0.0f, BlVec2(200.0f, 100.0f)});
                 };
 
                 if (ImGui::MenuItem("Triangle")) {
                     Entity entity(m_CurrentScene->CreateEntity("Triangle"), m_CurrentScene);
-                    entity.AddComponent<ShapeRenderer>({.Shape = ShapeType::Triangle});
-                    entity.AddComponent<Transform>({BlVec3(m_RenderTexture.Texture.Width / 2.0f - 100.0f, m_RenderTexture.Texture.Height / 2.0f - 50.0f, 0.0f), 0.0f, BlVec2(200.0f, 100.0f)});
+                    entity.AddComponent<ShapeRendererComponent>({.Shape = ShapeType::Triangle});
+                    entity.AddComponent<TransformComponent>({BlVec3(m_RenderTexture.Texture.Width / 2.0f - 100.0f, m_RenderTexture.Texture.Height / 2.0f - 50.0f, 0.0f), 0.0f, BlVec2(200.0f, 100.0f)});
                 };
                 
                 ImGui::EndMenu();
@@ -682,11 +681,11 @@ namespace BlackberryEditor {
                 ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.26f, 0.59f, 0.98f, 0.7f));
                 ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.26f, 0.59f, 0.98f, 1.0f));
                 
-                ImGui::Button(entity.GetComponent<Components::Tag>().Name.c_str(), ImVec2(ImGui::GetContentRegionAvail().x - 32.0f, 0));
+                ImGui::Button(entity.GetComponent<TagComponent>().Name.c_str(), ImVec2(ImGui::GetContentRegionAvail().x - 32.0f, 0));
                 
                 ImGui::PopStyleColor(3);
-            } else if (entity.HasComponent<Components::Tag>()) {
-                if (ImGui::Button(entity.GetComponent<Components::Tag>().Name.c_str(), ImVec2(ImGui::GetContentRegionAvail().x - 32.0f, 0))) {
+            } else if (entity.HasComponent<TagComponent>()) {
+                if (ImGui::Button(entity.GetComponent<TagComponent>().Name.c_str(), ImVec2(ImGui::GetContentRegionAvail().x - 32.0f, 0))) {
                     m_IsEntitySelected = true;
                     m_SelectedEntity = id;
                 }
@@ -694,7 +693,7 @@ namespace BlackberryEditor {
 
             if (ImGui::BeginPopupContextItem("EntityPopup")) {
                 if (ImGui::MenuItem("Delete Entity")) {
-                    m_CurrentScene->DestroyEntity(entity.GetComponent<Components::Tag>().UUID);
+                    m_CurrentScene->DestroyEntity(entity.GetComponent<TagComponent>().UUID);
 
                     if (m_SelectedEntity == id) {
                         m_IsEntitySelected = false;
@@ -720,8 +719,6 @@ namespace BlackberryEditor {
     }
     
     void EditorLayer::UI_Properties() {
-        using namespace Components;
-    
         ImGui::Begin("Properties");
     
         if (m_IsEntitySelected) {
@@ -729,12 +726,12 @@ namespace BlackberryEditor {
 
             if (ImGui::BeginPopupContextWindow("PropertiesContextMenu")) {
                 if (ImGui::BeginMenu("Add Component")) {
-                    AddComponentListOption<Transform>("Transform", entity);
-                    AddComponentListOption<Text>("Text", entity, {&m_EditorFont});
-                    AddComponentListOption<ShapeRenderer>("Shape Renderer", entity);
-                    AddComponentListOption<SpriteRenderer>("Sprite Renderer", entity);
-                    AddComponentListOption<Script>("Script", entity);
-                    AddComponentListOption<Velocity>("Velocity", entity);
+                    AddComponentListOption<TransformComponent>("Transform", entity);
+                    AddComponentListOption<TextComponent>("Text", entity, {&m_EditorFont});
+                    AddComponentListOption<ShapeRendererComponent>("Shape Renderer", entity);
+                    AddComponentListOption<SpriteRendererComponent>("Sprite Renderer", entity);
+                    AddComponentListOption<ScriptComponent>("Script", entity);
+                    AddComponentListOption<VelocityComponent>("Velocity", entity);
                     
                     ImGui::EndMenu();
                 }
@@ -742,7 +739,7 @@ namespace BlackberryEditor {
                 ImGui::EndPopup();
             }
     
-            Tag& tag = entity.GetComponent<Tag>();
+            TagComponent& tag = entity.GetComponent<TagComponent>();
 
             ImGui::Text("Name: "); ImGui::SameLine();
             ImGui::InputText("##EntityName", &tag.Name);
@@ -750,7 +747,7 @@ namespace BlackberryEditor {
 
             ImGui::SeparatorText("Components: ");
 
-            DrawComponent<Text>("Text", entity, [](Text& text) {
+            DrawComponent<TextComponent>("Text", entity, [](TextComponent& text) {
                 int size = text.FontSize;
     
                 ImGui::InputText("Cotents: ", &text.Contents); 
@@ -758,14 +755,14 @@ namespace BlackberryEditor {
     
                 text.FontSize = size;
             });
-            DrawComponent<Transform>("Transform", entity, [](Transform& transform) {
+            DrawComponent<TransformComponent>("Transform", entity, [](TransformComponent& transform) {
                 DrawVec3Control("Position: ", &transform.Position);
 
                 ImGui::DragFloat("Rotation: ", &transform.Rotation);
 
                 DrawVec2Control("Dimensions: ", &transform.Dimensions);
             });
-            DrawComponent<ShapeRenderer>("Shape Renderer", entity, [](ShapeRenderer& shapeRenderer) {
+            DrawComponent<ShapeRendererComponent>("Shape Renderer", entity, [](ShapeRendererComponent& shapeRenderer) {
                 DrawColorControl("Color: ", &shapeRenderer.Color);
 
                 ImGuiIO& io = ImGui::GetIO();
@@ -786,7 +783,7 @@ namespace BlackberryEditor {
                     ImGui::PopFont();
                 }
             });
-            DrawComponent<SpriteRenderer>("Sprite Renderer", entity, [this](SpriteRenderer& spriteRenderer) {
+            DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [this](SpriteRendererComponent& spriteRenderer) {
                 DrawColorControl("Color: ", &spriteRenderer.Color);
 
                 ImGuiIO& io = ImGui::GetIO();
@@ -841,7 +838,7 @@ namespace BlackberryEditor {
 
                 DrawRecControl("Area", &spriteRenderer.Area);
             });
-            DrawComponent<Script>("Script", entity, [this](Script& script) {
+            DrawComponent<ScriptComponent>("Script", entity, [this](ScriptComponent& script) {
                 auto stringPath = script.ModulePath.string();
 
                 ImGui::Text("Module Path: "); ImGui::SameLine();
@@ -850,7 +847,7 @@ namespace BlackberryEditor {
                 script.ModulePath = std::filesystem::path(stringPath);
                 script.FilePath = m_BaseDirectory / script.ModulePath;
             });
-            DrawComponent<Velocity>("Velocity", entity, [](Velocity& velocity) {
+            DrawComponent<VelocityComponent>("Velocity", entity, [](VelocityComponent& velocity) {
                 DrawVec2Control("Acceleration: ", &velocity.Acceleration);
             });
         }

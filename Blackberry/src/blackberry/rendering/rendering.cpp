@@ -126,7 +126,7 @@ namespace Blackberry {
         }
     );
 
-    struct Renderer2DState {
+    struct _Renderer2DState {
         // shader
         BlShader ShapeShader;
         BlShader CircleShader;
@@ -157,7 +157,7 @@ namespace Blackberry {
         BlRenderer2DInfo Info;
     };
 
-    static Renderer2DState State;
+    static _Renderer2DState Renderer2DState;
 
     static void CalculateRotation(BlVec3& vertexPos, BlVec3 pos, f32 rotation) {
         f32 sinR = glm::sin(glm::radians(rotation));
@@ -199,16 +199,16 @@ namespace Blackberry {
     }
 
     void Renderer2D::Init() {
-        State.ShapeShader.Create(s_VertexShaderShapeSource, s_FragmentShaderShapeSource);
-        State.CircleShader.Create(s_VertexShaderCircleSource, s_FragmentShaderCircleSource);
-        State.WhiteTexture.Create(s_WhiteTextureData, 1, 1, ImageFormat::RGBA8);
+        Renderer2DState.ShapeShader.Create(s_VertexShaderShapeSource, s_FragmentShaderShapeSource);
+        Renderer2DState.CircleShader.Create(s_VertexShaderCircleSource, s_FragmentShaderCircleSource);
+        Renderer2DState.WhiteTexture.Create(s_WhiteTextureData, 1, 1, ImageFormat::RGBA8);
 
-        State.CurrentAttachedTextures[0] = State.WhiteTexture; // 0 is reserved for white
+        Renderer2DState.CurrentAttachedTextures[0] = Renderer2DState.WhiteTexture; // 0 is reserved for white
     }
 
     void Renderer2D::Shutdown() {
-        State.ShapeShader.Delete();
-        State.CircleShader.Delete();
+        Renderer2DState.ShapeShader.Delete();
+        Renderer2DState.CircleShader.Delete();
     }
 
     void Renderer2D::Clear(BlColor color) {
@@ -218,10 +218,10 @@ namespace Blackberry {
     }
 
     void Renderer2D::NewFrame() {
-        State.Info.DrawCalls = 0;
-        State.Info.Vertices = 0;
-        State.Info.Indicies = 0;
-        State.Info.ActiveTextures = 0;
+        Renderer2DState.Info.DrawCalls = 0;
+        Renderer2DState.Info.Vertices = 0;
+        Renderer2DState.Info.Indicies = 0;
+        Renderer2DState.Info.ActiveTextures = 0;
     }
 
     void Renderer2D::DrawRectangle(BlVec3 pos, BlVec2 dimensions, BlColor color) {
@@ -229,11 +229,11 @@ namespace Blackberry {
     }
 
     void Renderer2D::DrawRectangle(BlVec3 pos, BlVec2 dimensions, f32 rotation, BlColor color) {
-        DrawTexturedQuad(pos, dimensions, BlRec(0, 0, 1, 1), State.WhiteTexture, rotation, color);
+        DrawTexturedQuad(pos, dimensions, BlRec(0, 0, 1, 1), Renderer2DState.WhiteTexture, rotation, color);
     }
 
     void Renderer2D::DrawTriangle(BlVec3 pos, BlVec2 dimensions, f32 rotation, BlColor color) {
-        DrawTexturedTriangle(pos, dimensions, BlRec(0, 0, 1, 1), State.WhiteTexture, rotation, color);
+        DrawTexturedTriangle(pos, dimensions, BlRec(0, 0, 1, 1), Renderer2DState.WhiteTexture, rotation, color);
     }
 
     void Renderer2D::DrawCircle(BlVec3 pos, f32 radius, BlColor color) {
@@ -260,23 +260,23 @@ namespace Blackberry {
         BlCircleVertex vertexBR = BlCircleVertex(br, normalizedColor, BlVec2(1, 1));
         BlCircleVertex vertexTL = BlCircleVertex(tl, normalizedColor, BlVec2(0, 0));
 
-        State.CircleVertices.push_back(vertexBL);
-        State.CircleVertices.push_back(vertexTR);
-        State.CircleVertices.push_back(vertexBR);
-        State.CircleVertices.push_back(vertexTL);
+        Renderer2DState.CircleVertices.push_back(vertexBL);
+        Renderer2DState.CircleVertices.push_back(vertexTR);
+        Renderer2DState.CircleVertices.push_back(vertexBR);
+        Renderer2DState.CircleVertices.push_back(vertexTL);
 
         // first triangle (bl, tr, br)
-        State.CircleIndices.push_back(State.CircleVertexCount + 0);
-        State.CircleIndices.push_back(State.CircleVertexCount + 1);
-        State.CircleIndices.push_back(State.CircleVertexCount + 2);
+        Renderer2DState.CircleIndices.push_back(Renderer2DState.CircleVertexCount + 0);
+        Renderer2DState.CircleIndices.push_back(Renderer2DState.CircleVertexCount + 1);
+        Renderer2DState.CircleIndices.push_back(Renderer2DState.CircleVertexCount + 2);
 
         // second triangle (bl, tl, tr)
-        State.CircleIndices.push_back(State.CircleVertexCount + 0);
-        State.CircleIndices.push_back(State.CircleVertexCount + 3);
-        State.CircleIndices.push_back(State.CircleVertexCount + 1);
+        Renderer2DState.CircleIndices.push_back(Renderer2DState.CircleVertexCount + 0);
+        Renderer2DState.CircleIndices.push_back(Renderer2DState.CircleVertexCount + 3);
+        Renderer2DState.CircleIndices.push_back(Renderer2DState.CircleVertexCount + 1);
 
-        State.CircleVertexCount += 4;
-        State.CircleIndexCount += 6;
+        Renderer2DState.CircleVertexCount += 4;
+        Renderer2DState.CircleIndexCount += 6;
     }
 
     void Renderer2D::DrawTexture(BlVec3 pos, BlTexture texture, f32 rotation, BlColor color) {
@@ -294,14 +294,14 @@ namespace Blackberry {
     void Renderer2D::DrawTexturedQuad(BlVec3 pos, BlVec2 dimensions, BlRec area, BlTexture texture, f32 rotation, BlColor color) {
         f32 texIndex = 0.0f;
 
-        if (State.CurrentTexIndex >= 16) {
+        if (Renderer2DState.CurrentTexIndex >= 16) {
             Render();
         }
 
         bool texAlreadyExists = false;
 
-        for (u32 i = 0; i < State.CurrentTexIndex; i++) {
-            if (texture.ID == State.CurrentAttachedTextures[i].ID) {
+        for (u32 i = 0; i < Renderer2DState.CurrentTexIndex; i++) {
+            if (texture.ID == Renderer2DState.CurrentAttachedTextures[i].ID) {
                 texIndex = static_cast<f32>(i);
                 texAlreadyExists = true;
 
@@ -310,10 +310,10 @@ namespace Blackberry {
         }
 
         if (!texAlreadyExists) {
-            texIndex = static_cast<f32>(State.CurrentTexIndex);
+            texIndex = static_cast<f32>(Renderer2DState.CurrentTexIndex);
 
-            State.CurrentAttachedTextures[State.CurrentTexIndex] = texture;
-            State.CurrentTexIndex++;
+            Renderer2DState.CurrentAttachedTextures[Renderer2DState.CurrentTexIndex] = texture;
+            Renderer2DState.CurrentTexIndex++;
             texAlreadyExists = true;
         }
         
@@ -329,36 +329,36 @@ namespace Blackberry {
         BlShapeVertex vertexTL = BlShapeVertex(tl, normalizedColor, BlVec2(0.0f, 0.0f), texIndex);
 
         // push all vertices (bl, tr, br, tl)
-        State.ShapeVertices.push_back(vertexBL);
-        State.ShapeVertices.push_back(vertexTR);
-        State.ShapeVertices.push_back(vertexBR);
-        State.ShapeVertices.push_back(vertexTL);
+        Renderer2DState.ShapeVertices.push_back(vertexBL);
+        Renderer2DState.ShapeVertices.push_back(vertexTR);
+        Renderer2DState.ShapeVertices.push_back(vertexBR);
+        Renderer2DState.ShapeVertices.push_back(vertexTL);
 
         // first triangle (bl, tr, br)
-        State.ShapeIndices.push_back(State.ShapeVertexCount + 0);
-        State.ShapeIndices.push_back(State.ShapeVertexCount + 1);
-        State.ShapeIndices.push_back(State.ShapeVertexCount + 2);
+        Renderer2DState.ShapeIndices.push_back(Renderer2DState.ShapeVertexCount + 0);
+        Renderer2DState.ShapeIndices.push_back(Renderer2DState.ShapeVertexCount + 1);
+        Renderer2DState.ShapeIndices.push_back(Renderer2DState.ShapeVertexCount + 2);
 
         // second triangle (bl, tl, tr)
-        State.ShapeIndices.push_back(State.ShapeVertexCount + 0);
-        State.ShapeIndices.push_back(State.ShapeVertexCount + 3);
-        State.ShapeIndices.push_back(State.ShapeVertexCount + 1);
+        Renderer2DState.ShapeIndices.push_back(Renderer2DState.ShapeVertexCount + 0);
+        Renderer2DState.ShapeIndices.push_back(Renderer2DState.ShapeVertexCount + 3);
+        Renderer2DState.ShapeIndices.push_back(Renderer2DState.ShapeVertexCount + 1);
 
-        State.ShapeIndexCount += 6;
-        State.ShapeVertexCount += 4;
+        Renderer2DState.ShapeIndexCount += 6;
+        Renderer2DState.ShapeVertexCount += 4;
     }
 
     void Renderer2D::DrawTexturedTriangle(BlVec3 pos, BlVec2 dimensions, BlRec area, BlTexture texture, f32 rotation, BlColor color) {
         f32 texIndex = 0.0f;
 
-        if (State.CurrentTexIndex >= 16) {
+        if (Renderer2DState.CurrentTexIndex >= 16) {
             Render();
         }
 
         bool texAlreadyExists = false;
 
-        for (u32 i = 0; i < State.CurrentTexIndex; i++) {
-            if (texture.ID == State.CurrentAttachedTextures[i].ID) {
+        for (u32 i = 0; i < Renderer2DState.CurrentTexIndex; i++) {
+            if (texture.ID == Renderer2DState.CurrentAttachedTextures[i].ID) {
                 texIndex = static_cast<f32>(i);
                 texAlreadyExists = true;
 
@@ -367,10 +367,10 @@ namespace Blackberry {
         }
 
         if (!texAlreadyExists) {
-            texIndex = static_cast<f32>(State.CurrentTexIndex);
+            texIndex = static_cast<f32>(Renderer2DState.CurrentTexIndex);
 
-            State.CurrentAttachedTextures[State.CurrentTexIndex] = texture;
-            State.CurrentTexIndex++;
+            Renderer2DState.CurrentAttachedTextures[Renderer2DState.CurrentTexIndex] = texture;
+            Renderer2DState.CurrentTexIndex++;
             texAlreadyExists = true;
         }
 
@@ -392,16 +392,16 @@ namespace Blackberry {
         BlShapeVertex vertexBR = BlShapeVertex(br, normalizedColor, BlVec2(1.0f, 1.0f), texIndex);
 
         // push all the vertices
-        State.ShapeVertices.push_back(vertexBL);
-        State.ShapeVertices.push_back(vertexT);
-        State.ShapeVertices.push_back(vertexBR);
+        Renderer2DState.ShapeVertices.push_back(vertexBL);
+        Renderer2DState.ShapeVertices.push_back(vertexT);
+        Renderer2DState.ShapeVertices.push_back(vertexBR);
 
-        State.ShapeIndices.push_back(State.ShapeVertexCount + 0);
-        State.ShapeIndices.push_back(State.ShapeVertexCount + 1);
-        State.ShapeIndices.push_back(State.ShapeVertexCount + 2);
+        Renderer2DState.ShapeIndices.push_back(Renderer2DState.ShapeVertexCount + 0);
+        Renderer2DState.ShapeIndices.push_back(Renderer2DState.ShapeVertexCount + 1);
+        Renderer2DState.ShapeIndices.push_back(Renderer2DState.ShapeVertexCount + 2);
 
-        State.ShapeVertexCount += 3;
-        State.ShapeIndexCount += 3;
+        Renderer2DState.ShapeVertexCount += 3;
+        Renderer2DState.ShapeIndexCount += 3;
     }
 
     void Renderer2D::DrawRenderTexture(BlVec3 pos, BlVec2 dimensions, BlRenderTexture texture) {
@@ -421,21 +421,21 @@ namespace Blackberry {
     }
 
     void Renderer2D::SetProjection(SceneCamera camera) {
-        State.Camera = camera;
+        Renderer2DState.Camera = camera;
     }
 
     void Renderer2D::ResetProjection() {
-        State.Camera = State.DefaultCamera;
+        Renderer2DState.Camera = Renderer2DState.DefaultCamera;
     }
 
     void Renderer2D::Render() {
-        State.Info.Vertices = State.ShapeVertexCount;
-        State.Info.Indicies = State.ShapeIndexCount;
+        Renderer2DState.Info.Vertices = Renderer2DState.ShapeVertexCount;
+        Renderer2DState.Info.Indicies = Renderer2DState.ShapeIndexCount;
 
         auto& renderer = BL_APP.GetRenderer();
 
         // shape buffer
-        if (State.ShapeIndexCount > 0) {
+        if (Renderer2DState.ShapeIndexCount > 0) {
             BlDrawBufferLayout vertPosLayout;
             vertPosLayout.Index = 0;
             vertPosLayout.Count = 3;
@@ -464,57 +464,57 @@ namespace Blackberry {
             vertTexIndexLayout.Stride = sizeof(BlShapeVertex);
             vertTexIndexLayout.Offset = offsetof(BlShapeVertex, TexIndex);
 
-            State.ShapeDrawBuffer.Vertices = State.ShapeVertices.data();
-            State.ShapeDrawBuffer.VertexCount = State.ShapeVertexCount;
-            State.ShapeDrawBuffer.VertexSize = sizeof(BlShapeVertex);
+            Renderer2DState.ShapeDrawBuffer.Vertices = Renderer2DState.ShapeVertices.data();
+            Renderer2DState.ShapeDrawBuffer.VertexCount = Renderer2DState.ShapeVertexCount;
+            Renderer2DState.ShapeDrawBuffer.VertexSize = sizeof(BlShapeVertex);
 
-            State.ShapeDrawBuffer.Indices = State.ShapeIndices.data();
-            State.ShapeDrawBuffer.IndexCount = State.ShapeIndexCount;
-            State.ShapeDrawBuffer.IndexSize = sizeof(u32);
+            Renderer2DState.ShapeDrawBuffer.Indices = Renderer2DState.ShapeIndices.data();
+            Renderer2DState.ShapeDrawBuffer.IndexCount = Renderer2DState.ShapeIndexCount;
+            Renderer2DState.ShapeDrawBuffer.IndexSize = sizeof(u32);
 
-            renderer.SubmitDrawBuffer(State.ShapeDrawBuffer);
+            renderer.SubmitDrawBuffer(Renderer2DState.ShapeDrawBuffer);
             
             renderer.SetBufferLayout(vertPosLayout);
             renderer.SetBufferLayout(vertColorLayout);
             renderer.SetBufferLayout(vertTexCoordLayout);
             renderer.SetBufferLayout(vertTexIndexLayout);
             
-            renderer.BindShader(State.ShapeShader);
-            for (u32 i = 0; i < State.CurrentTexIndex; i++) {
-                renderer.AttachTexture(State.CurrentAttachedTextures[i], i);
+            renderer.BindShader(Renderer2DState.ShapeShader);
+            for (u32 i = 0; i < Renderer2DState.CurrentTexIndex; i++) {
+                renderer.AttachTexture(Renderer2DState.CurrentAttachedTextures[i], i);
             }
 
             int samplers[16]; // opengl texture IDs
-            for (u32 i = 0; i < State.CurrentAttachedTextures.size(); i++) {
+            for (u32 i = 0; i < Renderer2DState.CurrentAttachedTextures.size(); i++) {
                 samplers[i] = i;
             }
 
-            BlShader shader = State.ShapeShader;
+            BlShader shader = Renderer2DState.ShapeShader;
             shader.SetIntArray("u_Textures", 16, samplers);
-            shader.SetMatrix("u_Projection", State.Camera.GetCameraMatrixFloat());
+            shader.SetMatrix("u_Projection", Renderer2DState.Camera.GetCameraMatrixFloat());
 
-            renderer.DrawIndexed(State.ShapeIndexCount);
+            renderer.DrawIndexed(Renderer2DState.ShapeIndexCount);
 
             renderer.DetachTexture();
 
-            State.Info.DrawCalls++;
-            State.Info.ActiveTextures = State.CurrentTexIndex;
-            State.Info.ReservedTextures = 1;
+            Renderer2DState.Info.DrawCalls++;
+            Renderer2DState.Info.ActiveTextures = Renderer2DState.CurrentTexIndex;
+            Renderer2DState.Info.ReservedTextures = 1;
 
             // clear buffer after rendering
-            State.ShapeIndices.clear();
-            State.ShapeVertices.clear();
+            Renderer2DState.ShapeIndices.clear();
+            Renderer2DState.ShapeVertices.clear();
 
             // reserve memory again
-            State.ShapeIndices.reserve(2048);
-            State.ShapeVertices.reserve(2048);
-            State.ShapeIndexCount = 0;
-            State.ShapeVertexCount = 0;
-            State.CurrentTexIndex = 1; // 0 is reserved and never changes
+            Renderer2DState.ShapeIndices.reserve(2048);
+            Renderer2DState.ShapeVertices.reserve(2048);
+            Renderer2DState.ShapeIndexCount = 0;
+            Renderer2DState.ShapeVertexCount = 0;
+            Renderer2DState.CurrentTexIndex = 1; // 0 is reserved and never changes
         }
 
         // circle buffer
-        if (State.CircleIndexCount > 0) {
+        if (Renderer2DState.CircleIndexCount > 0) {
             BlDrawBufferLayout vertPosLayout;
             vertPosLayout.Index = 0;
             vertPosLayout.Count = 3;
@@ -536,42 +536,42 @@ namespace Blackberry {
             vertTexCoordLayout.Stride = sizeof(BlCircleVertex);
             vertTexCoordLayout.Offset = offsetof(BlCircleVertex, TexCoord);
 
-            State.CircleDrawBuffer.Vertices = State.CircleVertices.data();
-            State.CircleDrawBuffer.VertexCount = State.CircleVertexCount;
-            State.CircleDrawBuffer.VertexSize = sizeof(BlCircleVertex);
+            Renderer2DState.CircleDrawBuffer.Vertices = Renderer2DState.CircleVertices.data();
+            Renderer2DState.CircleDrawBuffer.VertexCount = Renderer2DState.CircleVertexCount;
+            Renderer2DState.CircleDrawBuffer.VertexSize = sizeof(BlCircleVertex);
 
-            State.CircleDrawBuffer.Indices = State.CircleIndices.data();
-            State.CircleDrawBuffer.IndexCount = State.CircleIndexCount;
-            State.CircleDrawBuffer.IndexSize = sizeof(u32);
+            Renderer2DState.CircleDrawBuffer.Indices = Renderer2DState.CircleIndices.data();
+            Renderer2DState.CircleDrawBuffer.IndexCount = Renderer2DState.CircleIndexCount;
+            Renderer2DState.CircleDrawBuffer.IndexSize = sizeof(u32);
 
-            renderer.SubmitDrawBuffer(State.CircleDrawBuffer);
+            renderer.SubmitDrawBuffer(Renderer2DState.CircleDrawBuffer);
 
             renderer.SetBufferLayout(vertPosLayout);
             renderer.SetBufferLayout(vertColorLayout);
             renderer.SetBufferLayout(vertTexCoordLayout);
 
-            renderer.BindShader(State.CircleShader);
+            renderer.BindShader(Renderer2DState.CircleShader);
 
-            State.CircleShader.SetMatrix("u_Projection", State.Camera.GetCameraMatrixFloat());
+            Renderer2DState.CircleShader.SetMatrix("u_Projection", Renderer2DState.Camera.GetCameraMatrixFloat());
 
-            renderer.DrawIndexed(State.CircleIndexCount);
+            renderer.DrawIndexed(Renderer2DState.CircleIndexCount);
 
-            State.Info.DrawCalls++;
+            Renderer2DState.Info.DrawCalls++;
 
             // clear buffer after rendering
-            State.CircleIndices.clear();
-            State.CircleVertices.clear();
+            Renderer2DState.CircleIndices.clear();
+            Renderer2DState.CircleVertices.clear();
 
             // reserve memory again
-            State.CircleIndices.reserve(1024);
-            State.CircleVertices.reserve(1024);
-            State.CircleIndexCount = 0;
-            State.CircleVertexCount = 0;
+            Renderer2DState.CircleIndices.reserve(1024);
+            Renderer2DState.CircleVertices.reserve(1024);
+            Renderer2DState.CircleIndexCount = 0;
+            Renderer2DState.CircleVertexCount = 0;
         }
     }
 
     BlRenderer2DInfo Renderer2D::GetRenderingInfo() {
-        return State.Info;
+        return Renderer2DState.Info;
     }
 
 } // namespace Blackberry

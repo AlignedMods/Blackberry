@@ -1,6 +1,7 @@
 #pragma once
 
 #include "blackberry/input/keycodes.hpp"
+#include "blackberry/input/mousebuttons.hpp"
 
 namespace Blackberry {
 
@@ -9,9 +10,16 @@ namespace Blackberry {
         static bool IsKeyDown(KeyCode key);
         static bool IsKeyPressed(KeyCode key);
 
+        static bool IsMouseDown(MouseButton key);
+        static bool IsMousePressed(MouseButton key);
+
+        static BlVec2 GetMousePosition();
         static f32 GetScrollLevel();
 
         static void SetKeyState(KeyCode key, bool state);
+        static void SetMouseState(MouseButton key, bool state);
+
+        static void SetMousePosition(BlVec2 position);
         static void SetScrollLevel(f32 level);
         static void ResetKeyState();
 

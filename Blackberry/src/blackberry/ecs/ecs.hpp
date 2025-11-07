@@ -7,8 +7,6 @@
 
 namespace Blackberry {
 
-    using namespace Components;
-
     using EntityID = entt::entity;
 
     template <typename T>
@@ -34,13 +32,13 @@ namespace Blackberry {
 
             const auto newEntity = dest->create(target);
 
-            CopyComponent<Tag>(src, dest, target, newEntity);
-            CopyComponent<Transform>(src, dest, target, newEntity);
-            CopyComponent<ShapeRenderer>(src, dest, target, newEntity);
-            CopyComponent<SpriteRenderer>(src, dest, target, newEntity);
-            CopyComponent<Text>(src, dest, target, newEntity);
-            CopyComponent<Script>(src, dest, target, newEntity);
-            CopyComponent<Velocity>(src, dest, target, newEntity);
+            CopyComponent<TagComponent>(src, dest, target, newEntity);
+            CopyComponent<TransformComponent>(src, dest, target, newEntity);
+            CopyComponent<ShapeRendererComponent>(src, dest, target, newEntity);
+            CopyComponent<SpriteRendererComponent>(src, dest, target, newEntity);
+            CopyComponent<TextComponent>(src, dest, target, newEntity);
+            CopyComponent<ScriptComponent>(src, dest, target, newEntity);
+            CopyComponent<VelocityComponent>(src, dest, target, newEntity);
         }
 
         // safer version on duplicate entity (generates new UUIDs)
@@ -51,18 +49,18 @@ namespace Blackberry {
             entt::registry* dest = destReg;
 
             const auto newEntity = dest->create(target);
-            Tag tag;
-            tag.Name = src->get<Tag>(target).Name;
+            TagComponent tag;
+            tag.Name = src->get<TagComponent>(target).Name;
             tag.UUID = UUID();
 
-            dest->emplace<Tag>(newEntity, tag);
+            dest->emplace<TagComponent>(newEntity, tag);
 
-            CopyComponent<Transform>(src, dest, target, newEntity);
-            CopyComponent<ShapeRenderer>(src, dest, target, newEntity);
-            CopyComponent<SpriteRenderer>(src, dest, target, newEntity);
-            CopyComponent<Text>(src, dest, target, newEntity);
-            CopyComponent<Script>(src, dest, target, newEntity);
-            CopyComponent<Velocity>(src, dest, target, newEntity);
+            CopyComponent<TransformComponent>(src, dest, target, newEntity);
+            CopyComponent<ShapeRendererComponent>(src, dest, target, newEntity);
+            CopyComponent<SpriteRendererComponent>(src, dest, target, newEntity);
+            CopyComponent<TextComponent>(src, dest, target, newEntity);
+            CopyComponent<ScriptComponent>(src, dest, target, newEntity);
+            CopyComponent<VelocityComponent>(src, dest, target, newEntity);
         }
 
         static ECS* Copy(ECS* current) {

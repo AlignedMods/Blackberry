@@ -6,7 +6,7 @@
 #include "blackberry/event/mouse_events.hpp"
 #include "blackberry/event/window_events.hpp"
 #include "blackberry/input/keycodes.hpp"
-#include "blackberry/input/mousecodes.hpp"
+#include "blackberry/input/mousebuttons.hpp"
 #include "blackberry/input/input.hpp"
 
 #include "GLFW/glfw3.h"
@@ -31,7 +31,7 @@ namespace Blackberry {
 #pragma region Callbacks
 
     static KeyCode GLFWKeyToBlackberry(const i32 key);
-    static MouseCode GLFWMouseToBlackberry(const i32 button);
+    static MouseButton GLFWMouseToBlackberry(const i32 button);
 
     static void CallbackKey(GLFWwindow* window, i32 key, i32 scancode, i32 action, i32 mods) {
         DISPATCHER;
@@ -41,12 +41,10 @@ namespace Blackberry {
         if (action == GLFW_PRESS) {
             dispatcher.Post(KeyPressedEvent(keyCode, false));
             Input::SetKeyState(keyCode, true);
-        }
-        else if (action == GLFW_REPEAT) {
+        } else if (action == GLFW_REPEAT) {
             dispatcher.Post(KeyPressedEvent(keyCode, true));
             Input::SetKeyState(keyCode, true);
-        }
-        else if (action == GLFW_RELEASE) {
+        } else if (action == GLFW_RELEASE) {
             dispatcher.Post(KeyReleasedEvent(keyCode));
             Input::SetKeyState(keyCode, false);
         }
@@ -61,13 +59,14 @@ namespace Blackberry {
     static void CallbackMouseButton(GLFWwindow* window, i32 button, i32 action, i32 mods) {
         DISPATCHER;
 
-        MouseCode btn = GLFWMouseToBlackberry(button);
+        MouseButton btn = GLFWMouseToBlackberry(button);
 
         if (action == GLFW_PRESS) {
             dispatcher.Post(MouseButtonPressedEvent(btn));
-        }
-        else {
+            Input::SetMouseState(btn, true);
+        } else if (action == GLFW_RELEASE) {
             dispatcher.Post(MouseButtonReleasedEvent(btn));
+            Input::SetMouseState(btn, false);
         }
     }
 
@@ -75,6 +74,7 @@ namespace Blackberry {
         DISPATCHER;
 
         dispatcher.Post(MouseMovedEvent(static_cast<u32>(x), static_cast<u32>(y)));
+        Input::SetMousePosition(BlVec2(static_cast<f32>(x), static_cast<f32>(y)));
     }
 
     static void CallbackScroll(GLFWwindow* window, f64 x, f64 y) {
@@ -180,16 +180,16 @@ namespace Blackberry {
         return KeyCode::None;
     }
 
-    static MouseCode GLFWMouseToBlackberry(const i32 button) {
+    static MouseButton GLFWMouseToBlackberry(const i32 button) {
         switch (button) {
-            case GLFW_MOUSE_BUTTON_LEFT: return MouseCode::Left;
-            case GLFW_MOUSE_BUTTON_RIGHT: return MouseCode::Right;
-            case GLFW_MOUSE_BUTTON_MIDDLE: return MouseCode::Middle;
+            case GLFW_MOUSE_BUTTON_LEFT: return MouseButton::Left;
+            case GLFW_MOUSE_BUTTON_RIGHT: return MouseButton::Right;
+            case GLFW_MOUSE_BUTTON_MIDDLE: return MouseButton::Middle;
 
-            default: return MouseCode::None;
+            default: return MouseButton::None;
         }
 
-        return MouseCode::None;
+        return MouseButton::None;
     }
 
 #pragma endregion

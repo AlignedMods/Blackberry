@@ -8,9 +8,7 @@
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
-#define BL_SYMBOLIC_COMPONENT(name) using name = u8
-
-namespace Blackberry::Components {
+namespace Blackberry {
 
     enum class ShapeType : u16 {
         Triangle = 0,
@@ -19,23 +17,23 @@ namespace Blackberry::Components {
         Polygon = 3
     };
 
-    struct Tag {
+    struct TagComponent {
         std::string Name;
-        u64 UUID;
+        u64 UUID = 0;
     };
 
-    struct Transform {
+    struct TransformComponent {
         BlVec3 Position;
         f32 Rotation = 0.0f; // in degrees
         BlVec2 Dimensions;
     };
 
-    struct ShapeRenderer {
+    struct ShapeRendererComponent {
         BlColor Color = BlColor(0xff, 0xff, 0xff, 0xff);
         ShapeType Shape = ShapeType::Rectangle;
     };
 
-    struct SpriteRenderer {
+    struct SpriteRendererComponent {
         BlColor Color = BlColor(0xff, 0xff, 0xff, 0xff);
         ShapeType Shape = ShapeType::Rectangle;
 
@@ -43,20 +41,20 @@ namespace Blackberry::Components {
         BlRec Area;
     };
 
-    struct Velocity {
+    struct VelocityComponent {
         BlVec2 Acceleration;
     };
 
-    struct Text {
+    struct TextComponent {
         Blackberry::Font* Font;
         u32 FontSize = 24;
         std::string Contents;
     };
 
-    struct Script {
+    struct ScriptComponent {
         std::filesystem::path ModulePath;
         std::filesystem::path FilePath;
         bool IsLoaded = false;
     };
 
-} // namespace Blackberry::Components
+} // namespace Blackberry

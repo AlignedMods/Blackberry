@@ -5,42 +5,70 @@
 
 namespace Blackberry {
 
-    struct InputState {
+    struct _InputState {
         // bool in STL can be sketchy sometimes so we use u8
         std::unordered_map<u32, u8> CurrentKeyState;
         std::unordered_map<u32, u8> PreviousKeyState;
 
+        std::unordered_map<u32, u8> CurrentMouseState;
+        std::unordered_map<u32, u8> PreviousMouseState;
+
+        BlVec2 MousePosition;
         f32 ScrollLevel = 0.0f;
     };
 
-    static InputState IState;
+    static _InputState InputState;
 
     bool Input::IsKeyDown(KeyCode key) {
-        return IState.CurrentKeyState[static_cast<u32>(key)] == 1;
+        return InputState.CurrentKeyState[static_cast<u32>(key)] == 1;
     }
 
     bool Input::IsKeyPressed(KeyCode key) {
-        return IState.CurrentKeyState[static_cast<u32>(key)] == 1 && IState.PreviousKeyState[static_cast<u32>(key)] == 0;
+        return InputState.CurrentKeyState[static_cast<u32>(key)] == 1 && InputState.PreviousKeyState[static_cast<u32>(key)] == 0;
+    }
+
+    bool Input::IsMouseDown(MouseButton key) {
+        return InputState.CurrentMouseState[static_cast<u32>(key)] == 1;
+    }
+
+    bool Input::IsMousePressed(MouseButton key) {
+        return InputState.CurrentMouseState[static_cast<u32>(key)] == 1 && InputState.PreviousMouseState[static_cast<u32>(key)] == 0;
+    }
+
+    BlVec2 Input::GetMousePosition() {
+        return InputState.MousePosition;
     }
 
     f32 Input::GetScrollLevel() {
-        return IState.ScrollLevel;
+        return InputState.ScrollLevel;
     }
 
     void Input::SetKeyState(KeyCode key, bool state) {
-        IState.CurrentKeyState[static_cast<u32>(key)] = state;
+        InputState.CurrentKeyState[static_cast<u32>(key)] = state;
+    }
+
+    void Input::SetMouseState(MouseButton key, bool state) {
+        InputState.CurrentMouseState[static_cast<u32>(key)] = state;
     }
 
     void Input::ResetKeyState() {
-        for (auto&[key, state] : IState.CurrentKeyState) {
-            IState.PreviousKeyState[key] = state;
+        for (auto&[key, state] : InputState.CurrentKeyState) {
+            InputState.PreviousKeyState[key] = state;
         }
 
-        IState.ScrollLevel = 0.0f;
+        for (auto&[key, state] : InputState.CurrentMouseState) {
+            InputState.PreviousMouseState[key] = state;
+        }
+
+        InputState.ScrollLevel = 0.0f;
+    }
+
+    void Input::SetMousePosition(BlVec2 position) {
+        InputState.MousePosition = position;
     }
 
     void Input::SetScrollLevel(f32 level) {
-        IState.ScrollLevel = level;
+        InputState.ScrollLevel = level;
     }
 
 } // namespace Blackberry
