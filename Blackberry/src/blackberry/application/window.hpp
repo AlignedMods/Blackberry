@@ -7,6 +7,12 @@
 
 namespace Blackberry {
 
+    enum class CursorMode {
+        Nomral,
+        Hidden,
+        Disabled
+    };
+
     using EventCallbackFn = std::function<void(const Event&)>;
 
     struct WindowData {
@@ -34,6 +40,7 @@ namespace Blackberry {
         void SleepMilli(f64 milliseconds) const { SleepSeconds(milliseconds / 1000.0); }
 
         virtual void SetWindowIcon(const Image& image) = 0;
+        virtual void SetCursorMode(CursorMode mode) = 0;
 
         virtual void* GetHandle() const = 0;
         virtual void* GetNativeHandle() const = 0;

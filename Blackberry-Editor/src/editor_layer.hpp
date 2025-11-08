@@ -78,6 +78,7 @@ namespace BlackberryEditor {
         BlRenderTexture m_RenderTexture;
         BlRec m_ViewportBounds;
         f32 m_ViewportScale = 1.0f;
+        bool m_ViewportHovered = false;
 
         BlRenderTexture m_MaskTexture;
 

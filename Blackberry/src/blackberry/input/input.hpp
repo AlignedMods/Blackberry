@@ -12,8 +12,10 @@ namespace Blackberry {
 
         static bool IsMouseDown(MouseButton key);
         static bool IsMousePressed(MouseButton key);
+        static bool IsMouseReleased(MouseButton key);
 
         static BlVec2 GetMousePosition();
+        static BlVec2 GetMouseDelta();
         static f32 GetScrollLevel();
 
         static void SetKeyState(KeyCode key, bool state);

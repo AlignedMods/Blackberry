@@ -250,17 +250,42 @@ namespace BlackberryEditor {
         } else {
             m_CurrentScene->OnUpdate();
 
-            if (Input::IsKeyDown(KeyCode::Ctrl) && Input::GetScrollLevel() != 0.0f) {
-                BlVec2 screenPos = Input::GetMousePosition();
-                BlVec2 worldPos = m_EditorCamera.GetScreenPosToWorld(screenPos);
+            static bool acceptInput = false;
 
-                m_EditorCamera.Offset = screenPos;
-                m_EditorCamera.Position = worldPos;
+            // viewport specific things
+            if (m_ViewportHovered && Input::IsMousePressed(MouseButton::Left)) {
+                BL_APP.GetWindow().SetCursorMode(CursorMode::Disabled);
+                acceptInput = true;
+            }
 
-                BL_INFO("World pos: {}, {}", worldPos.x, worldPos.y);
+            if (!Input::IsMouseDown(MouseButton::Left) && acceptInput) {
+                BL_APP.GetWindow().SetCursorMode(CursorMode::Nomral);
+                acceptInput = false;
+            }
 
-                f32 scale = 0.1f * Input::GetScrollLevel();
-                m_EditorCamera.Scale = std::clamp(std::exp(std::log(m_EditorCamera.Scale)+scale), 0.125f, 64.0f);
+            if (acceptInput || m_ViewportHovered) {
+                if (Input::GetScrollLevel() != 0.0f) {
+                    auto& renderer = BL_APP.GetRenderer();
+                    BlVec2 windowSize = renderer.GetViewportSize();
+
+                    BlVec2 screenPos = Input::GetMousePosition() - BlVec2(m_ViewportBounds.x, m_ViewportBounds.y);
+                    screenPos *= BlVec2(windowSize.x / m_ViewportBounds.w, windowSize.y / m_ViewportBounds.h);
+                    BlVec2 worldPos = m_EditorCamera.GetScreenPosToWorld(screenPos);
+
+                    BL_INFO("Screen pos: {}, {}", screenPos.x, screenPos.y);
+                
+                    m_EditorCamera.Offset = screenPos;
+                    m_EditorCamera.Position = worldPos;
+                
+                    f32 scale = 0.1f * Input::GetScrollLevel();
+                    m_EditorCamera.Scale = std::clamp(std::exp(std::log(m_EditorCamera.Scale)+scale), 0.125f, 64.0f);
+                }
+
+                if (Input::IsMouseDown(MouseButton::Left)) { 
+                    BlVec2 delta = Input::GetMouseDelta();
+
+                    m_EditorCamera.Position -= delta;
+                }
             }
         }
     }
@@ -339,7 +364,7 @@ namespace BlackberryEditor {
         }
     }
 
-    void BlackberryEditor::EditorLayer::OnOverlayRender() {
+    void EditorLayer::OnOverlayRender() {
         if (!m_IsEntitySelected) { return; }
 
         Entity entity = Entity(m_SelectedEntity, m_CurrentScene);
@@ -882,6 +907,12 @@ namespace BlackberryEditor {
         ImGui::SetCursorPosY(cursorY);
     
         ImGui::Image(m_RenderTexture.Texture.ID, ImVec2(sizeX, sizeY), ImVec2(0, 1), ImVec2(1, 0));
+
+        if (ImGui::IsItemHovered()) {
+            m_ViewportHovered = true;
+        } else {
+            m_ViewportHovered = false;
+        }
         
         ImGui::SetCursorPosX(cursorX);
         ImGui::SetCursorPosY(cursorY);
@@ -899,7 +930,7 @@ namespace BlackberryEditor {
             if (auto payload = ImGui::AcceptDragDropPayload("ASSET_DRAG_DROP")) {
                 bool sceneExists = false;
     
-                std::string strPath = (char*)payload->Data;
+                std::string strPath = reinterpret_cast<char*>(payload->Data);
                 std::filesystem::path path(strPath);
                 path = m_BaseDirectory / path;
                 

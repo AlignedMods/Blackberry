@@ -13,7 +13,8 @@ namespace Blackberry {
         std::unordered_map<u32, u8> CurrentMouseState;
         std::unordered_map<u32, u8> PreviousMouseState;
 
-        BlVec2 MousePosition;
+        BlVec2 CurrentMousePosition;
+        BlVec2 PreviousMousePosition;
         f32 ScrollLevel = 0.0f;
     };
 
@@ -35,8 +36,16 @@ namespace Blackberry {
         return InputState.CurrentMouseState[static_cast<u32>(key)] == 1 && InputState.PreviousMouseState[static_cast<u32>(key)] == 0;
     }
 
+    bool Input::IsMouseReleased(MouseButton key) {
+        return InputState.CurrentMouseState[static_cast<u32>(key)] == 0 && InputState.CurrentMouseState[static_cast<u32>(key)] == 1;
+    }
+
     BlVec2 Input::GetMousePosition() {
-        return InputState.MousePosition;
+        return InputState.CurrentMousePosition;
+    }
+
+    BlVec2 Input::GetMouseDelta() {
+        return InputState.CurrentMousePosition - InputState.PreviousMousePosition;
     }
 
     f32 Input::GetScrollLevel() {
@@ -60,11 +69,12 @@ namespace Blackberry {
             InputState.PreviousMouseState[key] = state;
         }
 
+        InputState.PreviousMousePosition = InputState.CurrentMousePosition;
         InputState.ScrollLevel = 0.0f;
     }
 
     void Input::SetMousePosition(BlVec2 position) {
-        InputState.MousePosition = position;
+        InputState.CurrentMousePosition = position;
     }
 
     void Input::SetScrollLevel(f32 level) {

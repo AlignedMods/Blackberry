@@ -326,6 +326,21 @@ namespace Blackberry {
         glfwSetWindowIcon(m_Handle, 1, &im);
     }
 
+    void Window_GLFW::SetCursorMode(CursorMode mode) {
+        int flag = 0;
+        switch (mode) {
+            case CursorMode::Nomral: flag = GLFW_CURSOR_NORMAL; break;
+            case CursorMode::Hidden: flag = GLFW_CURSOR_HIDDEN; break;
+            case CursorMode::Disabled: flag = GLFW_CURSOR_DISABLED; break;
+        }
+
+        glfwSetInputMode(m_Handle, GLFW_CURSOR, flag);
+
+        if (mode == CursorMode::Disabled) {
+            if (glfwRawMouseMotionSupported()) glfwSetInputMode(m_Handle, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+        }
+    }
+
     void* Window_GLFW::GetHandle() const {
         return m_Handle;
     }

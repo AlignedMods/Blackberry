@@ -23,11 +23,66 @@ struct BlVec2 {
     constexpr inline BlVec2() 
         : x(0.0f), y(0.0f) {}
 
+    constexpr inline explicit BlVec2(f32 scalar)
+        : x(scalar), y(scalar) {}
+
     constexpr inline explicit BlVec2(f32 x, f32 y) 
         : x(x), y(y) {}
 
     constexpr inline explicit BlVec2(i32 x, i32 y)
         : BlVec2(static_cast<f32>(x), static_cast<f32>(y)) {}
+
+    constexpr inline BlVec2 operator+(BlVec2 rhs) {
+        return BlVec2(x + rhs.x, y + rhs.y);
+    }
+
+    constexpr inline BlVec2 operator-(BlVec2 rhs) {
+        return BlVec2(x - rhs.x, y - rhs.y);
+    }
+
+    constexpr inline BlVec2 operator*(BlVec2 rhs) {  
+        return BlVec2(x * rhs.x, y * rhs.y);
+    }
+
+    constexpr inline BlVec2 operator/(BlVec2 rhs) {  
+        return BlVec2(x / rhs.x, y / rhs.y);
+    }
+
+    constexpr inline void operator+=(BlVec2 rhs) {
+        x += rhs.x;
+        y += rhs.y;
+    }
+
+    constexpr inline void operator-=(BlVec2 rhs) {
+        x -= rhs.x;
+        y -= rhs.y;
+    }
+
+    constexpr inline void operator*=(BlVec2 rhs) {
+        x *= rhs.x;
+        y *= rhs.y;
+    }
+
+    constexpr inline void operator/=(BlVec2 rhs) {
+        x /= rhs.x;
+        y /= rhs.y;
+    }
+
+    constexpr inline bool operator==(BlVec2 rhs) {
+        return x == rhs.x && y == rhs.y;
+    }
+
+    constexpr inline bool operator==(f32 scalar) {
+        return x == scalar && y == scalar;
+    }
+
+    constexpr inline bool operator!=(BlVec2 rhs) {
+        return x != rhs.x && y != rhs.y;
+    }
+
+    constexpr inline bool operator!=(f32 scalar) {
+        return x != scalar && y != scalar;
+    }
 
     f32 x, y;
 };
@@ -35,6 +90,9 @@ struct BlVec2 {
 struct BlVec3 {
     constexpr inline BlVec3()
         : x(0.0f), y(0.0f), z(0.0f) {}
+
+    constexpr inline explicit BlVec3(f32 scalar)
+        : x(scalar), y(scalar), z(scalar) {}
 
     constexpr inline explicit BlVec3(f32 x, f32 y, f32 z)
         : x(x), y(y), z(z) {}
@@ -45,6 +103,9 @@ struct BlVec3 {
 struct BlVec4 {
     constexpr inline BlVec4()
         : x(0.0f), y(0.0f), z(0.0f), w(0.0f) {}
+
+    constexpr inline explicit BlVec4(f32 scalar)
+        : x(scalar), y(scalar), z(scalar), w(scalar) {}
 
     constexpr inline explicit BlVec4(f32 x, f32 y, f32 z, f32 w)
         : x(x), y(y), z(z), w(w) {}

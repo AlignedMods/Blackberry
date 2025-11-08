@@ -23,6 +23,7 @@ namespace Blackberry {
         virtual void SleepSeconds(f64 seconds) const override;
 
         virtual void SetWindowIcon(const Image& image) override;
+        virtual void SetCursorMode(CursorMode mode) override;
 
         virtual void* GetHandle() const override;
         virtual void* GetNativeHandle() const override;
