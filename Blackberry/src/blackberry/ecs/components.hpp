@@ -26,6 +26,14 @@ namespace Blackberry {
         BlVec3 Position;
         f32 Rotation = 0.0f; // in degrees
         BlVec2 Dimensions;
+
+        inline glm::mat4 GetMatrix() const {
+            glm::mat4 pos = glm::translate(glm::mat4(1.0f), glm::vec3(Position.x, Position.y, Position.z));
+            glm::mat4 rot = glm::rotate(glm::mat4(1.0f), glm::radians(Rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+            glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(Dimensions.x, Dimensions.y, 1.0f));
+
+            return pos * rot * scale;
+        }
     };
 
     struct ShapeRendererComponent {
@@ -41,8 +49,16 @@ namespace Blackberry {
         BlRec Area;
     };
 
-    struct VelocityComponent {
+    struct RigidBodyComponent {
+        BlVec2 Velocity;
         BlVec2 Acceleration;
+        BlVec2 Force;
+
+        f32 Mass = 10.0f;
+    };
+
+    struct BoxColliderComponent {
+        bool Active = true;
     };
 
     struct TextComponent {

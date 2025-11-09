@@ -65,11 +65,14 @@ namespace Blackberry {
                 };
             }
 
-            if (entity.HasComponent<VelocityComponent>()) {
-                VelocityComponent& velocity = entity.GetComponent<VelocityComponent>();
+            if (entity.HasComponent<RigidBodyComponent>()) {
+                RigidBodyComponent& rigidBody = entity.GetComponent<RigidBodyComponent>();
 
-                j["Entities"][name]["VelocityComponent"] = { 
-                    {"Acceleration", {velocity.Acceleration.x, velocity.Acceleration.y}}
+                j["Entities"][name]["RigidBodyComponent"] = { 
+                    {"Velocity", {rigidBody.Velocity.x, rigidBody.Velocity.y}},
+                    {"Acceleration", {rigidBody.Acceleration.x, rigidBody.Acceleration.y}},
+                    {"Force", {rigidBody.Force.x, rigidBody.Force.y}},
+                    {"Mass", rigidBody.Mass}
                 };
             }
         }
@@ -161,10 +164,14 @@ namespace Blackberry {
                 entity.AddComponent<ScriptComponent>({ modulePath, filePath });
             }
 
-            if (jsonEntity.contains("VelocityComponent")) {
-                auto& jsonVelocity = jsonEntity.at("VelocityComponent");
-                std::array<f32, 2> acceleration = jsonVelocity.at("Acceleration");
-                entity.AddComponent<VelocityComponent>({ BlVec2(acceleration[0], acceleration[1]) });
+            if (jsonEntity.contains("RigidBodyComponent")) {
+                auto& jsonRigidBody = jsonEntity.at("RigidBodyComponent");
+                std::array<f32, 2> velocity = jsonRigidBody.at("Velocity");
+                std::array<f32, 2> acceleration = jsonRigidBody.at("Acceleration");
+                std::array<f32, 2> force = jsonRigidBody.at("Force");
+                f32 mass = jsonRigidBody.at("Mass");
+
+                entity.AddComponent<RigidBodyComponent>({ BlVec2(velocity[0], velocity[1]), BlVec2(acceleration[0], acceleration[1]), BlVec2(force[0], force[1]), mass });
             }
         }
     }

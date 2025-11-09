@@ -15,6 +15,21 @@
     },
     "Entities": {
         "ID - 0": {
+            "RigidBodyComponent": {
+                "Acceleration": [
+                    0.0,
+                    0.0
+                ],
+                "Force": [
+                    0.0,
+                    456.0
+                ],
+                "Mass": 10.0,
+                "Velocity": [
+                    0.0,
+                    0.0
+                ]
+            },
             "ShapeRendererComponent": {
                 "Color": [
                     215,
@@ -36,12 +51,6 @@
                 "Position": [
                     512.6950073242188,
                     728.0,
-                    0.0
-                ]
-            },
-            "VelocityComponent": {
-                "Acceleration": [
-                    269.0,
                     0.0
                 ]
             }

@@ -3,6 +3,7 @@
 #include "blackberry/scene/uuid.hpp"
 #include "blackberry/ecs/ecs.hpp"
 #include "blackberry/assets/asset_manager.hpp"
+#include "blackberry/scene/physics_world.hpp"
 
 #include <unordered_map>
 #include <string>
@@ -41,8 +42,11 @@ namespace Blackberry {
     private:
         ECS* m_ECS;
         AssetManager* m_AssetManager;
+        PhysicsWorld* m_PhysicsWorld;
         std::unordered_map<u64, EntityID> m_EntityMap;
         std::unordered_map<std::string, u64> m_NamedEntityMap;
+
+        const f32 m_Gravity = 9.8f;
 
         friend class Entity;
     };

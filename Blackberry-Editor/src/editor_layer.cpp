@@ -457,7 +457,7 @@ namespace BlackberryEditor {
         renderer.AttachTexture(m_MaskTexture.Texture);
 
         m_OutlineShader.SetVec2("u_TexelSize", BlVec2(1.0f / m_OutlineTexture.Texture.Width, 1.0f / m_OutlineTexture.Texture.Height));
-        m_OutlineShader.SetFloat("u_Thickness", 3.0f);
+        m_OutlineShader.SetFloat("u_Thickness", 2.0f);
         m_OutlineShader.SetVec3("u_OutlineColor", BlVec3(1.0f, 0.7f, 0.2f));
 
         renderer.DrawIndexed(6);
@@ -756,7 +756,7 @@ namespace BlackberryEditor {
                     AddComponentListOption<ShapeRendererComponent>("Shape Renderer", entity);
                     AddComponentListOption<SpriteRendererComponent>("Sprite Renderer", entity);
                     AddComponentListOption<ScriptComponent>("Script", entity);
-                    AddComponentListOption<VelocityComponent>("Velocity", entity);
+                    AddComponentListOption<RigidBodyComponent>("Rigid Body", entity);
                     
                     ImGui::EndMenu();
                 }
@@ -872,8 +872,12 @@ namespace BlackberryEditor {
                 script.ModulePath = std::filesystem::path(stringPath);
                 script.FilePath = m_BaseDirectory / script.ModulePath;
             });
-            DrawComponent<VelocityComponent>("Velocity", entity, [](VelocityComponent& velocity) {
-                DrawVec2Control("Acceleration: ", &velocity.Acceleration);
+            DrawComponent<RigidBodyComponent>("Rigid Body", entity, [](RigidBodyComponent& rigidBody) {
+                DrawVec2Control("Velocity: ", &rigidBody.Velocity);
+                DrawVec2Control("Acceleration: ", &rigidBody.Acceleration);
+                DrawVec2Control("Force: ", &rigidBody.Force);
+
+                ImGui::DragFloat("Mass", &rigidBody.Mass);
             });
         }
     
@@ -951,6 +955,23 @@ namespace BlackberryEditor {
         };
     
         ImGui::End();
+
+        // ImGui::SetNextWindowBgAlpha(0.4f); // transparent background
+        // ImGui::SetNextWindowPos(ImVec2(m_ViewportBounds.x + 10.0f, m_ViewportBounds.y + 10.0f));
+        // ImGui::SetNextWindowSize(ImVec2(200, 30));
+        // 
+        // ImGui::SetNextWindowFocus();
+        // 
+        // ImGui::Begin("ViewportOverlay", nullptr,
+        //     ImGuiWindowFlags_NoDecoration |
+        //     ImGuiWindowFlags_NoMove |
+        //     ImGuiWindowFlags_NoResize |
+        //     ImGuiWindowFlags_NoDocking |
+        //     ImGuiWindowFlags_NoNavFocus |
+        //     ImGuiWindowFlags_AlwaysAutoResize
+        // );
+        // 
+        // ImGui::End();
     }
 
     void EditorLayer::UI_RendererStats() {

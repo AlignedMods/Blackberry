@@ -15,7 +15,7 @@ extern "C" {
 namespace Blackberry {
 
     Scene::Scene()
-        : m_ECS(new ECS), m_AssetManager(new AssetManager) {
+        : m_ECS(new ECS), m_AssetManager(new AssetManager), m_PhysicsWorld(new PhysicsWorld) {
         BL_CORE_TRACE("New scene created ({})", reinterpret_cast<void*>(this));
     }
 
@@ -72,9 +72,9 @@ namespace Blackberry {
     }
 
     void Scene::OnRuntimeUpdate() {
-        auto view = m_ECS->GetEntitiesWithComponents<ScriptComponent>();
+        auto scriptView = m_ECS->GetEntitiesWithComponents<ScriptComponent>();
 
-        view.each([&](auto entity, ScriptComponent& script) {
+        scriptView.each([&](auto entity, ScriptComponent& script) {
             Entity e(entity, this);
 
             Lua::SetExecutionContext(script.ModulePath.string());
@@ -89,6 +89,16 @@ namespace Blackberry {
 
             Lua::Pop(1);
         });
+
+        auto rigidBodyView = m_ECS->GetEntitiesWithComponents<TransformComponent, RigidBodyComponent>();
+        
+        rigidBodyView.each([this](entt::entity entity, TransformComponent& transform, RigidBodyComponent& rigidBody) {
+            m_PhysicsWorld->AddEntity({&transform, &rigidBody, nullptr});
+        });
+
+        m_PhysicsWorld->Step(BL_APP.GetDeltaTime());
+
+        m_PhysicsWorld->Reset();
     }
 
     void Scene::OnRender() {
