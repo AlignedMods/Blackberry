@@ -1,14 +1,18 @@
 #pragma once
 
 #include "blackberry/core/types.hpp"
-#include "blackberry/font/font.hpp"
-#include "blackberry/assets/asset_manager.hpp"
+#include "blackberry/scene/camera.hpp"
 
 #include "glm/glm.hpp"
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
+#include <filesystem>
+#include <string>
+
 namespace Blackberry {
+
+    class Font;
 
     enum class ShapeType : u16 {
         Triangle = 0,
@@ -49,6 +53,11 @@ namespace Blackberry {
         BlRec Area;
     };
 
+    struct CameraComponent {
+        SceneCamera Camera;
+        bool Active = true;
+    };
+
     struct RigidBodyComponent {
         BlVec2 Velocity;
         BlVec2 Acceleration;
@@ -62,7 +71,7 @@ namespace Blackberry {
     };
 
     struct TextComponent {
-        Blackberry::Font* Font;
+        Font* Font;
         u32 FontSize = 24;
         std::string Contents;
     };

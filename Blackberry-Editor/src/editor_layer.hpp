@@ -71,6 +71,7 @@ namespace BlackberryEditor {
     
         Blackberry::Font m_EditorFont;
         Blackberry::SceneCamera m_EditorCamera;
+        Blackberry::SceneCamera m_RuntimeCamera;
     
         Blackberry::EntityID m_SelectedEntity = entt::null;
         bool m_IsEntitySelected = false;
@@ -88,7 +89,7 @@ namespace BlackberryEditor {
     
         EditorProject m_CurrentProject;
         Blackberry::Scene* m_EditingScene = nullptr;
-        Blackberry::Scene* m_ActiveScene = nullptr;
+        Blackberry::Scene* m_RuntimeScene = nullptr;
         Blackberry::Scene* m_CurrentScene = nullptr;
         EditorState m_EditorState = EditorState::Edit;
     

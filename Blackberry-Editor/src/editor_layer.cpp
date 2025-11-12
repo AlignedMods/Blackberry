@@ -55,41 +55,36 @@ namespace BlackberryEditor {
         ImGuiIO& io = ImGui::GetIO();
     
         ImGui::PushID(label.c_str());
+
+        ImGui::Text("%s", label.c_str());
+
+        ImGui::Indent();
     
-        // label
-    
+        // x axis control
         ImGui::PushFont(io.Fonts->Fonts[1], 16);
-        if (ImGui::TreeNode(label.c_str())) {
-            ImGui::PopFont();
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.0f, 0.0f, 0.7f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 0.0f, 0.0f, 0.4f));
+        ImGui::Button(fmtX);
+        ImGui::PopStyleColor(3);
+        ImGui::PopFont();
     
-            // x axis control
-            ImGui::PushFont(io.Fonts->Fonts[1], 16);
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.0f, 0.0f, 0.7f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 0.0f, 0.0f, 0.4f));
-            ImGui::Button(fmtX);
-            ImGui::PopStyleColor(3);
-            ImGui::PopFont();
+        ImGui::SameLine();
+        ImGui::DragFloat("##DragX", &vec->x, 1.0f);
     
-            ImGui::SameLine();
-            ImGui::DragFloat("##DragX", &vec->x, 1.0f);
+        // y axis control
+        ImGui::PushFont(io.Fonts->Fonts[1], 16);
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 1.0f, 0.0f, 0.7f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 1.0f, 0.0f, 0.4f));
+        ImGui::Button(fmtY);
+        ImGui::PopStyleColor(3);
+        ImGui::PopFont();
     
-            // y axis control
-            ImGui::PushFont(io.Fonts->Fonts[1], 16);
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 1.0f, 0.0f, 0.7f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 1.0f, 0.0f, 0.4f));
-            ImGui::Button(fmtY);
-            ImGui::PopStyleColor(3);
-            ImGui::PopFont();
-    
-            ImGui::SameLine();
-            ImGui::DragFloat("##DragY", &vec->y);
-    
-            ImGui::TreePop();
-        } else {
-            ImGui::PopFont();
-        }
+        ImGui::SameLine();
+        ImGui::DragFloat("##DragY", &vec->y);
+
+        ImGui::Unindent();
     
         ImGui::PopID();
     }
@@ -100,51 +95,47 @@ namespace BlackberryEditor {
         ImGui::PushID(label.c_str());
     
         // label
-    
-        ImGui::PushFont(io.Fonts->Fonts[1], 16);
-        if (ImGui::TreeNode(label.c_str())) {
-            ImGui::PopFont();
-    
-            // x axis control
-            ImGui::PushFont(io.Fonts->Fonts[1], 16);
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.0f, 0.0f, 0.7f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 0.0f, 0.0f, 0.4f));
-            ImGui::Button(fmtX);
-            ImGui::PopStyleColor(3);
-            ImGui::PopFont();
-    
-            ImGui::SameLine();
-            ImGui::DragFloat("##DragX", &vec->x, 1.0f);
-    
-            // y axis control
-            ImGui::PushFont(io.Fonts->Fonts[1], 16);
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 1.0f, 0.0f, 0.7f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 1.0f, 0.0f, 0.4f));
-            ImGui::Button(fmtY);
-            ImGui::PopStyleColor(3);
-            ImGui::PopFont();
-    
-            ImGui::SameLine();
-            ImGui::DragFloat("##DragY", &vec->y);
+        ImGui::Text("%s", label.c_str());
 
-            // z axis control
-            ImGui::PushFont(io.Fonts->Fonts[1], 16);
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 1.0f, 0.7f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 0.0f, 1.0f, 0.4f));
-            ImGui::Button(fmtZ);
-            ImGui::PopStyleColor(3);
-            ImGui::PopFont();
+        ImGui::Indent();
     
-            ImGui::SameLine();
-            ImGui::DragFloat("##DragZ", &vec->z);
+        // x axis control
+        ImGui::PushFont(io.Fonts->Fonts[1], 16);
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.0f, 0.0f, 0.7f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 0.0f, 0.0f, 0.4f));
+        ImGui::Button(fmtX);
+        ImGui::PopStyleColor(3);
+        ImGui::PopFont();
     
-            ImGui::TreePop();
-        } else {
-            ImGui::PopFont();
-        }
+        ImGui::SameLine();
+        ImGui::DragFloat("##DragX", &vec->x, 1.0f);
+    
+        // y axis control
+        ImGui::PushFont(io.Fonts->Fonts[1], 16);
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 1.0f, 0.0f, 0.7f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 1.0f, 0.0f, 0.4f));
+        ImGui::Button(fmtY);
+        ImGui::PopStyleColor(3);
+        ImGui::PopFont();
+    
+        ImGui::SameLine();
+        ImGui::DragFloat("##DragY", &vec->y);
+
+        // z axis control
+        ImGui::PushFont(io.Fonts->Fonts[1], 16);
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 1.0f, 0.7f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 0.0f, 1.0f, 0.4f));
+        ImGui::Button(fmtZ);
+        ImGui::PopStyleColor(3);
+        ImGui::PopFont();
+    
+        ImGui::SameLine();
+        ImGui::DragFloat("##DragZ", &vec->z);
+
+        ImGui::Unindent();
     
         ImGui::PopID();
     }
@@ -177,18 +168,13 @@ namespace BlackberryEditor {
         ImVec4 imGuiColor = ImVec4(color->r / 255.0f, color->g / 255.0f, color->b / 255.0f, color->a / 255.0f);
     
         ImGui::PushID(label.c_str());
+
+        ImGui::Text("%s", label.c_str());
+        ImGui::Indent();
+
+        ImGui::ColorEdit4("##ColorEdit", &imGuiColor.x);
     
-        ImGui::PushFont(io.Fonts->Fonts[1], 16);
-        if (ImGui::TreeNode(label.c_str())) {
-            ImGui::PopFont();
-    
-            ImGui::ColorEdit4("##ColorEdit", &imGuiColor.x);
-        
-            ImGui::TreePop();
-        } else {
-            ImGui::PopFont();
-        }
-    
+        ImGui::Unindent();
         ImGui::PopID();
     
         // return value from ImVec4
@@ -253,12 +239,12 @@ namespace BlackberryEditor {
             static bool acceptInput = false;
 
             // viewport specific things
-            if (m_ViewportHovered && Input::IsMousePressed(MouseButton::Left)) {
+            if (m_ViewportHovered && Input::IsMousePressed(MouseButton::Right)) {
                 BL_APP.GetWindow().SetCursorMode(CursorMode::Disabled);
                 acceptInput = true;
             }
 
-            if (!Input::IsMouseDown(MouseButton::Left) && acceptInput) {
+            if (!Input::IsMouseDown(MouseButton::Right) && acceptInput) {
                 BL_APP.GetWindow().SetCursorMode(CursorMode::Nomral);
                 acceptInput = false;
             }
@@ -281,10 +267,10 @@ namespace BlackberryEditor {
                     m_EditorCamera.Scale = std::clamp(std::exp(std::log(m_EditorCamera.Scale)+scale), 0.125f, 64.0f);
                 }
 
-                if (Input::IsMouseDown(MouseButton::Left)) { 
+                if (Input::IsMouseDown(MouseButton::Right)) { 
                     BlVec2 delta = Input::GetMouseDelta();
 
-                    m_EditorCamera.Position -= delta;
+                    m_EditorCamera.Position -= delta / BlVec2(m_EditorCamera.Scale);
                 }
             }
         }
@@ -293,11 +279,15 @@ namespace BlackberryEditor {
     void EditorLayer::OnRender() {
         Renderer2D::AttachRenderTexture(m_RenderTexture);
         Renderer2D::Clear(BlColor(0x69, 0x69, 0x69, 0xff));
-        Renderer2D::SetProjection(m_EditorCamera);
+
+        if (m_EditorState == EditorState::Edit) {  
+            m_CurrentScene->SetCamera(&m_EditorCamera);
+        } else {
+            m_CurrentScene->SetCamera(&m_RuntimeCamera);
+        }
 
         m_CurrentScene->OnRender();
 
-        Renderer2D::ResetProjection();
         Renderer2D::DetachRenderTexture();
     }
 
@@ -326,6 +316,8 @@ namespace BlackberryEditor {
                     if (ImGui::MenuItem("Scene")) {
                         NewScene();
                     }
+
+                    ImGui::MenuItem(std::format("{}", 1.0f / BL_APP.GetDeltaTime()).c_str());
     
                     ImGui::EndMenu();
                 }
@@ -755,6 +747,7 @@ namespace BlackberryEditor {
                     AddComponentListOption<TextComponent>("Text", entity, {&m_EditorFont});
                     AddComponentListOption<ShapeRendererComponent>("Shape Renderer", entity);
                     AddComponentListOption<SpriteRendererComponent>("Sprite Renderer", entity);
+                    AddComponentListOption<CameraComponent>("Camera", entity);
                     AddComponentListOption<ScriptComponent>("Script", entity);
                     AddComponentListOption<RigidBodyComponent>("Rigid Body", entity);
                     
@@ -782,52 +775,55 @@ namespace BlackberryEditor {
             });
             DrawComponent<TransformComponent>("Transform", entity, [](TransformComponent& transform) {
                 DrawVec3Control("Position: ", &transform.Position);
+                ImGui::Separator();
 
-                ImGui::DragFloat("Rotation: ", &transform.Rotation);
+                ImGui::Text("Rotation: ");
+                ImGui::Indent();
+                ImGui::DragFloat("##Rotation", &transform.Rotation);
+                ImGui::Unindent();
+                ImGui::Separator();
 
                 DrawVec2Control("Dimensions: ", &transform.Dimensions);
             });
             DrawComponent<ShapeRendererComponent>("Shape Renderer", entity, [](ShapeRendererComponent& shapeRenderer) {
                 DrawColorControl("Color: ", &shapeRenderer.Color);
+                ImGui::Separator();
 
                 ImGuiIO& io = ImGui::GetIO();
 
-                ImGui::PushFont(io.Fonts->Fonts[1], 16);
-                if (ImGui::TreeNode("Shape")) {
-                    ImGui::PopFont();
+                static const char* shapeNames[] = { "Triangle", "Rectangle", "Circle", "Polygon" };
+                int currentShape = static_cast<int>(shapeRenderer.Shape);
 
-                    const char* shapeNames[] = { "Triangle", "Rectangle", "Circle", "Polygon" };
-                    int currentShape = static_cast<int>(shapeRenderer.Shape);
-    
-                    if (ImGui::Combo("Shape Type", &currentShape, shapeNames, IM_ARRAYSIZE(shapeNames))) {
-                        shapeRenderer.Shape = static_cast<ShapeType>(currentShape);
-                    }
-    
-                    ImGui::TreePop();
-                } else {
-                    ImGui::PopFont();
+                ImGui::Text("Shape: ");
+                ImGui::Indent();
+
+                if (ImGui::Combo("##Shape Type", &currentShape, shapeNames, IM_ARRAYSIZE(shapeNames))) {
+                    shapeRenderer.Shape = static_cast<ShapeType>(currentShape);
                 }
+
+                ImGui::Unindent();
             });
             DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [this](SpriteRendererComponent& spriteRenderer) {
                 DrawColorControl("Color: ", &spriteRenderer.Color);
+                ImGui::Separator();
 
                 ImGuiIO& io = ImGui::GetIO();
 
-                ImGui::PushFont(io.Fonts->Fonts[1], 16);
-                if (ImGui::TreeNode("Shape")) {
-                    ImGui::PopFont();
+                static const char* shapeNames[] = { "Triangle", "Rectangle", "Circle", "Polygon" };
+                int currentShape = static_cast<int>(spriteRenderer.Shape);
 
-                    const char* shapeNames[] = { "Triangle", "Rectangle", "Circle", "Polygon" };
-                    int currentShape = static_cast<int>(spriteRenderer.Shape);
+                ImGui::Text("Shape: ");
+                ImGui::Indent();
     
-                    if (ImGui::Combo("Shape Type", &currentShape, shapeNames, IM_ARRAYSIZE(shapeNames))) {
-                        spriteRenderer.Shape = static_cast<ShapeType>(currentShape);
-                    }
-    
-                    ImGui::TreePop();
-                } else {
-                    ImGui::PopFont();
+                if (ImGui::Combo("##Shape Type", &currentShape, shapeNames, IM_ARRAYSIZE(shapeNames))) {
+                    spriteRenderer.Shape = static_cast<ShapeType>(currentShape);
                 }
+
+
+                ImGui::Unindent();
+                ImGui::Separator();
+                ImGui::Text("Texture: ");
+                ImGui::Indent();
 
                 std::string mat;
                 if (m_CurrentScene->GetAssetManager().ContainsAsset(spriteRenderer.TextureHandle)) {
@@ -861,7 +857,21 @@ namespace BlackberryEditor {
                     }
                 }
 
-                DrawRecControl("Area", &spriteRenderer.Area);
+                ImGui::Unindent();
+
+                // DrawRecControl("Area", &spriteRenderer.Area);
+            });
+            DrawComponent<CameraComponent>("Camera", entity, [this](CameraComponent& camera) {
+                SceneCamera& cam = camera.Camera;
+
+                DrawVec2Control("Position: ", &cam.Position);
+                ImGui::DragFloat("Rotation: ", &cam.Rotation);
+                ImGui::DragFloat("Scale: ", &cam.Scale, 0.1f);
+
+                ImGui::Text("Near: "); ImGui::SameLine();
+                ImGui::DragFloat("##CameraNear", &cam.Near);
+                ImGui::Text("Far: "); ImGui::SameLine();
+                ImGui::DragFloat("##CameraFar", &cam.Far);
             });
             DrawComponent<ScriptComponent>("Script", entity, [this](ScriptComponent& script) {
                 auto stringPath = script.ModulePath.string();
@@ -1117,8 +1127,16 @@ namespace BlackberryEditor {
     void EditorLayer::OnScenePlay() {
         BL_INFO("Switched to playing scene.");
         m_EditorState = EditorState::Play;
-        m_ActiveScene = Scene::Copy(m_EditingScene);
-        m_CurrentScene = m_ActiveScene;
+        m_RuntimeScene = Scene::Copy(m_EditingScene);
+        m_CurrentScene = m_RuntimeScene;
+
+        for (auto entityID : m_CurrentScene->GetEntities()) {
+            Entity entity(entityID, m_CurrentScene);
+            
+            if (entity.HasComponent<CameraComponent>()) {
+                m_RuntimeCamera = entity.GetComponent<CameraComponent>().Camera;
+            }
+        }
 
         m_CurrentScene->OnPlay();
     }
@@ -1129,8 +1147,8 @@ namespace BlackberryEditor {
         BL_INFO("Reverted to editing scene.");
         m_EditorState = EditorState::Edit;
         m_CurrentScene = m_EditingScene;
-        delete m_ActiveScene;
-        m_ActiveScene = nullptr;
+        delete m_RuntimeScene;
+        m_RuntimeScene = nullptr;
     }
 
     void EditorLayer::OnScenePause() {

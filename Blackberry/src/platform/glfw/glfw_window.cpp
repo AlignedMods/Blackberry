@@ -212,8 +212,6 @@ namespace Blackberry {
         glfwWindowHint(GLFW_DEPTH_BITS, 24);
         m_Handle = glfwCreateWindow(data.Width, data.Height, data.Name.c_str(), nullptr, nullptr);
 
-        glfwSwapInterval(0);
-
         if (!m_Handle) {
             BL_CRITICAL("Failed to create GLFW window, Error code {}!", glfwGetError(nullptr));
             glfwTerminate();
@@ -222,7 +220,7 @@ namespace Blackberry {
 
         // needed to use any opengl
         glfwMakeContextCurrent(m_Handle);
-        // glfwSwapInterval(1);
+        glfwSwapInterval(1);
 
         // load GLAD
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -230,8 +228,6 @@ namespace Blackberry {
             glfwTerminate();
             exit(1);
         }
-
-        // glfwSetWindowIcon();
 
         glfwSetKeyCallback(m_Handle, CallbackKey);
         glfwSetCharCallback(m_Handle, CallbackChar);
@@ -315,6 +311,10 @@ namespace Blackberry {
             while (GetTime() < targetTime) {}
             // std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
         }
+    }
+
+    void Window_GLFW::SetVSync(bool enabled) {
+        glfwSwapInterval(enabled ? 1 : 0);
     }
 
     void Window_GLFW::SetWindowIcon(const Image& image) {

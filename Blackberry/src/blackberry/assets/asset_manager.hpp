@@ -1,8 +1,8 @@
 #pragma once
 
 #include "blackberry/core/types.hpp"
-#include "blackberry/ecs/components.hpp"
 #include "blackberry/scene/uuid.hpp"
+#include "blackberry/rendering/texture.hpp"
 
 #include <filesystem>
 #include <unordered_map>

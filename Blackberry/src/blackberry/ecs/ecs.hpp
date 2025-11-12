@@ -2,8 +2,9 @@
 
 #include "blackberry/ecs/components.hpp"
 #include "blackberry/core/log.hpp"
+#include "blackberry/scene/uuid.hpp"
 
-#include "../vendor/entt/entt.hpp"
+#include "entt.hpp"
 
 namespace Blackberry {
 
@@ -36,6 +37,7 @@ namespace Blackberry {
             CopyComponent<TransformComponent>(src, dest, target, newEntity);
             CopyComponent<ShapeRendererComponent>(src, dest, target, newEntity);
             CopyComponent<SpriteRendererComponent>(src, dest, target, newEntity);
+            CopyComponent<CameraComponent>(src, dest, target, newEntity);
             CopyComponent<TextComponent>(src, dest, target, newEntity);
             CopyComponent<ScriptComponent>(src, dest, target, newEntity);
             CopyComponent<RigidBodyComponent>(src, dest, target, newEntity);
@@ -58,6 +60,7 @@ namespace Blackberry {
             CopyComponent<TransformComponent>(src, dest, target, newEntity);
             CopyComponent<ShapeRendererComponent>(src, dest, target, newEntity);
             CopyComponent<SpriteRendererComponent>(src, dest, target, newEntity);
+            CopyComponent<CameraComponent>(src, dest, target, newEntity);
             CopyComponent<TextComponent>(src, dest, target, newEntity);
             CopyComponent<ScriptComponent>(src, dest, target, newEntity);
             CopyComponent<RigidBodyComponent>(src, dest, target, newEntity);

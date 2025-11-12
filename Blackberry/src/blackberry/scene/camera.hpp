@@ -22,7 +22,7 @@ namespace Blackberry {
                                     static_cast<f32>(viewport.x),       // right
                                     static_cast<f32>(viewport.y),       // bottom
                                     0.0f,                               // top
-                                    -1000.0f, 1000.0f                   // near-far
+                                    Near, Far                           // near-far
             );
 
             glm::mat4 view(1.0f);
@@ -65,6 +65,8 @@ namespace Blackberry {
         BlVec2 Offset;
         f32 Scale = 1.0f;
         f32 Rotation = 0.0f;
+        f32 Near = -1.0f;
+        f32 Far = 1.0f;
     };
 
 } // namespace Blackberry

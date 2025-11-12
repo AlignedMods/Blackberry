@@ -21,6 +21,8 @@ namespace Blackberry {
         void OnPlay();
         void OnStop();
 
+        void SetCamera(SceneCamera* camera);
+
         void OnUpdate();
         void OnRuntimeUpdate();
         void OnRender();
@@ -40,9 +42,10 @@ namespace Blackberry {
         AssetManager& GetAssetManager();
 
     private:
-        ECS* m_ECS;
-        AssetManager* m_AssetManager;
-        PhysicsWorld* m_PhysicsWorld;
+        ECS* m_ECS = nullptr;
+        AssetManager* m_AssetManager = nullptr;
+        PhysicsWorld* m_PhysicsWorld = nullptr;
+        SceneCamera* m_Camera = nullptr;
         std::unordered_map<u64, EntityID> m_EntityMap;
         std::unordered_map<std::string, u64> m_NamedEntityMap;
 

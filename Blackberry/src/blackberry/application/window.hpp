@@ -39,6 +39,7 @@ namespace Blackberry {
         virtual void SleepSeconds(f64 seconds) const = 0;
         void SleepMilli(f64 milliseconds) const { SleepSeconds(milliseconds / 1000.0); }
 
+        virtual void SetVSync(bool enabled) = 0;
         virtual void SetWindowIcon(const Image& image) = 0;
         virtual void SetCursorMode(CursorMode mode) = 0;
 

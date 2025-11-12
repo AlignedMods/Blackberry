@@ -94,8 +94,67 @@ struct BlVec3 {
     constexpr inline explicit BlVec3(f32 scalar)
         : x(scalar), y(scalar), z(scalar) {}
 
+    constexpr inline explicit BlVec3(BlVec2 vec)
+      : x(vec.x), y(vec.y), z(0.0f) {}
+
     constexpr inline explicit BlVec3(f32 x, f32 y, f32 z)
         : x(x), y(y), z(z) {}
+
+    constexpr inline BlVec3 operator+(BlVec3 rhs) {
+        return BlVec3(x + rhs.x, y + rhs.y, z + rhs.z);
+    }
+
+    constexpr inline BlVec3 operator-(BlVec3 rhs) {
+        return BlVec3(x - rhs.x, y - rhs.y, z - rhs.z);
+    }
+
+    constexpr inline BlVec3 operator*(BlVec3 rhs) {
+        return BlVec3(x * rhs.x, y * rhs.y, z * rhs.z);
+    }
+
+    constexpr inline BlVec3 operator/(BlVec3 rhs) {
+        return BlVec3(x / rhs.x, y / rhs.y, z / rhs.z);
+    }
+
+    constexpr inline void operator+=(BlVec3 rhs) {
+        x += rhs.x;
+        y += rhs.y;
+        y += rhs.z;
+    }
+
+    constexpr inline void operator-=(BlVec3 rhs) {
+        x -= rhs.x;
+        y -= rhs.y;
+        y -= rhs.z;
+    }
+
+    constexpr inline void operator*=(BlVec3 rhs) {
+        x *= rhs.x;
+        y *= rhs.y;
+        y *= rhs.z;
+    }
+
+    constexpr inline void operator/=(BlVec3 rhs) {
+        x /= rhs.x;
+        y /= rhs.y;
+        y /= rhs.z;
+    }
+
+    constexpr inline bool operator==(BlVec3 rhs) {
+        return x == rhs.x && y == rhs.y && z == rhs.z;
+    }
+
+    constexpr inline bool operator==(f32 scalar) {
+        return x == scalar && y == scalar && z == scalar;
+    }
+
+    constexpr inline bool operator!=(BlVec3 rhs) {
+        return x != rhs.x && y != rhs.y && z != rhs.z;
+    }
+
+    constexpr inline bool operator!=(f32 scalar) {
+        return x != scalar && y != scalar && z != scalar;
+    }
 
     f32 x, y, z;
 };
