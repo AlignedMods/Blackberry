@@ -57,6 +57,20 @@ namespace Blackberry {
                 };
             }
 
+            if (entity.HasComponent<CameraComponent>()) {
+                CameraComponent& camera = entity.GetComponent<CameraComponent>();
+                SceneCamera& cam = camera.Camera;
+
+                j["Entities"][name]["CameraComponent"] = {
+                    {"Position", {cam.Position.x, cam.Position.y}},
+                    {"Offset", {cam.Offset.x, cam.Offset.y}},
+                    {"Rotation", cam.Rotation},
+                    {"Near", cam.Near},
+                    {"Far", cam.Far},
+                    {"Size", {cam.Size.x, cam.Size.y}}
+                };
+            }
+
             if (entity.HasComponent<ScriptComponent>()) {
                 ScriptComponent& script = entity.GetComponent<ScriptComponent>();
 
@@ -155,6 +169,27 @@ namespace Blackberry {
 
                 entity.AddComponent<SpriteRendererComponent>({ BlColor(color[0], color[1], color[2], color[3]), static_cast<ShapeType>(shapeType), 
                                                       textureHandle, BlRec(textureArea[0], textureArea[1], textureArea[2], textureArea[3]) });
+            }
+
+            if (jsonEntity.contains("CameraComponent")) {
+                auto& jsonCamera = jsonEntity.at("CameraComponent");
+                SceneCamera cam;
+
+                std::array<f32, 2> position = jsonCamera.at("Position");
+                std::array<f32, 2> offset = jsonCamera.at("Offset");
+                std::array<f32, 2> size = jsonCamera.at("Size");
+                f32 rotation = jsonCamera.at("Rotation");
+                f32 nearZ = jsonCamera.at("Near");
+                f32 farZ = jsonCamera.at("Far");
+
+                cam.Position = BlVec2(position[0], position[1]);
+                cam.Offset = BlVec2(offset[0], offset[1]);
+                cam.Size = BlVec2(size[0], size[1]);
+                cam.Rotation = rotation;
+                cam.Near = nearZ;
+                cam.Far = farZ;
+
+                entity.AddComponent<CameraComponent>({ cam, true });
             }
 
             if (jsonEntity.contains("ScriptComponent")) {

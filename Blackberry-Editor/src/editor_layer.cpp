@@ -245,32 +245,28 @@ namespace BlackberryEditor {
             }
 
             if (!Input::IsMouseDown(MouseButton::Right) && acceptInput) {
-                BL_APP.GetWindow().SetCursorMode(CursorMode::Nomral);
+                BL_APP.GetWindow().SetCursorMode(CursorMode::Normal);
                 acceptInput = false;
             }
 
             if (acceptInput || m_ViewportHovered) {
                 if (Input::GetScrollLevel() != 0.0f) {
-                    auto& renderer = BL_APP.GetRenderer();
-                    BlVec2 windowSize = renderer.GetViewportSize();
-
-                    BlVec2 screenPos = Input::GetMousePosition() - BlVec2(m_ViewportBounds.x, m_ViewportBounds.y);
-                    screenPos *= BlVec2(windowSize.x / m_ViewportBounds.w, windowSize.y / m_ViewportBounds.h);
-                    BlVec2 worldPos = m_EditorCamera.GetScreenPosToWorld(screenPos);
-
-                    BL_INFO("Screen pos: {}, {}", screenPos.x, screenPos.y);
-                
-                    m_EditorCamera.Offset = screenPos;
-                    m_EditorCamera.Position = worldPos;
+                    // BlVec2 screenPos = Input::GetMousePosition() - BlVec2(m_ViewportBounds.x, m_ViewportBounds.y);
+                    // screenPos *= BlVec2(m_EditorCamera.Size.x / m_ViewportBounds.w, m_EditorCamera.Size.y / m_ViewportBounds.h);
+                    // BlVec2 worldPos = m_EditorCamera.GetScreenPosToWorld(screenPos);
+                    // 
+                    // BL_INFO("Screen pos: {}, {}", screenPos.x, screenPos.y);
+                    // 
+                    // m_EditorCamera.Offset = BlVec2(1920.0f / 2.0f, 1080.0f / 2.0f);
                 
                     f32 scale = 0.1f * Input::GetScrollLevel();
-                    m_EditorCamera.Scale = std::clamp(std::exp(std::log(m_EditorCamera.Scale)+scale), 0.125f, 64.0f);
+                    m_EditorCamera.Zoom = std::clamp(std::exp(std::log(m_EditorCamera.Zoom)+scale), 0.125f, 64.0f);
                 }
 
                 if (Input::IsMouseDown(MouseButton::Right)) { 
                     BlVec2 delta = Input::GetMouseDelta();
 
-                    m_EditorCamera.Position -= delta / BlVec2(m_EditorCamera.Scale);
+                    m_EditorCamera.Position -= delta / BlVec2(m_EditorCamera.Zoom);
                 }
             }
         }
@@ -865,13 +861,36 @@ namespace BlackberryEditor {
                 SceneCamera& cam = camera.Camera;
 
                 DrawVec2Control("Position: ", &cam.Position);
-                ImGui::DragFloat("Rotation: ", &cam.Rotation);
-                ImGui::DragFloat("Scale: ", &cam.Scale, 0.1f);
+                ImGui::Separator();
 
-                ImGui::Text("Near: "); ImGui::SameLine();
+                DrawVec2Control("Offset: ", &cam.Offset);
+                ImGui::Separator();
+
+                DrawVec2Control("Size: ", &cam.Size);
+                ImGui::Separator();
+
+                ImGui::Text("Rotation: ");
+                ImGui::Indent();
+                ImGui::DragFloat("##Rotation", &cam.Rotation);
+                ImGui::Unindent();
+                ImGui::Separator();
+
+                ImGui::Text("Zoom: ");
+                ImGui::Indent();
+                ImGui::DragFloat("##Zoom", &cam.Zoom);
+                ImGui::Unindent();
+                ImGui::Separator();
+
+                ImGui::Text("Near: ");
+                ImGui::Indent();
                 ImGui::DragFloat("##CameraNear", &cam.Near);
-                ImGui::Text("Far: "); ImGui::SameLine();
+                ImGui::Unindent();
+                ImGui::Separator();
+
+                ImGui::Text("Far: ");
+                ImGui::Indent();
                 ImGui::DragFloat("##CameraFar", &cam.Far);
+                ImGui::Unindent();
             });
             DrawComponent<ScriptComponent>("Script", entity, [this](ScriptComponent& script) {
                 auto stringPath = script.ModulePath.string();

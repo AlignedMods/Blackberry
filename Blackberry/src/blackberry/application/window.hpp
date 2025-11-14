@@ -8,9 +8,13 @@
 namespace Blackberry {
 
     enum class CursorMode {
-        Nomral,
+        Normal,
         Hidden,
         Disabled
+    };
+
+    enum class RenderingAPI {
+        OpenGL
     };
 
     using EventCallbackFn = std::function<void(const Event&)>;
@@ -18,6 +22,7 @@ namespace Blackberry {
     struct WindowData {
         std::string Name;
         u32 Width = 720, Height = 1280;
+        RenderingAPI RenderingBackend = RenderingAPI::OpenGL;
     };
 
     // an abstract window class so we can use multiple windowing and input backends (GLFW, win32...)

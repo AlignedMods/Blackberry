@@ -202,14 +202,17 @@ namespace Blackberry {
             exit(1);
         }
 
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        #ifdef BL_DEBUG_BUILD
-            glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
-        #endif
-        glfwWindowHint(GLFW_SAMPLES, 4);
-        glfwWindowHint(GLFW_DEPTH_BITS, 24);
+        if (data.RenderingBackend == RenderingAPI::OpenGL) {
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+            #ifdef BL_DEBUG_BUILD
+                glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
+            #endif
+            glfwWindowHint(GLFW_SAMPLES, 4);
+            glfwWindowHint(GLFW_DEPTH_BITS, 24);
+        }
+        
         m_Handle = glfwCreateWindow(data.Width, data.Height, data.Name.c_str(), nullptr, nullptr);
 
         if (!m_Handle) {
@@ -329,7 +332,7 @@ namespace Blackberry {
     void Window_GLFW::SetCursorMode(CursorMode mode) {
         int flag = 0;
         switch (mode) {
-            case CursorMode::Nomral: flag = GLFW_CURSOR_NORMAL; break;
+            case CursorMode::Normal: flag = GLFW_CURSOR_NORMAL; break;
             case CursorMode::Hidden: flag = GLFW_CURSOR_HIDDEN; break;
             case CursorMode::Disabled: flag = GLFW_CURSOR_DISABLED; break;
         }
