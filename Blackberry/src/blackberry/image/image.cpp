@@ -10,16 +10,20 @@
 
 namespace Blackberry {
 
-    Image::Image()
-        : m_Data(nullptr), m_Width(0), m_Height(0), m_Channels(0) {}
+    Image Image::Create(const std::filesystem::path& path) {
+        Image im;
 
-    Image::Image(const std::filesystem::path& path) {
-        LoadFromPath(path);
+        im.Data = stbi_load(path.string().c_str(), &im.Width, &im.Height, &im.Channels, 4);
+        im.Format = ImageFormat::RGBA8;
+
+        if (!im.Data) {
+            BL_CORE_ERROR("Failed to load image %s!", path.string().c_str());
+        }
+
+        return im;
     }
 
-    Image::Image(const void* data, u32 width, u32 height, ImageFormat format)
-        : m_Data(nullptr), m_Width(width), m_Height(height), m_Format(format) 
-    {
+    Image Image::Create(const void* data, u32 width, u32 height, ImageFormat format) {
         u32 size = 4;
 
         switch (format) {
@@ -34,59 +38,19 @@ namespace Blackberry {
                 break;
         }
 
-        m_Data = new u8[width * height * size];
-        memcpy(m_Data, data, width * height * size);
+        Image im;
+        im.Data = new u8[width * height * size];
+        memcpy(im.Data, data, width * height * size);
+
+        im.Width = width;
+        im.Height = height;
+        im.Format = format;
+
+        return im;
     }
-
-    Image::~Image() {
-        stbi_image_free(m_Data);
-
-        m_Data = nullptr;
-    }
-
-    void Image::LoadFromPath(const std::filesystem::path& path) {
-        m_Data = stbi_load(path.string().c_str(), &m_Width, &m_Height, &m_Channels, 4);
-        m_Format = ImageFormat::RGBA8;
-
-        if (!m_Data) {
-            BL_CORE_ERROR("Failed to load image %s!", path.string().c_str());
-        }
-    }
-
-    void Image::LoadFromMemory(void* data, u32 width, u32 height, ImageFormat format) {
-        m_Width = width;
-        m_Height = height;
-        m_Data = data;
-        m_Format = format;
-    }
-
-    // void Image::LoadFromTexture(BlTexture texture) {
-    //     Renderer& renderer = Application::Get().GetRenderer();
-    // 
-    //     // m_Data = renderer.GetTextureData(texture);
-    //     // m_Width = static_cast<i32>(renderer.GetTexDims(texture).x);
-    //     // m_Height = static_cast<i32>(renderer.GetTexDims(texture).y);
-    //     // m_Format = ImageFormat::RGBA8;
-    // }
 
     void Image::WriteOut(const std::string& fileName) {
-        stbi_write_png(fileName.c_str(), m_Width, m_Height, 3, m_Data, m_Width * 3);
-    }
-
-    i32 Image::GetWidth() const {
-        return m_Width;
-    }
-
-    i32 Image::GetHeight() const {
-        return m_Height;
-    }
-
-    void* Image::GetData() const {
-        return m_Data;
-    }
-
-    ImageFormat Image::GetFormat() const {
-        return m_Format;
+        stbi_write_png(fileName.c_str(), Width, Height, 3, Data, Width * 3);
     }
 
 } // namespace Blackberry

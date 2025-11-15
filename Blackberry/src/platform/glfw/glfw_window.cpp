@@ -322,9 +322,9 @@ namespace Blackberry {
 
     void Window_GLFW::SetWindowIcon(const Image& image) {
         GLFWimage im;
-        im.pixels = static_cast<u8*>(image.GetData());
-        im.width = image.GetWidth();
-        im.height = image.GetHeight();
+        im.pixels = static_cast<u8*>(image.Data);
+        im.width = image.Width;
+        im.height = image.Height;
 
         glfwSetWindowIcon(m_Handle, 1, &im);
     }

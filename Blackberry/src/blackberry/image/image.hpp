@@ -10,32 +10,24 @@ namespace Blackberry {
     enum class ImageFormat {
         U8,
         RGB8,
-        RGBA8
+        RGBA8,
+        F32,
+        RGB32F,
+        RGBA32F
     };
 
     class Image {
     public:
-        Image();
-        Image(const std::filesystem::path& path);
-        Image(const void* data, u32 width, u32 height, ImageFormat format);
-        ~Image();
-
-        void LoadFromPath(const std::filesystem::path& path);
-        void LoadFromMemory(void* data, u32 width, u32 height, ImageFormat format);
-        // void LoadFromTexture(BlTexture texture);
+        static Image Create(const std::filesystem::path& path);
+        static Image Create(const void* data, u32 width, u32 height, ImageFormat format);
 
         void WriteOut(const std::string& fileName);
 
-        i32 GetWidth() const;
-        i32 GetHeight() const;
-        void* GetData() const;
-        ImageFormat GetFormat() const;
-
-    private:
-        void* m_Data;
-        i32 m_Width, m_Height;
-        i32 m_Channels;
-        ImageFormat m_Format;
+    public:
+        void* Data = nullptr;
+        i32 Width = 0, Height = 0;
+        i32 Channels = 0;
+        ImageFormat Format = ImageFormat::U8;
     };
 
 } // namespace Blackberry

@@ -141,25 +141,70 @@ namespace BlackberryEditor {
     }
     
     static void DrawRecControl(const std::string& label, BlRec* rec) {
-        BlVec2 xy = BlVec2(rec->x, rec->y);
-        BlVec2 wh = BlVec2(rec->w, rec->h);
+        ImGuiIO& io = ImGui::GetIO();
     
         ImGui::PushID(label.c_str());
     
-        if (ImGui::TreeNode(label.c_str())) {
-            DrawVec2Control("Position: ", &xy);
-            DrawVec2Control("Dimensions: ", &wh);
+        // label
+        ImGui::Text("%s", label.c_str());
+
+        ImGui::Indent();
+
+        ImGui::SeparatorText("Position: ");
     
-            ImGui::TreePop();
-        }
+        // x axis control
+        ImGui::PushFont(io.Fonts->Fonts[1], 16);
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.0f, 0.0f, 0.7f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 0.0f, 0.0f, 0.4f));
+        ImGui::Button("X", ImVec2(32.0f, 0.0f));
+        ImGui::PopStyleColor(3);
+        ImGui::PopFont();
+    
+        ImGui::SameLine();
+        ImGui::DragFloat("##DragX", &rec->x, 1.0f);
+    
+        // y axis control
+        ImGui::PushFont(io.Fonts->Fonts[1], 16);
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 1.0f, 0.0f, 0.7f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 1.0f, 0.0f, 0.4f));
+        ImGui::Button("Y", ImVec2(32.0f, 0.0f));
+        ImGui::PopStyleColor(3);
+        ImGui::PopFont();
+    
+        ImGui::SameLine();
+        ImGui::DragFloat("##DragY", &rec->y);
+
+        ImGui::SeparatorText("Dimensions: ");
+
+        // w axis control
+        ImGui::PushFont(io.Fonts->Fonts[1], 16);
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.0f, 0.0f, 0.7f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 0.0f, 0.0f, 0.4f));
+        ImGui::Button("W", ImVec2(32.0f, 0.0f));
+        ImGui::PopStyleColor(3);
+        ImGui::PopFont();
+    
+        ImGui::SameLine();
+        ImGui::DragFloat("##DragW", &rec->w);
+        
+        // h axis control
+        ImGui::PushFont(io.Fonts->Fonts[1], 16);
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 1.0f, 0.0f, 0.7f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 1.0f, 0.0f, 0.4f));
+        ImGui::Button("H", ImVec2(32.0f, 0.0f));
+        ImGui::PopStyleColor(3);
+        ImGui::PopFont();
+    
+        ImGui::SameLine();
+        ImGui::DragFloat("##DragH", &rec->h);
+
+        ImGui::Unindent();
     
         ImGui::PopID();
-    
-        // return value
-        rec->x = xy.x;
-        rec->y = xy.y;
-        rec->w = wh.x;
-        rec->h = wh.y;
     }
     
     static void DrawColorControl(const std::string& label, BlColor* color) {
@@ -217,6 +262,8 @@ namespace BlackberryEditor {
 
         m_EditorCamera.Offset = BlVec2(m_RenderTexture.Texture.Width / 2.0f, m_RenderTexture.Texture.Height / 2.0f);
         m_EditorCamera.Position = BlVec2(m_RenderTexture.Texture.Width / 2.0f, m_RenderTexture.Texture.Height / 2.0f);
+
+        m_EditorFont = Font::Create("Assets/creato_display/CreatoDisplay-Medium.otf");
     }
 
     void EditorLayer::OnDetach() {
@@ -281,6 +328,9 @@ namespace BlackberryEditor {
         } else {
             m_CurrentScene->SetCamera(&m_RuntimeCamera);
         }
+
+        // Renderer2D::DrawTextureArea(BlVec3(300.0f, 200.0f, 1.0f), BlVec2(m_EditorFont.GetGlyphInfo('E').Rect.w, m_EditorFont.GetGlyphInfo('E').Rect.h), m_EditorFont.GetGlyphInfo('E').Rect, m_EditorFont.TextureAtlas);
+        Renderer2D::DrawText("Test string!", BlVec3(300.0f, 200.0f, 1.0f), 48.0f, m_EditorFont);
 
         m_CurrentScene->OnRender();
 
@@ -855,7 +905,7 @@ namespace BlackberryEditor {
 
                 ImGui::Unindent();
 
-                // DrawRecControl("Area", &spriteRenderer.Area);
+                DrawRecControl("Area", &spriteRenderer.Area);
             });
             DrawComponent<CameraComponent>("Camera", entity, [this](CameraComponent& camera) {
                 SceneCamera& cam = camera.Camera;
@@ -1013,6 +1063,12 @@ namespace BlackberryEditor {
         ImGui::Text("Indicies: %u", stats.Indicies);
         ImGui::Text("Active Textures: %u", stats.ActiveTextures);
         ImGui::Text("Reserved Textures: %u", stats.ReservedTextures);
+
+        ImGui::End();
+
+        ImGui::Begin("Font");
+
+        ImGui::Image(m_EditorFont.TextureAtlas.ID, ImVec2(512, 512));
 
         ImGui::End();
     }

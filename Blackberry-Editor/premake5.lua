@@ -12,7 +12,7 @@ project "Blackberry-Editor"
     includedirs { "../Blackberry/src/",
                   "%{BlackberryIncludes.spdlog}",
                   "%{BlackberryIncludes.glm}",
-                  "%{BlackberryIncludes.entt}"}
+                  "%{BlackberryIncludes.entt}" }
     
     links { BlackberryLinks }
 

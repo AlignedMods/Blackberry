@@ -5,6 +5,8 @@
 
 #include <string>
 
+#undef DrawText // windows i will genuenly kill you
+
 struct BlRenderer2DInfo {
     u32 DrawCalls = 0;
     u32 Vertices = 0;
@@ -45,6 +47,8 @@ namespace Blackberry {
         static void DrawTexture(BlVec3 pos, BlTexture texture, f32 rotation = 0.0f, BlColor color = Colors::White);
         static void DrawTextureEx(BlVec3 pos, BlVec2 dimensions, BlTexture texture, f32 rotation = 0.0f, BlColor color = Colors::White);
         static void DrawTextureArea(BlVec3 pos, BlVec2 dimensions, BlRec area, BlTexture texture, f32 rotation = 0.0f, BlColor color = Colors::White);
+
+        static void DrawText(const std::string& text, BlVec3 pos, u32 fontSize, Font& font, BlColor color = Colors::White);
 
         static void DrawTexturedQuad(BlVec3 pos, BlVec2 dimensions, BlRec area, BlTexture texture, f32 rotation, BlColor color);
         static void DrawTexturedTriangle(BlVec3 pos, BlVec2 dimensions, BlRec area, BlTexture texture, f32 rotation, BlColor color);

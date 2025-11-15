@@ -1,102 +1,93 @@
 #include "blackberry/font/font.hpp"
-// #include "blackberry/core/types.hpp"
-// #include "blackberry/core/log.hpp"
-// #include "blackberry/rendering/rendering.hpp"
-// #include "blackberry/core/util.hpp"
-// 
-// #include "msdf-atlas-gen/msdf-atlas-gen.h"
-// #include "msdfgen/msdfgen.h"
-// #include "stb_image_write.h"
-// 
-// #include <fstream>
-// #include <iostream>
+#include "blackberry/core/types.hpp"
+#include "blackberry/core/log.hpp"
+#include "blackberry/rendering/rendering.hpp"
+#include "blackberry/core/util.hpp"
+
+#include "msdfgen.h"
+#include "msdf-atlas-gen/msdf-atlas-gen.h"
+#include "ext/import-font.h"
+
+#include <fstream>
+#include <iostream>
 
 namespace Blackberry {
 
-    // static msdfgen::FreetypeHandle* s_FreetypeHandle = nullptr;
+    static msdfgen::FreetypeHandle* s_FreetypeHandle = nullptr;
 
-    Font::Font() {
+    Font Font::Create(const std::filesystem::path& path) {
+        Font font;
+
         InitFreeType();
-    }
 
-    Font::Font(const std::filesystem::path& path)
-        : m_Path(path) 
-    {
-        InitFreeType();
-        CreateFont();
-    }
+        std::string contents = ReadEntireFile(path);
+        font.m_FontFileData.assign(contents.begin(), contents.end());
+        font.GenerateAtlas();
 
-    Font::~Font()
-    {
+        return font;
     }
 
     void Font::InitFreeType() {
-        // if (s_FreetypeHandle) { return; }
-        // s_FreetypeHandle = msdfgen::initializeFreetype();
-        // 
-        // BL_ASSERT(s_FreetypeHandle, "Freetype not initialized properly!");
+        if (s_FreetypeHandle) { return; }
+        s_FreetypeHandle = msdfgen::initializeFreetype();
+        
+        BL_ASSERT(s_FreetypeHandle, "Freetype not initialized properly!");
     }
 
-    void Font::CreateFont() {
-        // m_Handle = msdfgen::loadFont(s_FreetypeHandle, m_Path.string().c_str());
-        // 
-        // BL_ASSERT(m_Handle, "Font was not created properly!");
-        // 
-        // msdf_atlas::FontGeometry fontGeometry(&m_Glyphs);
-        // fontGeometry.loadCharset(m_Handle, 1.0, msdf_atlas::Charset::ASCII);
-        // 
-        // for (auto& glyph : m_Glyphs) {
-        //     glyph.edgeColoring(&msdfgen::edgeColoringInkTrap, 3.0, 0);
-        // 
-        //     u8 codepoint = glyph.getCodepoint();
-        //     i32 x, y, w, h;
-        //     glyph.getBoxRect(x, y, w, h);
-        // 
-        //     BlGlyphInfo info;
-        //     info.Value = codepoint;
-        //     info.Rect = BlRec(x, y, w, h);
-        //     info.AdvanceX = static_cast<f32>(glyph.getAdvance());
-        // 
-        //     m_UserGlyphs[codepoint] = info;
-        // }
-        // 
-        // msdf_atlas::TightAtlasPacker packer;
-        // packer.setDimensionsConstraint(msdf_atlas::TightAtlasPacker::DimensionsConstraint::SQUARE);
-        // packer.setMinimumScale(32.0f);
-        // packer.setPixelRange(2.0);
-        // packer.setMiterLimit(1.0);
-        // packer.pack(m_Glyphs.data(), m_Glyphs.size());
-        // 
-        // i32 width = 0, height = 0;
-        // packer.getDimensions(width, height);
-        // 
-        // msdf_atlas::GeneratorAttributes atrribs;
-        // msdf_atlas::ImmediateAtlasGenerator<f32, 3, msdf_atlas::msdfGenerator, msdf_atlas::BitmapAtlasStorage<msdf_atlas::byte, 3>> generator(width, height);
-        // generator.setAttributes(atrribs);
-        // generator.setThreadCount(4);
-        // generator.generate(m_Glyphs.data(), m_Glyphs.size());
-        // 
-        // msdfgen::BitmapConstRef<msdfgen::byte, 3> atlas = generator.atlasStorage();
-        // Image image(atlas.pixels, width, height, ImageFormat::RGB8);
-        // image.WriteOut("test.png");
-        // 
-        // m_Texture.Create(image);
-        // 
-        // msdfgen::destroyFont(m_Handle);
+    GlyphInfo Font::GetGlyphInfo(u8 codepoint, u32 size) {
+        return Glyphs[codepoint];
     }
 
-    BlTexture Font::GetTexture() {
-        return m_Texture;
-    }
+    void Font::GenerateAtlas() {
+        using namespace msdf_atlas;
 
-    BlGlyphInfo Font::GetGlyphInfo(u8 codepoint) {
-        // if (!m_UserGlyphs.contains(codepoint)) {
-        //     return BlGlyphInfo{};
-        // }
+        msdfgen::FontHandle* font = msdfgen::loadFontData(s_FreetypeHandle, m_FontFileData.data(), m_FontFileData.size());
+        std::vector<GlyphGeometry> glyphs;
 
-        // return m_UserGlyphs.at(codepoint);
+        FontGeometry fontGeometry(&glyphs);
 
-        return BlGlyphInfo{};
+        fontGeometry.loadCharset(font, 1.0, Charset::ASCII);
+        constexpr f64 MAX_CORNER_ANGLE = 3.0;
+        for (auto& glyph : glyphs) {
+            glyph.edgeColoring(&msdfgen::edgeColoringInkTrap, MAX_CORNER_ANGLE, 0);
+        }
+
+        TightAtlasPacker packer;
+        packer.setDimensionsConstraint(DimensionsConstraint::SQUARE);
+        packer.setMinimumScale(24.0);
+        packer.setPixelRange(2.0);
+        packer.setMiterLimit(1.0);
+
+        packer.pack(glyphs.data(), glyphs.size()); // pack glyphs (so we can know size)
+
+        int width = 0, height = 0;
+        packer.getDimensions(width, height);
+
+        ImmediateAtlasGenerator<f32, 3, msdfGenerator, BitmapAtlasStorage<byte, 3>> generator(width, height);
+        GeneratorAttributes attribs;
+        generator.setAttributes(attribs);
+        generator.setThreadCount(4);
+
+        generator.generate(glyphs.data(), glyphs.size()); // create atlas
+        msdfgen::BitmapConstRef<u8, 3> bitmap(generator.atlasStorage());
+
+        // funny cast
+        TextureAtlas.Create(const_cast<byte*>(bitmap.pixels), bitmap.width, bitmap.height, ImageFormat::RGB8);
+
+        for (auto codepoint : Charset::ASCII) {
+            auto glyph = fontGeometry.getGlyph(codepoint);
+            GlyphInfo info;
+
+            int x, y, w, h;
+            glyph->getBoxRect(x, y, w, h);
+            
+            info.Rect = BlRec(x, y, w, h);
+            info.AdvanceX = static_cast<f32>(glyph->getAdvance() * 64.0);
+
+            Glyphs[codepoint] = info;
+        }
+
+        msdfgen::destroyFont(font);
     }
 
 } // namespace Blackberry

@@ -19,6 +19,12 @@ struct BlCircleVertex {
     BlVec2 TexCoord;
 };
 
+struct BlFontVertex {
+    BlVec3 Pos;
+    BlVec4 Color;
+    BlVec2 TexCoord;
+};
+
 namespace Blackberry {
 
     static u8 s_WhiteTextureData[] = {0xff, 0xff, 0xff, 0xff}; // dead simple white texture (1x1 pixel)
@@ -126,10 +132,67 @@ namespace Blackberry {
         }
     );
 
+    static const char* s_VertexShaderFontSource = BL_STR(
+        \x23version 460 core\n
+
+        layout (location = 0) in vec3 a_Pos; // BlShapeVertex.Pos (also we can have comments like this because preproccesor ignores them!)
+        layout (location = 1) in vec4 a_Color; // BlShapeVertex.Color
+        layout (location = 2) in vec2 a_TexCoord; // BlShapeVertex.TexCoord
+
+        uniform mat4 u_Projection;
+
+        layout (location = 0) out vec4 o_Color;
+        layout (location = 1) out vec2 o_TexCoord;
+
+        void main() {
+            gl_Position = u_Projection * vec4(a_Pos, 1.0f);
+
+            o_Color = a_Color;
+            o_TexCoord = a_TexCoord;
+        }
+    );
+
+    static const char* s_FragmentShaderFontSource = BL_STR(
+        \x23version 460 core\n
+
+        layout (location = 0) in vec4 a_Color;
+        layout (location = 1) in vec2 a_TexCoord;
+
+        uniform sampler2D u_FontAtlas;
+
+        out vec4 o_FragColor;
+
+        float screenPxRange() {
+            const float pxRange = 2.0;
+            vec2 unitRange = vec2(pxRange) / vec2(textureSize(u_FontAtlas, 0));
+            vec2 screenTexSize = vec2(1.0) / fwidth(a_TexCoord);
+            return max(0.5*dot(unitRange, screenTexSize), 1.0);
+        }
+
+        float median(float r, float g, float b) {
+            return max(min(r, g), min(max(r, g), b));
+        }
+
+        void main() {
+            vec4 texelColor = texture(u_FontAtlas, a_TexCoord);
+
+            // msdf thing
+            vec3 msd = texelColor.rgb;
+            float sd = median(msd.r, msd.g, msd.b);
+            float screenPxDistance = screenPxRange() * (sd - 0.5);
+            float opacity = clamp(screenPxDistance + 0.5, 0.0, 1.0);
+            if (opacity == 0.0) { discard; }
+
+            vec4 bgColor = vec4(0.0);
+            o_FragColor = mix(bgColor, a_Color, opacity);
+        }
+    );
+
     struct _Renderer2DState {
         // shader
         BlShader ShapeShader;
         BlShader CircleShader;
+        BlShader FontShader;
 
         BlTexture WhiteTexture;
 
@@ -147,7 +210,15 @@ namespace Blackberry {
         std::vector<u32> CircleIndices;
         BlDrawBuffer CircleDrawBuffer;
 
-        // for textured shaped
+        // Font buffer data
+        u32 FontIndexCount = 0;
+        u32 FontVertexCount = 0;
+        std::vector<BlFontVertex> FontVertices;
+        std::vector<u32> FontIndices;
+        BlDrawBuffer FontDrawBuffer;
+        BlTexture CurrentFontAtlas;
+
+        // for textures
         u32 CurrentTexIndex = 1; // NOTE: 0 is reserved for a blank white texture!!!
         std::array<BlTexture, 16> CurrentAttachedTextures;
 
@@ -201,6 +272,7 @@ namespace Blackberry {
     void Renderer2D::Init() {
         Renderer2DState.ShapeShader.Create(s_VertexShaderShapeSource, s_FragmentShaderShapeSource);
         Renderer2DState.CircleShader.Create(s_VertexShaderCircleSource, s_FragmentShaderCircleSource);
+        Renderer2DState.FontShader.Create(s_VertexShaderFontSource, s_FragmentShaderFontSource);
         Renderer2DState.WhiteTexture.Create(s_WhiteTextureData, 1, 1, ImageFormat::RGBA8);
 
         Renderer2DState.CurrentAttachedTextures[0] = Renderer2DState.WhiteTexture; // 0 is reserved for white
@@ -291,6 +363,70 @@ namespace Blackberry {
         DrawTexturedQuad(pos, dimensions, area, texture, rotation, color);
     }
 
+    void Renderer2D::DrawText(const std::string& text, BlVec3 pos, u32 fontSize, Font& font, BlColor color) {
+#if !0
+        BlTexture tex = font.TextureAtlas;
+        // BlTexture tex = Renderer2DState.WhiteTexture;
+        f32 currentX = pos.x;
+        f32 currentY = pos.y;
+
+        BlColor currentColor = color;
+
+        for (u32 c = 0; c < text.length(); c++) {
+            if (text.at(c) == '\n') {
+                // currentY += font.RowHeight;
+                currentX = pos.x;
+            } else {
+                GlyphInfo glyph = font.GetGlyphInfo(text.at(c), fontSize);
+                BlRec area = glyph.Rect;
+                f32 texIndex = 0.0f;
+
+                if (tex.ID != Renderer2DState.CurrentFontAtlas.ID) {
+                    Render();
+                    Renderer2DState.CurrentFontAtlas = tex;
+                }
+                
+                BlVec4 normalizedColor;
+                NormalizeColor(color, &normalizedColor);
+
+                BlVec2 texSize = BlVec2(static_cast<f32>(tex.Width), static_cast<f32>(tex.Height));
+
+                BlVec3 bl = BlVec3(currentX + glyph.Left, currentY + area.h - glyph.Top + font.Ascender, pos.z);
+                BlVec3 tr = BlVec3(currentX + area.w + glyph.Left, currentY - glyph.Top + font.Ascender, pos.z);
+                BlVec3 br = BlVec3(currentX + area.w + glyph.Left, currentY + area.h - glyph.Top + font.Ascender, pos.z);
+                BlVec3 tl = BlVec3(currentX + glyph.Left, currentY - glyph.Top + font.Ascender, pos.z);
+
+                BlFontVertex vertexBL = BlFontVertex(bl, normalizedColor, BlVec2(area.x / texSize.x, (area.h + area.y) / texSize.y));
+                BlFontVertex vertexTR = BlFontVertex(tr, normalizedColor, BlVec2((area.w + area.x) / texSize.x, area.y / texSize.y));
+                BlFontVertex vertexBR = BlFontVertex(br, normalizedColor, BlVec2((area.w + area.x) / texSize.x, (area.h + area.y) / texSize.y));
+                BlFontVertex vertexTL = BlFontVertex(tl, normalizedColor, BlVec2(area.x / texSize.x, area.y / texSize.y));
+
+                // push all vertices (bl, tr, br, tl)
+                Renderer2DState.FontVertices.push_back(vertexBL);
+                Renderer2DState.FontVertices.push_back(vertexTR);
+                Renderer2DState.FontVertices.push_back(vertexBR);
+                Renderer2DState.FontVertices.push_back(vertexTL);
+
+                // first triangle (bl, tr, br)
+                Renderer2DState.FontIndices.push_back(Renderer2DState.FontVertexCount + 0);
+                Renderer2DState.FontIndices.push_back(Renderer2DState.FontVertexCount + 1);
+                Renderer2DState.FontIndices.push_back(Renderer2DState.FontVertexCount + 2);
+
+                // second triangle (bl, tl, tr)
+                Renderer2DState.FontIndices.push_back(Renderer2DState.FontVertexCount + 0);
+                Renderer2DState.FontIndices.push_back(Renderer2DState.FontVertexCount + 3);
+                Renderer2DState.FontIndices.push_back(Renderer2DState.FontVertexCount + 1);
+
+                Renderer2DState.FontIndexCount += 6;
+                Renderer2DState.FontVertexCount += 4;
+
+                currentX += glyph.AdvanceX + 1;
+            }
+        }
+
+#endif
+    }
+
     void Renderer2D::DrawTexturedQuad(BlVec3 pos, BlVec2 dimensions, BlRec area, BlTexture texture, f32 rotation, BlColor color) {
         f32 texIndex = 0.0f;
 
@@ -320,13 +456,15 @@ namespace Blackberry {
         BlVec3 bl, tr, br, tl;
         BlVec4 normalizedColor;
 
+        BlVec2 texSize = BlVec2(static_cast<f32>(texture.Width), static_cast<f32>(texture.Height));
+
         SetupQuad(pos, dimensions, rotation, color, &bl, &tr, &br, &tl);
         NormalizeColor(color, &normalizedColor);
 
-        BlShapeVertex vertexBL = BlShapeVertex(bl, normalizedColor, BlVec2(0.0f, 1.0f), texIndex);
-        BlShapeVertex vertexTR = BlShapeVertex(tr, normalizedColor, BlVec2(1.0f, 0.0f), texIndex);
-        BlShapeVertex vertexBR = BlShapeVertex(br, normalizedColor, BlVec2(1.0f, 1.0f), texIndex);
-        BlShapeVertex vertexTL = BlShapeVertex(tl, normalizedColor, BlVec2(0.0f, 0.0f), texIndex);
+        BlShapeVertex vertexBL = BlShapeVertex(bl, normalizedColor, BlVec2(area.x / texSize.x, (area.h + area.y) / texSize.y), texIndex);
+        BlShapeVertex vertexTR = BlShapeVertex(tr, normalizedColor, BlVec2((area.w + area.x) / texSize.x, area.y / texSize.y), texIndex);
+        BlShapeVertex vertexBR = BlShapeVertex(br, normalizedColor, BlVec2((area.w + area.x) / texSize.x, (area.h + area.y) / texSize.y), texIndex);
+        BlShapeVertex vertexTL = BlShapeVertex(tl, normalizedColor, BlVec2(area.x / texSize.x, area.y / texSize.y), texIndex);
 
         // push all vertices (bl, tr, br, tl)
         Renderer2DState.ShapeVertices.push_back(vertexBL);
@@ -567,6 +705,69 @@ namespace Blackberry {
             Renderer2DState.CircleVertices.reserve(1024);
             Renderer2DState.CircleIndexCount = 0;
             Renderer2DState.CircleVertexCount = 0;
+        }
+
+        // font buffer
+        if (Renderer2DState.FontIndexCount > 0) {
+            BlDrawBufferLayout vertPosLayout;
+            vertPosLayout.Index = 0;
+            vertPosLayout.Count = 3;
+            vertPosLayout.Type = BlDrawBufferLayout::ElementType::Float;
+            vertPosLayout.Stride = sizeof(BlFontVertex);
+            vertPosLayout.Offset = offsetof(BlFontVertex, Pos);
+
+            BlDrawBufferLayout vertColorLayout;
+            vertColorLayout.Index = 1;
+            vertColorLayout.Count = 4;
+            vertColorLayout.Type = BlDrawBufferLayout::ElementType::Float;
+            vertColorLayout.Stride = sizeof(BlFontVertex);
+            vertColorLayout.Offset = offsetof(BlFontVertex, Color);
+
+            BlDrawBufferLayout vertTexCoordLayout;
+            vertTexCoordLayout.Index = 2;
+            vertTexCoordLayout.Count = 2;
+            vertTexCoordLayout.Type = BlDrawBufferLayout::ElementType::Float;
+            vertTexCoordLayout.Stride = sizeof(BlFontVertex);
+            vertTexCoordLayout.Offset = offsetof(BlFontVertex, TexCoord);
+
+            Renderer2DState.FontDrawBuffer.Vertices = Renderer2DState.FontVertices.data();
+            Renderer2DState.FontDrawBuffer.VertexCount = Renderer2DState.FontVertexCount;
+            Renderer2DState.FontDrawBuffer.VertexSize = sizeof(BlFontVertex);
+                            
+            Renderer2DState.FontDrawBuffer.Indices = Renderer2DState.FontIndices.data();
+            Renderer2DState.FontDrawBuffer.IndexCount = Renderer2DState.FontIndexCount;
+            Renderer2DState.FontDrawBuffer.IndexSize = sizeof(u32);
+
+            renderer.SubmitDrawBuffer(Renderer2DState.FontDrawBuffer);
+            
+            renderer.SetBufferLayout(vertPosLayout);
+            renderer.SetBufferLayout(vertColorLayout);
+            renderer.SetBufferLayout(vertTexCoordLayout);
+            
+            renderer.BindShader(Renderer2DState.FontShader);
+            renderer.AttachTexture(Renderer2DState.CurrentFontAtlas);
+
+            BlShader shader = Renderer2DState.FontShader;
+            shader.SetMatrix("u_Projection", Renderer2DState.Camera.GetCameraMatrixFloat());
+
+            renderer.DrawIndexed(Renderer2DState.FontIndexCount);
+
+            renderer.DetachTexture();
+
+            Renderer2DState.Info.DrawCalls++;
+            // Renderer2DState.Info.ActiveTextures = Renderer2DState.CurrentFontIndex;
+            // Renderer2DState.Info.ReservedTextures = 1;
+
+            // clear buffer after rendering
+            Renderer2DState.FontIndices.clear();
+            Renderer2DState.FontVertices.clear();
+
+            // reserve memory again
+            Renderer2DState.FontIndices.reserve(2048);
+            Renderer2DState.FontVertices.reserve(2048);
+            Renderer2DState.FontIndexCount = 0;
+            Renderer2DState.FontVertexCount = 0;
+            Renderer2DState.CurrentTexIndex = 0;
         }
     }
 

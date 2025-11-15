@@ -49,7 +49,7 @@ namespace Blackberry {
             relative = std::filesystem::relative(path, std::filesystem::current_path());
         }
 
-        Blackberry::Image image(relative);
+        Blackberry::Image image = Image::Create(relative);
         BlTexture tex;
         tex.Create(image);
 

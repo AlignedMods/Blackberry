@@ -7,47 +7,36 @@
 #include <unordered_map>
 #include <vector>
 
-namespace msdfgen {
-    class FontHandle;
-}
-
-namespace msdf_atlas {
-    class GlyphGeometry;
-}
-
-struct BlGlyphInfo {
-    u8 Value = 0; // unicode character value
-    BlRec Rect;
-    f32 AdvanceX = 0.0f;
-    i32 Top = 0;
-    i32 Left = 0;
-    i32 BaselineOffset = 0;
-};
-
 namespace Blackberry {
+
+    struct GlyphInfo {
+        u8 Value = 0; // unicode character value
+        BlRec Rect;
+        f32 AdvanceX = 0.0f;
+        i32 Top = 0;
+        i32 Left = 0;
+        i32 BaselineOffset = 0;
+    };
+    
 
     class Font {
     public:
-        Font();
-        Font(const std::filesystem::path& path);
-        ~Font();
+        static Font Create(const std::filesystem::path& path);
+        static void InitFreeType();
 
-        void CreateFont();
-        BlTexture GetTexture();
+        GlyphInfo GetGlyphInfo(u8 codepoint, u32 size);
+        void GenerateAtlas();
 
-        BlGlyphInfo GetGlyphInfo(u8 codepoint);
+    public:
+        BlTexture TextureAtlas;
+        Image ImageAtlas;
+        u32 GlyphCount = 0;
+        std::unordered_map<u8, GlyphInfo> Glyphs;
+        i32 RowHeight = 0;
+        i32 Ascender = 0;
 
     private:
-        void InitFreeType();
-
-    private:
-        msdfgen::FontHandle* m_Handle;
-        std::filesystem::path m_Path = "Assets/arial/arial.ttf";
-
-        // std::vector<msdf_atlas::GlyphGeometry> m_Glyphs; // internal glyphs
-        // std::unordered_map<u8, BlGlyphInfo> m_UserGlyphs; // user land glyphs
-
-        BlTexture m_Texture;
+        std::vector<u8> m_FontFileData;
     };
 
 } // namespace Blackberry

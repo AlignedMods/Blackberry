@@ -8,12 +8,18 @@
 [submodule "Blackberry/vendor/glm"]
 	path = Blackberry/vendor/glm
 	url = https://github.com/g-truc/glm.git
-[submodule "Blackberry/vendor/msdf-atlas-gen"]
-	path = Blackberry/vendor/msdf-atlas-gen
-	url = https://github.com/TheCherno/msdf-atlas-gen.git
 [submodule "Blackberry/vendor/imguizmo"]
 	path = Blackberry/vendor/imguizmo
 	url = https://github.com/CedricGuillemet/ImGuizmo.git
 [submodule "Blackberry/vendor/spdlog"]
 	path = Blackberry/vendor/spdlog
 	url = https://github.com/gabime/spdlog.git
+[submodule "Blackberry/vendor/freetype"]
+	path = Blackberry/vendor/freetype
+	url = https://github.com/freetype/freetype.git
+[submodule "Blackberry/vendor/msdfgen"]
+	path = Blackberry/vendor/msdfgen
+	url = https://github.com/AlignedMods/msdfgen.git
+[submodule "Blackberry/vendor/msdf-atlas-gen"]
+	path = Blackberry/vendor/msdf-atlas-gen
+	url = https://github.com/Chlumsky/msdf-atlas-gen.git

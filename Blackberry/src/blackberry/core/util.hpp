@@ -41,7 +41,7 @@ namespace Blackberry {
     }
 
     inline std::string ReadEntireFile(const std::filesystem::path& path) {
-        std::ifstream file(path);
+        std::ifstream file(path, std::ios::binary);
         std::stringstream ss;
         ss << file.rdbuf();
         std::string contents = ss.str();
