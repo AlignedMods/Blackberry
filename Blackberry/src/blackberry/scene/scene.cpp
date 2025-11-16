@@ -152,7 +152,7 @@ namespace Blackberry {
                     Renderer2D::DrawRectangle(transform.GetMatrix(), shapeRenderer.Color);
                     break;
                 case ShapeType::Circle:
-                    Renderer2D::DrawElipse(transform.Position, transform.Dimensions, transform.Rotation, shapeRenderer.Color);
+                    Renderer2D::DrawElipse(transform.GetMatrix(), shapeRenderer.Color);
                     break;
             }
         }

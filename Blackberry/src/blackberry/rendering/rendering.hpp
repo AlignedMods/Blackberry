@@ -44,7 +44,7 @@ namespace Blackberry {
         static void DrawTriangle(const glm::mat4& transform, BlColor color);
 
         static void DrawCircle(BlVec3 pos, f32 radius, BlColor color = Colors::White);
-        static void DrawElipse(BlVec3 pos, BlVec2 dimensions, f32 rotation = 0.0f, BlColor color = Colors::White);
+        static void DrawElipse(const glm::mat4& transform, BlColor color = Colors::White);
 
         static void DrawTexture(BlVec3 pos, BlTexture texture, f32 rotation = 0.0f, BlColor color = Colors::White);
         static void DrawTextureEx(BlVec3 pos, BlVec2 dimensions, BlTexture texture, f32 rotation = 0.0f, BlColor color = Colors::White);

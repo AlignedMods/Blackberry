@@ -428,7 +428,7 @@ namespace BlackberryEditor {
                         Renderer2D::DrawRectangle(transform.GetMatrix(), Colors::White);
                         break;
                     case ShapeType::Circle:
-                        Renderer2D::DrawElipse(transform.Position, transform.Dimensions, transform.Rotation, Colors::White);
+                        Renderer2D::DrawElipse(transform.GetMatrix(), Colors::White);
                         break;
                 }
             };
