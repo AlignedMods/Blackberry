@@ -43,16 +43,17 @@
                 "Name": "rect",
                 "UUID": 15409902001426328282
             },
-            "TransformComponent": {
+            "Transform2DComponent": {
                 "Dimensions": [
-                    542.0,
-                    295.0
+                    242.0,
+                    370.0
                 ],
                 "Position": [
-                    512.6950073242188,
-                    728.0,
+                    746.0,
+                    793.0,
                     0.0
-                ]
+                ],
+                "Rotation": 0.0
             }
         },
         "ID - 1": {
@@ -69,16 +70,17 @@
                 "Name": "Rectangle",
                 "UUID": 7800517283642256273
             },
-            "TransformComponent": {
+            "Transform2DComponent": {
                 "Dimensions": [
-                    200.0,
-                    100.0
+                    0.0,
+                    0.0
                 ],
                 "Position": [
-                    1180.0,
-                    670.0,
+                    0.0,
+                    0.0,
                     0.0
-                ]
+                ],
+                "Rotation": 0.0
             }
         },
         "ID - 2": {
@@ -102,16 +104,17 @@
                 "Name": "Cat",
                 "UUID": 13781431752699742974
             },
-            "TransformComponent": {
+            "Transform2DComponent": {
                 "Dimensions": [
-                    350.0,
-                    477.0
+                    409.0,
+                    537.0
                 ],
                 "Position": [
-                    255.0,
-                    319.0,
-                    -1.0
-                ]
+                    328.0,
+                    341.0,
+                    0.0
+                ],
+                "Rotation": 0.0
             }
         },
         "ID - 3": {
@@ -138,16 +141,17 @@
                 "Name": "entity with a script",
                 "UUID": 98242770179166450
             },
-            "TransformComponent": {
+            "Transform2DComponent": {
                 "Dimensions": [
-                    499.0,
-                    300.0
+                    451.0,
+                    253.0
                 ],
                 "Position": [
-                    836.0,
-                    344.0,
-                    1.0
-                ]
+                    1017.0,
+                    227.0,
+                    0.0
+                ],
+                "Rotation": 0.0
             }
         },
         "ID - 4": {
@@ -164,16 +168,17 @@
                 "Name": "Triangle",
                 "UUID": 8878740542775559736
             },
-            "TransformComponent": {
+            "Transform2DComponent": {
                 "Dimensions": [
-                    450.0,
-                    250.0
+                    459.0,
+                    546.0
                 ],
                 "Position": [
-                    1276.0,
-                    322.0,
-                    6.0
-                ]
+                    464.0,
+                    545.0,
+                    0.0
+                ],
+                "Rotation": 0.0
             }
         },
         "ID - 5": {
@@ -190,16 +195,17 @@
                 "Name": "Circle",
                 "UUID": 8364094483482462239
             },
-            "TransformComponent": {
+            "Transform2DComponent": {
                 "Dimensions": [
                     400.0,
                     400.0
                 ],
                 "Position": [
-                    1508.0,
-                    673.0,
+                    1428.0,
+                    847.0,
                     0.0
-                ]
+                ],
+                "Rotation": 0.0
             }
         },
         "ID - 6": {

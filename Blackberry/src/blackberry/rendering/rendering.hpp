@@ -38,8 +38,10 @@ namespace Blackberry {
 
         static void DrawRectangle(BlVec3 pos, BlVec2 dimensions, BlColor color);
         static void DrawRectangle(BlVec3 pos, BlVec2 dimensions, f32 rotation, BlColor color);
+        static void DrawRectangle(const glm::mat4& transform, BlColor color);
 
         static void DrawTriangle(BlVec3 pos, BlVec2 dimensions, f32 rotation = 0.0f, BlColor color = Colors::White);
+        static void DrawTriangle(const glm::mat4& transform, BlColor color);
 
         static void DrawCircle(BlVec3 pos, f32 radius, BlColor color = Colors::White);
         static void DrawElipse(BlVec3 pos, BlVec2 dimensions, f32 rotation = 0.0f, BlColor color = Colors::White);
@@ -48,10 +50,10 @@ namespace Blackberry {
         static void DrawTextureEx(BlVec3 pos, BlVec2 dimensions, BlTexture texture, f32 rotation = 0.0f, BlColor color = Colors::White);
         static void DrawTextureArea(BlVec3 pos, BlVec2 dimensions, BlRec area, BlTexture texture, f32 rotation = 0.0f, BlColor color = Colors::White);
 
-        static void DrawText(const std::string& text, BlVec3 pos, u32 fontSize, Font& font, BlColor color = Colors::White);
+        static void DrawText(const glm::mat4& transform, const std::string& text, Font& font, BlColor color = Colors::White);
 
-        static void DrawTexturedQuad(BlVec3 pos, BlVec2 dimensions, BlRec area, BlTexture texture, f32 rotation, BlColor color);
-        static void DrawTexturedTriangle(BlVec3 pos, BlVec2 dimensions, BlRec area, BlTexture texture, f32 rotation, BlColor color);
+        static void DrawTexturedQuad(const glm::mat4& transform, BlRec area, BlTexture texture, BlColor color);
+        static void DrawTexturedTriangle(const glm::mat4& transform, BlRec area, BlTexture texture, BlColor color);
 
         static void DrawRenderTexture(BlVec3 pos, BlVec2 dimensions, BlRenderTexture texture);
 

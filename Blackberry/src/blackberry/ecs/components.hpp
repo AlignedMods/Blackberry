@@ -6,6 +6,8 @@
 #include "glm/glm.hpp"
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/quaternion.hpp>
 
 #include <filesystem>
 #include <string>
@@ -26,8 +28,22 @@ namespace Blackberry {
         u64 UUID = 0;
     };
 
-    struct TransformComponent {
+    struct Transform3DComponent {
         BlVec3 Position;
+        BlVec3 Rotation; // in degrees
+        BlVec2 Dimensions;
+
+        inline glm::mat4 GetMatrix() const {
+            glm::mat4 pos = glm::translate(glm::mat4(1.0f), glm::vec3(Position.x, Position.y, Position.z));
+            glm::mat4 rot = glm::toMat4(glm::quat(glm::vec3(glm::radians(Rotation.x), glm::radians(Rotation.y), glm::radians(Rotation.z))));
+            glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(Dimensions.x, Dimensions.y, 1.0f));
+
+            return pos * rot * scale;
+        }
+    };
+
+    struct Transform2DComponent {
+        BlVec3 Position; // Vec3 cause of z position
         f32 Rotation = 0.0f; // in degrees
         BlVec2 Dimensions;
 

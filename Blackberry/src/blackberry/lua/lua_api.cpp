@@ -42,8 +42,8 @@ namespace Blackberry::Lua {
         const char* componentName = luaL_checkstring(L, 2);
 
         if (!strcmp(componentName, "Transform")) {
-            if (entity->HasComponent<TransformComponent>()) {
-                TransformComponent& transform = entity->GetComponent<TransformComponent>();
+            if (entity->HasComponent<Transform2DComponent>()) {
+                Transform2DComponent& transform = entity->GetComponent<Transform2DComponent>();
                 
                 lua_newtable(L);
                 lua_pushstring(L, "Position");
@@ -69,8 +69,8 @@ namespace Blackberry::Lua {
         const char* componentName = luaL_checkstring(L, 2);
 
         if (!strcmp(componentName, "Transform")) {
-            if (entity->HasComponent<TransformComponent>()) {
-                TransformComponent& transform = entity->GetComponent<TransformComponent>();
+            if (entity->HasComponent<Transform2DComponent>()) {
+                Transform2DComponent& transform = entity->GetComponent<Transform2DComponent>();
                 
                 lua_getfield(L, 3, "Position");
                 if (lua_istable(L, -1)) {

@@ -225,6 +225,14 @@ namespace Blackberry {
         SceneCamera Camera;
         SceneCamera DefaultCamera; // by default the camera is initialized to a basic 1x scale pixel-by-pixel orthographic projection
 
+        std::array<glm::vec4, 4> QuadVertexPositions = {{
+            { -0.5f,  0.5f, 0.0f, 1.0f},
+            {  0.5f, -0.5f, 0.0f, 1.0f},
+            {  0.5f,  0.5f, 0.0f, 1.0f},
+            { -0.5f, -0.5f, 0.0f, 1.0f}
+        }};
+        std::array<u32, 6> QuadIndices = {{ 0, 1, 2, 0, 3, 1}};
+
         BlRenderer2DInfo Info;
     };
 
@@ -241,27 +249,37 @@ namespace Blackberry {
         );
     }
 
-    static void SetupQuad(BlVec3 pos, BlVec2 dimensions, f32 rotation, BlColor color, BlVec3* bl, BlVec3* tr, BlVec3* br, BlVec3* tl) {
-        BlVec3 _bl = BlVec3(pos.x - dimensions.x / 2.0f, pos.y + dimensions.y / 2.0f, pos.z);
-        BlVec3 _tr = BlVec3(pos.x + dimensions.x / 2.0f, pos.y - dimensions.y / 2.0f, pos.z);
-        BlVec3 _br = BlVec3(pos.x + dimensions.x / 2.0f, pos.y + dimensions.y / 2.0f, pos.z);
-        BlVec3 _tl = BlVec3(pos.x - dimensions.x / 2.0f, pos.y - dimensions.y / 2.0f, pos.z);
+    static f32 GetTexIndex(BlTexture texture) {
+        f32 texIndex = 0.0f;
 
-        if (rotation != 0.0f) {
-            CalculateRotation(_bl, pos, rotation);
-            CalculateRotation(_tr, pos, rotation);
-            CalculateRotation(_br, pos, rotation);
-            CalculateRotation(_tl, pos, rotation);
+        if (Renderer2DState.CurrentTexIndex >= 16) {
+            Renderer2D::Render();
         }
 
-        *bl = _bl;
-        *tr = _tr;
-        *br = _br;
-        *tl = _tl;
+        bool texAlreadyExists = false;
+
+        for (u32 i = 0; i < Renderer2DState.CurrentTexIndex; i++) {
+            if (texture.ID == Renderer2DState.CurrentAttachedTextures[i].ID) {
+                texIndex = static_cast<f32>(i);
+                texAlreadyExists = true;
+
+                break;
+            }
+        }
+
+        if (!texAlreadyExists) {
+            texIndex = static_cast<f32>(Renderer2DState.CurrentTexIndex);
+
+            Renderer2DState.CurrentAttachedTextures[Renderer2DState.CurrentTexIndex] = texture;
+            Renderer2DState.CurrentTexIndex++;
+            texAlreadyExists = true;
+        }
+
+        return texIndex;
     }
 
-    static void NormalizeColor(BlColor color, BlVec4* outColor) {
-        *outColor = BlVec4(
+    static BlVec4 NormalizeColor(BlColor color) {
+        return BlVec4(
             static_cast<f32>(color.r) / 255.0f,
             static_cast<f32>(color.g) / 255.0f,
             static_cast<f32>(color.b) / 255.0f,
@@ -300,12 +318,31 @@ namespace Blackberry {
         DrawRectangle(pos, dimensions, 0.0f, color);
     }
 
-    void Renderer2D::DrawRectangle(BlVec3 pos, BlVec2 dimensions, f32 rotation, BlColor color) {
-        DrawTexturedQuad(pos, dimensions, BlRec(0, 0, 1, 1), Renderer2DState.WhiteTexture, rotation, color);
+    void Renderer2D::DrawRectangle(BlVec3 position, BlVec2 dimensions, f32 rotation, BlColor color) {
+        glm::mat4 pos = glm::translate(glm::mat4(1.0f), glm::vec3(position.x, position.y, position.z));
+        glm::mat4 rot = glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+        glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(dimensions.x, dimensions.y, 1.0f));
+
+        glm::mat4 transform = pos * rot * scale;
+        DrawTexturedQuad(transform, BlRec(0, 0, 1, 1), Renderer2DState.WhiteTexture, color);
     }
 
-    void Renderer2D::DrawTriangle(BlVec3 pos, BlVec2 dimensions, f32 rotation, BlColor color) {
-        DrawTexturedTriangle(pos, dimensions, BlRec(0, 0, 1, 1), Renderer2DState.WhiteTexture, rotation, color);
+    void Renderer2D::DrawRectangle(const glm::mat4& transform, BlColor color) {
+        DrawTexturedQuad(transform, BlRec(0, 0, 1, 1), Renderer2DState.WhiteTexture, color);
+    }
+
+    void Renderer2D::DrawTriangle(BlVec3 position, BlVec2 dimensions, f32 rotation, BlColor color) {
+        glm::mat4 pos = glm::translate(glm::mat4(1.0f), glm::vec3(position.x, position.y, position.z));
+        glm::mat4 rot = glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+        glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(dimensions.x, dimensions.y, 1.0f));
+
+        glm::mat4 transform = pos * rot * scale;
+
+        DrawTexturedTriangle(transform, BlRec(0, 0, 1, 1), Renderer2DState.WhiteTexture, color);
+    }
+
+    void Renderer2D::DrawTriangle(const glm::mat4& transform, BlColor color) {
+        DrawTexturedTriangle(transform, BlRec(0, 0, 1, 1), Renderer2DState.WhiteTexture, color);
     }
 
     void Renderer2D::DrawCircle(BlVec3 pos, f32 radius, BlColor color) {
@@ -313,6 +350,7 @@ namespace Blackberry {
     }
 
     void Renderer2D::DrawElipse(BlVec3 pos, BlVec2 dimensions, f32 rotation, BlColor color) {
+#if 0
         BlVec3 bl, tr, br, tl;
         BlVec4 normalizedColor;
 
@@ -349,6 +387,8 @@ namespace Blackberry {
 
         Renderer2DState.CircleVertexCount += 4;
         Renderer2DState.CircleIndexCount += 6;
+
+#endif
     }
 
     void Renderer2D::DrawTexture(BlVec3 pos, BlTexture texture, f32 rotation, BlColor color) {
@@ -359,12 +399,18 @@ namespace Blackberry {
         DrawTextureArea(pos, dimensions, BlRec(0.0f, 0.0f, static_cast<f32>(texture.Width), static_cast<f32>(texture.Height)), texture, rotation, color);
     }
 
-    void Renderer2D::DrawTextureArea(BlVec3 pos, BlVec2 dimensions, BlRec area, BlTexture texture, f32 rotation, BlColor color) {
-        DrawTexturedQuad(pos, dimensions, area, texture, rotation, color);
+    void Renderer2D::DrawTextureArea(BlVec3 position, BlVec2 dimensions, BlRec area, BlTexture texture, f32 rotation, BlColor color) {
+        glm::mat4 pos = glm::translate(glm::mat4(1.0f), glm::vec3(position.x, position.y, position.z));
+        glm::mat4 rot = glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+        glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(dimensions.x, dimensions.y, 1.0f));
+
+        glm::mat4 transform = pos * rot * scale;
+
+        DrawTexturedQuad(transform, area, texture, color);
     }
 
-    void Renderer2D::DrawText(const std::string& text, BlVec3 pos, u32 fontSize, Font& font, BlColor color) {
-#if !0
+    void Renderer2D::DrawText(const glm::mat4& transform, const std::string& text, Font& font, BlColor color) {
+#if 0
         BlTexture tex = font.TextureAtlas;
         // BlTexture tex = Renderer2DState.WhiteTexture;
         f32 currentX = pos.x;
@@ -372,14 +418,16 @@ namespace Blackberry {
 
         BlColor currentColor = color;
 
+        f32 fsScale = 1.0f / (font.Ascender - font.Descender);
+
         for (u32 c = 0; c < text.length(); c++) {
             if (text.at(c) == '\n') {
                 // currentY += font.RowHeight;
                 currentX = pos.x;
             } else {
                 GlyphInfo glyph = font.GetGlyphInfo(text.at(c), fontSize);
-                BlRec area = glyph.Rect;
-                f32 texIndex = 0.0f;
+                BlRec atlasBounds = glyph.AtlasRect;
+                BlRec planeBounds = glyph.PlaneRect;
 
                 if (tex.ID != Renderer2DState.CurrentFontAtlas.ID) {
                     Render();
@@ -389,17 +437,25 @@ namespace Blackberry {
                 BlVec4 normalizedColor;
                 NormalizeColor(color, &normalizedColor);
 
-                BlVec2 texSize = BlVec2(static_cast<f32>(tex.Width), static_cast<f32>(tex.Height));
+                BlVec2 texCoordMin(atlasBounds.x, atlasBounds.y);
+                BlVec2 texCoordMax(atlasBounds.w, atlasBounds.h);
 
-                BlVec3 bl = BlVec3(currentX + glyph.Left, currentY + area.h - glyph.Top + font.Ascender, pos.z);
-                BlVec3 tr = BlVec3(currentX + area.w + glyph.Left, currentY - glyph.Top + font.Ascender, pos.z);
-                BlVec3 br = BlVec3(currentX + area.w + glyph.Left, currentY + area.h - glyph.Top + font.Ascender, pos.z);
-                BlVec3 tl = BlVec3(currentX + glyph.Left, currentY - glyph.Top + font.Ascender, pos.z);
+                BlVec2 quadMin = BlVec2(glyph.PlaneRect.x, glyph.PlaneRect.y);
+                BlVec2 quadMax = BlVec2(glyph.PlaneRect.w, glyph.PlaneRect.h);
 
-                BlFontVertex vertexBL = BlFontVertex(bl, normalizedColor, BlVec2(area.x / texSize.x, (area.h + area.y) / texSize.y));
-                BlFontVertex vertexTR = BlFontVertex(tr, normalizedColor, BlVec2((area.w + area.x) / texSize.x, area.y / texSize.y));
-                BlFontVertex vertexBR = BlFontVertex(br, normalizedColor, BlVec2((area.w + area.x) / texSize.x, (area.h + area.y) / texSize.y));
-                BlFontVertex vertexTL = BlFontVertex(tl, normalizedColor, BlVec2(area.x / texSize.x, area.y / texSize.y));
+                quadMin *= BlVec2(fsScale); quadMax *= BlVec2(fsScale);
+                quadMin += BlVec2(currentX, currentY);
+                quadMax += BlVec2(currentX, currentY);
+
+                f32 texelWidth = 1.0f / tex.Width;
+                f32 texelHeight = 1.0f / tex.Height;
+                texCoordMin *= BlVec2(texelWidth, texelHeight);
+                texCoordMax *= BlVec2(texelWidth, texelHeight);
+
+                BlFontVertex vertexBL = BlFontVertex(BlVec3(quadMin.x, quadMin.y, pos.z), normalizedColor, BlVec2(texCoordMin.x, texCoordMax.y));
+                BlFontVertex vertexTR = BlFontVertex(BlVec3(quadMax.x, quadMax.y, pos.z), normalizedColor, BlVec2(texCoordMax.x, texCoordMin.y));
+                BlFontVertex vertexBR = BlFontVertex(BlVec3(quadMax.x, quadMin.y, pos.z), normalizedColor, BlVec2(texCoordMax.x, texCoordMax.y));
+                BlFontVertex vertexTL = BlFontVertex(BlVec3(quadMin.x, quadMax.y, pos.z), normalizedColor, BlVec2(texCoordMin.x, texCoordMin.y));
 
                 // push all vertices (bl, tr, br, tl)
                 Renderer2DState.FontVertices.push_back(vertexBL);
@@ -420,73 +476,41 @@ namespace Blackberry {
                 Renderer2DState.FontIndexCount += 6;
                 Renderer2DState.FontVertexCount += 4;
 
-                currentX += glyph.AdvanceX + 1;
+                currentX += fsScale * glyph.AdvanceX / font.GeometryScale;
             }
         }
 
 #endif
     }
 
-    void Renderer2D::DrawTexturedQuad(BlVec3 pos, BlVec2 dimensions, BlRec area, BlTexture texture, f32 rotation, BlColor color) {
-        f32 texIndex = 0.0f;
-
-        if (Renderer2DState.CurrentTexIndex >= 16) {
-            Render();
-        }
-
-        bool texAlreadyExists = false;
-
-        for (u32 i = 0; i < Renderer2DState.CurrentTexIndex; i++) {
-            if (texture.ID == Renderer2DState.CurrentAttachedTextures[i].ID) {
-                texIndex = static_cast<f32>(i);
-                texAlreadyExists = true;
-
-                break;
-            }
-        }
-
-        if (!texAlreadyExists) {
-            texIndex = static_cast<f32>(Renderer2DState.CurrentTexIndex);
-
-            Renderer2DState.CurrentAttachedTextures[Renderer2DState.CurrentTexIndex] = texture;
-            Renderer2DState.CurrentTexIndex++;
-            texAlreadyExists = true;
-        }
-        
-        BlVec3 bl, tr, br, tl;
-        BlVec4 normalizedColor;
+    void Renderer2D::DrawTexturedQuad(const glm::mat4& transform, BlRec area, BlTexture texture, BlColor color) {
+        BlVec4 normalizedColor = NormalizeColor(color);
+        f32 texIndex = GetTexIndex(texture);
 
         BlVec2 texSize = BlVec2(static_cast<f32>(texture.Width), static_cast<f32>(texture.Height));
+        const BlVec2 texCoord[4] = { BlVec2(area.x / texSize.x, (area.h + area.y) / texSize.y), BlVec2((area.w + area.x) / texSize.x, area.y / texSize.y),
+                                     BlVec2((area.w + area.x) / texSize.x, (area.h + area.y) / texSize.y), BlVec2(area.x / texSize.x, area.y / texSize.y)};
 
-        SetupQuad(pos, dimensions, rotation, color, &bl, &tr, &br, &tl);
-        NormalizeColor(color, &normalizedColor);
+        // vertices
+        for (u32 i = 0; i < 4; i++) {
+            glm::vec4 pos = transform * Renderer2DState.QuadVertexPositions[i];
+            BlShapeVertex vert = BlShapeVertex(BlVec3(pos.x, pos.y, pos.z), normalizedColor, texCoord[i], texIndex);
+            Renderer2DState.ShapeVertices.push_back(vert);
+        }
 
-        BlShapeVertex vertexBL = BlShapeVertex(bl, normalizedColor, BlVec2(area.x / texSize.x, (area.h + area.y) / texSize.y), texIndex);
-        BlShapeVertex vertexTR = BlShapeVertex(tr, normalizedColor, BlVec2((area.w + area.x) / texSize.x, area.y / texSize.y), texIndex);
-        BlShapeVertex vertexBR = BlShapeVertex(br, normalizedColor, BlVec2((area.w + area.x) / texSize.x, (area.h + area.y) / texSize.y), texIndex);
-        BlShapeVertex vertexTL = BlShapeVertex(tl, normalizedColor, BlVec2(area.x / texSize.x, area.y / texSize.y), texIndex);
-
-        // push all vertices (bl, tr, br, tl)
-        Renderer2DState.ShapeVertices.push_back(vertexBL);
-        Renderer2DState.ShapeVertices.push_back(vertexTR);
-        Renderer2DState.ShapeVertices.push_back(vertexBR);
-        Renderer2DState.ShapeVertices.push_back(vertexTL);
-
-        // first triangle (bl, tr, br)
-        Renderer2DState.ShapeIndices.push_back(Renderer2DState.ShapeVertexCount + 0);
-        Renderer2DState.ShapeIndices.push_back(Renderer2DState.ShapeVertexCount + 1);
-        Renderer2DState.ShapeIndices.push_back(Renderer2DState.ShapeVertexCount + 2);
-
-        // second triangle (bl, tl, tr)
-        Renderer2DState.ShapeIndices.push_back(Renderer2DState.ShapeVertexCount + 0);
-        Renderer2DState.ShapeIndices.push_back(Renderer2DState.ShapeVertexCount + 3);
-        Renderer2DState.ShapeIndices.push_back(Renderer2DState.ShapeVertexCount + 1);
+        // indices
+        for (u32 i = 0; i < 6; i++) {
+            const u32 vertexCount = Renderer2DState.ShapeVertexCount;
+            Renderer2DState.ShapeIndices.push_back(Renderer2DState.QuadIndices[i] + vertexCount);
+        }
 
         Renderer2DState.ShapeIndexCount += 6;
         Renderer2DState.ShapeVertexCount += 4;
     }
 
-    void Renderer2D::DrawTexturedTriangle(BlVec3 pos, BlVec2 dimensions, BlRec area, BlTexture texture, f32 rotation, BlColor color) {
+    void Renderer2D::DrawTexturedTriangle(const glm::mat4& transform, BlRec area, BlTexture texture, BlColor color) {
+#if 0
+
         f32 texIndex = 0.0f;
 
         if (Renderer2DState.CurrentTexIndex >= 16) {
@@ -510,16 +534,6 @@ namespace Blackberry {
             Renderer2DState.CurrentAttachedTextures[Renderer2DState.CurrentTexIndex] = texture;
             Renderer2DState.CurrentTexIndex++;
             texAlreadyExists = true;
-        }
-
-        BlVec3 bl = BlVec3(pos.x - dimensions.x / 2.0f, pos.y + dimensions.y / 2.0f, pos.z);
-        BlVec3 t = BlVec3(pos.x, pos.y - dimensions.y / 2.0f, pos.z);
-        BlVec3 br = BlVec3(pos.x + dimensions.x / 2.0f, pos.y + dimensions.y / 2.0f, pos.z);
-
-        if (rotation != 0.0f) {
-            CalculateRotation(bl, pos, rotation);
-            CalculateRotation(t, pos, rotation);
-            CalculateRotation(br, pos, rotation);
         }
 
         BlVec4 normalizedColor;
@@ -540,6 +554,8 @@ namespace Blackberry {
 
         Renderer2DState.ShapeVertexCount += 3;
         Renderer2DState.ShapeIndexCount += 3;
+
+#endif
     }
 
     void Renderer2D::DrawRenderTexture(BlVec3 pos, BlVec2 dimensions, BlRenderTexture texture) {

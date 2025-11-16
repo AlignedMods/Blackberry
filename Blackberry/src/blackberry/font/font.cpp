@@ -78,14 +78,22 @@ namespace Blackberry {
             auto glyph = fontGeometry.getGlyph(codepoint);
             GlyphInfo info;
 
-            int x, y, w, h;
-            glyph->getBoxRect(x, y, w, h);
+            f64 x, y, w, h;
+            glyph->getQuadAtlasBounds(x, y, w, h);
+            f64 l, b, r, t;
+            glyph->getQuadPlaneBounds(l, b, r, t);
+            glyph->getAdvance();
             
-            info.Rect = BlRec(x, y, w, h);
-            info.AdvanceX = static_cast<f32>(glyph->getAdvance() * 64.0);
+            info.AtlasRect = BlRec(static_cast<f32>(x), static_cast<f32>(y), static_cast<f32>(w), static_cast<f32>(h));
+            info.PlaneRect = BlRec(static_cast<f32>(l) * 64.0f, static_cast<f32>(b) * 64.0f, static_cast<f32>(r) * 64.0f, static_cast<f32>(t) * 64.0f);
+            info.AdvanceX = static_cast<f32>(glyph->getAdvance());
 
             Glyphs[codepoint] = info;
         }
+
+        GeometryScale = fontGeometry.getGeometryScale();
+        Ascender = fontGeometry.getMetrics().ascenderY;
+        Descender = fontGeometry.getMetrics().descenderY;
 
         msdfgen::destroyFont(font);
     }

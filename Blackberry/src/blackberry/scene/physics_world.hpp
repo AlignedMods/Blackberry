@@ -3,7 +3,7 @@
 #include "blackberry/ecs/components.hpp"
 
 struct BlPhysicsEntity {
-    Blackberry::TransformComponent* Transform = nullptr;
+    Blackberry::Transform2DComponent* Transform = nullptr;
     Blackberry::RigidBodyComponent* RigidBody = nullptr;
     Blackberry::BoxColliderComponent* BoxCollider = nullptr;
 };

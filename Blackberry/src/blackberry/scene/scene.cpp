@@ -94,9 +94,9 @@ namespace Blackberry {
             Lua::Pop(1);
         });
 
-        auto rigidBodyView = m_ECS->GetEntitiesWithComponents<TransformComponent, RigidBodyComponent>();
+        auto rigidBodyView = m_ECS->GetEntitiesWithComponents<Transform2DComponent, RigidBodyComponent>();
         
-        rigidBodyView.each([this](entt::entity entity, TransformComponent& transform, RigidBodyComponent& rigidBody) {
+        rigidBodyView.each([this](entt::entity entity, Transform2DComponent& transform, RigidBodyComponent& rigidBody) {
             m_PhysicsWorld->AddEntity({&transform, &rigidBody, nullptr});
         });
 
@@ -110,9 +110,9 @@ namespace Blackberry {
         Renderer2D::SetProjection(*m_Camera);
 
         // Render
-        auto view = m_ECS->GetEntitiesWithComponents<TransformComponent>();
+        auto view = m_ECS->GetEntitiesWithComponents<Transform2DComponent>();
 
-        view.each([&](auto entity, TransformComponent& transform) {
+        view.each([&](auto entity, Transform2DComponent& transform) {
             RenderEntity(entity);
         });
 
@@ -121,7 +121,7 @@ namespace Blackberry {
     }
 
     void Scene::RenderEntity(EntityID entity) {
-        TransformComponent& transform = m_ECS->GetComponent<TransformComponent>(entity);
+        Transform2DComponent& transform = m_ECS->GetComponent<Transform2DComponent>(entity);
 
         if (m_ECS->HasComponent<SpriteRendererComponent>(entity)) {
             SpriteRendererComponent& spriteRenderer = m_ECS->GetComponent<SpriteRendererComponent>(entity);
@@ -132,10 +132,10 @@ namespace Blackberry {
 
                 switch (spriteRenderer.Shape) {
                     case ShapeType::Triangle:
-                        Renderer2D::DrawTexturedTriangle(transform.Position, transform.Dimensions, spriteRenderer.Area, tex, transform.Rotation, spriteRenderer.Color);
+                        Renderer2D::DrawTexturedTriangle(transform.GetMatrix(), spriteRenderer.Area, tex, spriteRenderer.Color);
                         break;
                     case ShapeType::Rectangle:
-                        Renderer2D::DrawTexturedQuad(transform.Position, transform.Dimensions, spriteRenderer.Area, tex, transform.Rotation, spriteRenderer.Color);
+                        Renderer2D::DrawTexturedQuad(transform.GetMatrix(), spriteRenderer.Area, tex, spriteRenderer.Color);
                         break;
                 }
             }
@@ -146,10 +146,10 @@ namespace Blackberry {
 
             switch (shapeRenderer.Shape) {
                 case ShapeType::Triangle:
-                    Renderer2D::DrawTriangle(transform.Position, transform.Dimensions, transform.Rotation, shapeRenderer.Color);
+                    Renderer2D::DrawTriangle(transform.GetMatrix(), shapeRenderer.Color);
                     break;
                 case ShapeType::Rectangle:
-                    Renderer2D::DrawRectangle(transform.Position, transform.Dimensions, transform.Rotation, shapeRenderer.Color);
+                    Renderer2D::DrawRectangle(transform.GetMatrix(), shapeRenderer.Color);
                     break;
                 case ShapeType::Circle:
                     Renderer2D::DrawElipse(transform.Position, transform.Dimensions, transform.Rotation, shapeRenderer.Color);

@@ -11,13 +11,11 @@ namespace Blackberry {
 
     struct GlyphInfo {
         u8 Value = 0; // unicode character value
-        BlRec Rect;
+        BlRec AtlasRect; // rectangle on the font atlas
+        BlRec PlaneRect; // rectangle relative to baseline
         f32 AdvanceX = 0.0f;
-        i32 Top = 0;
-        i32 Left = 0;
-        i32 BaselineOffset = 0;
+        f32 BaselineOffset = 0.0f;
     };
-    
 
     class Font {
     public:
@@ -33,7 +31,9 @@ namespace Blackberry {
         u32 GlyphCount = 0;
         std::unordered_map<u8, GlyphInfo> Glyphs;
         i32 RowHeight = 0;
-        i32 Ascender = 0;
+        f32 Ascender = 0.0f;
+        f32 Descender = 0.0f;
+        f32 GeometryScale = 0.0f;
 
     private:
         std::vector<u8> m_FontFileData;

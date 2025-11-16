@@ -34,7 +34,7 @@ namespace Blackberry {
             const auto newEntity = dest->create(target);
 
             CopyComponent<TagComponent>(src, dest, target, newEntity);
-            CopyComponent<TransformComponent>(src, dest, target, newEntity);
+            CopyComponent<Transform2DComponent>(src, dest, target, newEntity);
             CopyComponent<ShapeRendererComponent>(src, dest, target, newEntity);
             CopyComponent<SpriteRendererComponent>(src, dest, target, newEntity);
             CopyComponent<CameraComponent>(src, dest, target, newEntity);
@@ -57,7 +57,7 @@ namespace Blackberry {
 
             dest->emplace<TagComponent>(newEntity, tag);
 
-            CopyComponent<TransformComponent>(src, dest, target, newEntity);
+            CopyComponent<Transform2DComponent>(src, dest, target, newEntity);
             CopyComponent<ShapeRendererComponent>(src, dest, target, newEntity);
             CopyComponent<SpriteRendererComponent>(src, dest, target, newEntity);
             CopyComponent<CameraComponent>(src, dest, target, newEntity);

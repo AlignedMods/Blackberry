@@ -330,7 +330,7 @@ namespace BlackberryEditor {
         }
 
         // Renderer2D::DrawTextureArea(BlVec3(300.0f, 200.0f, 1.0f), BlVec2(m_EditorFont.GetGlyphInfo('E').Rect.w, m_EditorFont.GetGlyphInfo('E').Rect.h), m_EditorFont.GetGlyphInfo('E').Rect, m_EditorFont.TextureAtlas);
-        Renderer2D::DrawText("Test string!", BlVec3(300.0f, 200.0f, 1.0f), 48.0f, m_EditorFont);
+        // Renderer2D::DrawText("Test string!", BlVec3(300.0f, 200.0f, 1.0f), 48.0f, m_EditorFont);
 
         m_CurrentScene->OnRender();
 
@@ -412,8 +412,8 @@ namespace BlackberryEditor {
         Renderer2D::Clear(BlColor(0, 0, 0, 255));
         Renderer2D::SetProjection(m_EditorCamera);
 
-        if (entity.HasComponent<TransformComponent>()) {
-            TransformComponent& transform = entity.GetComponent<TransformComponent>();
+        if (entity.HasComponent<Transform2DComponent>()) {
+            Transform2DComponent& transform = entity.GetComponent<Transform2DComponent>();
 
             auto drawWhiteEntity = [&]<typename T>() -> bool {
                 if (!entity.HasComponent<T>()) { return false; }
@@ -422,10 +422,10 @@ namespace BlackberryEditor {
 
                 switch (ren.Shape) {
                     case ShapeType::Triangle:
-                        Renderer2D::DrawTriangle(transform.Position, transform.Dimensions, transform.Rotation, Colors::White);
+                        Renderer2D::DrawTriangle(transform.GetMatrix(), Colors::White);
                         break;
                     case ShapeType::Rectangle:
-                        Renderer2D::DrawRectangle(transform.Position, transform.Dimensions, transform.Rotation, Colors::White);
+                        Renderer2D::DrawRectangle(transform.GetMatrix(), Colors::White);
                         break;
                     case ShapeType::Circle:
                         Renderer2D::DrawElipse(transform.Position, transform.Dimensions, transform.Rotation, Colors::White);
@@ -717,13 +717,13 @@ namespace BlackberryEditor {
                 if (ImGui::MenuItem("Rectangle")) {
                     Entity entity(m_CurrentScene->CreateEntity("Rectangle"), m_CurrentScene);
                     entity.AddComponent<ShapeRendererComponent>();
-                    entity.AddComponent<TransformComponent>({BlVec3(m_RenderTexture.Texture.Width / 2.0f - 100.0f, m_RenderTexture.Texture.Height / 2.0f - 50.0f, 0.0f), 0.0f, BlVec2(200.0f, 100.0f)});
+                    entity.AddComponent<Transform2DComponent>({BlVec3(m_RenderTexture.Texture.Width / 2.0f - 100.0f, m_RenderTexture.Texture.Height / 2.0f - 50.0f, 0.0f), 0.0f, BlVec2(200.0f, 100.0f)});
                 };
 
                 if (ImGui::MenuItem("Triangle")) {
                     Entity entity(m_CurrentScene->CreateEntity("Triangle"), m_CurrentScene);
                     entity.AddComponent<ShapeRendererComponent>({.Shape = ShapeType::Triangle});
-                    entity.AddComponent<TransformComponent>({BlVec3(m_RenderTexture.Texture.Width / 2.0f - 100.0f, m_RenderTexture.Texture.Height / 2.0f - 50.0f, 0.0f), 0.0f, BlVec2(200.0f, 100.0f)});
+                    entity.AddComponent<Transform2DComponent>({BlVec3(m_RenderTexture.Texture.Width / 2.0f - 100.0f, m_RenderTexture.Texture.Height / 2.0f - 50.0f, 0.0f), 0.0f, BlVec2(200.0f, 100.0f)});
                 };
                 
                 ImGui::EndMenu();
@@ -789,7 +789,7 @@ namespace BlackberryEditor {
 
             if (ImGui::BeginPopupContextWindow("PropertiesContextMenu")) {
                 if (ImGui::BeginMenu("Add Component")) {
-                    AddComponentListOption<TransformComponent>("Transform", entity);
+                    AddComponentListOption<Transform2DComponent>("Transform2D", entity);
                     AddComponentListOption<TextComponent>("Text", entity, {&m_EditorFont});
                     AddComponentListOption<ShapeRendererComponent>("Shape Renderer", entity);
                     AddComponentListOption<SpriteRendererComponent>("Sprite Renderer", entity);
@@ -819,7 +819,7 @@ namespace BlackberryEditor {
     
                 text.FontSize = size;
             });
-            DrawComponent<TransformComponent>("Transform", entity, [](TransformComponent& transform) {
+            DrawComponent<Transform2DComponent>("Transform2D", entity, [](Transform2DComponent& transform) {
                 DrawVec3Control("Position: ", &transform.Position);
                 ImGui::Separator();
 
