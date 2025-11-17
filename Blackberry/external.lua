@@ -1,6 +1,7 @@
 BlackberryIncludes = {}
 BlackberryIncludes["glfw"] = "%{wks.location}/Blackberry/vendor/glfw/include/"
 BlackberryIncludes["imgui"] = "%{wks.location}/Blackberry/vendor/imgui/"
+BlackberryIncludes["imguizmo"] = "%{wks.location}/Blackberry/vendor/imguizmo/"
 BlackberryIncludes["glad"] = "%{wks.location}/Blackberry/vendor/glad/include/"
 BlackberryIncludes["glm"] = "%{wks.location}/Blackberry/vendor/glm/"
 BlackberryIncludes["json"] = "%{wks.location}/Blackberry/vendor/json/"

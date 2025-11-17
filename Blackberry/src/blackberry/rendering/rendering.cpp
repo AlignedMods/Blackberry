@@ -473,8 +473,9 @@ namespace Blackberry {
         f32 texIndex = GetTexIndex(texture);
 
         BlVec2 texSize = BlVec2(static_cast<f32>(texture.Width), static_cast<f32>(texture.Height));
-        const BlVec2 texCoords[4] = { BlVec2(area.x / texSize.x, (area.h + area.y) / texSize.y), BlVec2((area.w + area.x) / texSize.x, area.y / texSize.y),
-                                     BlVec2((area.w + area.x) / texSize.x, (area.h + area.y) / texSize.y), BlVec2(area.x / texSize.x, area.y / texSize.y)};
+
+        const BlVec2 texCoords[4] = { BlVec2(area.x / texSize.x, area.y / texSize.y), BlVec2((area.w + area.x) / texSize.x, (area.h + area.y) / texSize.y),
+                                      BlVec2((area.w + area.x) / texSize.x, area.y / texSize.y), BlVec2(area.x / texSize.x, (area.h + area.y) / texSize.y)};
 
         // vertices
         for (u32 i = 0; i < Renderer2DState.QuadVertexPositions.size(); i++) {

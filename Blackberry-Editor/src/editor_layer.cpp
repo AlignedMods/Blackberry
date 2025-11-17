@@ -1,6 +1,9 @@
 #include "editor_layer.hpp"
 #include "sdf_generation.hpp"
 
+#include "ImGuizmo.h"
+#include "glm/gtx/string_cast.hpp"
+
 #include <fstream>
 #include <algorithm>
 
@@ -312,7 +315,7 @@ namespace BlackberryEditor {
 
                 if (Input::IsMouseDown(MouseButton::Right)) { 
                     BlVec2 delta = Input::GetMouseDelta();
-                    delta.y *= -1.0f;
+                    delta.x *= -1.0f;
 
                     m_EditorCamera.Position -= delta / BlVec2(m_EditorCamera.Zoom);
                 }
@@ -340,6 +343,8 @@ namespace BlackberryEditor {
     }
 
     void EditorLayer::OnUIRender() {
+        ImGuizmo::BeginFrame();
+
         // set up dockspace
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
     
@@ -999,18 +1004,16 @@ namespace BlackberryEditor {
         } else {
             m_ViewportHovered = false;
         }
-        
-        ImGui::SetCursorPosX(cursorX);
-        ImGui::SetCursorPosY(cursorY);
-
-        ImGui::Image(m_OutlineTexture.Texture.ID, ImVec2(sizeX, sizeY), ImVec2(0, 1), ImVec2(1, 0));
-        // ImGui::Image(m_MaskTexture.Texture.ID, ImVec2(sizeX, sizeY), ImVec2(0, 1), ImVec2(1, 0));
 
         m_ViewportScale = scale;
         m_ViewportBounds.x = ImGui::GetWindowPos().x + cursorX;
         m_ViewportBounds.y = ImGui::GetWindowPos().y + cursorY;
         m_ViewportBounds.w = sizeX;
         m_ViewportBounds.h = sizeY;
+
+        // After drawing the image:
+        ImVec2 min = ImGui::GetItemRectMin();  // absolute top-left of the rendered image
+        ImVec2 max = ImGui::GetItemRectMax();  // absolute bottom-right
 
         if (ImGui::BeginDragDropTarget()) {
             if (auto payload = ImGui::AcceptDragDropPayload("ASSET_DRAG_DROP")) {
@@ -1035,6 +1038,42 @@ namespace BlackberryEditor {
             }
             ImGui::EndDragDropTarget();
         };
+
+        // gizmos (currently disabled until further notice)
+        if (m_IsEntitySelected && true) {
+            Entity e(m_SelectedEntity, m_CurrentScene);
+            if (e.HasComponent<Transform2DComponent>()) {
+                Transform2DComponent& transform = e.GetComponent<Transform2DComponent>();
+                glm::mat4 transformMatrix = transform.GetMatrix();
+
+                glm::mat4 camProjection = m_EditorCamera.GetCameraProjection();
+                glm::mat4 camView = m_EditorCamera.GetCameraView(); // already inversed
+
+                glm::mat4 result = transformMatrix;
+
+                // prevent imgui from taxing inputs (you are not the irs buddy)
+                if (ImGuizmo::IsOver()) {
+                    ImGui::GetIO().WantCaptureMouse = false;
+                }
+                
+                ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
+                ImGuizmo::Enable(true);
+                ImGuizmo::SetOrthographic(true);
+                ImGuizmo::SetRect(min.x, min.y, max.x - min.x, max.y - min.y);
+                ImGuizmo::Manipulate(glm::value_ptr(camView), glm::value_ptr(camProjection), ImGuizmo::OPERATION::TRANSLATE, ImGuizmo::MODE::LOCAL, glm::value_ptr(transformMatrix), glm::value_ptr(result));
+
+                if (ImGuizmo::IsUsing()) {
+                    result *= transformMatrix;
+
+                    f32 pos[3], rot[3], scale[3];
+                    ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(result), pos, rot, scale);
+
+                    transform.Position = BlVec3(pos[0], pos[1], pos[2]);
+                    transform.Rotation = rot[2];
+                    transform.Dimensions = BlVec2(scale[0], scale[1]);
+                }
+            }
+        }
     
         ImGui::End();
 

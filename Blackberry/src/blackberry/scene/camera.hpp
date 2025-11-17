@@ -36,17 +36,45 @@ namespace Blackberry {
             } else if (Type == CameraType::Perspective) {
                 BL_ASSERT(0, "not implemented");
             }
-            
 
             glm::mat4 view(1.0f);
             view = glm::translate(view, glm::vec3(glm::vec2(Offset.x, Offset.y), 0.0f));
-            view = glm::scale(view, glm::vec3(Zoom, Zoom, 1.0f));
+            view = glm::scale(view, glm::vec3(1.0f / Zoom, 1.0f / Zoom, 1.0f));
             view = glm::rotate(view, glm::radians(Rotation), glm::vec3(0.0f, 0.0f, 1.0f));
             view = glm::translate(view, glm::vec3(-glm::vec2(Position.x, Position.y), 0.0f));
 
-            glm::mat4 finalProjection = projection * view;
+            glm::mat4 finalProjection = projection * glm::inverse(view);
 
             return finalProjection;
+        }
+
+        glm::mat4 GetCameraProjection() {
+            glm::mat4 projection(1.0f);
+
+            if (Type == CameraType::Orthographic) {
+                projection = glm::ortho(
+                                        0.0f,                               // left
+                                        Size.x,                             // right
+                                        0.0f,                               // bottom
+                                        Size.y,                             // top
+                                        Near, Far                           // near-far
+                );
+            } else if (Type == CameraType::Perspective) {
+                BL_ASSERT(0, "not implemented");
+            }
+
+            return projection;
+        }
+
+        // NOTE: The view you get fron this function is already inversed!!
+        glm::mat4 GetCameraView() {
+            glm::mat4 view(1.0f);
+            view = glm::translate(view, glm::vec3(glm::vec2(Offset.x, Offset.y), 0.0f));
+            view = glm::scale(view, glm::vec3(1.0f / Zoom, 1.0f / Zoom, 1.0f));
+            view = glm::rotate(view, glm::radians(Rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+            view = glm::translate(view, glm::vec3(-glm::vec2(Position.x, Position.y), 0.0f));
+
+            return glm::inverse(view);
         }
 
         f32* GetCameraMatrixFloat() {
