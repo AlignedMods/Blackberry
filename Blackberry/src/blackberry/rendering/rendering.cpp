@@ -401,8 +401,12 @@ namespace Blackberry {
         f32 currentX = 0.0f;
         f32 currentY = 0.0f;
 
-        BlColor currentColor = color;
+        BlVec2 textSize = MeasureText(text, font);
 
+        // glm::mat4 finalTextTransform = glm::scale(transform, glm::vec3(1.0f / textSize.x, 1.0f / textSize.x, 1.0f));
+        glm::mat4 finalTextTransform = transform;
+
+        BlColor currentColor = color;
 
         for (u32 c = 0; c < text.length(); c++) {
             if (text.at(c) == '\n') {
@@ -425,8 +429,12 @@ namespace Blackberry {
                 BlVec2 quadMax = BlVec2(glyph.PlaneRect.w, glyph.PlaneRect.h);
 
                 quadMin *= BlVec2(fsScale); quadMax *= BlVec2(fsScale);
-                quadMin += BlVec2(currentX, currentY);
-                quadMax += BlVec2(currentX, currentY);
+                quadMin += BlVec2(currentX, currentY); quadMax += BlVec2(currentX, currentY);
+
+                // make the origin of the glyph quads be bottom-left corner of the transform (default origin is center)
+                // quadMin *= BlVec2(2.0f); quadMax *= BlVec2(2.0f);
+                // quadMin -= BlVec2(0.5f); quadMax -= BlVec2(0.5f);
+                quadMin.y -= 0.5f; quadMax.y -= 0.5f;
 
                 f32 texelWidth = 1.0f / tex.Width;
                 f32 texelHeight = 1.0f / tex.Height;
@@ -436,19 +444,19 @@ namespace Blackberry {
                 BlVec4 normalizedColor = NormalizeColor(color);
 
                 // vertices
-                glm::vec4 pos = transform * glm::vec4(quadMin.x, quadMin.y, 0.0f, 1.0f);
+                glm::vec4 pos = finalTextTransform * glm::vec4(quadMin.x, quadMin.y, 0.0f, 1.0f);
                 BlFontVertex vert = BlFontVertex(BlVec3(pos.x, pos.y, pos.z), normalizedColor, BlVec2(texCoordMin.x, texCoordMax.y));
                 Renderer2DState.FontVertices.push_back(vert);
                 
-                pos = transform * glm::vec4(quadMax.x, quadMax.y, 0.0f, 1.0f);
+                pos = finalTextTransform * glm::vec4(quadMax.x, quadMax.y, 0.0f, 1.0f);
                 vert = BlFontVertex(BlVec3(pos.x, pos.y, pos.z), normalizedColor, BlVec2(texCoordMax.x, texCoordMin.y));
                 Renderer2DState.FontVertices.push_back(vert);
 
-                pos = transform * glm::vec4(quadMax.x, quadMin.y, 0.0f, 1.0f);
+                pos = finalTextTransform * glm::vec4(quadMax.x, quadMin.y, 0.0f, 1.0f);
                 vert = BlFontVertex(BlVec3(pos.x, pos.y, pos.z), normalizedColor, BlVec2(texCoordMax.x, texCoordMax.y));
                 Renderer2DState.FontVertices.push_back(vert);
 
-                pos = transform * glm::vec4(quadMin.x, quadMax.y, 0.0f, 1.0f);
+                pos = finalTextTransform * glm::vec4(quadMin.x, quadMax.y, 0.0f, 1.0f);
                 vert = BlFontVertex(BlVec3(pos.x, pos.y, pos.z), normalizedColor, BlVec2(texCoordMin.x, texCoordMin.y));
                 Renderer2DState.FontVertices.push_back(vert);
 
@@ -745,6 +753,21 @@ namespace Blackberry {
             Renderer2DState.FontVertexCount = 0;
             Renderer2DState.CurrentTexIndex = 0;
         }
+    }
+
+    BlVec2 Renderer2D::MeasureText(const std::string& text, Font& font) {
+        f32 currentX = 0.0f;
+        f32 currentY = 0.0f;
+
+        for (u32 c = 0; c < text.length(); c++) {
+            auto glyph = font.GetGlyphInfo(text.at(c), 0);
+            BlRec& pb = glyph.PlaneRect;
+
+            currentX += glyph.AdvanceX;
+            currentY = 0.0f;
+        }
+
+        return BlVec2(currentX, currentY);
     }
 
     BlRenderer2DInfo Renderer2D::GetRenderingInfo() {
