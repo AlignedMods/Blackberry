@@ -54,7 +54,7 @@ namespace Blackberry {
 
         TightAtlasPacker packer;
         packer.setDimensionsConstraint(DimensionsConstraint::SQUARE);
-        packer.setMinimumScale(24.0);
+        packer.setMinimumScale(32.0);
         packer.setPixelRange(2.0);
         packer.setMiterLimit(1.0);
 
@@ -72,7 +72,7 @@ namespace Blackberry {
         msdfgen::BitmapConstRef<u8, 3> bitmap(generator.atlasStorage());
 
         // funny cast
-        TextureAtlas.Create(const_cast<byte*>(bitmap.pixels), bitmap.width, bitmap.height, ImageFormat::RGB8);
+        TextureAtlas.Create(const_cast<byte*>(bitmap.pixels), bitmap.width, bitmap.height, ImageFormat::RGB8, BlTextureFiltering::Linear);
 
         for (auto codepoint : Charset::ASCII) {
             auto glyph = fontGeometry.getGlyph(codepoint);
@@ -85,7 +85,7 @@ namespace Blackberry {
             glyph->getAdvance();
             
             info.AtlasRect = BlRec(static_cast<f32>(x), static_cast<f32>(y), static_cast<f32>(w), static_cast<f32>(h));
-            info.PlaneRect = BlRec(static_cast<f32>(l) * 64.0f, static_cast<f32>(b) * 64.0f, static_cast<f32>(r) * 64.0f, static_cast<f32>(t) * 64.0f);
+            info.PlaneRect = BlRec(static_cast<f32>(l), static_cast<f32>(t), static_cast<f32>(r), static_cast<f32>(b));
             info.AdvanceX = static_cast<f32>(glyph->getAdvance());
 
             Glyphs[codepoint] = info;
@@ -94,6 +94,7 @@ namespace Blackberry {
         GeometryScale = fontGeometry.getGeometryScale();
         Ascender = fontGeometry.getMetrics().ascenderY;
         Descender = fontGeometry.getMetrics().descenderY;
+        LineHeight = fontGeometry.getMetrics().lineHeight;
 
         msdfgen::destroyFont(font);
     }

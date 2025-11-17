@@ -30,7 +30,7 @@ namespace Blackberry {
         Image ImageAtlas;
         u32 GlyphCount = 0;
         std::unordered_map<u8, GlyphInfo> Glyphs;
-        i32 RowHeight = 0;
+        f32 LineHeight = 0.0f;
         f32 Ascender = 0.0f;
         f32 Descender = 0.0f;
         f32 GeometryScale = 0.0f;

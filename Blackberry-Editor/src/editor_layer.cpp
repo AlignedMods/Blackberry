@@ -312,6 +312,7 @@ namespace BlackberryEditor {
 
                 if (Input::IsMouseDown(MouseButton::Right)) { 
                     BlVec2 delta = Input::GetMouseDelta();
+                    delta.y *= -1.0f;
 
                     m_EditorCamera.Position -= delta / BlVec2(m_EditorCamera.Zoom);
                 }
@@ -331,6 +332,7 @@ namespace BlackberryEditor {
 
         // Renderer2D::DrawTextureArea(BlVec3(300.0f, 200.0f, 1.0f), BlVec2(m_EditorFont.GetGlyphInfo('E').Rect.w, m_EditorFont.GetGlyphInfo('E').Rect.h), m_EditorFont.GetGlyphInfo('E').Rect, m_EditorFont.TextureAtlas);
         // Renderer2D::DrawText("Test string!", BlVec3(300.0f, 200.0f, 1.0f), 48.0f, m_EditorFont);
+        // Renderer2D::DrawText(BlVec3(200.0f, 200.0f, 1.0f), 64.0f, "testing string", m_EditorFont);
 
         m_CurrentScene->OnRender();
 
@@ -811,14 +813,6 @@ namespace BlackberryEditor {
 
             ImGui::SeparatorText("Components: ");
 
-            DrawComponent<TextComponent>("Text", entity, [](TextComponent& text) {
-                int size = text.FontSize;
-    
-                ImGui::InputText("Cotents: ", &text.Contents); 
-                ImGui::InputInt("Font size", &size);
-    
-                text.FontSize = size;
-            });
             DrawComponent<Transform2DComponent>("Transform2D", entity, [](Transform2DComponent& transform) {
                 DrawVec3Control("Position: ", &transform.Position);
                 ImGui::Separator();
@@ -906,6 +900,15 @@ namespace BlackberryEditor {
                 ImGui::Unindent();
 
                 DrawRecControl("Area", &spriteRenderer.Area);
+            });
+            DrawComponent<TextComponent>("Text", entity, [](TextComponent& text) {
+                ImGui::InputTextMultiline("Contents", &text.Contents);
+
+                // ImGui::Separator();
+                // ImGui::Text("Font Size: ");
+                // ImGui::Indent();
+                // ImGui::SliderFloat("##FontSize", &text.FontSize, 1.0f, 350.0f);
+                // ImGui::Unindent();
             });
             DrawComponent<CameraComponent>("Camera", entity, [this](CameraComponent& camera) {
                 SceneCamera& cam = camera.Camera;
@@ -1068,7 +1071,7 @@ namespace BlackberryEditor {
 
         ImGui::Begin("Font");
 
-        ImGui::Image(m_EditorFont.TextureAtlas.ID, ImVec2(512, 512));
+        ImGui::Image(m_EditorFont.TextureAtlas.ID, ImVec2(m_EditorFont.TextureAtlas.Width, m_EditorFont.TextureAtlas.Height));
 
         ImGui::End();
     }

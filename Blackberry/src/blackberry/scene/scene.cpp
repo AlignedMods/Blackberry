@@ -156,6 +156,12 @@ namespace Blackberry {
                     break;
             }
         }
+
+        if (m_ECS->HasComponent<TextComponent>(entity)) {
+            TextComponent& text = m_ECS->GetComponent<TextComponent>(entity);
+
+            Renderer2D::DrawText(transform.GetMatrix(), text.Contents, *text.Font);
+        }
     }
 
     EntityID Scene::CreateEntity(const std::string& name) {

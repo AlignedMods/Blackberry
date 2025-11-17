@@ -78,7 +78,7 @@ Blackberry::Application* Blackberry::CreateApplication(u32 argc, char** argv) {
     spec.Name = "Blackberry stress test";
     spec.Width = 1280;
     spec.Height = 720;
-    spec.EnableImGui = false;
+    spec.EnableImGui = true;
 
     Application* app = new Application(spec);
     app->PushLayer(new StressTestLayer);

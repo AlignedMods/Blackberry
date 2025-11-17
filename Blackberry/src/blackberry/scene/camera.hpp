@@ -29,8 +29,8 @@ namespace Blackberry {
                 projection = glm::ortho(
                                         0.0f,                               // left
                                         Size.x,                             // right
-                                        Size.y,                             // bottom
-                                        0.0f,                               // top
+                                        0.0f,                               // bottom
+                                        Size.y,                             // top
                                         Near, Far                           // near-far
                 );
             } else if (Type == CameraType::Perspective) {

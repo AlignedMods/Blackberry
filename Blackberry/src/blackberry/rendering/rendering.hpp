@@ -50,6 +50,7 @@ namespace Blackberry {
         static void DrawTextureEx(BlVec3 pos, BlVec2 dimensions, BlTexture texture, f32 rotation = 0.0f, BlColor color = Colors::White);
         static void DrawTextureArea(BlVec3 pos, BlVec2 dimensions, BlRec area, BlTexture texture, f32 rotation = 0.0f, BlColor color = Colors::White);
 
+        static void DrawText(BlVec3 pos, f32 fontSize, const std::string& text, Font& font, BlColor color = Colors::White);
         static void DrawText(const glm::mat4& transform, const std::string& text, Font& font, BlColor color = Colors::White);
 
         static void DrawTexturedQuad(const glm::mat4& transform, BlRec area, BlTexture texture, BlColor color);

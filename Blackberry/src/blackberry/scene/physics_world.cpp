@@ -12,7 +12,7 @@ namespace Blackberry {
 
     void PhysicsWorld::Step(f32 ts) {
         for (auto& entity : m_Entities) {
-            entity.RigidBody->Force += BlVec2(0.0f, m_Gravity * entity.RigidBody->Mass);
+            entity.RigidBody->Force -= BlVec2(0.0f, m_Gravity * entity.RigidBody->Mass);
 
             entity.RigidBody->Acceleration = entity.RigidBody->Force * BlVec2(entity.RigidBody->Mass);
 

@@ -174,10 +174,10 @@ namespace Blackberry {
         }
 
         void main() {
-            vec4 texelColor = texture(u_FontAtlas, a_TexCoord);
+            vec4 texelColor = texture(u_FontAtlas, a_TexCoord) * a_Color;
 
             // msdf thing
-            vec3 msd = texelColor.rgb;
+            vec3 msd = texture(u_FontAtlas, a_TexCoord).rgb;
             float sd = median(msd.r, msd.g, msd.b);
             float screenPxDistance = screenPxRange() * (sd - 0.5);
             float opacity = clamp(screenPxDistance + 0.5, 0.0, 1.0);
@@ -385,23 +385,31 @@ namespace Blackberry {
         DrawTexturedQuad(transform, area, texture, color);
     }
 
+    void Renderer2D::DrawText(BlVec3 position, f32 fontSize, const std::string& text, Font& font, BlColor color) {
+        glm::mat4 pos = glm::translate(glm::mat4(1.0f), glm::vec3(position.x, position.y, position.z));
+        glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(fontSize / font.LineHeight, fontSize / font.LineHeight, 1.0f));
+
+        glm::mat4 transform = pos * scale;
+
+        DrawText(transform, text, font, color);
+    }
+
     void Renderer2D::DrawText(const glm::mat4& transform, const std::string& text, Font& font, BlColor color) {
-#if 0
         BlTexture tex = font.TextureAtlas;
         // BlTexture tex = Renderer2DState.WhiteTexture;
-        f32 currentX = pos.x;
-        f32 currentY = pos.y;
+        f32 fsScale = 1.0f / (font.Ascender - font.Descender);
+        f32 currentX = 0.0f;
+        f32 currentY = 0.0f;
 
         BlColor currentColor = color;
 
-        f32 fsScale = 1.0f / (font.Ascender - font.Descender);
 
         for (u32 c = 0; c < text.length(); c++) {
             if (text.at(c) == '\n') {
                 // currentY += font.RowHeight;
-                currentX = pos.x;
+                currentX = 0;
             } else {
-                GlyphInfo glyph = font.GetGlyphInfo(text.at(c), fontSize);
+                GlyphInfo glyph = font.GetGlyphInfo(text.at(c), 0);
                 BlRec atlasBounds = glyph.AtlasRect;
                 BlRec planeBounds = glyph.PlaneRect;
 
@@ -409,9 +417,6 @@ namespace Blackberry {
                     Render();
                     Renderer2DState.CurrentFontAtlas = tex;
                 }
-                
-                BlVec4 normalizedColor;
-                NormalizeColor(color, &normalizedColor);
 
                 BlVec2 texCoordMin(atlasBounds.x, atlasBounds.y);
                 BlVec2 texCoordMax(atlasBounds.w, atlasBounds.h);
@@ -428,35 +433,39 @@ namespace Blackberry {
                 texCoordMin *= BlVec2(texelWidth, texelHeight);
                 texCoordMax *= BlVec2(texelWidth, texelHeight);
 
-                BlFontVertex vertexBL = BlFontVertex(BlVec3(quadMin.x, quadMin.y, pos.z), normalizedColor, BlVec2(texCoordMin.x, texCoordMax.y));
-                BlFontVertex vertexTR = BlFontVertex(BlVec3(quadMax.x, quadMax.y, pos.z), normalizedColor, BlVec2(texCoordMax.x, texCoordMin.y));
-                BlFontVertex vertexBR = BlFontVertex(BlVec3(quadMax.x, quadMin.y, pos.z), normalizedColor, BlVec2(texCoordMax.x, texCoordMax.y));
-                BlFontVertex vertexTL = BlFontVertex(BlVec3(quadMin.x, quadMax.y, pos.z), normalizedColor, BlVec2(texCoordMin.x, texCoordMin.y));
+                BlVec4 normalizedColor = NormalizeColor(color);
 
-                // push all vertices (bl, tr, br, tl)
-                Renderer2DState.FontVertices.push_back(vertexBL);
-                Renderer2DState.FontVertices.push_back(vertexTR);
-                Renderer2DState.FontVertices.push_back(vertexBR);
-                Renderer2DState.FontVertices.push_back(vertexTL);
+                // vertices
+                glm::vec4 pos = transform * glm::vec4(quadMin.x, quadMin.y, 0.0f, 1.0f);
+                BlFontVertex vert = BlFontVertex(BlVec3(pos.x, pos.y, pos.z), normalizedColor, BlVec2(texCoordMin.x, texCoordMax.y));
+                Renderer2DState.FontVertices.push_back(vert);
+                
+                pos = transform * glm::vec4(quadMax.x, quadMax.y, 0.0f, 1.0f);
+                vert = BlFontVertex(BlVec3(pos.x, pos.y, pos.z), normalizedColor, BlVec2(texCoordMax.x, texCoordMin.y));
+                Renderer2DState.FontVertices.push_back(vert);
 
-                // first triangle (bl, tr, br)
-                Renderer2DState.FontIndices.push_back(Renderer2DState.FontVertexCount + 0);
-                Renderer2DState.FontIndices.push_back(Renderer2DState.FontVertexCount + 1);
-                Renderer2DState.FontIndices.push_back(Renderer2DState.FontVertexCount + 2);
+                pos = transform * glm::vec4(quadMax.x, quadMin.y, 0.0f, 1.0f);
+                vert = BlFontVertex(BlVec3(pos.x, pos.y, pos.z), normalizedColor, BlVec2(texCoordMax.x, texCoordMax.y));
+                Renderer2DState.FontVertices.push_back(vert);
 
-                // second triangle (bl, tl, tr)
-                Renderer2DState.FontIndices.push_back(Renderer2DState.FontVertexCount + 0);
-                Renderer2DState.FontIndices.push_back(Renderer2DState.FontVertexCount + 3);
-                Renderer2DState.FontIndices.push_back(Renderer2DState.FontVertexCount + 1);
+                pos = transform * glm::vec4(quadMin.x, quadMax.y, 0.0f, 1.0f);
+                vert = BlFontVertex(BlVec3(pos.x, pos.y, pos.z), normalizedColor, BlVec2(texCoordMin.x, texCoordMin.y));
+                Renderer2DState.FontVertices.push_back(vert);
+
+                // indices
+                for (u32 i = 0; i < Renderer2DState.QuadIndices.size(); i++) {
+                    const u32 vertexCount = Renderer2DState.FontVertexCount;
+                    Renderer2DState.FontIndices.push_back(Renderer2DState.QuadIndices[i] + vertexCount);
+                }
+
+                Renderer2DState.CurrentFontAtlas = tex;
 
                 Renderer2DState.FontIndexCount += 6;
                 Renderer2DState.FontVertexCount += 4;
 
-                currentX += fsScale * glyph.AdvanceX / font.GeometryScale;
+                currentX += fsScale * glyph.AdvanceX;
             }
         }
-
-#endif
     }
 
     void Renderer2D::DrawTexturedQuad(const glm::mat4& transform, BlRec area, BlTexture texture, BlColor color) {

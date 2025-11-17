@@ -39,7 +39,7 @@ void BlTexture::Create(const Blackberry::Image& image) {
     Create(image.Data, image.Width, image.Height, image.Format);
 }
 
-void BlTexture::Create(void* pixels, u32 width, u32 height, Blackberry::ImageFormat pixelFormat) {
+void BlTexture::Create(void* pixels, u32 width, u32 height, Blackberry::ImageFormat pixelFormat, BlTextureFiltering filter) {
     Width = width;
     Height = height;
     Format = pixelFormat;
@@ -51,7 +51,11 @@ void BlTexture::Create(void* pixels, u32 width, u32 height, Blackberry::ImageFor
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    if (filter == BlTextureFiltering::Nearest) {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    } else {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    }
 
     GLuint format = GL_RGBA;
     GLuint glFormat = GL_RGBA8;
