@@ -160,7 +160,12 @@ namespace Blackberry {
         if (m_ECS->HasComponent<TextComponent>(entity)) {
             TextComponent& text = m_ECS->GetComponent<TextComponent>(entity);
 
-            Renderer2D::DrawText(transform.GetMatrix(), text.Contents, *text.Font);
+            if (m_AssetManager->ContainsAsset(text.FontHandle)) {
+                Asset asset = m_AssetManager->GetAsset(text.FontHandle);
+                Font& font = std::get<Font>(asset.Data);
+
+                Renderer2D::DrawText(transform.GetMatrix(), text.Contents, font, {text.Kerning, text.LineSpacing});
+            }
         }
     }
 

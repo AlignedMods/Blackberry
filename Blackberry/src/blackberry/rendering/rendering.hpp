@@ -27,6 +27,11 @@ namespace Blackberry {
 
     } // namespace Colors
 
+    struct TextParams {
+        f32 Kerning = 0.0f;
+        f32 LineSpacing = 0.0f;
+    };
+
     class Renderer2D {
     public:
         static void Init();
@@ -50,8 +55,8 @@ namespace Blackberry {
         static void DrawTextureEx(BlVec3 pos, BlVec2 dimensions, BlTexture texture, f32 rotation = 0.0f, BlColor color = Colors::White);
         static void DrawTextureArea(BlVec3 pos, BlVec2 dimensions, BlRec area, BlTexture texture, f32 rotation = 0.0f, BlColor color = Colors::White);
 
-        static void DrawText(BlVec3 pos, f32 fontSize, const std::string& text, Font& font, BlColor color = Colors::White);
-        static void DrawText(const glm::mat4& transform, const std::string& text, Font& font, BlColor color = Colors::White);
+        static void DrawText(BlVec3 pos, f32 fontSize, const std::string& text, Font& font, TextParams params = TextParams{}, BlColor color = Colors::White);
+        static void DrawText(const glm::mat4& transform, const std::string& text, Font& font, TextParams params = TextParams{}, BlColor color = Colors::White);
 
         static void DrawTexturedQuad(const glm::mat4& transform, BlRec area, BlTexture texture, BlColor color);
         static void DrawTexturedTriangle(const glm::mat4& transform, BlRec area, BlTexture texture, BlColor color);

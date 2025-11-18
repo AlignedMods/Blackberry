@@ -266,7 +266,7 @@ namespace BlackberryEditor {
         m_EditorCamera.Offset = BlVec2(m_RenderTexture.Texture.Width / 2.0f, m_RenderTexture.Texture.Height / 2.0f);
         m_EditorCamera.Position = BlVec2(m_RenderTexture.Texture.Width / 2.0f, m_RenderTexture.Texture.Height / 2.0f);
 
-        m_EditorFont = Font::Create("Assets/creato_display/CreatoDisplay-Medium.otf");
+        // ImGui::GetIO().IniFilename = std::filesystem::path(m_AppDataDirectory / "Blackberry-Editor" / "editor_layout.ini").string().c_str();
     }
 
     void EditorLayer::OnDetach() {
@@ -610,6 +610,9 @@ namespace BlackberryEditor {
     
         // ImGui::Columns(columnCount, 0, false);
 
+        static bool createAssetPopup = false;
+        static fs::path assetFile;
+
         if (ImGui::BeginTable("##FunnyTable", columnCount)) {
             for (const auto& file : fs::directory_iterator(m_CurrentDirectory)) {
                 ImGui::TableNextColumn();
@@ -643,9 +646,10 @@ namespace BlackberryEditor {
 
                 if (ImGui::BeginPopupContextItem()) {
                     if (ImGui::MenuItem("Create asset handle")) {
-                        m_CurrentScene->GetAssetManager().AddTextureFromPath("cart", std::filesystem::relative(file.path(), m_BaseDirectory));
+                        createAssetPopup = true;
+                        assetFile = file;
+                        ImGui::OpenPopup("CreateAssetPopup");
                     }
-
                     ImGui::EndPopup();
                 }
     
@@ -656,6 +660,41 @@ namespace BlackberryEditor {
             
             ImGui::EndTable();
         }
+
+        if (createAssetPopup) {
+            ImGui::OpenPopup("CreateAssetPopup");
+        }
+
+        if (ImGui::BeginPopup("CreateAssetPopup")) {
+                static bool s_IsTexture = false;
+                ImGui::Checkbox("Is texture?", &s_IsTexture);
+
+                if (ImGui::Button("Create")) {
+                    if (s_IsTexture) {
+                        BlTexture tex;
+                        tex.Create(assetFile);
+                        Asset asset;
+                        asset.Type = AssetType::Texture;
+                        asset.FilePath = fs::relative(assetFile, m_BaseDirectory);
+                        asset.Data = tex;
+
+                        m_CurrentScene->GetAssetManager().AddAsset("cart", asset);
+                    } else {
+                        Font font = Font::Create(assetFile);
+                        Asset asset;
+                        asset.Type = AssetType::Font;
+                        asset.FilePath = fs::relative(assetFile, m_BaseDirectory);
+                        asset.Data = font;
+
+                        m_CurrentScene->GetAssetManager().AddAsset("cart", asset);
+                    }
+
+                    ImGui::CloseCurrentPopup();
+                    createAssetPopup = false;
+                }
+
+                ImGui::EndPopup();
+            }
 
         // ImGui::Columns(1);
     
@@ -681,7 +720,8 @@ namespace BlackberryEditor {
 
                 ImGui::PushID(asset.FilePath.string().c_str());
 
-                ImGui::ImageButton(asset.FilePath.string().c_str(), std::get<BlTexture>(asset.Data).ID, ImVec2(128.0f, 128.0f));
+                // ImGui::ImageButton(asset.FilePath.string().c_str(), std::get<BlTexture>(asset.Data).ID, ImVec2(128.0f, 128.0f));
+                ImGui::Button(asset.FilePath.string().c_str(), ImVec2(128.0f, 128.0f));
 
                 if (ImGui::BeginDragDropSource()) {
                     ImGui::SetDragDropPayload("ASSET_MANAGER_DRAG_DROP", &handle, sizeof(handle));
@@ -797,7 +837,7 @@ namespace BlackberryEditor {
             if (ImGui::BeginPopupContextWindow("PropertiesContextMenu")) {
                 if (ImGui::BeginMenu("Add Component")) {
                     AddComponentListOption<Transform2DComponent>("Transform2D", entity);
-                    AddComponentListOption<TextComponent>("Text", entity, {&m_EditorFont});
+                    AddComponentListOption<TextComponent>("Text", entity);
                     AddComponentListOption<ShapeRendererComponent>("Shape Renderer", entity);
                     AddComponentListOption<SpriteRendererComponent>("Sprite Renderer", entity);
                     AddComponentListOption<CameraComponent>("Camera", entity);
@@ -864,7 +904,6 @@ namespace BlackberryEditor {
                     spriteRenderer.Shape = static_cast<ShapeType>(currentShape);
                 }
 
-
                 ImGui::Unindent();
                 ImGui::Separator();
                 ImGui::Text("Texture: ");
@@ -906,14 +945,61 @@ namespace BlackberryEditor {
 
                 DrawRecControl("Area", &spriteRenderer.Area);
             });
-            DrawComponent<TextComponent>("Text", entity, [](TextComponent& text) {
-                ImGui::InputTextMultiline("Contents", &text.Contents);
+            DrawComponent<TextComponent>("Text", entity, [this](TextComponent& text) {
+                ImGui::Text("Contents: ");
+                ImGui::Indent();
+                ImGui::InputTextMultiline("##Contents", &text.Contents);
+                ImGui::Unindent();
 
-                // ImGui::Separator();
-                // ImGui::Text("Font Size: ");
-                // ImGui::Indent();
-                // ImGui::SliderFloat("##FontSize", &text.FontSize, 1.0f, 350.0f);
-                // ImGui::Unindent();
+                ImGui::Separator();
+                ImGui::Text("Font: ");
+                ImGui::Indent();
+
+                std::string mat;
+                if (m_CurrentScene->GetAssetManager().ContainsAsset(text.FontHandle)) {
+                    mat = m_CurrentScene->GetAssetManager().GetAsset(text.FontHandle).FilePath.stem().string();
+                } else {
+                    mat = "NULL";
+                }
+
+                f32 size = ImGui::GetContentRegionAvail().x;
+                if (mat == "NULL") {
+                    ImGui::PushStyleColor(ImGuiCol_Text, 0xff0000ff);
+                    ImGui::Button(mat.c_str(), ImVec2(size, 0.0f));
+                    ImGui::PopStyleColor();
+                } else {
+                    ImGui::Button(mat.c_str(), ImVec2(size, 0.0f));
+                }
+
+                if (ImGui::BeginPopupContextItem("FontHandlePopup")) {
+                    if (ImGui::MenuItem("Remove Font")) {
+                        text.FontHandle = 0;
+                    }
+
+                    ImGui::EndPopup();
+                }
+
+                if (ImGui::BeginDragDropTarget()) {
+                    const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_MANAGER_DRAG_DROP");
+
+                    if (payload) {
+                        text.FontHandle = *reinterpret_cast<u64*>(payload->Data); // seems sus
+                    }
+                }
+
+                ImGui::Unindent();
+
+                ImGui::Separator();
+                ImGui::Text("Kerning: ");
+                ImGui::Indent();
+                ImGui::DragFloat("##Kerning", &text.Kerning, 0.005f);
+                ImGui::Unindent();
+                
+                ImGui::Separator();
+                ImGui::Text("Line Spacing: ");
+                ImGui::Indent();
+                ImGui::DragFloat("##LineSpacing", &text.LineSpacing, 0.125f);
+                ImGui::Unindent();
             });
             DrawComponent<CameraComponent>("Camera", entity, [this](CameraComponent& camera) {
                 SceneCamera& cam = camera.Camera;
@@ -1285,6 +1371,7 @@ namespace BlackberryEditor {
 
     void EditorLayer::LoadEditorState() {
         if (!std::filesystem::exists(m_AppDataDirectory / "Blackberry-Editor" / "editor_state.blsettings")) {
+            LoadProject();
             return;
         }
 

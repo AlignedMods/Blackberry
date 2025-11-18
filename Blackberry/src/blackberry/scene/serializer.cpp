@@ -90,6 +90,17 @@ namespace Blackberry {
                     {"Mass", rigidBody.Mass}
                 };
             }
+
+            if (entity.HasComponent<TextComponent>()) {
+                TextComponent& text = entity.GetComponent<TextComponent>();
+
+                j["Entities"][name]["TextComponent"] = {
+                    {"Contents", text.Contents},
+                    {"FontHandle", text.FontHandle},
+                    {"Kerning", text.Kerning},
+                    {"LineSpacing", text.LineSpacing}
+                };
+            }
         }
 
         // assets
@@ -98,6 +109,7 @@ namespace Blackberry {
 
             j["Assets"][name] = {
                 { "Handle", handle },
+                { "Type", static_cast<u32>(asset.Type) },
                 { "AssetPath", asset.FilePath }
             };
         }
@@ -113,17 +125,22 @@ namespace Blackberry {
         auto& entities = j.at("Entities");
         auto& assets = j.at("Assets");
 
-        // assets (NOTE: must happen before entity loading, incase of entities depending on texture handles)
+        // assets (NOTE: must happen before entity loading, incase of entities depending on texture/font handles)
         for (auto& jsonAsset : assets) {
             Asset asset;
-            asset.Type = AssetType::Texture;
+            asset.Type = static_cast<AssetType>(jsonAsset.at("Type"));
 
             std::filesystem::path path = jsonAsset.at("AssetPath");
             asset.FilePath = path;
             
-            BlTexture tex;
-            tex.Create(m_AssetDirectory / jsonAsset.at("AssetPath"));
-            asset.Data = tex;
+            if (asset.Type == AssetType::Texture) {
+                BlTexture tex;
+                tex.Create(m_AssetDirectory / jsonAsset.at("AssetPath"));
+                asset.Data = tex;
+            } else if (asset.Type == AssetType::Font) {
+                Font font = Font::Create(m_AssetDirectory / jsonAsset.at("AssetPath"));
+                asset.Data = font;
+            }
 
             m_Scene->GetAssetManager().AddAssetWithHandle(jsonAsset.at("Handle"), asset);
         }
@@ -209,6 +226,16 @@ namespace Blackberry {
                 f32 mass = jsonRigidBody.at("Mass");
 
                 entity.AddComponent<RigidBodyComponent>({ BlVec2(velocity[0], velocity[1]), BlVec2(acceleration[0], acceleration[1]), BlVec2(force[0], force[1]), mass });
+            }
+
+            if (jsonEntity.contains("TextComponent")) {
+                auto& jsonText = jsonEntity.at("TextComponent");
+                std::string contents = jsonText.at("Contents");
+                u64 fontHandle = jsonText.at("FontHandle");
+                f32 kerning = jsonText.at("Kerning");
+                f32 lineSpacing = jsonText.at("LineSpacing");
+
+                entity.AddComponent<TextComponent>({contents, fontHandle, kerning, lineSpacing});
             }
         }
     }

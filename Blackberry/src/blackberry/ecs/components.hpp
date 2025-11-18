@@ -87,8 +87,11 @@ namespace Blackberry {
     };
 
     struct TextComponent {
-        Font* Font = nullptr;
         std::string Contents;
+        u64 FontHandle = 0;
+
+        f32 Kerning = 0.0f;
+        f32 LineSpacing = 0.0f;
     };
 
     struct ScriptComponent {

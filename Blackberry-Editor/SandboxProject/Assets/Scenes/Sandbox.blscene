@@ -2,15 +2,23 @@
     "Assets": {
         "Handle - 10803928294860902758": {
             "AssetPath": "Textures\\rabbit.jpg",
-            "Handle": 10803928294860902758
+            "Handle": 10803928294860902758,
+            "Type": 0
         },
         "Handle - 15162507589004987079": {
             "AssetPath": "Textures\\cat.jpg",
-            "Handle": 15162507589004987079
+            "Handle": 15162507589004987079,
+            "Type": 0
+        },
+        "Handle - 5555962722629784639": {
+            "AssetPath": "Fonts\\creato_display\\CreatoDisplay-Medium.otf",
+            "Handle": 5555962722629784639,
+            "Type": 1
         },
         "Handle - 9023906316994206417": {
             "AssetPath": "Textures\\MANGODIDDYBLUD.jpg",
-            "Handle": 9023906316994206417
+            "Handle": 9023906316994206417,
+            "Type": 0
         }
     },
     "Entities": {
@@ -106,12 +114,12 @@
             },
             "Transform2DComponent": {
                 "Dimensions": [
-                    367.5220031738281,
+                    327.5220031738281,
                     402.2640075683594
                 ],
                 "Position": [
-                    201.6358642578125,
-                    864.4391479492188,
+                    310.635986328125,
+                    817.4390258789063,
                     0.0
                 ],
                 "Rotation": 0.0
@@ -233,8 +241,14 @@
         },
         "ID - 7": {
             "TagComponent": {
-                "Name": "Rectangle",
+                "Name": "Text",
                 "UUID": 5489723198560109817
+            },
+            "TextComponent": {
+                "Contents": "this is some text!",
+                "FontHandle": 5555962722629784639,
+                "Kerning": 0.0,
+                "LineSpacing": 0.0
             },
             "Transform2DComponent": {
                 "Dimensions": [
@@ -242,8 +256,8 @@
                     240.0
                 ],
                 "Position": [
-                    710.0,
-                    438.0,
+                    388.1815185546875,
+                    449.64593505859375,
                     0.0
                 ],
                 "Rotation": 0.0

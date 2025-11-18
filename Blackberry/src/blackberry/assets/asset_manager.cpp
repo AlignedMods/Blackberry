@@ -43,17 +43,16 @@ namespace Blackberry {
     }
 
     void AssetManager::AddTextureFromPath(const std::string& name, const std::filesystem::path& path) {
-        std::filesystem::path relative = path;
-        
-        if (path.is_absolute()) {
-            relative = std::filesystem::relative(path, std::filesystem::current_path());
-        }
-
-        Blackberry::Image image = Image::Create(relative);
+        Image image = Image::Create(path);
         BlTexture tex;
         tex.Create(image);
 
-        AddAsset(name, {relative, AssetType::Texture, tex});
+        AddAsset(name, {path, AssetType::Texture, tex});
+    }
+
+    void AssetManager::AddFontFromPath(const std::string& name, const std::filesystem::path& path) {
+        Font font = Font::Create(path);
+        AddAsset(name, {path, AssetType::Font, font});
     }
 
 } // namespace Blackberry

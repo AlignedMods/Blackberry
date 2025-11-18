@@ -385,16 +385,16 @@ namespace Blackberry {
         DrawTexturedQuad(transform, area, texture, color);
     }
 
-    void Renderer2D::DrawText(BlVec3 position, f32 fontSize, const std::string& text, Font& font, BlColor color) {
+    void Renderer2D::DrawText(BlVec3 position, f32 fontSize, const std::string& text, Font& font, TextParams params, BlColor color) {
         glm::mat4 pos = glm::translate(glm::mat4(1.0f), glm::vec3(position.x, position.y, position.z));
         glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(fontSize / font.LineHeight, fontSize / font.LineHeight, 1.0f));
 
         glm::mat4 transform = pos * scale;
 
-        DrawText(transform, text, font, color);
+        DrawText(transform, text, font, params, color);
     }
 
-    void Renderer2D::DrawText(const glm::mat4& transform, const std::string& text, Font& font, BlColor color) {
+    void Renderer2D::DrawText(const glm::mat4& transform, const std::string& text, Font& font, TextParams params, BlColor color) {
         BlTexture tex = font.TextureAtlas;
         // BlTexture tex = Renderer2DState.WhiteTexture;
         f32 fsScale = 1.0f / (font.Ascender - font.Descender);
@@ -410,7 +410,7 @@ namespace Blackberry {
 
         for (u32 c = 0; c < text.length(); c++) {
             if (text.at(c) == '\n') {
-                // currentY += font.RowHeight;
+                currentY -= fsScale * font.LineHeight + params.LineSpacing;
                 currentX = 0;
             } else {
                 GlyphInfo glyph = font.GetGlyphInfo(text.at(c), 0);
@@ -431,10 +431,8 @@ namespace Blackberry {
                 quadMin *= BlVec2(fsScale); quadMax *= BlVec2(fsScale);
                 quadMin += BlVec2(currentX, currentY); quadMax += BlVec2(currentX, currentY);
 
-                // make the origin of the glyph quads be bottom-left corner of the transform (default origin is center)
-                // quadMin *= BlVec2(2.0f); quadMax *= BlVec2(2.0f);
-                // quadMin -= BlVec2(0.5f); quadMax -= BlVec2(0.5f);
-                quadMin.y -= 0.5f; quadMax.y -= 0.5f;
+                // make the origin of the glyph quads be top-left corner of the transform (default origin is center-top)
+                quadMin.x -= 0.5f; quadMax.x -= 0.5f;
 
                 f32 texelWidth = 1.0f / tex.Width;
                 f32 texelHeight = 1.0f / tex.Height;
@@ -471,7 +469,7 @@ namespace Blackberry {
                 Renderer2DState.FontIndexCount += 6;
                 Renderer2DState.FontVertexCount += 4;
 
-                currentX += fsScale * glyph.AdvanceX;
+                currentX += fsScale * glyph.AdvanceX + params.Kerning;
             }
         }
     }
