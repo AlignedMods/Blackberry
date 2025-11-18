@@ -82,7 +82,6 @@ namespace Blackberry {
             glyph->getQuadAtlasBounds(x, y, w, h);
             f64 l, b, r, t;
             glyph->getQuadPlaneBounds(l, b, r, t);
-            glyph->getAdvance();
             
             info.AtlasRect = BlRec(static_cast<f32>(x), static_cast<f32>(y), static_cast<f32>(w), static_cast<f32>(h));
             info.PlaneRect = BlRec(static_cast<f32>(l), static_cast<f32>(t), static_cast<f32>(r), static_cast<f32>(b));

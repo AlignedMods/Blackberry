@@ -14,7 +14,6 @@ namespace Blackberry {
         BlRec AtlasRect; // rectangle on the font atlas
         BlRec PlaneRect; // rectangle relative to baseline
         f32 AdvanceX = 0.0f;
-        f32 BaselineOffset = 0.0f;
     };
 
     class Font {
