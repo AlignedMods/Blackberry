@@ -23,6 +23,13 @@ namespace BlackberryEditor {
         Edit,
         Play
     };
+
+    enum class GizmoState {
+        None = 0,
+        Move,
+        Rotate,
+        Scale
+    };
     
     class EditorLayer : public Blackberry::Layer {
     public:
@@ -75,6 +82,7 @@ namespace BlackberryEditor {
     
         Blackberry::EntityID m_SelectedEntity = entt::null;
         bool m_IsEntitySelected = false;
+        GizmoState m_GizmoState = GizmoState::None;
     
         BlRenderTexture m_RenderTexture;
         BlRec m_ViewportBounds;

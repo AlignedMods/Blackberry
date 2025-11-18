@@ -343,8 +343,6 @@ namespace BlackberryEditor {
     }
 
     void EditorLayer::OnUIRender() {
-        ImGuizmo::BeginFrame();
-
         // set up dockspace
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
     
@@ -526,11 +524,17 @@ namespace BlackberryEditor {
                 m_ShowDemoWindow = true;
             }
 
-            if (kp.GetKeyCode() == KeyCode::F) {
-                OnScenePlay();
+            if (kp.GetKeyCode() == KeyCode::Num0) {
+                m_GizmoState = GizmoState::None;
             }
-            if (kp.GetKeyCode() == KeyCode::G) {
-                OnSceneStop();
+            if (kp.GetKeyCode() == KeyCode::Num1) {
+                m_GizmoState = GizmoState::Move;
+            }
+            if (kp.GetKeyCode() == KeyCode::Num2) {
+                m_GizmoState = GizmoState::Rotate;
+            }
+            if (kp.GetKeyCode() == KeyCode::Num3) {
+                m_GizmoState = GizmoState::Scale;
             }
         }
     }
@@ -1058,6 +1062,8 @@ namespace BlackberryEditor {
     }
     
     void EditorLayer::UI_Viewport() {
+        ImGuizmo::BeginFrame();
+
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
         ImGui::Begin("Viewport");
         ImGui::PopStyleVar();
@@ -1125,8 +1131,8 @@ namespace BlackberryEditor {
             ImGui::EndDragDropTarget();
         };
 
-        // gizmos (currently disabled until further notice)
-        if (m_IsEntitySelected && true) {
+        // gizmos
+        if (m_IsEntitySelected && m_GizmoState != GizmoState::None) {
             Entity e(m_SelectedEntity, m_CurrentScene);
             if (e.HasComponent<Transform2DComponent>()) {
                 Transform2DComponent& transform = e.GetComponent<Transform2DComponent>();
@@ -1135,24 +1141,37 @@ namespace BlackberryEditor {
                 glm::mat4 camProjection = m_EditorCamera.GetCameraProjection();
                 glm::mat4 camView = m_EditorCamera.GetCameraView(); // already inversed
 
-                glm::mat4 result = transformMatrix;
-
                 // prevent imgui from taxing inputs (you are not the irs buddy)
                 if (ImGuizmo::IsOver()) {
                     ImGui::GetIO().WantCaptureMouse = false;
                 }
+
+                ImGuizmo::OPERATION operation = ImGuizmo::OPERATION::TRANSLATE;
                 
+                switch (m_GizmoState) {
+                    case GizmoState::Move: operation = ImGuizmo::OPERATION::TRANSLATE; break;
+                    case GizmoState::Rotate: operation = ImGuizmo::OPERATION::ROTATE; break;
+                    case GizmoState::Scale: operation = ImGuizmo::OPERATION::SCALE; break;
+                }
+
+                bool snap = Input::IsKeyDown(KeyCode::Ctrl);
+                f32 snapValue = 40.0f;
+
+                if (m_GizmoState == GizmoState::Rotate) {
+                    snapValue = 45.0f;
+                }
+
+                f32 snapValues[3] = { snapValue, snapValue, snapValue };
+
                 ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
                 ImGuizmo::Enable(true);
                 ImGuizmo::SetOrthographic(true);
                 ImGuizmo::SetRect(min.x, min.y, max.x - min.x, max.y - min.y);
-                ImGuizmo::Manipulate(glm::value_ptr(camView), glm::value_ptr(camProjection), ImGuizmo::OPERATION::TRANSLATE, ImGuizmo::MODE::LOCAL, glm::value_ptr(transformMatrix), glm::value_ptr(result));
+                ImGuizmo::Manipulate(glm::value_ptr(camView), glm::value_ptr(camProjection), operation, ImGuizmo::MODE::LOCAL, glm::value_ptr(transformMatrix), nullptr, snap ? snapValues : nullptr);
 
                 if (ImGuizmo::IsUsing()) {
-                    result *= transformMatrix;
-
                     f32 pos[3], rot[3], scale[3];
-                    ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(result), pos, rot, scale);
+                    ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(transformMatrix), pos, rot, scale);
 
                     transform.Position = BlVec3(pos[0], pos[1], pos[2]);
                     transform.Rotation = rot[2];
@@ -1162,23 +1181,6 @@ namespace BlackberryEditor {
         }
     
         ImGui::End();
-
-        // ImGui::SetNextWindowBgAlpha(0.4f); // transparent background
-        // ImGui::SetNextWindowPos(ImVec2(m_ViewportBounds.x + 10.0f, m_ViewportBounds.y + 10.0f));
-        // ImGui::SetNextWindowSize(ImVec2(200, 30));
-        // 
-        // ImGui::SetNextWindowFocus();
-        // 
-        // ImGui::Begin("ViewportOverlay", nullptr,
-        //     ImGuiWindowFlags_NoDecoration |
-        //     ImGuiWindowFlags_NoMove |
-        //     ImGuiWindowFlags_NoResize |
-        //     ImGuiWindowFlags_NoDocking |
-        //     ImGuiWindowFlags_NoNavFocus |
-        //     ImGuiWindowFlags_AlwaysAutoResize
-        // );
-        // 
-        // ImGui::End();
     }
 
     void EditorLayer::UI_RendererStats() {
