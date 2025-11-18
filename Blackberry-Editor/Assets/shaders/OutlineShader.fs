@@ -14,7 +14,7 @@ void main()
     // Sobel kernels
     float gx[9] = float[9](-1,0,1, -2,0,2, -1,0,1);
     float gy[9] = float[9](-1,-2,-1, 0,0,0, 1,2,1);
-
+    
     float sampleVals[9];
     int i = 0;
     for(int y=-1; y<=1; y++) {
@@ -23,16 +23,16 @@ void main()
             sampleVals[i++] = texture(u_Mask, a_TexCoord + offset).r;
         }
     }
-
+    
     float gxSum = 0.0;
     float gySum = 0.0;
     for(int k=0; k<9; k++) {
         gxSum += gx[k] * sampleVals[k];
         gySum += gy[k] * sampleVals[k];
     }
-
+    
     float edge = sqrt(gxSum*gxSum + gySum*gySum);
     edge = smoothstep(0.05, 0.2, edge); // tweak thresholds
-
+    
     o_FragColor = vec4(u_OutlineColor, edge);
 }

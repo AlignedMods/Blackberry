@@ -8,7 +8,7 @@
 #include "blackberry/ecs/ecs.hpp"
 #include "platform/glfw/glfw_window.hpp"
 #include "platform/opengl/opengl3_renderer.hpp"
-#include "blackberry/rendering/rendering.hpp"
+#include "blackberry/renderer/renderer2d.hpp"
 #include "blackberry/lua/lua.hpp"
 
 #include "imgui.h"

@@ -2,8 +2,8 @@
 
 #include "blackberry/core/types.hpp"
 #include "blackberry/image/image.hpp"
-#include "blackberry/rendering/texture.hpp"
-#include "blackberry/rendering/shader.hpp"
+#include "blackberry/renderer/texture.hpp"
+#include "blackberry/renderer/shader.hpp"
 
 struct BlDrawBuffer {
     std::string DebugName;

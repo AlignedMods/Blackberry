@@ -1,5 +1,5 @@
 #include "blackberry/assets/asset_manager.hpp"
-#include "blackberry/rendering/texture.hpp"
+#include "blackberry/renderer/texture.hpp"
 
 namespace Blackberry {
 

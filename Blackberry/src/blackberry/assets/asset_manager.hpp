@@ -2,7 +2,7 @@
 
 #include "blackberry/core/types.hpp"
 #include "blackberry/scene/uuid.hpp"
-#include "blackberry/rendering/texture.hpp"
+#include "blackberry/renderer/texture.hpp"
 #include "blackberry/font/font.hpp"
 
 #include <filesystem>

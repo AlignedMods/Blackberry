@@ -2,7 +2,7 @@
 
 #include "blackberry/application/renderer.hpp"
 #include "blackberry/core/types.hpp"
-#include "blackberry/rendering/shader.hpp"
+#include "blackberry/renderer/shader.hpp"
 
 #include "glm/glm.hpp"
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "blackberry/image/image.hpp"
-#include "blackberry/rendering/texture.hpp"
+#include "blackberry/renderer/texture.hpp"
 
 #include <filesystem>
 #include <unordered_map>

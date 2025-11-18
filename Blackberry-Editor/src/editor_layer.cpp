@@ -266,6 +266,17 @@ namespace BlackberryEditor {
         m_EditorCamera.Offset = BlVec2(m_RenderTexture.Texture.Width / 2.0f, m_RenderTexture.Texture.Height / 2.0f);
         m_EditorCamera.Position = BlVec2(m_RenderTexture.Texture.Width / 2.0f, m_RenderTexture.Texture.Height / 2.0f);
 
+        // gizmo styles
+        ImGuizmo::Style& guizmoStyle = ImGuizmo::GetStyle();
+        ImVec4* guizmoColors = guizmoStyle.Colors;
+
+        // handles
+        guizmoColors[ImGuizmo::COLOR::DIRECTION_X] = ImVec4(1.0f, 0.2f, 0.2f, 1.0f);
+        guizmoColors[ImGuizmo::COLOR::DIRECTION_Y] = ImVec4(0.2f, 1.0f, 0.2f, 1.0f);
+        guizmoColors[ImGuizmo::COLOR::DIRECTION_Z] = ImVec4(0.2f, 0.2f, 1.0f, 1.0f);
+
+        guizmoColors[ImGuizmo::COLOR::SELECTION] = ImVec4(0.8f, 0.8f, 0.8f, 0.7f);
+
         // ImGui::GetIO().IniFilename = std::filesystem::path(m_AppDataDirectory / "Blackberry-Editor" / "editor_layout.ini").string().c_str();
     }
 
@@ -435,9 +446,10 @@ namespace BlackberryEditor {
             };
 
             // wierd syntax honestly
-            if (!drawWhiteEntity.template operator()<SpriteRendererComponent>() && !drawWhiteEntity.template operator()<ShapeRendererComponent>()) {};
+            if (!drawWhiteEntity.template operator()<SpriteRendererComponent>() && !drawWhiteEntity.template operator()<ShapeRendererComponent>()) {
+                Renderer2D::DrawRectangle(transform.GetMatrix(), Colors::White);
+            };
 
-            // Renderer2D::DrawRectangle(transform.Position, transform.Dimensions, transform.Rotation, Colors::White);
         }
 
         Renderer2D::Render();
@@ -1084,8 +1096,11 @@ namespace BlackberryEditor {
 
         ImGui::SetCursorPosX(cursorX);
         ImGui::SetCursorPosY(cursorY);
-    
         ImGui::Image(m_RenderTexture.Texture.ID, ImVec2(sizeX, sizeY), ImVec2(0, 1), ImVec2(1, 0));
+
+        ImGui::SetCursorPosX(cursorX);
+        ImGui::SetCursorPosY(cursorY);
+        ImGui::Image(m_OutlineTexture.Texture.ID, ImVec2(sizeX, sizeY), ImVec2(0, 1), ImVec2(1, 0));
 
         if (ImGui::IsItemHovered()) {
             m_ViewportHovered = true;

@@ -1,4 +1,4 @@
-#include "blackberry/rendering/rendering.hpp"
+#include "blackberry/renderer/renderer2d.hpp"
 #include "blackberry/core/util.hpp"
 #include "blackberry/scene/camera.hpp"
 
@@ -400,7 +400,7 @@ namespace Blackberry {
         f32 currentX = 0.0f;
         f32 currentY = 0.0f;
 
-        BlVec2 textSize = MeasureText(text, font);
+        BlVec2 textSize = MeasureText(text, font, params);
 
         glm::mat4 finalTextTransform = glm::scale(transform, glm::vec3(1.0f / textSize.x, 1.0f / textSize.y, 1.0f));
 
@@ -467,7 +467,7 @@ namespace Blackberry {
                 Renderer2DState.FontIndexCount += 6;
                 Renderer2DState.FontVertexCount += 4;
 
-                currentX += fsScale * glyph.AdvanceX + params.Kerning;
+                currentX += fsScale * (glyph.AdvanceX + params.Kerning);
             }
         }
     }
@@ -751,7 +751,7 @@ namespace Blackberry {
         }
     }
 
-    BlVec2 Renderer2D::MeasureText(const std::string& text, Font& font) {
+    BlVec2 Renderer2D::MeasureText(const std::string& text, Font& font, TextParams parameters) {
         f32 fsScale = 1.0f / (font.Ascender - font.Descender);
         f32 currentX = 0.0f;
         f32 currentY = 0.0f;
@@ -760,7 +760,7 @@ namespace Blackberry {
             auto glyph = font.GetGlyphInfo(text.at(c), 0);
             BlRec& pb = glyph.PlaneRect;
 
-            currentX += fsScale * glyph.AdvanceX;
+            currentX += fsScale * (glyph.AdvanceX + parameters.Kerning);
             currentY = std::max(currentY, fsScale * (glyph.PlaneRect.y - glyph.PlaneRect.h));
         }
 

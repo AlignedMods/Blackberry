@@ -1,7 +1,7 @@
 #include "blackberry/scene/scene.hpp"
 #include "blackberry/ecs/ecs.hpp"
 #include "blackberry/core/log.hpp"
-#include "blackberry/rendering/rendering.hpp"
+#include "blackberry/renderer/renderer2d.hpp"
 #include "blackberry/core/util.hpp"
 #include "blackberry/lua/lua.hpp"
 #include "blackberry/scene/entity.hpp"

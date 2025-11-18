@@ -71,7 +71,7 @@ namespace Blackberry {
 
         static void Render();
 
-        static BlVec2 MeasureText(const std::string& text, Font& font);
+        static BlVec2 MeasureText(const std::string& text, Font& font, TextParams parameters);
         static BlRenderer2DInfo GetRenderingInfo();
     };
 

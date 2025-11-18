@@ -1,7 +1,6 @@
 #include "blackberry/font/font.hpp"
 #include "blackberry/core/types.hpp"
 #include "blackberry/core/log.hpp"
-#include "blackberry/rendering/rendering.hpp"
 #include "blackberry/core/util.hpp"
 
 #include "msdfgen.h"
