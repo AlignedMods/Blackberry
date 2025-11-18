@@ -317,7 +317,7 @@ namespace BlackberryEditor {
                     BlVec2 delta = Input::GetMouseDelta();
                     delta.x *= -1.0f;
 
-                    m_EditorCamera.Position -= delta / BlVec2(m_EditorCamera.Zoom);
+                    m_EditorCamera.Position -= delta * BlVec2(m_EditorCamera.Zoom);
                 }
             }
         }
@@ -332,10 +332,6 @@ namespace BlackberryEditor {
         } else {
             m_CurrentScene->SetCamera(&m_RuntimeCamera);
         }
-
-        // Renderer2D::DrawTextureArea(BlVec3(300.0f, 200.0f, 1.0f), BlVec2(m_EditorFont.GetGlyphInfo('E').Rect.w, m_EditorFont.GetGlyphInfo('E').Rect.h), m_EditorFont.GetGlyphInfo('E').Rect, m_EditorFont.TextureAtlas);
-        // Renderer2D::DrawText("Test string!", BlVec3(300.0f, 200.0f, 1.0f), 48.0f, m_EditorFont);
-        // Renderer2D::DrawText(BlVec3(200.0f, 200.0f, 1.0f), 64.0f, "testing string", m_EditorFont);
 
         m_CurrentScene->OnRender();
 
