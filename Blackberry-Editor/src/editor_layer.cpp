@@ -265,6 +265,7 @@ namespace BlackberryEditor {
 
         m_EditorCamera.Offset = BlVec2(m_RenderTexture.Texture.Width / 2.0f, m_RenderTexture.Texture.Height / 2.0f);
         m_EditorCamera.Position = BlVec2(m_RenderTexture.Texture.Width / 2.0f, m_RenderTexture.Texture.Height / 2.0f);
+        m_CurrentCamera = &m_EditorCamera;
 
         // gizmo styles
         ImGuizmo::Style& guizmoStyle = ImGuizmo::GetStyle();
@@ -422,7 +423,8 @@ namespace BlackberryEditor {
         // mask
         Renderer2D::AttachRenderTexture(m_MaskTexture);
         Renderer2D::Clear(BlColor(0, 0, 0, 255));
-        Renderer2D::SetProjection(m_EditorCamera);
+
+        Renderer2D::SetProjection(*m_CurrentCamera);
 
         if (entity.HasComponent<Transform2DComponent>()) {
             Transform2DComponent& transform = entity.GetComponent<Transform2DComponent>();
@@ -1149,8 +1151,8 @@ namespace BlackberryEditor {
                 Transform2DComponent& transform = e.GetComponent<Transform2DComponent>();
                 glm::mat4 transformMatrix = transform.GetMatrix();
 
-                glm::mat4 camProjection = m_EditorCamera.GetCameraProjection();
-                glm::mat4 camView = m_EditorCamera.GetCameraView(); // already inversed
+                glm::mat4 camProjection = m_CurrentCamera->GetCameraProjection();
+                glm::mat4 camView = m_CurrentCamera->GetCameraView(); // already inversed
 
                 // prevent imgui from taxing inputs (you are not the irs buddy)
                 if (ImGuizmo::IsOver()) {
@@ -1353,6 +1355,7 @@ namespace BlackberryEditor {
                 m_RuntimeCamera = entity.GetComponent<CameraComponent>().Camera;
             }
         }
+        m_CurrentCamera = &m_RuntimeCamera;
 
         m_CurrentScene->OnPlay();
     }
@@ -1365,6 +1368,7 @@ namespace BlackberryEditor {
         m_CurrentScene = m_EditingScene;
         delete m_RuntimeScene;
         m_RuntimeScene = nullptr;
+        m_CurrentCamera = &m_EditorCamera;
     }
 
     void EditorLayer::OnScenePause() {

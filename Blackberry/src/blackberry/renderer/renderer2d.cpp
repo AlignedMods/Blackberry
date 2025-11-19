@@ -402,7 +402,8 @@ namespace Blackberry {
 
         BlVec2 textSize = MeasureText(text, font, params);
 
-        glm::mat4 finalTextTransform = glm::scale(transform, glm::vec3(1.0f / textSize.x, 1.0f / textSize.y, 1.0f));
+        // glm::mat4 finalTextTransform = glm::scale(transform, glm::vec3(1.0f / textSize.x, 1.0f / textSize.y, 1.0f));
+        glm::mat4 finalTextTransform = glm::scale(transform, glm::vec3(2.0f, 2.0f, 1.0f));
 
         BlColor currentColor = color;
 
@@ -430,7 +431,10 @@ namespace Blackberry {
                 quadMin += BlVec2(currentX, currentY); quadMax += BlVec2(currentX, currentY);
 
                 // make the text be perfectly centered (since the whole string must fit in a rectangle this is easy)
-                quadMin -= textSize * BlVec2(0.5f); quadMax -= textSize * BlVec2(0.5f);
+                // quadMin -= textSize * BlVec2(0.5f); quadMax -= textSize * BlVec2(0.5f);
+                // quadMin -= BlVec2(0.5f); quadMax -= BlVec2(0.5f);
+                quadMin.x -= 0.25f; quadMax.x -= 0.25f;
+                quadMin.y -= 0.25f; quadMax.y -= 0.25f;
 
                 f32 texelWidth = 1.0f / tex.Width;
                 f32 texelHeight = 1.0f / tex.Height;

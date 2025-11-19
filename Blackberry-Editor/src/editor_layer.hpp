@@ -79,6 +79,7 @@ namespace BlackberryEditor {
         Blackberry::Font m_EditorFont;
         Blackberry::SceneCamera m_EditorCamera;
         Blackberry::SceneCamera m_RuntimeCamera;
+        Blackberry::SceneCamera* m_CurrentCamera = nullptr;
     
         Blackberry::EntityID m_SelectedEntity = entt::null;
         bool m_IsEntitySelected = false;

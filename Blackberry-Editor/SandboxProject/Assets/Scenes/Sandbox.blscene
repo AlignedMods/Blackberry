@@ -245,19 +245,19 @@
                 "UUID": 5489723198560109817
             },
             "TextComponent": {
-                "Contents": "this is a text!",
+                "Contents": "hello world!",
                 "FontHandle": 5555962722629784639,
                 "Kerning": 0.0,
                 "LineSpacing": 0.0
             },
             "Transform2DComponent": {
                 "Dimensions": [
-                    1294.0147705078125,
-                    189.2729034423828
+                    250.0,
+                    250.0
                 ],
                 "Position": [
-                    929.6510620117188,
-                    500.0,
+                    493.79022216796875,
+                    510.59368896484375,
                     1.0
                 ],
                 "Rotation": 0.0
