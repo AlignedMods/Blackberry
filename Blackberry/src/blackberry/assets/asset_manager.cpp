@@ -43,10 +43,7 @@ namespace Blackberry {
     }
 
     void AssetManager::AddTextureFromPath(const std::string& name, const std::filesystem::path& path) {
-        Image image = Image::Create(path);
-        BlTexture tex;
-        tex.Create(image);
-
+        Texture2D tex = Texture2D::Create(path);
         AddAsset(name, {path, AssetType::Texture, tex});
     }
 

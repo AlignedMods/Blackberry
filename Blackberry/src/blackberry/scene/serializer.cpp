@@ -134,8 +134,7 @@ namespace Blackberry {
             asset.FilePath = path;
             
             if (asset.Type == AssetType::Texture) {
-                BlTexture tex;
-                tex.Create(m_AssetDirectory / jsonAsset.at("AssetPath"));
+                Texture2D tex = Texture2D::Create(m_AssetDirectory / jsonAsset.at("AssetPath"));
                 asset.Data = tex;
             } else if (asset.Type == AssetType::Font) {
                 Font font = Font::Create(m_AssetDirectory / jsonAsset.at("AssetPath"));

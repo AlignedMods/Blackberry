@@ -25,7 +25,7 @@ namespace Blackberry {
         void GenerateAtlas();
 
     public:
-        BlTexture TextureAtlas;
+        Texture2D TextureAtlas;
         Image ImageAtlas;
         u32 GlyphCount = 0;
         std::unordered_map<u8, GlyphInfo> Glyphs;

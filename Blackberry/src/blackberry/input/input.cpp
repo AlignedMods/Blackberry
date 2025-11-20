@@ -13,8 +13,8 @@ namespace Blackberry {
         std::unordered_map<u32, u8> CurrentMouseState;
         std::unordered_map<u32, u8> PreviousMouseState;
 
-        BlVec2 CurrentMousePosition;
-        BlVec2 PreviousMousePosition;
+        BlVec2<f32> CurrentMousePosition;
+        BlVec2<f32> PreviousMousePosition;
         f32 ScrollLevel = 0.0f;
     };
 
@@ -40,11 +40,11 @@ namespace Blackberry {
         return InputState.CurrentMouseState[static_cast<u32>(key)] == 0 && InputState.CurrentMouseState[static_cast<u32>(key)] == 1;
     }
 
-    BlVec2 Input::GetMousePosition() {
+    BlVec2<f32> Input::GetMousePosition() {
         return InputState.CurrentMousePosition;
     }
 
-    BlVec2 Input::GetMouseDelta() {
+    BlVec2<f32> Input::GetMouseDelta() {
         return InputState.CurrentMousePosition - InputState.PreviousMousePosition;
     }
 
@@ -73,7 +73,7 @@ namespace Blackberry {
         InputState.ScrollLevel = 0.0f;
     }
 
-    void Input::SetMousePosition(BlVec2 position) {
+    void Input::SetMousePosition(BlVec2<f32> position) {
         InputState.CurrentMousePosition = position;
     }
 

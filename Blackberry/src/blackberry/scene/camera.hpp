@@ -81,7 +81,7 @@ namespace Blackberry {
             return &(GetCameraMatrix()[0].x); // debatable memory safety but glm does this under the hood (but value_ptr returns a const* which we don't want)
         }
 
-        BlVec2 GetScreenPosToWorld(BlVec2 position) {
+        BlVec2<f32> GetScreenPosToWorld(BlVec2<f32> position) {
             // NDC
             glm::vec2 ndc;
             ndc.x =  2.0f * (position.x / Size.x) - 1.0f;
@@ -99,9 +99,9 @@ namespace Blackberry {
         }
 
     public:
-        BlVec2 Position;
-        BlVec2 Offset;
-        BlVec2 Size = BlVec2(1920.0f, 1080.0f);
+        BlVec2<f32> Position;
+        BlVec2<f32> Offset;
+        BlVec2<f32> Size = BlVec2<f32>(1920.0f, 1080.0f);
         f32 Zoom = 1.0f;
         f32 Rotation = 0.0f;
         f32 Near = -1.0f;

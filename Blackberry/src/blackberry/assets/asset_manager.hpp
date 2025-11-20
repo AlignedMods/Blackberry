@@ -21,7 +21,7 @@ namespace Blackberry {
     struct Asset {
         std::filesystem::path FilePath;
         AssetType Type;
-        std::variant<BlTexture, Font> Data;
+        std::variant<Texture2D, Font> Data;
     };
 
     class AssetManager {

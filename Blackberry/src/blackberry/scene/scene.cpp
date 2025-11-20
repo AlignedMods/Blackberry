@@ -128,7 +128,7 @@ namespace Blackberry {
 
             if (spriteRenderer.TextureHandle > 0 && m_AssetManager->ContainsAsset(spriteRenderer.TextureHandle)) {
                 Asset asset = m_AssetManager->GetAsset(spriteRenderer.TextureHandle);
-                BlTexture tex = std::get<BlTexture>(asset.Data);
+                Texture2D tex = std::get<Texture2D>(asset.Data);
 
                 switch (spriteRenderer.Shape) {
                     case ShapeType::Triangle:

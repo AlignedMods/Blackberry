@@ -2,8 +2,8 @@
 #include "blackberry.hpp"
 
 struct Rabbit {
-    BlVec2 Pos;
-    BlVec2 Speed;
+    BlVec2<f32> Pos;
+    BlVec2<f32> Speed;
     BlColor Color;
 };
 
@@ -19,11 +19,11 @@ public:
         BlVec2 windowSize = BL_APP.GetWindow().GetWindowDims();
 
         for (auto& rabbit : m_Rabbits) {
-            if (rabbit.Pos.x + m_RabbitTexture.Width > windowSize.x || rabbit.Pos.x < 0.0f) {
+            if (rabbit.Pos.x + m_RabbitTexture.Size.x > windowSize.x || rabbit.Pos.x < 0.0f) {
                 rabbit.Speed.x *= -1;
             }
 
-            if (rabbit.Pos.y + m_RabbitTexture.Height > windowSize.y || rabbit.Pos.y < 0.0f) {
+            if (rabbit.Pos.y + m_RabbitTexture.Size.y > windowSize.y || rabbit.Pos.y < 0.0f) {
                 rabbit.Speed.y *= -1;
             }
 
@@ -31,13 +31,13 @@ public:
             rabbit.Pos.y += rabbit.Speed.y * ts;
         }
 
-        if (Blackberry::Input::IsKeyDown(KeyCode::Space)) {
+        if (Blackberry::Input::IsKeyDown(Blackberry::KeyCode::Space)) {
             // generate some bunnies
 
             for (u32 i = 0; i < 1000; i++) {
                 Rabbit rabbit;
-                rabbit.Pos.x = windowSize.x / 2.0f - m_RabbitTexture.Width / 2.0f;
-                rabbit.Pos.y = windowSize.y / 2.0f - m_RabbitTexture.Height / 2.0f;
+                rabbit.Pos.x = windowSize.x / 2.0f - m_RabbitTexture.Size.x / 2.0f;
+                rabbit.Pos.y = windowSize.y / 2.0f - m_RabbitTexture.Size.y / 2.0f;
 
                 rabbit.Speed.x = rand() % 1000 - 500;
                 rabbit.Speed.y = rand() % 1000 - 500;
@@ -53,7 +53,7 @@ public:
         Blackberry::Renderer2D::Clear();
 
         for (auto& rabbit : m_Rabbits) {
-            Blackberry::Renderer2D::DrawTexture(BlVec3(rabbit.Pos.x, rabbit.Pos.y, 0.0f), m_RabbitTexture, 0.0f, rabbit.Color);
+            Blackberry::Renderer2D::DrawTexture(BlVec3<f32>(rabbit.Pos.x, rabbit.Pos.y, 0.0f), m_RabbitTexture, 0.0f, rabbit.Color);
         }
     }
 
@@ -67,7 +67,7 @@ public:
     }
 
 private:
-    BlTexture m_RabbitTexture;
+    Blackberry::Texture2D m_RabbitTexture;
 
     std::vector<Rabbit> m_Rabbits;
 };

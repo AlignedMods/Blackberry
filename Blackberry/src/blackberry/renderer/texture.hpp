@@ -2,35 +2,38 @@
 
 #include "blackberry/core/types.hpp"
 #include "blackberry/image/image.hpp"
-// #include "blackberry/assets/asset_manager.hpp"
 
-enum class BlTextureFiltering { Nearest, Linear };
+namespace Blackberry {
 
-struct BlTexture {
-    BlTexture();
+    enum class TextureFiltering { Nearest, Linear };
 
-    void Create(u32 width, u32 height);
-    void Create(const std::filesystem::path& path);
-    void Create(const Blackberry::Image& image);
-    void Create(void* pixels, u32 width, u32 height, Blackberry::ImageFormat pixelFormat, BlTextureFiltering filter = BlTextureFiltering::Nearest);
-    void Delete();
+    struct Texture2D {
+        Texture2D() = default;
 
-    void* ReadPixels();
+        static Texture2D Create(u32 width, u32 height);
+        static Texture2D Create(const std::filesystem::path& path);
+        static Texture2D Create(const Image& image);
+        static Texture2D Create(void* pixels, u32 width, u32 height, ImageFormat pixelFormat, TextureFiltering filter = TextureFiltering::Nearest);
 
-    u32 ID = 0;
-    u32 Width = 0;
-    u32 Height = 0;
-    Blackberry::ImageFormat Format = Blackberry::ImageFormat::RGBA8;
-};
+        void Delete();
+    
+        void* ReadPixels();
+    
+        u32 ID = 0;
+        BlVec2<u32> Size;
+        ImageFormat Format = ImageFormat::RGBA8;
+    };
+    
+    struct RenderTexture {
+        RenderTexture() = default;
 
-struct BlRenderTexture {
-    BlRenderTexture();
+        static RenderTexture Create(u32 width, u32 height);
+        void Delete();
+    
+        u32 ID = 0;
+        BlVec2<u32> Size;
+        Texture2D ColorAttachment;
+        Texture2D DepthAttachment;
+    };
 
-    void Create(u32 width, u32 height);
-    void Resize(u32 width, u32 height);
-    void Delete();
-
-    u32 ID = 0;
-    BlTexture Texture;
-    BlTexture DepthTexture;
-};
+} // namespace Blackberry

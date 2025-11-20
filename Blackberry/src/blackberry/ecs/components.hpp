@@ -29,9 +29,9 @@ namespace Blackberry {
     };
 
     struct Transform3DComponent {
-        BlVec3 Position;
-        BlVec3 Rotation; // in degrees
-        BlVec2 Dimensions;
+        BlVec3<f32> Position;
+        BlVec3<f32> Rotation; // in degrees
+        BlVec2<f32> Dimensions;
 
         inline glm::mat4 GetMatrix() const {
             glm::mat4 pos = glm::translate(glm::mat4(1.0f), glm::vec3(Position.x, Position.y, Position.z));
@@ -43,9 +43,9 @@ namespace Blackberry {
     };
 
     struct Transform2DComponent {
-        BlVec3 Position; // Vec3 cause of z position
+        BlVec3<f32> Position; // Vec3 cause of z position
         f32 Rotation = 0.0f; // in degrees
-        BlVec2 Dimensions;
+        BlVec2<f32> Dimensions;
 
         inline glm::mat4 GetMatrix() const {
             glm::mat4 pos = glm::translate(glm::mat4(1.0f), glm::vec3(Position.x, Position.y, Position.z));
@@ -75,9 +75,9 @@ namespace Blackberry {
     };
 
     struct RigidBodyComponent {
-        BlVec2 Velocity;
-        BlVec2 Acceleration;
-        BlVec2 Force;
+        BlVec2<f32> Velocity;
+        BlVec2<f32> Acceleration;
+        BlVec2<f32> Force;
 
         f32 Mass = 10.0f;
     };

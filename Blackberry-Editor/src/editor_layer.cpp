@@ -54,7 +54,7 @@ namespace BlackberryEditor {
         }
     }
     
-    static void DrawVec2Control(const std::string& label, BlVec2* vec, const char* fmtX = "X", const char* fmtY = "Y") {
+    static void DrawVec2Control(const std::string& label, BlVec2<f32>* vec, const char* fmtX = "X", const char* fmtY = "Y") {
         ImGuiIO& io = ImGui::GetIO();
     
         ImGui::PushID(label.c_str());
@@ -92,7 +92,7 @@ namespace BlackberryEditor {
         ImGui::PopID();
     }
 
-    static void DrawVec3Control(const std::string& label, BlVec3* vec, const char* fmtX = "X", const char* fmtY = "Y", const char* fmtZ = "Z") {
+    static void DrawVec3Control(const std::string& label, BlVec3<f32>* vec, const char* fmtX = "X", const char* fmtY = "Y", const char* fmtZ = "Z") {
         ImGuiIO& io = ImGui::GetIO();
     
         ImGui::PushID(label.c_str());
@@ -243,9 +243,9 @@ namespace BlackberryEditor {
         io.Fonts->AddFontFromFileTTF("Assets/creato_display/CreatoDisplay-Medium.otf", 18);
         io.Fonts->AddFontFromFileTTF("Assets/creato_display/CreatoDisplay-Bold.otf", 18);
     
-        m_RenderTexture.Create(1920, 1080);
-        m_MaskTexture.Create(1920, 1080);
-        m_OutlineTexture.Create(1920, 1080);
+        m_RenderTexture = RenderTexture::Create(1920, 1080);
+        m_MaskTexture = RenderTexture::Create(1920, 1080);
+        m_OutlineTexture = RenderTexture::Create(1920, 1080);
 
         std::string vs = ReadEntireFile("Assets/shaders/OutlineShader.vs");
         std::string fs = ReadEntireFile("Assets/shaders/OutlineShader.fs");
@@ -253,18 +253,18 @@ namespace BlackberryEditor {
 
         LoadEditorState();
     
-        m_DirectoryIcon.Create("Assets/icons/directory.png");
-        m_FileIcon.Create("Assets/icons/file.png");
-        m_BackDirectoryIcon.Create("Assets/icons/back_directory.png");
-        m_PlayIcon.Create("Assets/icons/play.png");
-        m_StopIcon.Create("Assets/icons/stop.png");
-        m_PauseIcon.Create("Assets/icons/pause.png");
+        m_DirectoryIcon     = Texture2D::Create("Assets/icons/directory.png");
+        m_FileIcon          = Texture2D::Create("Assets/icons/file.png");
+        m_BackDirectoryIcon = Texture2D::Create("Assets/icons/back_directory.png");
+        m_PlayIcon          = Texture2D::Create("Assets/icons/play.png");
+        m_StopIcon          = Texture2D::Create("Assets/icons/stop.png");
+        m_PauseIcon         = Texture2D::Create("Assets/icons/pause.png");
     
         m_CurrentDirectory = m_CurrentProject.AssetDirectory;
         m_BaseDirectory = m_CurrentProject.AssetDirectory;
 
-        m_EditorCamera.Offset = BlVec2(m_RenderTexture.Texture.Width / 2.0f, m_RenderTexture.Texture.Height / 2.0f);
-        m_EditorCamera.Position = BlVec2(m_RenderTexture.Texture.Width / 2.0f, m_RenderTexture.Texture.Height / 2.0f);
+        m_EditorCamera.Offset = BlVec2<f32>(m_RenderTexture.Size.x / 2.0f, m_RenderTexture.Size.y / 2.0f);
+        m_EditorCamera.Position = BlVec2<f32>(m_RenderTexture.Size.x / 2.0f, m_RenderTexture.Size.y / 2.0f);
         m_CurrentCamera = &m_EditorCamera;
 
         // gizmo styles
@@ -507,9 +507,9 @@ namespace BlackberryEditor {
         renderer.SetBufferLayout(vertTexCoordLayout);
 
         renderer.BindShader(m_OutlineShader);
-        renderer.AttachTexture(m_MaskTexture.Texture);
+        renderer.AttachTexture(m_MaskTexture.ColorAttachment);
 
-        m_OutlineShader.SetVec2("u_TexelSize", BlVec2(1.0f / m_OutlineTexture.Texture.Width, 1.0f / m_OutlineTexture.Texture.Height));
+        m_OutlineShader.SetVec2("u_TexelSize", BlVec2(1.0f / m_OutlineTexture.Size.x, 1.0f / m_OutlineTexture.Size.y));
         m_OutlineShader.SetFloat("u_Thickness", 2.0f);
         m_OutlineShader.SetVec3("u_OutlineColor", BlVec3(1.0f, 0.7f, 0.2f));
 
@@ -685,8 +685,7 @@ namespace BlackberryEditor {
 
                 if (ImGui::Button("Create")) {
                     if (s_IsTexture) {
-                        BlTexture tex;
-                        tex.Create(assetFile);
+                        Texture2D tex = Texture2D::Create(assetFile);
                         Asset asset;
                         asset.Type = AssetType::Texture;
                         asset.FilePath = fs::relative(assetFile, m_BaseDirectory);
@@ -777,15 +776,17 @@ namespace BlackberryEditor {
             if (ImGui::BeginMenu("Add")) {
                 if (ImGui::MenuItem("Rectangle")) {
                     Entity entity(m_CurrentScene->CreateEntity("Rectangle"), m_CurrentScene);
+
                     entity.AddComponent<ShapeRendererComponent>();
-                    entity.AddComponent<Transform2DComponent>({BlVec3(m_RenderTexture.Texture.Width / 2.0f - 100.0f, m_RenderTexture.Texture.Height / 2.0f - 50.0f, 0.0f), 0.0f, BlVec2(200.0f, 100.0f)});
+                    entity.AddComponent<Transform2DComponent>({BlVec3<f32>(m_RenderTexture.Size.x / 2.0f - 100.0f, m_RenderTexture.Size.y / 2.0f - 50.0f, 0.0f), 0.0f, BlVec2<f32>(200.0f, 100.0f)});
                 };
 
                 if (ImGui::MenuItem("Triangle")) {
                     Entity entity(m_CurrentScene->CreateEntity("Triangle"), m_CurrentScene);
                     entity.AddComponent<ShapeRendererComponent>({.Shape = ShapeType::Triangle});
-                    entity.AddComponent<Transform2DComponent>({BlVec3(m_RenderTexture.Texture.Width / 2.0f - 100.0f, m_RenderTexture.Texture.Height / 2.0f - 50.0f, 0.0f), 0.0f, BlVec2(200.0f, 100.0f)});
+                    entity.AddComponent<Transform2DComponent>({BlVec3<f32>(m_RenderTexture.Size.x / 2.0f - 100.0f, m_RenderTexture.Size.y / 2.0f - 50.0f, 0.0f), 0.0f, BlVec2<f32>(200.0f, 100.0f)});
                 };
+                
                 
                 ImGui::EndMenu();
             }
@@ -1083,26 +1084,26 @@ namespace BlackberryEditor {
 
         ImVec2 area = ImGui::GetContentRegionAvail();
 
-        f32 scale = area.x / static_cast<f32>(m_RenderTexture.Texture.Width);
-        f32 y = m_RenderTexture.Texture.Height * scale;
+        f32 scale = area.x / static_cast<f32>(m_RenderTexture.Size.x);
+        f32 y = m_RenderTexture.Size.x * scale;
 
         if (y > area.y) {
-            scale = area.y / static_cast<f32>(m_RenderTexture.Texture.Height);
+            scale = area.y / static_cast<f32>(m_RenderTexture.Size.y);
         }
 
-        f32 sizeX = m_RenderTexture.Texture.Width * scale;
-        f32 sizeY = m_RenderTexture.Texture.Height * scale;
+        f32 sizeX = m_RenderTexture.Size.x * scale;
+        f32 sizeY = m_RenderTexture.Size.y * scale;
 
         f32 cursorX = area.x / 2.0f - sizeX / 2.0f;
         f32 cursorY = ImGui::GetCursorPosY() + (area.y / 2.0f - sizeY / 2.0f);
 
         ImGui::SetCursorPosX(cursorX);
         ImGui::SetCursorPosY(cursorY);
-        ImGui::Image(m_RenderTexture.Texture.ID, ImVec2(sizeX, sizeY), ImVec2(0, 1), ImVec2(1, 0));
+        ImGui::Image(m_RenderTexture.ColorAttachment.ID, ImVec2(sizeX, sizeY), ImVec2(0, 1), ImVec2(1, 0));
 
         ImGui::SetCursorPosX(cursorX);
         ImGui::SetCursorPosY(cursorY);
-        ImGui::Image(m_OutlineTexture.Texture.ID, ImVec2(sizeX, sizeY), ImVec2(0, 1), ImVec2(1, 0));
+        ImGui::Image(m_OutlineTexture.ColorAttachment.ID, ImVec2(sizeX, sizeY), ImVec2(0, 1), ImVec2(1, 0));
 
         if (ImGui::IsItemHovered()) {
             m_ViewportHovered = true;
@@ -1211,7 +1212,7 @@ namespace BlackberryEditor {
 
         ImGui::Begin("Font");
 
-        ImGui::Image(m_EditorFont.TextureAtlas.ID, ImVec2(m_EditorFont.TextureAtlas.Width, m_EditorFont.TextureAtlas.Height));
+        ImGui::Image(m_EditorFont.TextureAtlas.ID, ImVec2(m_EditorFont.TextureAtlas.Size.x, m_EditorFont.TextureAtlas.Size.y));
 
         ImGui::End();
     }

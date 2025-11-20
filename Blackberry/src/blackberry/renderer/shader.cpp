@@ -1,4 +1,4 @@
-#include "blackberry/rendering/shader.hpp"
+#include "blackberry/renderer/shader.hpp"
 #include "blackberry/core/log.hpp"
 
 #include "glad/glad.h"
@@ -61,11 +61,11 @@ void BlShader::SetIntArray(const std::string& uniform, u32 count, int* array) {
     glUniform1iv(glGetUniformLocation(ID, uniform.c_str()), count, array);
 }
 
-void BlShader::SetVec2(const std::string& uniform, BlVec2 val) {
+void BlShader::SetVec2(const std::string& uniform, BlVec2<f32> val) {
     glUniform2f(glGetUniformLocation(ID, uniform.c_str()), val.x, val.y);
 }
 
-void BlShader::SetVec3(const std::string& uniform, BlVec3 val) {
+void BlShader::SetVec3(const std::string& uniform, BlVec3<f32> val) {
     glUniform3f(glGetUniformLocation(ID, uniform.c_str()), val.x, val.y, val.z);
 }
 

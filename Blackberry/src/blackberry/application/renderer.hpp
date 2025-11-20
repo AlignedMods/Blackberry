@@ -15,8 +15,6 @@ struct BlDrawBuffer {
     u32* Indices = nullptr; // index data (u32 array)
     u32 IndexCount = 0;
     u32 IndexSize = 0; // size of a single index (bytes)
-
-    BlTexture* Texture = nullptr; // NOTE: sadly for now we have to bind texture per buffer (although this does allow for a lot of the same textures to be drawn at once)
 };
 
 struct BlDrawBufferLayout {
@@ -41,14 +39,14 @@ namespace Blackberry {
     public:
         virtual ~Renderer() = default;
 
-        virtual void UpdateViewport(BlVec2 viewport) = 0;
+        virtual void UpdateViewport(BlVec2<f32> viewport) = 0;
 
         virtual void NewFrame() = 0;
         virtual void EndFrame() = 0;
 
         virtual void Clear(BlColor color) const = 0;
 
-        virtual BlVec2 GetViewportSize() const = 0;
+        virtual BlVec2<f32> GetViewportSize() const = 0;
 
         virtual void SetBufferLayout(const BlDrawBufferLayout& layout) = 0;
 
@@ -57,10 +55,10 @@ namespace Blackberry {
 
         virtual void BindShader(BlShader shader) = 0;
 
-        virtual void AttachTexture(BlTexture texture, u32 slot = 0) = 0;
+        virtual void AttachTexture(Texture2D texture, u32 slot = 0) = 0;
         virtual void DetachTexture() = 0;
 
-        virtual void AttachRenderTexture(const BlRenderTexture texture) = 0;
+        virtual void AttachRenderTexture(const RenderTexture texture) = 0;
         virtual void DetachRenderTexture() = 0;
     };
 

@@ -85,16 +85,16 @@ namespace BlackberryEditor {
         bool m_IsEntitySelected = false;
         GizmoState m_GizmoState = GizmoState::None;
     
-        BlRenderTexture m_RenderTexture;
+        Blackberry::RenderTexture m_RenderTexture;
         BlRec m_ViewportBounds;
         f32 m_ViewportScale = 1.0f;
         bool m_ViewportHovered = false;
 
-        BlRenderTexture m_MaskTexture;
+        Blackberry::RenderTexture m_MaskTexture;
 
         BlShader m_OutlineShader;
 
-        BlRenderTexture m_OutlineTexture;
+        Blackberry::RenderTexture m_OutlineTexture;
     
         EditorProject m_CurrentProject;
         Blackberry::Scene* m_EditingScene = nullptr;
@@ -106,12 +106,12 @@ namespace BlackberryEditor {
         std::filesystem::path m_BaseDirectory;
     
         // textures
-        BlTexture m_DirectoryIcon;
-        BlTexture m_FileIcon;
-        BlTexture m_BackDirectoryIcon;
-        BlTexture m_PlayIcon;
-        BlTexture m_StopIcon;
-        BlTexture m_PauseIcon;
+        Blackberry::Texture2D m_DirectoryIcon;
+        Blackberry::Texture2D m_FileIcon;
+        Blackberry::Texture2D m_BackDirectoryIcon;
+        Blackberry::Texture2D m_PlayIcon;
+        Blackberry::Texture2D m_StopIcon;
+        Blackberry::Texture2D m_PauseIcon;
     
         bool m_ShowDemoWindow = false;
 
