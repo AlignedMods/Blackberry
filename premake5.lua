@@ -35,6 +35,10 @@ workspace "Blackberry"
         include "tests/"
     group ""
 
+    group "runtime"
+        include "Blackberry-Runtime/"
+    group ""
+
     group "tools"
         include "Blackberry-Editor/"
     group ""

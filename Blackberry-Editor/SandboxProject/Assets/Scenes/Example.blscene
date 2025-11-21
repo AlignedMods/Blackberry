@@ -1,64 +1,15 @@
 {
     "Entities": {
         "ID - 0": {
-            "DrawableComponent": {
-                "Color": [
-                    255,
-                    255,
-                    255,
-                    255
-                ],
-                "ShapeType": 1
-            },
-            "MaterialComponent": {
-                "Area": [
-                    0.0,
-                    0.0,
-                    1920.0,
-                    1200.0
-                ],
-                "TexturePath": ""
-            },
             "TagComponent": {
                 "Name": "rabbit",
                 "UUID": 2940531136892136807
-            },
-            "TransformComponent": {
-                "Dimensions": [
-                    908.0,
-                    475.0
-                ],
-                "Position": [
-                    499.0,
-                    571.0,
-                    0.0
-                ]
             }
         },
         "ID - 1": {
-            "DrawableComponent": {
-                "Color": [
-                    123,
-                    255,
-                    255,
-                    255
-                ],
-                "ShapeType": 1
-            },
             "TagComponent": {
                 "Name": "rabbit",
                 "UUID": 447502440251368817
-            },
-            "TransformComponent": {
-                "Dimensions": [
-                    291.0,
-                    316.0
-                ],
-                "Position": [
-                    1191.0,
-                    453.0,
-                    0.0
-                ]
             }
         }
     }

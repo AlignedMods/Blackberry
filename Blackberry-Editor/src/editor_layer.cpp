@@ -1122,7 +1122,7 @@ namespace BlackberryEditor {
         ImVec2 max = ImGui::GetItemRectMax();  // absolute bottom-right
 
         if (ImGui::BeginDragDropTarget()) {
-            if (auto payload = ImGui::AcceptDragDropPayload("ASSET_DRAG_DROP")) {
+            if (auto payload = ImGui::AcceptDragDropPayload("FILE_BROWSER_DRAG_DROP")) {
                 bool sceneExists = false;
     
                 std::string strPath = reinterpret_cast<char*>(payload->Data);

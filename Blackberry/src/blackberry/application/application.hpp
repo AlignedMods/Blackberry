@@ -12,9 +12,14 @@
 namespace Blackberry {
 
     struct ApplicationSpecification {
-        const char* Name;
+        const char* Title;
         u32 Width = 0, Height = 0;
         u32 FPS = 0;
+
+        struct CommandLineArgs {
+            u32 Count = 0;
+            char** Args = nullptr;
+        } CommandLineArgs;
 
         bool EnableImGui = true;
     };
@@ -38,7 +43,8 @@ namespace Blackberry {
         void PopLayer(const std::string& name);
 
         static Application& Get();
-        LayerStack& GetLayerStack() { return m_LayerStack; }
+        ApplicationSpecification& GetSpecification() { return m_Specification; }
+        LayerStack& GetLayerStack() { return *m_LayerStack; }
         Dispatcher& GetDispatcher() { return m_Dispatcher; }
         Renderer& GetRenderer() { return *m_Renderer; }
         Window& GetWindow() { return *m_Window; }
@@ -69,7 +75,7 @@ namespace Blackberry {
 
         f64 m_FixedUpdateTime = 0.0;
 
-        LayerStack m_LayerStack;
+        LayerStack* m_LayerStack = nullptr;
         Dispatcher m_Dispatcher;
 
         Window* m_Window = nullptr;

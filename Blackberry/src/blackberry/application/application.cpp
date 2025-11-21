@@ -23,7 +23,7 @@ namespace Blackberry {
     Application::Application(const ApplicationSpecification& spec) 
         : m_Specification(spec) {
         WindowData data;
-        data.Name = spec.Name;
+        data.Name = spec.Title;
         data.Width = spec.Width;
         data.Height = spec.Height;
 
@@ -39,18 +39,22 @@ namespace Blackberry {
         m_TargetFPS = spec.FPS;
         m_LastTime = m_Window->GetTime();
 
-        for (auto& layer : m_LayerStack.GetAllLayers()) {
-            layer->OnAttach();
-        }
-
         Lua::Init();
         Renderer2D::Init();
+
+        m_LayerStack = new LayerStack;
+
+        for (auto& layer : m_LayerStack->GetAllLayers()) {
+            layer->OnAttach();
+        }
 
         m_Initalized = true;
         s_Instance = this;
     }
 
     Application::~Application() {
+        delete m_LayerStack; // we want on detach to be called right here
+
         Lua::Shutdown();
         Renderer2D::Shutdown();
 
@@ -111,27 +115,27 @@ namespace Blackberry {
     }
 
     void Application::PushLayer(Layer* layer) {
-        m_LayerStack.PushLayer(layer);
+        m_LayerStack->PushLayer(layer);
     }
 
     void Application::PopLayer() {
-        m_LayerStack.PopLayer();
+        m_LayerStack->PopLayer();
     }
 
     void Application::PopLayer(const std::string& name) {
-        m_LayerStack.PopLayer(name);
+        m_LayerStack->PopLayer(name);
     }
 
     void Application::OnUpdate() {
         while (m_Window->GetTime() - m_FixedUpdateTime > 0.0167) {
             m_FixedUpdateTime += 0.0167;
 
-            for (auto layer : m_LayerStack.GetAllLayers()) {
+            for (auto layer : m_LayerStack->GetAllLayers()) {
                 layer->OnFixedUpdate();
             }
         }
 
-        for (auto layer : m_LayerStack.GetAllLayers()) {
+        for (auto layer : m_LayerStack->GetAllLayers()) {
             layer->OnUpdate(m_dt);
         }
     }
@@ -140,7 +144,7 @@ namespace Blackberry {
         Renderer2D::NewFrame();
         Renderer2D::Clear(Colors::Black);
 
-        for (auto layer : m_LayerStack.GetAllLayers()) {
+        for (auto layer : m_LayerStack->GetAllLayers()) {
             layer->OnRender();
         }
 
@@ -152,7 +156,7 @@ namespace Blackberry {
 
         ImGuiIO& io = ImGui::GetIO();
 
-        for (auto layer : m_LayerStack.GetAllLayers()) {
+        for (auto layer : m_LayerStack->GetAllLayers()) {
             layer->OnUIRender();
         }
 
@@ -161,7 +165,7 @@ namespace Blackberry {
     }
 
     void Application::OnOverlayRender() {
-        for (auto layer : m_LayerStack.GetAllLayers()) {
+        for (auto layer : m_LayerStack->GetAllLayers()) {
             layer->OnOverlayRender();
         }
 
@@ -176,7 +180,7 @@ namespace Blackberry {
             m_Renderer->UpdateViewport(BlVec2((f32)wr.GetWidth(), (f32)wr.GetHeight()));
         }
 
-        auto& stack = m_LayerStack.GetAllLayers();
+        auto& stack = m_LayerStack->GetAllLayers();
 
         for (auto it = stack.rbegin(); it < stack.rend(); it++) {
             (*it)->OnEvent(event);

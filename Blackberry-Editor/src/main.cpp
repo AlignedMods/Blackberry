@@ -5,7 +5,7 @@
 
 Blackberry::Application* Blackberry::CreateApplication(u32 argc, char** argv) {
     Blackberry::ApplicationSpecification spec;
-    spec.Name = "Blackberry Editor";
+    spec.Title = "Blackberry Editor";
     spec.Width = 1280;
     spec.Height = 720;
 
