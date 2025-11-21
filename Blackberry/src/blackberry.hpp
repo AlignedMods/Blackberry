@@ -43,6 +43,9 @@
 // os
 #include "blackberry/os/os.hpp"
 
+// projects
+#include "blackberry/project/project.hpp"
+
 // imgui
 #include "../vendor/imgui/imgui.h"
 #include "../vendor/imgui/misc/cpp/imgui_stdlib.h"

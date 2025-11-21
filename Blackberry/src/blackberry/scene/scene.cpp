@@ -21,7 +21,7 @@ namespace Blackberry {
 
     Scene::~Scene() {
         // Delete();
-        BL_CORE_TRACE("Scene destroyed ({})", reinterpret_cast<void*>(this));
+        // BL_CORE_TRACE("Scene destroyed ({})", reinterpret_cast<void*>(this));
     }
 
     Scene* Scene::Copy(Scene* current) {

@@ -260,11 +260,12 @@ namespace BlackberryEditor {
         m_StopIcon          = Texture2D::Create("Assets/icons/stop.png");
         m_PauseIcon         = Texture2D::Create("Assets/icons/pause.png");
     
-        m_CurrentDirectory = m_CurrentProject.AssetDirectory;
-        m_BaseDirectory = m_CurrentProject.AssetDirectory;
+        m_CurrentDirectory = Project::GetAssetDirecory();
+        m_BaseDirectory = Project::GetAssetDirecory();
 
         m_EditorCamera.Offset = BlVec2<f32>(m_RenderTexture.Size.x / 2.0f, m_RenderTexture.Size.y / 2.0f);
         m_EditorCamera.Position = BlVec2<f32>(m_RenderTexture.Size.x / 2.0f, m_RenderTexture.Size.y / 2.0f);
+        m_EditorCamera.Type = CameraType::Orthographic;
         m_CurrentCamera = &m_EditorCamera;
 
         // gizmo styles
@@ -278,11 +279,14 @@ namespace BlackberryEditor {
 
         guizmoColors[ImGuizmo::COLOR::SELECTION] = ImVec4(0.8f, 0.8f, 0.8f, 0.7f);
 
+        m_EditingScene = &Project::GetStartScene().Scene;
+        m_CurrentScene = m_EditingScene;
+
         // ImGui::GetIO().IniFilename = std::filesystem::path(m_AppDataDirectory / "Blackberry-Editor" / "editor_layout.ini").string().c_str();
     }
 
     void EditorLayer::OnDetach() {
-        SaveProject();
+        Project::Save();
         SaveEditorState();
 
         m_RenderTexture.Delete();
@@ -383,7 +387,7 @@ namespace BlackberryEditor {
     
                 if (ImGui::MenuItem("Save Project", "CTRL+S")) {
                     BL_ASSERT(0, "yes");
-                    SaveProject();
+                    Project::Save();
                 }
     
                 ImGui::EndMenu();
@@ -1079,31 +1083,27 @@ namespace BlackberryEditor {
         ImGui::Begin("Viewport");
         ImGui::PopStyleVar();
 
-        auto viewportMin = ImGui::GetWindowContentRegionMin();
-        auto viewportMax = ImGui::GetWindowContentRegionMax();
-
-        ImVec2 area = ImGui::GetContentRegionAvail();
-
-        f32 scale = area.x / static_cast<f32>(m_RenderTexture.Size.x);
+        ImVec2 windowArea = ImGui::GetContentRegionAvail();
+        f32 scale = windowArea.x / static_cast<f32>(m_RenderTexture.Size.x);
         f32 y = m_RenderTexture.Size.x * scale;
 
-        if (y > area.y) {
-            scale = area.y / static_cast<f32>(m_RenderTexture.Size.y);
+        // we want to make the viewport the smallest axis
+        if (y > windowArea.y) {
+            scale = windowArea.y / static_cast<f32>(m_RenderTexture.Size.y);
         }
+        
+        BlVec2 size = BlVec2(m_RenderTexture.Size.x * scale, m_RenderTexture.Size.y * scale);
 
-        f32 sizeX = m_RenderTexture.Size.x * scale;
-        f32 sizeY = m_RenderTexture.Size.y * scale;
-
-        f32 cursorX = area.x / 2.0f - sizeX / 2.0f;
-        f32 cursorY = ImGui::GetCursorPosY() + (area.y / 2.0f - sizeY / 2.0f);
-
-        ImGui::SetCursorPosX(cursorX);
-        ImGui::SetCursorPosY(cursorY);
-        ImGui::Image(m_RenderTexture.ColorAttachment.ID, ImVec2(sizeX, sizeY), ImVec2(0, 1), ImVec2(1, 0));
+        f32 cursorX = ImGui::GetCursorPosX() + windowArea.x / 2.0f - size.x / 2.0f;
+        f32 cursorY = ImGui::GetCursorPosY() + (windowArea.y / 2.0f - size.y / 2.0f);
 
         ImGui::SetCursorPosX(cursorX);
         ImGui::SetCursorPosY(cursorY);
-        ImGui::Image(m_OutlineTexture.ColorAttachment.ID, ImVec2(sizeX, sizeY), ImVec2(0, 1), ImVec2(1, 0));
+        ImGui::Image(m_RenderTexture.ColorAttachment.ID, ImVec2(size.x, size.y), ImVec2(0, 1), ImVec2(1, 0));
+
+        ImGui::SetCursorPosX(cursorX);
+        ImGui::SetCursorPosY(cursorY);
+        ImGui::Image(m_OutlineTexture.ColorAttachment.ID, ImVec2(size.x, size.y), ImVec2(0, 1), ImVec2(1, 0));
 
         if (ImGui::IsItemHovered()) {
             m_ViewportHovered = true;
@@ -1111,11 +1111,11 @@ namespace BlackberryEditor {
             m_ViewportHovered = false;
         }
 
-        m_ViewportScale = scale;
+        // m_ViewportScale = scale;
         m_ViewportBounds.x = ImGui::GetWindowPos().x + cursorX;
         m_ViewportBounds.y = ImGui::GetWindowPos().y + cursorY;
-        m_ViewportBounds.w = sizeX;
-        m_ViewportBounds.h = sizeY;
+        m_ViewportBounds.w = size.x;
+        m_ViewportBounds.h = size.y;
 
         // After drawing the image:
         ImVec2 min = ImGui::GetItemRectMin();  // absolute top-left of the rendered image
@@ -1129,15 +1129,15 @@ namespace BlackberryEditor {
                 std::filesystem::path path(strPath);
                 path = m_BaseDirectory / path;
                 
-                for (auto& scene : m_CurrentProject.Scenes) {
-                    if (scene.ScenePath == path) {
+                for (auto& scene : Project::GetScenes()) {
+                    if (scene.Path == path) {
                         m_EditingScene = &scene.Scene;
                         sceneExists = true;
                     }
                 }
     
                 if (!sceneExists) {
-                    m_EditingScene = LoadSceneFromFile(path);
+                    m_EditingScene = &Project::LoadScene(path);
                 }
 
                 m_CurrentScene = m_EditingScene;
@@ -1237,9 +1237,9 @@ namespace BlackberryEditor {
         ImGui::InputText("##AssetDirectory", &assetPath);
     
         if (ImGui::Button("Create")) {
-            m_CurrentProject.Name = projectName;
-            m_CurrentProject.ProjectDirectory = std::filesystem::path(projectPath).parent_path();
-            m_CurrentProject.AssetDirectory = m_CurrentProject.ProjectDirectory / assetPath;
+            // m_CurrentProject.Name = projectName;
+            // m_CurrentProject.ProjectDirectory = std::filesystem::path(projectPath).parent_path();
+            // m_CurrentProject.AssetDirectory = m_CurrentProject.ProjectDirectory / assetPath;
         }
     
         ImGui::End();
@@ -1257,17 +1257,17 @@ namespace BlackberryEditor {
         }
     
         if (ImGui::Button("Create")) {
-            EditorScene scene;
-            scene.ScenePath = scenePath;
-            scene.Name = "New Scene";
-            auto& newScene = m_CurrentProject.Scenes.emplace_back(scene);
-            m_EditingScene = &newScene.Scene;
-            m_CurrentScene = m_EditingScene;
-    
-            std::ofstream file(scenePath);
-            file.close();
-    
-            m_ShowNewSceneWindow = false;
+            // EditorScene scene;
+            // scene.ScenePath = scenePath;
+            // scene.Name = "New Scene";
+            // auto& newScene = m_CurrentProject.Scenes.emplace_back(scene);
+            // m_EditingScene = &newScene.Scene;
+            // m_CurrentScene = m_EditingScene;
+            // 
+            // std::ofstream file(scenePath);
+            // file.close();
+            // 
+            // m_ShowNewSceneWindow = false;
         };
     
         ImGui::End();
@@ -1276,62 +1276,8 @@ namespace BlackberryEditor {
 #pragma endregion
 
 #pragma region ProjectFunctions
-    
-    void EditorLayer::LoadProject() {
-        std::string path = OS::OpenFile("Blackberry Project (*.blproj)");
-    
-        LoadProjectFromPath(path);
-    }
-    
-    void EditorLayer::LoadProjectFromPath(const std::filesystem::path& path) {
-        if (!std::filesystem::exists(path)) {
-            LoadProject();
-            return;
-        }
 
-        std::string contents = ReadEntireFile(path);
-    
-        json j = json::parse(contents);
-        m_CurrentProject.ProjectDirectory = path.parent_path();
-        std::string assetDir = j.at("AssetsDirectory");
-        m_CurrentProject.AssetDirectory = path.parent_path() / assetDir;
-    
-        std::string startScene = j.at("StartScene");
-        std::filesystem::path scenePath = m_CurrentProject.AssetDirectory / startScene;
-        auto scene = LoadSceneFromFile(scenePath);
-
-        m_CurrentProject.ProjectFilePath = path;
-    
-        m_EditingScene = scene;
-        m_CurrentScene = m_EditingScene;
-    } 
-    
-    void EditorLayer::SaveProject() {
-        for (auto& scene : m_CurrentProject.Scenes) {
-            SaveSceneToFile(scene.Scene, scene.ScenePath);
-        }
-    }
-    
-    Scene* EditorLayer::LoadSceneFromFile(const std::filesystem::path& path) {
-        EditorScene scene;
-        scene.ScenePath = path;
-    
-        SceneSerializer serializer(&scene.Scene, m_CurrentProject.AssetDirectory);
-        serializer.Deserialize(path);
-    
-        m_CurrentProject.Scenes.emplace_back(scene);
-    
-        return &m_CurrentProject.Scenes.back().Scene;
-    }
-    
-    void EditorLayer::SaveSceneToFile(Scene& scene, const std::filesystem::path& path) {
-        SceneSerializer serializer(&scene, m_CurrentProject.AssetDirectory);
-        serializer.Serialize(path);
-    }
-    
     void EditorLayer::NewProject() {
-        SaveProject();
-    
         m_ShowNewProjectWindow = true;
     }
     
@@ -1381,7 +1327,7 @@ namespace BlackberryEditor {
         }
 
         json j;
-        j["LastProjectPath"] = m_CurrentProject.ProjectFilePath.string();
+        j["LastProjectPath"] = Project::GetProjectPath();
 
         std::ofstream file(m_AppDataDirectory / "Blackberry-Editor" / "editor_state.blsettings");
         file << j.dump(4);
@@ -1389,7 +1335,8 @@ namespace BlackberryEditor {
 
     void EditorLayer::LoadEditorState() {
         if (!std::filesystem::exists(m_AppDataDirectory / "Blackberry-Editor" / "editor_state.blsettings")) {
-            LoadProject();
+            std::string path = OS::OpenFile("Blackberry Project (*.blproj)");
+            Project::Load(path);
             return;
         }
 
@@ -1397,7 +1344,7 @@ namespace BlackberryEditor {
         json j = json::parse(contents);
 
         std::string lastProjectPath = j.at("LastProjectPath");
-        LoadProjectFromPath(lastProjectPath);
+        Project::Load(lastProjectPath);
     }
 
 #pragma endregion

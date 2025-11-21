@@ -4,21 +4,6 @@
 
 namespace BlackberryEditor {
 
-    struct EditorScene {
-        std::string Name;
-        Blackberry::Scene Scene;
-        std::filesystem::path ScenePath;
-    };
-    
-    struct EditorProject {
-        std::string Name;
-        std::filesystem::path AssetDirectory;
-        std::filesystem::path ProjectDirectory;
-        std::filesystem::path ProjectFilePath;
-    
-        std::vector<EditorScene> Scenes;
-    };
-
     enum class EditorState {
         Edit,
         Play
@@ -53,13 +38,6 @@ namespace BlackberryEditor {
     
         void UI_NewProject();
         void UI_NewScene();
-    
-        void LoadProject();
-        void LoadProjectFromPath(const std::filesystem::path& path);
-        void SaveProject();
-    
-        Blackberry::Scene* LoadSceneFromFile(const std::filesystem::path& path);
-        void SaveSceneToFile(Blackberry::Scene& scene, const std::filesystem::path& path);
     
         void NewProject();
         void NewScene();
@@ -96,7 +74,6 @@ namespace BlackberryEditor {
 
         Blackberry::RenderTexture m_OutlineTexture;
     
-        EditorProject m_CurrentProject;
         Blackberry::Scene* m_EditingScene = nullptr;
         Blackberry::Scene* m_RuntimeScene = nullptr;
         Blackberry::Scene* m_CurrentScene = nullptr;

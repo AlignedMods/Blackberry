@@ -34,7 +34,7 @@ namespace Blackberry {
                                         Near, Far                           // near-far
                 );
             } else if (Type == CameraType::Perspective) {
-                BL_ASSERT(0, "not implemented");
+                projection = glm::perspective(FOV, Aspect, Near, Far);
             }
 
             glm::mat4 view(1.0f);
@@ -42,7 +42,7 @@ namespace Blackberry {
             view = glm::scale(view, glm::vec3(1.0f / Zoom, 1.0f / Zoom, 1.0f));
             view = glm::rotate(view, glm::radians(Rotation), glm::vec3(0.0f, 0.0f, 1.0f));
             view = glm::translate(view, glm::vec3(-glm::vec2(Position.x, Position.y), 0.0f));
-
+            
             glm::mat4 finalProjection = projection * glm::inverse(view);
 
             return finalProjection;
@@ -60,7 +60,7 @@ namespace Blackberry {
                                         Near, Far                           // near-far
                 );
             } else if (Type == CameraType::Perspective) {
-                BL_ASSERT(0, "not implemented");
+                projection = glm::perspective(FOV, Aspect, Near, Far);
             }
 
             return projection;
@@ -99,11 +99,20 @@ namespace Blackberry {
         }
 
     public:
+        // transform
         BlVec2<f32> Position;
         BlVec2<f32> Offset;
-        BlVec2<f32> Size = BlVec2<f32>(1920.0f, 1080.0f);
         f32 Zoom = 1.0f;
         f32 Rotation = 0.0f;
+        
+        // orthographic
+        BlVec2<f32> Size = BlVec2<f32>(1920.0f, 1080.0f);
+
+        // perspective
+        f32 FOV = 90.0f;
+        f32 Aspect = 1.0f;
+
+        // universal
         f32 Near = -1.0f;
         f32 Far = 1.0f;
 
