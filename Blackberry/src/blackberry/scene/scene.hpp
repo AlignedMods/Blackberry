@@ -2,7 +2,6 @@
 
 #include "blackberry/scene/uuid.hpp"
 #include "blackberry/ecs/ecs.hpp"
-#include "blackberry/assets/asset_manager.hpp"
 #include "blackberry/scene/physics_world.hpp"
 
 #include <unordered_map>
@@ -39,11 +38,9 @@ namespace Blackberry {
 
         EntityID GetEntity(const std::string& name);
         std::vector<EntityID> GetEntities();
-        AssetManager& GetAssetManager();
 
     private:
         ECS* m_ECS = nullptr;
-        AssetManager* m_AssetManager = nullptr;
         PhysicsWorld* m_PhysicsWorld = nullptr;
         SceneCamera* m_Camera = nullptr;
         std::unordered_map<u64, EntityID> m_EntityMap;

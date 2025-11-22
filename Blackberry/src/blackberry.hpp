@@ -38,7 +38,7 @@
 #include "blackberry/assets/asset_manager.hpp"
 
 // serializing
-#include "blackberry/scene/serializer.hpp"
+#include "blackberry/scene/scene_serializer.hpp"
 
 // os
 #include "blackberry/os/os.hpp"

@@ -1,26 +1,4 @@
 {
-    "Assets": {
-        "Handle - 10803928294860902758": {
-            "AssetPath": "Textures\\rabbit.jpg",
-            "Handle": 10803928294860902758,
-            "Type": 0
-        },
-        "Handle - 15162507589004987079": {
-            "AssetPath": "Textures\\cat.jpg",
-            "Handle": 15162507589004987079,
-            "Type": 0
-        },
-        "Handle - 5555962722629784639": {
-            "AssetPath": "Fonts\\creato_display\\CreatoDisplay-Medium.otf",
-            "Handle": 5555962722629784639,
-            "Type": 1
-        },
-        "Handle - 9023906316994206417": {
-            "AssetPath": "Textures\\MANGODIDDYBLUD.jpg",
-            "Handle": 9023906316994206417,
-            "Type": 0
-        }
-    },
     "Entities": {
         "ID - 0": {
             "RigidBodyComponent": {

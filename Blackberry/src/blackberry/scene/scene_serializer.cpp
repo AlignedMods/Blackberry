@@ -1,17 +1,18 @@
-#include "blackberry/scene/serializer.hpp"
+#include "blackberry/scene/scene_serializer.hpp"
 #include "blackberry/scene/entity.hpp"
 #include "blackberry/core/util.hpp"
+#include "blackberry/project/project.hpp"
 
 #include "json.hpp"
 using json = nlohmann::json;
 
 namespace Blackberry {
 
-    SceneSerializer::SceneSerializer(Scene* scene, const std::filesystem::path& assetDirectory)
-        : m_Scene(scene), m_AssetDirectory(assetDirectory) {}
+    SceneSerializer::SceneSerializer(Scene* scene)
+        : m_Scene(scene) {}
 
     void SceneSerializer::Serialize(const std::filesystem::path& path) {
-        if (m_Scene->GetEntities().size() == 0) { return; }
+        if (m_Scene->GetEntities().size() == 0) return;
         json j;
 
         // entities
@@ -103,17 +104,6 @@ namespace Blackberry {
             }
         }
 
-        // assets
-        for (const auto&[handle, asset] : m_Scene->GetAssetManager().GetAllAssets()) {
-            std::string name = "Handle - " + std::to_string(handle);
-
-            j["Assets"][name] = {
-                { "Handle", handle },
-                { "Type", static_cast<u32>(asset.Type) },
-                { "AssetPath", asset.FilePath }
-            };
-        }
-
         std::ofstream stream(path);
         stream << j.dump(4);
     }
@@ -123,26 +113,6 @@ namespace Blackberry {
 
         json j = json::parse(contents);
         auto& entities = j.at("Entities");
-        auto& assets = j.at("Assets");
-
-        // assets (NOTE: must happen before entity loading, incase of entities depending on texture/font handles)
-        for (auto& jsonAsset : assets) {
-            Asset asset;
-            asset.Type = static_cast<AssetType>(jsonAsset.at("Type"));
-
-            std::filesystem::path path = jsonAsset.at("AssetPath");
-            asset.FilePath = path;
-            
-            if (asset.Type == AssetType::Texture) {
-                Texture2D tex = Texture2D::Create(m_AssetDirectory / jsonAsset.at("AssetPath"));
-                asset.Data = tex;
-            } else if (asset.Type == AssetType::Font) {
-                Font font = Font::Create(m_AssetDirectory / jsonAsset.at("AssetPath"));
-                asset.Data = font;
-            }
-
-            m_Scene->GetAssetManager().AddAssetWithHandle(jsonAsset.at("Handle"), asset);
-        }
 
         // entities
         for (auto& jsonEntity : entities) {
@@ -213,7 +183,7 @@ namespace Blackberry {
             if (jsonEntity.contains("ScriptComponent")) {
                 auto& jsonScript = jsonEntity.at("ScriptComponent");
                 std::filesystem::path modulePath = jsonScript.at("ModulePath");
-                std::filesystem::path filePath = m_AssetDirectory / modulePath;
+                std::filesystem::path filePath = Project::GetAssetPath(modulePath);
                 entity.AddComponent<ScriptComponent>({ modulePath, filePath });
             }
 

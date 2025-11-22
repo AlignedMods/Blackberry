@@ -1,0 +1,24 @@
+{
+    "Assets": {
+        "Handle - 10803928294860902758": {
+            "Handle": 10803928294860902758,
+            "Path": "Textures\\rabbit.jpg",
+            "Type": "Texture"
+        },
+        "Handle - 15162507589004987079": {
+            "Handle": 15162507589004987079,
+            "Path": "Textures\\cat.jpg",
+            "Type": "Texture"
+        },
+        "Handle - 5555962722629784639": {
+            "Handle": 5555962722629784639,
+            "Path": "Fonts\\creato_display\\CreatoDisplay-Medium.otf",
+            "Type": "Font"
+        },
+        "Handle - 9023906316994206417": {
+            "Handle": 9023906316994206417,
+            "Path": "Textures\\MANGODIDDYBLUD.jpg",
+            "Type": "Texture"
+        }
+    }
+}

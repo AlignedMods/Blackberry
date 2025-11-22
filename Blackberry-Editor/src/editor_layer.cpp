@@ -695,7 +695,7 @@ namespace BlackberryEditor {
                         asset.FilePath = fs::relative(assetFile, m_BaseDirectory);
                         asset.Data = tex;
 
-                        m_CurrentScene->GetAssetManager().AddAsset("cart", asset);
+                        Project::GetAssetManager().AddAsset("cart", asset);
                     } else {
                         Font font = Font::Create(assetFile);
                         Asset asset;
@@ -703,7 +703,7 @@ namespace BlackberryEditor {
                         asset.FilePath = fs::relative(assetFile, m_BaseDirectory);
                         asset.Data = font;
 
-                        m_CurrentScene->GetAssetManager().AddAsset("cart", asset);
+                        Project::GetAssetManager().AddAsset("cart", asset);
                     }
 
                     ImGui::CloseCurrentPopup();
@@ -732,7 +732,7 @@ namespace BlackberryEditor {
         }
     
         if (ImGui::BeginTable("##FunnyTable", columnCount)) {
-            for (const auto&[handle, asset] : m_EditingScene->GetAssetManager().GetAllAssets()) {
+            for (const auto&[handle, asset] : Project::GetAssetManager().GetAllAssets()) {
                 ImGui::TableNextColumn();
 
                 ImGui::PushID(asset.FilePath.string().c_str());
@@ -929,8 +929,8 @@ namespace BlackberryEditor {
                 ImGui::Indent();
 
                 std::string mat;
-                if (m_CurrentScene->GetAssetManager().ContainsAsset(spriteRenderer.TextureHandle)) {
-                    mat = m_CurrentScene->GetAssetManager().GetAsset(spriteRenderer.TextureHandle).FilePath.stem().string();
+                if (Project::GetAssetManager().ContainsAsset(spriteRenderer.TextureHandle)) {
+                    mat = Project::GetAssetManager().GetAsset(spriteRenderer.TextureHandle).FilePath.stem().string();
                 } else {
                     mat = "NULL";
                 }
@@ -975,8 +975,8 @@ namespace BlackberryEditor {
                 ImGui::Indent();
 
                 std::string mat;
-                if (m_CurrentScene->GetAssetManager().ContainsAsset(text.FontHandle)) {
-                    mat = m_CurrentScene->GetAssetManager().GetAsset(text.FontHandle).FilePath.stem().string();
+                if (Project::GetAssetManager().ContainsAsset(text.FontHandle)) {
+                    mat = Project::GetAssetManager().GetAsset(text.FontHandle).FilePath.stem().string();
                 } else {
                     mat = "NULL";
                 }

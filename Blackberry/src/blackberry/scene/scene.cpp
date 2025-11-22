@@ -5,6 +5,7 @@
 #include "blackberry/core/util.hpp"
 #include "blackberry/lua/lua.hpp"
 #include "blackberry/scene/entity.hpp"
+#include "blackberry/project/project.hpp"
 
 extern "C" {
     #include "lua.h"
@@ -15,7 +16,7 @@ extern "C" {
 namespace Blackberry {
 
     Scene::Scene()
-        : m_ECS(new ECS), m_AssetManager(new AssetManager), m_PhysicsWorld(new PhysicsWorld) {
+        : m_ECS(new ECS), m_PhysicsWorld(new PhysicsWorld) {
         BL_CORE_TRACE("New scene created ({})", reinterpret_cast<void*>(this));
     }
 
@@ -28,7 +29,6 @@ namespace Blackberry {
         Scene* scene = new Scene();
 
         scene->m_ECS = ECS::Copy(current->m_ECS);
-        scene->m_AssetManager = AssetManager::Copy(current->m_AssetManager);
 
         return scene;
     }
@@ -122,12 +122,13 @@ namespace Blackberry {
 
     void Scene::RenderEntity(EntityID entity) {
         Transform2DComponent& transform = m_ECS->GetComponent<Transform2DComponent>(entity);
+        AssetManager& assetManager = Project::GetAssetManager();
 
         if (m_ECS->HasComponent<SpriteRendererComponent>(entity)) {
             SpriteRendererComponent& spriteRenderer = m_ECS->GetComponent<SpriteRendererComponent>(entity);
 
-            if (spriteRenderer.TextureHandle > 0 && m_AssetManager->ContainsAsset(spriteRenderer.TextureHandle)) {
-                Asset asset = m_AssetManager->GetAsset(spriteRenderer.TextureHandle);
+            if (spriteRenderer.TextureHandle > 0 && assetManager.ContainsAsset(spriteRenderer.TextureHandle)) {
+                Asset asset = assetManager.GetAsset(spriteRenderer.TextureHandle);
                 Texture2D tex = std::get<Texture2D>(asset.Data);
 
                 switch (spriteRenderer.Shape) {
@@ -160,8 +161,8 @@ namespace Blackberry {
         if (m_ECS->HasComponent<TextComponent>(entity)) {
             TextComponent& text = m_ECS->GetComponent<TextComponent>(entity);
 
-            if (m_AssetManager->ContainsAsset(text.FontHandle)) {
-                Asset asset = m_AssetManager->GetAsset(text.FontHandle);
+            if (assetManager.ContainsAsset(text.FontHandle)) {
+                Asset asset = assetManager.GetAsset(text.FontHandle);
                 Font& font = std::get<Font>(asset.Data);
 
                 Renderer2D::DrawText(transform.GetMatrix(), text.Contents, font, {text.Kerning, text.LineSpacing});
@@ -213,10 +214,6 @@ namespace Blackberry {
 
     std::vector<EntityID> Scene::GetEntities() {
         return m_ECS->GetAllEntities();
-    }
-
-    AssetManager& Scene::GetAssetManager() {
-        return *m_AssetManager;
     }
 
 } // namespace Blackberry
