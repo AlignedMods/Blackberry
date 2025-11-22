@@ -197,24 +197,23 @@
         "ID - 6": {
             "CameraComponent": {
                 "Far": 1.0,
-                "Near": -1.0,
-                "Offset": [
-                    960.0,
-                    0.0
-                ],
-                "Position": [
-                    960.0,
-                    0.0
-                ],
-                "Rotation": 0.0,
-                "Size": [
-                    1920.0,
-                    1080.0
-                ]
+                "Near": -1.0
             },
             "TagComponent": {
                 "Name": "Camera",
                 "UUID": 1772318616949813675
+            },
+            "Transform2DComponent": {
+                "Dimensions": [
+                    1920.0,
+                    1080.0
+                ],
+                "Position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "Rotation": 0.0
             }
         },
         "ID - 7": {

@@ -263,9 +263,8 @@ namespace BlackberryEditor {
         m_CurrentDirectory = Project::GetAssetDirecory();
         m_BaseDirectory = Project::GetAssetDirecory();
 
-        m_EditorCamera.Offset = BlVec2<f32>(m_RenderTexture.Size.x / 2.0f, m_RenderTexture.Size.y / 2.0f);
-        m_EditorCamera.Position = BlVec2<f32>(m_RenderTexture.Size.x / 2.0f, m_RenderTexture.Size.y / 2.0f);
-        m_EditorCamera.Type = CameraType::Orthographic;
+        m_EditorCamera.Transform.Dimensions = BlVec2(m_RenderTexture.Size.x, m_RenderTexture.Size.y);
+        m_EditorCamera.Camera.Type = CameraType::Orthographic;
         m_CurrentCamera = &m_EditorCamera;
 
         // gizmo styles
@@ -326,14 +325,14 @@ namespace BlackberryEditor {
                     // m_EditorCamera.Offset = BlVec2(1920.0f / 2.0f, 1080.0f / 2.0f);
                 
                     f32 scale = 0.1f * Input::GetScrollLevel();
-                    m_EditorCamera.Zoom = std::clamp(std::exp(std::log(m_EditorCamera.Zoom)+scale), 0.125f, 64.0f);
+                    m_EditorCamera.Camera.Zoom = std::clamp(std::exp(std::log(m_EditorCamera.Camera.Zoom)+scale), 0.125f, 64.0f);
                 }
 
                 if (Input::IsMouseDown(MouseButton::Right)) { 
                     BlVec2 delta = Input::GetMouseDelta();
                     delta.x *= -1.0f;
 
-                    m_EditorCamera.Position -= delta * BlVec2(m_EditorCamera.Zoom);
+                    m_EditorCamera.Transform.Position -= BlVec3<f32>(delta * BlVec2(m_EditorCamera.Camera.Zoom));
                 }
             }
         }
@@ -343,12 +342,7 @@ namespace BlackberryEditor {
         Renderer2D::AttachRenderTexture(m_RenderTexture);
         Renderer2D::Clear(BlColor(0x69, 0x69, 0x69, 0xff));
 
-        if (m_EditorState == EditorState::Edit) {  
-            m_CurrentScene->SetCamera(&m_EditorCamera);
-        } else {
-            m_CurrentScene->SetCamera(&m_RuntimeCamera);
-        }
-
+        m_CurrentScene->SetCamera(m_CurrentCamera);
         m_CurrentScene->OnRender();
 
         Renderer2D::DetachRenderTexture();
@@ -777,7 +771,7 @@ namespace BlackberryEditor {
 
             ImGui::Separator();
 
-            if (ImGui::BeginMenu("Add")) {
+            if (ImGui::BeginMenu("Shape")) {
                 if (ImGui::MenuItem("Rectangle")) {
                     Entity entity(m_CurrentScene->CreateEntity("Rectangle"), m_CurrentScene);
 
@@ -791,7 +785,21 @@ namespace BlackberryEditor {
                     entity.AddComponent<Transform2DComponent>({BlVec3<f32>(m_RenderTexture.Size.x / 2.0f - 100.0f, m_RenderTexture.Size.y / 2.0f - 50.0f, 0.0f), 0.0f, BlVec2<f32>(200.0f, 100.0f)});
                 };
                 
+                ImGui::EndMenu();
+            }
+
+            if (ImGui::BeginMenu("Camera")) {
+                if (ImGui::MenuItem("From view")) {
+                    Entity entity(m_CurrentScene->CreateEntity("Camera"), m_CurrentScene);
+
+                    entity.AddComponent<Transform2DComponent>(m_EditorCamera.Transform);
+                    entity.AddComponent<CameraComponent>(m_EditorCamera.Camera);
+                }
+
+                if (ImGui::MenuItem("Default camera")) {
                 
+                }
+
                 ImGui::EndMenu();
             }
 
@@ -1021,38 +1029,21 @@ namespace BlackberryEditor {
                 ImGui::Unindent();
             });
             DrawComponent<CameraComponent>("Camera", entity, [this](CameraComponent& camera) {
-                SceneCamera& cam = camera.Camera;
-
-                DrawVec2Control("Position: ", &cam.Position);
-                ImGui::Separator();
-
-                DrawVec2Control("Offset: ", &cam.Offset);
-                ImGui::Separator();
-
-                DrawVec2Control("Size: ", &cam.Size);
-                ImGui::Separator();
-
-                ImGui::Text("Rotation: ");
-                ImGui::Indent();
-                ImGui::DragFloat("##Rotation", &cam.Rotation);
-                ImGui::Unindent();
-                ImGui::Separator();
-
                 ImGui::Text("Zoom: ");
                 ImGui::Indent();
-                ImGui::DragFloat("##Zoom", &cam.Zoom);
+                ImGui::DragFloat("##Zoom", &camera.Zoom);
                 ImGui::Unindent();
                 ImGui::Separator();
 
                 ImGui::Text("Near: ");
                 ImGui::Indent();
-                ImGui::DragFloat("##CameraNear", &cam.Near);
+                ImGui::DragFloat("##CameraNear", &camera.Near);
                 ImGui::Unindent();
                 ImGui::Separator();
 
                 ImGui::Text("Far: ");
                 ImGui::Indent();
-                ImGui::DragFloat("##CameraFar", &cam.Far);
+                ImGui::DragFloat("##CameraFar", &camera.Far);
                 ImGui::Unindent();
             });
             DrawComponent<ScriptComponent>("Script", entity, [this](ScriptComponent& script) {
@@ -1292,16 +1283,13 @@ namespace BlackberryEditor {
     void EditorLayer::OnScenePlay() {
         BL_INFO("Switched to playing scene.");
         m_EditorState = EditorState::Play;
+
+        // create new scene
         m_RuntimeScene = Scene::Copy(m_EditingScene);
         m_CurrentScene = m_RuntimeScene;
 
-        for (auto entityID : m_CurrentScene->GetEntities()) {
-            Entity entity(entityID, m_CurrentScene);
-            
-            if (entity.HasComponent<CameraComponent>()) {
-                m_RuntimeCamera = entity.GetComponent<CameraComponent>().Camera;
-            }
-        }
+        // create new camera
+        m_RuntimeCamera = m_RuntimeScene->GetSceneCamera();
         m_CurrentCamera = &m_RuntimeCamera;
 
         m_CurrentScene->OnPlay();

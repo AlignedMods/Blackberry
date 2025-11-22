@@ -3,6 +3,7 @@
 #include "blackberry/scene/uuid.hpp"
 #include "blackberry/ecs/ecs.hpp"
 #include "blackberry/scene/physics_world.hpp"
+#include "blackberry/scene/camera.hpp"
 
 #include <unordered_map>
 #include <string>
@@ -20,6 +21,7 @@ namespace Blackberry {
         void OnPlay();
         void OnStop();
 
+        SceneCamera GetSceneCamera();
         void SetCamera(SceneCamera* camera);
 
         void OnUpdate();
@@ -42,7 +44,7 @@ namespace Blackberry {
     private:
         ECS* m_ECS = nullptr;
         PhysicsWorld* m_PhysicsWorld = nullptr;
-        SceneCamera* m_Camera = nullptr;
+        SceneCamera* m_Camera = nullptr; // gets set in OnRuntimeUpdate
         std::unordered_map<u64, EntityID> m_EntityMap;
         std::unordered_map<std::string, u64> m_NamedEntityMap;
 

@@ -223,7 +223,7 @@ namespace Blackberry {
         std::array<Texture2D, 16> CurrentAttachedTextures;
 
         SceneCamera Camera;
-        SceneCamera DefaultCamera; // by default the camera is initialized to a basic 1x scale pixel-by-pixel orthographic projection
+        SceneCamera DefaultCamera; // by default the camera is initialized to a basic 1x scale pixel-by-pixel orthographic projection (outdated now!!)
 
         const std::array<glm::vec4, 4> QuadVertexPositions = {{
             { -0.5f,  0.5f, 0.0f, 1.0f },
@@ -527,7 +527,7 @@ namespace Blackberry {
     }
 
     void Renderer2D::DrawRenderTexture(BlVec3<f32> pos, BlVec2<f32> dimensions, RenderTexture texture) {
-        DrawTextureArea(pos, dimensions, BlRec(0.0f, 0.0f, texture.Size.x, texture.Size.y * -1.0f), texture.ColorAttachment);
+        DrawTextureArea(pos, dimensions, BlRec(0.0f, 0.0f, static_cast<f32>(texture.Size.x), static_cast<f32>(texture.Size.y) * -1.0f), texture.ColorAttachment);
     }
 
     void Renderer2D::AttachRenderTexture(RenderTexture texture) {

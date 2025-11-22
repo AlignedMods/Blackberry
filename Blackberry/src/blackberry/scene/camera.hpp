@@ -3,6 +3,7 @@
 #include "blackberry/core/types.hpp"
 #include "blackberry/application/application.hpp"
 #include "blackberry/core/util.hpp"
+#include "blackberry/ecs/components.hpp"
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -10,57 +11,31 @@
 
 namespace Blackberry {
 
-    enum class CameraType {
-        Orthographic = 0,
-        Perspective = 1
-    };
-
     class SceneCamera {
     public:
         SceneCamera() = default;
 
         glm::mat4 GetCameraMatrix() {
-            auto& renderer = BL_APP.GetRenderer();
-            BlVec2 viewport = renderer.GetViewportSize();
-
-            glm::mat4 projection(1.0f);
-
-            if (Type == CameraType::Orthographic) {
-                projection = glm::ortho(
-                                        0.0f,                               // left
-                                        Size.x,                             // right
-                                        0.0f,                               // bottom
-                                        Size.y,                             // top
-                                        Near, Far                           // near-far
-                );
-            } else if (Type == CameraType::Perspective) {
-                projection = glm::perspective(FOV, Aspect, Near, Far);
-            }
-
-            glm::mat4 view(1.0f);
-            view = glm::translate(view, glm::vec3(glm::vec2(Offset.x, Offset.y), 0.0f));
-            view = glm::scale(view, glm::vec3(1.0f / Zoom, 1.0f / Zoom, 1.0f));
-            view = glm::rotate(view, glm::radians(Rotation), glm::vec3(0.0f, 0.0f, 1.0f));
-            view = glm::translate(view, glm::vec3(-glm::vec2(Position.x, Position.y), 0.0f));
+            glm::mat4 projection = GetCameraProjection();
+            glm::mat4 view = GetCameraView();
             
-            glm::mat4 finalProjection = projection * glm::inverse(view);
-
+            glm::mat4 finalProjection = projection * view;
             return finalProjection;
         }
 
         glm::mat4 GetCameraProjection() {
             glm::mat4 projection(1.0f);
 
-            if (Type == CameraType::Orthographic) {
+            if (Camera.Type == CameraType::Orthographic) {
                 projection = glm::ortho(
                                         0.0f,                               // left
-                                        Size.x,                             // right
+                                        Transform.Dimensions.x,             // right
                                         0.0f,                               // bottom
-                                        Size.y,                             // top
-                                        Near, Far                           // near-far
+                                        Transform.Dimensions.y,             // top
+                                        Camera.Near, Camera.Far             // near-far
                 );
-            } else if (Type == CameraType::Perspective) {
-                projection = glm::perspective(FOV, Aspect, Near, Far);
+            } else if (Camera.Type == CameraType::Perspective) {
+                BL_ASSERT(false, "Not supported!");
             }
 
             return projection;
@@ -69,10 +44,13 @@ namespace Blackberry {
         // NOTE: The view you get fron this function is already inversed!!
         glm::mat4 GetCameraView() {
             glm::mat4 view(1.0f);
-            view = glm::translate(view, glm::vec3(glm::vec2(Offset.x, Offset.y), 0.0f));
-            view = glm::scale(view, glm::vec3(1.0f / Zoom, 1.0f / Zoom, 1.0f));
-            view = glm::rotate(view, glm::radians(Rotation), glm::vec3(0.0f, 0.0f, 1.0f));
-            view = glm::translate(view, glm::vec3(-glm::vec2(Position.x, Position.y), 0.0f));
+
+            glm::mat4 offset = glm::translate(glm::mat4(1.0f), glm::vec3(glm::vec2(Transform.Dimensions.x * 0.5f, Transform.Dimensions.y * 0.5f), 0.0f));
+            glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f / Camera.Zoom, 1.0f / Camera.Zoom, 1.0f));
+            glm::mat4 rot = glm::rotate(glm::mat4(1.0f), glm::radians(Transform.Rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+            glm::mat4 pos = glm::translate(glm::mat4(1.0f), glm::vec3(-glm::vec2(Transform.Position.x + Transform.Dimensions.x * 0.5f, Transform.Position.y + Transform.Dimensions.y * 0.5f), 0.0f));
+
+            view = offset * scale * rot * pos;
 
             return glm::inverse(view);
         }
@@ -84,8 +62,8 @@ namespace Blackberry {
         BlVec2<f32> GetScreenPosToWorld(BlVec2<f32> position) {
             // NDC
             glm::vec2 ndc;
-            ndc.x =  2.0f * (position.x / Size.x) - 1.0f;
-            ndc.y =  1.0f - 2.0f * (position.y / Size.y);
+            ndc.x =  2.0f * (position.x / Transform.Dimensions.x) - 1.0f;
+            ndc.y =  1.0f - 2.0f * (position.y / Transform.Dimensions.y);
 
             // NDC -> pixel
             glm::vec4 clipPos(ndc, 0.0f, 1.0f);
@@ -99,24 +77,9 @@ namespace Blackberry {
         }
 
     public:
-        // transform
-        BlVec2<f32> Position;
-        BlVec2<f32> Offset;
-        f32 Zoom = 1.0f;
-        f32 Rotation = 0.0f;
-        
-        // orthographic
-        BlVec2<f32> Size = BlVec2<f32>(1920.0f, 1080.0f);
-
-        // perspective
-        f32 FOV = 90.0f;
-        f32 Aspect = 1.0f;
-
-        // universal
-        f32 Near = -1.0f;
-        f32 Far = 1.0f;
-
-        CameraType Type = CameraType::Orthographic;
+        // Components which get set externally
+        Transform2DComponent Transform;
+        CameraComponent Camera;
     };
 
 } // namespace Blackberry

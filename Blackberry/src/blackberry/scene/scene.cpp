@@ -67,6 +67,20 @@ namespace Blackberry {
         });
     }
 
+    SceneCamera Scene::GetSceneCamera() {
+        SceneCamera cam;
+        auto cameraView = m_ECS->GetEntitiesWithComponents<Transform2DComponent, CameraComponent>();
+
+        cameraView.each([&](entt::entity entity, Transform2DComponent& transform, CameraComponent& camera) {
+            if (camera.Active) {
+                cam.Transform = transform;
+                cam.Camera = camera;
+            }
+        });
+
+        return cam;
+    }
+
     void Scene::SetCamera(SceneCamera* camera) {
         m_Camera = camera;
     }
@@ -106,7 +120,8 @@ namespace Blackberry {
     }
 
     void Scene::OnRender() {
-        BL_ASSERT(m_Camera != nullptr, "Scene camera is NULL in current scene! Did you forget to call SetCamera()?");
+        BL_ASSERT(m_Camera, "No camera set for current scene!");
+
         Renderer2D::SetProjection(*m_Camera);
 
         // Render

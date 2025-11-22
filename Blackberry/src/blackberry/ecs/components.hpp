@@ -1,7 +1,6 @@
 #pragma once
 
 #include "blackberry/core/types.hpp"
-#include "blackberry/scene/camera.hpp"
 
 #include "glm/glm.hpp"
 #include "glm/ext/matrix_transform.hpp"
@@ -21,6 +20,11 @@ namespace Blackberry {
         Rectangle = 1,
         Circle = 2,
         Polygon = 3
+    };
+
+    enum class CameraType {
+        Orthographic = 0,
+        Perspective = 1
     };
 
     struct TagComponent {
@@ -70,7 +74,11 @@ namespace Blackberry {
     };
 
     struct CameraComponent {
-        SceneCamera Camera;
+        f32 Near = -10.0f;
+        f32 Far = 10.0f;
+        f32 Zoom = 1.0f;
+
+        CameraType Type = CameraType::Orthographic;
         bool Active = true;
     };
 

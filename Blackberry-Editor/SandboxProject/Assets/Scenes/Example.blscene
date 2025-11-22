@@ -1,15 +1,60 @@
 {
     "Entities": {
         "ID - 0": {
+            "SpriteRendererComponent": {
+                "Color": [
+                    255,
+                    255,
+                    255,
+                    255
+                ],
+                "ShapeType": 1,
+                "TextureArea": [
+                    0.0,
+                    0.0,
+                    1948.0,
+                    1127.0
+                ],
+                "TextureHandle": 10803928294860902758
+            },
             "TagComponent": {
-                "Name": "rabbit",
-                "UUID": 2940531136892136807
+                "Name": "Rectangle",
+                "UUID": 6058456766790498570
+            },
+            "Transform2DComponent": {
+                "Dimensions": [
+                    940.1989135742188,
+                    416.3367919921875
+                ],
+                "Position": [
+                    564.8150024414063,
+                    825.3487548828125,
+                    0.0
+                ],
+                "Rotation": 0.0
             }
         },
         "ID - 1": {
+            "CameraComponent": {
+                "Far": 1.0,
+                "Near": -1.0,
+                "Offset": [
+                    960.0,
+                    540.0
+                ],
+                "Position": [
+                    568.7876586914063,
+                    499.96868896484375
+                ],
+                "Rotation": 0.0,
+                "Size": [
+                    1920.0,
+                    1080.0
+                ]
+            },
             "TagComponent": {
-                "Name": "rabbit",
-                "UUID": 447502440251368817
+                "Name": "Camera",
+                "UUID": 9323414070210960259
             }
         }
     }

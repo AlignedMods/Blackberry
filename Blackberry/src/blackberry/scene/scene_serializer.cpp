@@ -61,15 +61,10 @@ namespace Blackberry {
 
             if (entity.HasComponent<CameraComponent>()) {
                 CameraComponent& camera = entity.GetComponent<CameraComponent>();
-                SceneCamera& cam = camera.Camera;
 
                 j["Entities"][name]["CameraComponent"] = {
-                    {"Position", {cam.Position.x, cam.Position.y}},
-                    {"Offset", {cam.Offset.x, cam.Offset.y}},
-                    {"Rotation", cam.Rotation},
-                    {"Near", cam.Near},
-                    {"Far", cam.Far},
-                    {"Size", {cam.Size.x, cam.Size.y}}
+                    {"Near", camera.Near},
+                    {"Far", camera.Far}
                 };
             }
 
@@ -161,23 +156,16 @@ namespace Blackberry {
 
             if (jsonEntity.contains("CameraComponent")) {
                 auto& jsonCamera = jsonEntity.at("CameraComponent");
-                SceneCamera cam;
+                CameraComponent cam;
 
-                std::array<f32, 2> position = jsonCamera.at("Position");
-                std::array<f32, 2> offset = jsonCamera.at("Offset");
-                std::array<f32, 2> size = jsonCamera.at("Size");
-                f32 rotation = jsonCamera.at("Rotation");
                 f32 nearZ = jsonCamera.at("Near");
                 f32 farZ = jsonCamera.at("Far");
 
-                cam.Position = BlVec2(position[0], position[1]);
-                cam.Offset = BlVec2(offset[0], offset[1]);
-                cam.Size = BlVec2(size[0], size[1]);
-                cam.Rotation = rotation;
                 cam.Near = nearZ;
                 cam.Far = farZ;
+                cam.Active = true;
 
-                entity.AddComponent<CameraComponent>({ cam, true });
+                entity.AddComponent<CameraComponent>(cam);
             }
 
             if (jsonEntity.contains("ScriptComponent")) {
