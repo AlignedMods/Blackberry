@@ -29,13 +29,13 @@ namespace Blackberry {
                 };
             }
 
-            if (entity.HasComponent<Transform2DComponent>()) {
-                Transform2DComponent& transform = entity.GetComponent<Transform2DComponent>();
+            if (entity.HasComponent<TransformComponent>()) {
+                TransformComponent& transform = entity.GetComponent<TransformComponent>();
 
-                j["Entities"][name]["Transform2DComponent"] = { 
+                j["Entities"][name]["TransformComponent"] = { 
                     {"Position", {transform.Position.x, transform.Position.y, transform.Position.z} },
-                    {"Rotation", transform.Rotation },
-                    {"Dimensions", {transform.Dimensions.x, transform.Dimensions.y} }
+                    {"Rotation", {transform.Rotation.x, transform.Rotation.y, transform.Rotation.z} },
+                    {"Scale",    {transform.Scale.x,    transform.Scale.y,    transform.Scale.y   } }
                 };
             }
 
@@ -124,13 +124,13 @@ namespace Blackberry {
             }
 
             // Transform2DComponent
-            if (jsonEntity.contains("Transform2DComponent")) {
-                auto& jsonTransform = jsonEntity.at("Transform2DComponent");
+            if (jsonEntity.contains("TransformComponent")) {
+                auto& jsonTransform = jsonEntity.at("TransformComponent");
                 std::array<f32, 3> position = jsonTransform.at("Position");
-                std::array<f32, 2> dimensions = jsonTransform.at("Dimensions");
-                f32 rotation = jsonTransform.at("Rotation");
+                std::array<f32, 3> rotation = jsonTransform.at("Rotation");
+                std::array<f32, 3> scale = jsonTransform.at("Scale");
                 
-                entity.AddComponent<Transform2DComponent>({ BlVec3(position[0], position[1], position[2]), rotation, BlVec2(dimensions[0], dimensions[1]) });
+                entity.AddComponent<TransformComponent>({ BlVec3(position[0], position[1], position[2]), BlVec3(rotation[0], rotation[1], rotation[2]), BlVec3(scale[0], scale[1], scale[2]) });
             }
 
             // ShapeRendererComponent

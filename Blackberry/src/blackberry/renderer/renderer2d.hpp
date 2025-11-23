@@ -63,8 +63,8 @@ namespace Blackberry {
 
         static void DrawRenderTexture(BlVec3<f32> pos, BlVec2<f32> dimensions, RenderTexture texture);
 
-        static void AttachRenderTexture(RenderTexture texture);
-        static void DetachRenderTexture();
+        static void BindRenderTexture(RenderTexture texture);
+        static void UnBindRenderTexture();
 
         static void SetProjection(SceneCamera camera);
         static void ResetProjection();

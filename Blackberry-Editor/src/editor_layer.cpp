@@ -264,7 +264,7 @@ namespace BlackberryEditor {
         m_CurrentDirectory = Project::GetAssetDirecory();
         m_BaseDirectory = Project::GetAssetDirecory();
 
-        m_EditorCamera.Transform.Dimensions = BlVec2(m_RenderTexture.Size.x, m_RenderTexture.Size.y);
+        m_EditorCamera.Transform.Scale = BlVec3(m_RenderTexture.Size.x, m_RenderTexture.Size.y, 1u);
         m_EditorCamera.Camera.Type = CameraType::Orthographic;
         m_CurrentCamera = &m_EditorCamera;
 
@@ -340,13 +340,13 @@ namespace BlackberryEditor {
     }
     
     void EditorLayer::OnRender() {
-        Renderer2D::AttachRenderTexture(m_RenderTexture);
+        Renderer2D::BindRenderTexture(m_RenderTexture);
         Renderer2D::Clear(BlColor(0x69, 0x69, 0x69, 0xff));
 
         m_CurrentScene->SetCamera(m_CurrentCamera);
         m_CurrentScene->OnRender();
 
-        Renderer2D::DetachRenderTexture();
+        Renderer2D::UnBindRenderTexture();
     }
 
     void EditorLayer::OnUIRender() {
@@ -420,13 +420,13 @@ namespace BlackberryEditor {
         Entity entity = Entity(m_SelectedEntity, m_CurrentScene);
 
         // mask
-        Renderer2D::AttachRenderTexture(m_MaskTexture);
+        Renderer2D::BindRenderTexture(m_MaskTexture);
         Renderer2D::Clear(BlColor(0, 0, 0, 255));
 
         Renderer2D::SetProjection(*m_CurrentCamera);
 
-        if (entity.HasComponent<Transform2DComponent>()) {
-            Transform2DComponent& transform = entity.GetComponent<Transform2DComponent>();
+        if (entity.HasComponent<TransformComponent>()) {
+            TransformComponent& transform = entity.GetComponent<TransformComponent>();
 
             auto drawWhiteEntity = [&]<typename T>() -> bool {
                 if (!entity.HasComponent<T>()) { return false; }
@@ -456,9 +456,9 @@ namespace BlackberryEditor {
         Renderer2D::Render();
 
         Renderer2D::ResetProjection();
-        Renderer2D::DetachRenderTexture();
+        Renderer2D::UnBindRenderTexture();
 
-        Renderer2D::AttachRenderTexture(m_OutlineTexture);
+        Renderer2D::BindRenderTexture(m_OutlineTexture);
         Renderer2D::Clear(BlColor(0, 0, 0, 0));
 
         // outline effect
@@ -506,7 +506,7 @@ namespace BlackberryEditor {
         renderer.SetBufferLayout(vertTexCoordLayout);
 
         renderer.BindShader(m_OutlineShader);
-        renderer.AttachTexture(m_MaskTexture.ColorAttachment);
+        renderer.BindTexture(m_MaskTexture.ColorAttachment);
 
         m_OutlineShader.SetVec2("u_TexelSize", BlVec2(1.0f / m_OutlineTexture.Size.x, 1.0f / m_OutlineTexture.Size.y));
         m_OutlineShader.SetFloat("u_Thickness", 2.0f);
@@ -514,9 +514,9 @@ namespace BlackberryEditor {
 
         renderer.DrawIndexed(6);
 
-        renderer.DetachTexture();
+        renderer.UnBindTexture();
 
-        Renderer2D::DetachRenderTexture();
+        Renderer2D::UnBindRenderTexture();
     }
     
     void EditorLayer::OnEvent(const Event& event) {
@@ -531,6 +531,10 @@ namespace BlackberryEditor {
             auto& kp = BL_EVENT_CAST(KeyPressedEvent);
             if (kp.GetKeyCode() == KeyCode::F3) {
                 m_ShowDemoWindow = true;
+            }
+
+            if (ImGui::GetIO().WantCaptureKeyboard) {
+                return;
             }
 
             if (kp.GetKeyCode() == KeyCode::Num0) {
@@ -777,13 +781,13 @@ namespace BlackberryEditor {
                     Entity entity(m_CurrentScene->CreateEntity("Rectangle"), m_CurrentScene);
 
                     entity.AddComponent<ShapeRendererComponent>();
-                    entity.AddComponent<Transform2DComponent>({BlVec3<f32>(m_RenderTexture.Size.x / 2.0f - 100.0f, m_RenderTexture.Size.y / 2.0f - 50.0f, 0.0f), 0.0f, BlVec2<f32>(200.0f, 100.0f)});
+                    entity.AddComponent<TransformComponent>({BlVec3(m_RenderTexture.Size.x / 2.0f - 100.0f, m_RenderTexture.Size.y / 2.0f - 50.0f, 0.0f), BlVec3(0.0f), BlVec3(200.0f, 100.0f, 1.0f)});
                 };
 
                 if (ImGui::MenuItem("Triangle")) {
                     Entity entity(m_CurrentScene->CreateEntity("Triangle"), m_CurrentScene);
                     entity.AddComponent<ShapeRendererComponent>({.Shape = ShapeType::Triangle});
-                    entity.AddComponent<Transform2DComponent>({BlVec3<f32>(m_RenderTexture.Size.x / 2.0f - 100.0f, m_RenderTexture.Size.y / 2.0f - 50.0f, 0.0f), 0.0f, BlVec2<f32>(200.0f, 100.0f)});
+                    entity.AddComponent<TransformComponent>({BlVec3(m_RenderTexture.Size.x / 2.0f - 100.0f, m_RenderTexture.Size.y / 2.0f - 50.0f, 0.0f), BlVec3(0.0f), BlVec3(200.0f, 100.0f, 1.0f)});
                 };
                 
                 ImGui::EndMenu();
@@ -793,7 +797,7 @@ namespace BlackberryEditor {
                 if (ImGui::MenuItem("From view")) {
                     Entity entity(m_CurrentScene->CreateEntity("Camera"), m_CurrentScene);
 
-                    entity.AddComponent<Transform2DComponent>(m_EditorCamera.Transform);
+                    entity.AddComponent<TransformComponent>(m_EditorCamera.Transform);
                     entity.AddComponent<CameraComponent>(m_EditorCamera.Camera);
                 }
 
@@ -864,7 +868,7 @@ namespace BlackberryEditor {
 
             if (ImGui::BeginPopupContextWindow("PropertiesContextMenu")) {
                 if (ImGui::BeginMenu("Add Component")) {
-                    AddComponentListOption<Transform2DComponent>("Transform2D", entity);
+                    AddComponentListOption<TransformComponent>("Transform", entity);
                     AddComponentListOption<TextComponent>("Text", entity);
                     AddComponentListOption<ShapeRendererComponent>("Shape Renderer", entity);
                     AddComponentListOption<SpriteRendererComponent>("Sprite Renderer", entity);
@@ -886,17 +890,14 @@ namespace BlackberryEditor {
 
             ImGui::SeparatorText("Components: ");
 
-            DrawComponent<Transform2DComponent>("Transform2D", entity, [](Transform2DComponent& transform) {
+            DrawComponent<TransformComponent>("Transform2D", entity, [](TransformComponent& transform) {
                 DrawVec3Control("Position: ", &transform.Position);
                 ImGui::Separator();
 
-                ImGui::Text("Rotation: ");
-                ImGui::Indent();
-                ImGui::DragFloat("##Rotation", &transform.Rotation);
-                ImGui::Unindent();
+                DrawVec3Control("Rotation: ", &transform.Rotation);
                 ImGui::Separator();
 
-                DrawVec2Control("Dimensions: ", &transform.Dimensions);
+                DrawVec3Control("Scale: ", &transform.Scale);
             });
             DrawComponent<ShapeRendererComponent>("Shape Renderer", entity, [](ShapeRendererComponent& shapeRenderer) {
                 DrawColorControl("Color: ", &shapeRenderer.Color);
@@ -1140,8 +1141,8 @@ namespace BlackberryEditor {
         // gizmos
         if (m_IsEntitySelected && m_GizmoState != GizmoState::None) {
             Entity e(m_SelectedEntity, m_CurrentScene);
-            if (e.HasComponent<Transform2DComponent>()) {
-                Transform2DComponent& transform = e.GetComponent<Transform2DComponent>();
+            if (e.HasComponent<TransformComponent>()) {
+                TransformComponent& transform = e.GetComponent<TransformComponent>();
                 glm::mat4 transformMatrix = transform.GetMatrix();
 
                 glm::mat4 camProjection = m_CurrentCamera->GetCameraProjection();
@@ -1160,8 +1161,7 @@ namespace BlackberryEditor {
                     case GizmoState::Scale: operation = ImGuizmo::OPERATION::SCALE; break;
                 }
 
-                bool snap = Input::IsKeyDown(KeyCode::Ctrl);
-                f32 snapValue = 40.0f;
+                f32 snapValue = 1.0f;
 
                 if (m_GizmoState == GizmoState::Rotate) {
                     snapValue = 45.0f;
@@ -1173,15 +1173,15 @@ namespace BlackberryEditor {
                 ImGuizmo::Enable(true);
                 ImGuizmo::SetOrthographic(true);
                 ImGuizmo::SetRect(min.x, min.y, max.x - min.x, max.y - min.y);
-                ImGuizmo::Manipulate(glm::value_ptr(camView), glm::value_ptr(camProjection), operation, ImGuizmo::MODE::LOCAL, glm::value_ptr(transformMatrix), nullptr, snap ? snapValues : nullptr);
+                ImGuizmo::Manipulate(glm::value_ptr(camView), glm::value_ptr(camProjection), operation, ImGuizmo::MODE::LOCAL, glm::value_ptr(transformMatrix), nullptr, snapValues);
 
                 if (ImGuizmo::IsUsing()) {
                     f32 pos[3], rot[3], scale[3];
                     ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(transformMatrix), pos, rot, scale);
 
                     transform.Position = BlVec3(pos[0], pos[1], pos[2]);
-                    transform.Rotation = rot[2];
-                    transform.Dimensions = BlVec2(scale[0], scale[1]);
+                    transform.Rotation = BlVec3(rot[0], rot[1], rot[2]);
+                    transform.Scale    = BlVec3(scale[0], scale[1], scale[2]);
                 }
             }
         }

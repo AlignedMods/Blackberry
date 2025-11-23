@@ -55,11 +55,11 @@ namespace Blackberry {
 
         virtual void BindShader(BlShader shader) = 0;
 
-        virtual void AttachTexture(Texture2D texture, u32 slot = 0) = 0;
-        virtual void DetachTexture() = 0;
+        virtual void BindTexture(Texture2D texture, u32 slot = 0) = 0;
+        virtual void UnBindTexture() = 0;
 
-        virtual void AttachRenderTexture(const RenderTexture texture) = 0;
-        virtual void DetachRenderTexture() = 0;
+        virtual void BindRenderTexture(const RenderTexture texture) = 0;
+        virtual void UnBindRenderTexture() = 0;
     };
 
 } // namespace Blackberry

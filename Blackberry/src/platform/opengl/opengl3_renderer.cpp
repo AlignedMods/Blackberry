@@ -76,8 +76,13 @@ namespace Blackberry {
         BL_CORE_INFO("    Version: {}", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 
         int maxUnits;
+        int maxTexSize;
         glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxUnits);
-        printf("Max texture units: %d\n", maxUnits);
+        glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTexSize);
+
+        BL_CORE_INFO("OpenGL Capabilities:");
+        BL_CORE_INFO("    Max Texture Image Units: {}", maxUnits);
+        BL_CORE_INFO("    Max Texture Size: {0}x{0}", maxTexSize);
 
         // generate VAOs and VBOs
         glGenVertexArrays(1, &m_VAO);
@@ -105,12 +110,12 @@ namespace Blackberry {
         glUseProgram(shader.ID);
     }
 
-    void Renderer_OpenGL3::AttachTexture(Texture2D texture, u32 slot) {
+    void Renderer_OpenGL3::BindTexture(Texture2D texture, u32 slot) {
         glActiveTexture(GL_TEXTURE0 + slot);
         glBindTexture(GL_TEXTURE_2D, texture.ID);
     }
 
-    void Renderer_OpenGL3::DetachTexture() {
+    void Renderer_OpenGL3::UnBindTexture() {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
@@ -167,12 +172,12 @@ namespace Blackberry {
         glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(count), GL_UNSIGNED_INT, nullptr);
     }
 
-    void Renderer_OpenGL3::AttachRenderTexture(const RenderTexture texture) {
+    void Renderer_OpenGL3::BindRenderTexture(const RenderTexture texture) {
         glBindFramebuffer(GL_FRAMEBUFFER, texture.ID);
         UpdateViewport(BlVec2<f32>(texture.Size.x, texture.Size.y));
     }
 
-    void Renderer_OpenGL3::DetachRenderTexture() {
+    void Renderer_OpenGL3::UnBindRenderTexture() {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         UpdateViewport(m_PrevViewportSize);
     }

@@ -29,9 +29,9 @@ namespace Blackberry {
             if (Camera.Type == CameraType::Orthographic) {
                 projection = glm::ortho(
                                         0.0f,                               // left
-                                        Transform.Dimensions.x,             // right
+                                        Transform.Scale.x,                  // right
                                         0.0f,                               // bottom
-                                        Transform.Dimensions.y,             // top
+                                        Transform.Scale.y,                  // top
                                         Camera.Near, Camera.Far             // near-far
                 );
             } else if (Camera.Type == CameraType::Perspective) {
@@ -45,10 +45,10 @@ namespace Blackberry {
         glm::mat4 GetCameraView() {
             glm::mat4 view(1.0f);
 
-            glm::mat4 offset = glm::translate(glm::mat4(1.0f), glm::vec3(glm::vec2(Transform.Dimensions.x * 0.5f, Transform.Dimensions.y * 0.5f), 0.0f));
+            glm::mat4 offset = glm::translate(glm::mat4(1.0f), glm::vec3(glm::vec2(Transform.Scale.x * 0.5f, Transform.Scale.y * 0.5f), 0.0f));
             glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f / Camera.Zoom, 1.0f / Camera.Zoom, 1.0f));
-            glm::mat4 rot = glm::rotate(glm::mat4(1.0f), glm::radians(Transform.Rotation), glm::vec3(0.0f, 0.0f, 1.0f));
-            glm::mat4 pos = glm::translate(glm::mat4(1.0f), glm::vec3(-glm::vec2(Transform.Position.x + Transform.Dimensions.x * 0.5f, Transform.Position.y + Transform.Dimensions.y * 0.5f), 0.0f));
+            glm::mat4 rot = glm::rotate(glm::mat4(1.0f), glm::radians(Transform.Rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+            glm::mat4 pos = glm::translate(glm::mat4(1.0f), glm::vec3(-glm::vec2(Transform.Position.x + Transform.Scale.x * 0.5f, Transform.Position.y + Transform.Scale.y * 0.5f), 0.0f));
 
             view = offset * scale * rot * pos;
 
@@ -62,8 +62,8 @@ namespace Blackberry {
         BlVec2<f32> GetScreenPosToWorld(BlVec2<f32> position) {
             // NDC
             glm::vec2 ndc;
-            ndc.x =  2.0f * (position.x / Transform.Dimensions.x) - 1.0f;
-            ndc.y =  1.0f - 2.0f * (position.y / Transform.Dimensions.y);
+            ndc.x =  2.0f * (position.x / Transform.Scale.x) - 1.0f;
+            ndc.y =  1.0f - 2.0f * (position.y / Transform.Scale.y);
 
             // NDC -> pixel
             glm::vec4 clipPos(ndc, 0.0f, 1.0f);
@@ -78,7 +78,7 @@ namespace Blackberry {
 
     public:
         // Components which get set externally
-        Transform2DComponent Transform;
+        TransformComponent Transform;
         CameraComponent Camera;
     };
 

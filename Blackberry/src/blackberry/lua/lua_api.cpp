@@ -42,16 +42,20 @@ namespace Blackberry::Lua {
         const char* componentName = luaL_checkstring(L, 2);
 
         if (!strcmp(componentName, "Transform")) {
-            if (entity->HasComponent<Transform2DComponent>()) {
-                Transform2DComponent& transform = entity->GetComponent<Transform2DComponent>();
+            if (entity->HasComponent<TransformComponent>()) {
+                TransformComponent& transform = entity->GetComponent<TransformComponent>();
                 
                 lua_newtable(L);
                 lua_pushstring(L, "Position");
                 Lua::PushVec3(transform.Position);
                 lua_settable(L, -3);
+
+                lua_pushstring(L, "Rotation");
+                Lua::PushVec3(transform.Rotation);
+                lua_settable(L, -3);
                 
-                lua_pushstring(L, "Dimensions");
-                Lua::PushVec2(transform.Dimensions);
+                lua_pushstring(L, "Scale");
+                Lua::PushVec3(transform.Scale);
                 lua_settable(L, -3);
                 
                 return 1; // return the table
@@ -69,8 +73,8 @@ namespace Blackberry::Lua {
         const char* componentName = luaL_checkstring(L, 2);
 
         if (!strcmp(componentName, "Transform")) {
-            if (entity->HasComponent<Transform2DComponent>()) {
-                Transform2DComponent& transform = entity->GetComponent<Transform2DComponent>();
+            if (entity->HasComponent<TransformComponent>()) {
+                TransformComponent& transform = entity->GetComponent<TransformComponent>();
                 
                 lua_getfield(L, 3, "Position");
                 if (lua_istable(L, -1)) {
@@ -83,18 +87,38 @@ namespace Blackberry::Lua {
                     lua_pop(L, 1);
                 }
                 lua_pop(L, 1); // pop Position table
-                
-                lua_getfield(L, 3, "Dimensions");
+
+                lua_getfield(L, 3, "Rotation");
                 if (lua_istable(L, -1)) {
                     lua_getfield(L, -1, "x");
-                    transform.Dimensions.x = static_cast<f32>(lua_tonumber(L, -1));
+                    transform.Rotation.x = static_cast<f32>(lua_tonumber(L, -1));
                     lua_pop(L, 1);
                     
                     lua_getfield(L, -1, "y");
-                    transform.Dimensions.y = static_cast<f32>(lua_tonumber(L, -1));
+                    transform.Rotation.y = static_cast<f32>(lua_tonumber(L, -1));
+                    lua_pop(L, 1);
+
+                    lua_getfield(L, -1, "z");
+                    transform.Rotation.z = static_cast<f32>(lua_tonumber(L, -1));
                     lua_pop(L, 1);
                 }
-                lua_pop(L, 1); // pop Dimensions table
+                lua_pop(L, 1); // pop Rotation table
+                
+                lua_getfield(L, 3, "Scale");
+                if (lua_istable(L, -1)) {
+                    lua_getfield(L, -1, "x");
+                    transform.Scale.x = static_cast<f32>(lua_tonumber(L, -1));
+                    lua_pop(L, 1);
+                    
+                    lua_getfield(L, -1, "y");
+                    transform.Scale.y = static_cast<f32>(lua_tonumber(L, -1));
+                    lua_pop(L, 1);
+
+                    lua_getfield(L, -1, "z");
+                    transform.Scale.z = static_cast<f32>(lua_tonumber(L, -1));
+                    lua_pop(L, 1);
+                }
+                lua_pop(L, 1); // pop Scale table
             }
         }
 

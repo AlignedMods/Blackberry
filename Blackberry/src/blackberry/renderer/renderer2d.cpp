@@ -291,7 +291,7 @@ namespace Blackberry {
 
         Renderer2DState.CurrentAttachedTextures[0] = Renderer2DState.WhiteTexture; // 0 is reserved for white
 
-        Renderer2DState.DefaultCamera.Transform = { BlVec3(0.0f), 0.0f, BlVec2(1920, 1280)};
+        Renderer2DState.DefaultCamera.Transform = { BlVec3(0.0f), BlVec3(0.0f), BlVec3(1920, 1280, 0)};
         Renderer2DState.Camera = Renderer2DState.DefaultCamera;
     }
 
@@ -533,16 +533,16 @@ namespace Blackberry {
         DrawTextureArea(pos, dimensions, BlRec(0.0f, 0.0f, static_cast<f32>(texture.Size.x), static_cast<f32>(texture.Size.y) * -1.0f), texture.ColorAttachment);
     }
 
-    void Renderer2D::AttachRenderTexture(RenderTexture texture) {
+    void Renderer2D::BindRenderTexture(RenderTexture texture) {
         auto& renderer = BL_APP.GetRenderer();
 
-        renderer.AttachRenderTexture(texture);
+        renderer.BindRenderTexture(texture);
     }
 
-    void Renderer2D::DetachRenderTexture() {
+    void Renderer2D::UnBindRenderTexture() {
         auto& renderer = BL_APP.GetRenderer();
 
-        renderer.DetachRenderTexture();
+        renderer.UnBindRenderTexture();
     }
 
     void Renderer2D::SetProjection(SceneCamera camera) {
@@ -606,7 +606,7 @@ namespace Blackberry {
             
             renderer.BindShader(Renderer2DState.ShapeShader);
             for (u32 i = 0; i < Renderer2DState.CurrentTexIndex; i++) {
-                renderer.AttachTexture(Renderer2DState.CurrentAttachedTextures[i], i);
+                renderer.BindTexture(Renderer2DState.CurrentAttachedTextures[i], i);
             }
 
             int samplers[16]; // opengl texture IDs
@@ -620,7 +620,7 @@ namespace Blackberry {
 
             renderer.DrawIndexed(Renderer2DState.ShapeIndexCount);
 
-            renderer.DetachTexture();
+            renderer.UnBindTexture();
 
             Renderer2DState.Info.DrawCalls++;
             Renderer2DState.Info.ActiveTextures = Renderer2DState.CurrentTexIndex;
@@ -732,14 +732,14 @@ namespace Blackberry {
             renderer.SetBufferLayout(vertTexCoordLayout);
             
             renderer.BindShader(Renderer2DState.FontShader);
-            renderer.AttachTexture(Renderer2DState.CurrentFontAtlas);
+            renderer.BindTexture(Renderer2DState.CurrentFontAtlas);
 
             BlShader shader = Renderer2DState.FontShader;
             shader.SetMatrix("u_Projection", Renderer2DState.Camera.GetCameraMatrixFloat());
 
             renderer.DrawIndexed(Renderer2DState.FontIndexCount);
 
-            renderer.DetachTexture();
+            renderer.UnBindTexture();
 
             Renderer2DState.Info.DrawCalls++;
             // Renderer2DState.Info.ActiveTextures = Renderer2DState.CurrentFontIndex;

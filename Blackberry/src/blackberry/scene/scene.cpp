@@ -69,11 +69,11 @@ namespace Blackberry {
 
     SceneCamera Scene::GetSceneCamera() {
         SceneCamera cam;
-        auto cameraView = m_ECS->GetEntitiesWithComponents<Transform2DComponent, CameraComponent>();
+        auto cameraView = m_ECS->GetEntitiesWithComponents<TransformComponent, CameraComponent>();
 
         u32 activeCameras = 0;
 
-        cameraView.each([&](entt::entity entity, Transform2DComponent& transform, CameraComponent& camera) {
+        cameraView.each([&](entt::entity entity, TransformComponent& transform, CameraComponent& camera) {
             if (camera.Active) {
                 cam.Transform = transform;
                 cam.Camera = camera;
@@ -118,9 +118,9 @@ namespace Blackberry {
             Lua::Pop(1);
         });
 
-        auto rigidBodyView = m_ECS->GetEntitiesWithComponents<Transform2DComponent, RigidBodyComponent>();
+        auto rigidBodyView = m_ECS->GetEntitiesWithComponents<TransformComponent, RigidBodyComponent>();
         
-        rigidBodyView.each([this](entt::entity entity, Transform2DComponent& transform, RigidBodyComponent& rigidBody) {
+        rigidBodyView.each([this](entt::entity entity, TransformComponent& transform, RigidBodyComponent& rigidBody) {
             m_PhysicsWorld->AddEntity({&transform, &rigidBody, nullptr});
         });
 
@@ -135,9 +135,9 @@ namespace Blackberry {
         Renderer2D::SetProjection(*m_Camera);
 
         // Render
-        auto view = m_ECS->GetEntitiesWithComponents<Transform2DComponent>();
+        auto view = m_ECS->GetEntitiesWithComponents<TransformComponent>();
 
-        view.each([&](auto entity, Transform2DComponent& transform) {
+        view.each([&](auto entity, TransformComponent& transform) {
             RenderEntity(entity);
         });
 
@@ -146,7 +146,7 @@ namespace Blackberry {
     }
 
     void Scene::RenderEntity(EntityID entity) {
-        Transform2DComponent& transform = m_ECS->GetComponent<Transform2DComponent>(entity);
+        TransformComponent& transform = m_ECS->GetComponent<TransformComponent>(entity);
         AssetManager& assetManager = Project::GetAssetManager();
 
         if (m_ECS->HasComponent<SpriteRendererComponent>(entity)) {
