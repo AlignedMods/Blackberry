@@ -239,6 +239,28 @@
                 ],
                 "Rotation": 0.0
             }
+        },
+        "ID - 8": {
+            "CameraComponent": {
+                "Far": 10.0,
+                "Near": -10.0
+            },
+            "TagComponent": {
+                "Name": "Camera",
+                "UUID": 5564039815283897137
+            },
+            "Transform2DComponent": {
+                "Dimensions": [
+                    1920.0,
+                    1080.0
+                ],
+                "Position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "Rotation": 0.0
+            }
         }
     }
 }

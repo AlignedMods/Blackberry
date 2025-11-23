@@ -71,12 +71,20 @@ namespace Blackberry {
         SceneCamera cam;
         auto cameraView = m_ECS->GetEntitiesWithComponents<Transform2DComponent, CameraComponent>();
 
+        u32 activeCameras = 0;
+
         cameraView.each([&](entt::entity entity, Transform2DComponent& transform, CameraComponent& camera) {
             if (camera.Active) {
                 cam.Transform = transform;
                 cam.Camera = camera;
+
+                activeCameras++;
             }
         });
+
+        if (activeCameras > 1) {
+            BL_CORE_WARN("Multiple active cameras found in scene! Using the last one found.");
+        }
 
         return cam;
     }
