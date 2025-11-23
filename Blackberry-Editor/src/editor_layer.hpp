@@ -82,13 +82,15 @@ namespace BlackberryEditor {
         std::filesystem::path m_CurrentDirectory;
         std::filesystem::path m_BaseDirectory;
     
-        // textures
+        // icons
         Blackberry::Texture2D m_DirectoryIcon;
         Blackberry::Texture2D m_FileIcon;
         Blackberry::Texture2D m_BackDirectoryIcon;
+
         Blackberry::Texture2D m_PlayIcon;
         Blackberry::Texture2D m_StopIcon;
         Blackberry::Texture2D m_PauseIcon;
+        Blackberry::Texture2D m_ResumeIcon;
     
         bool m_ShowDemoWindow = false;
 

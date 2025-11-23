@@ -290,6 +290,9 @@ namespace Blackberry {
         Renderer2DState.WhiteTexture = Texture2D::Create(s_WhiteTextureData, 1, 1, ImageFormat::RGBA8);
 
         Renderer2DState.CurrentAttachedTextures[0] = Renderer2DState.WhiteTexture; // 0 is reserved for white
+
+        Renderer2DState.DefaultCamera.Transform = { BlVec3(0.0f), 0.0f, BlVec2(1920, 1280)};
+        Renderer2DState.Camera = Renderer2DState.DefaultCamera;
     }
 
     void Renderer2D::Shutdown() {

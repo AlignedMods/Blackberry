@@ -38,6 +38,9 @@ namespace Blackberry {
 
         void DestroyEntity(u64 uuid);
 
+        void SetPaused(bool pause);
+        bool IsPaused() const;
+
         EntityID GetEntity(const std::string& name);
         std::vector<EntityID> GetEntities();
 
@@ -49,6 +52,8 @@ namespace Blackberry {
         std::unordered_map<std::string, u64> m_NamedEntityMap;
 
         const f32 m_Gravity = 9.8f;
+
+        bool m_Paused = false;
 
         friend class Entity;
     };

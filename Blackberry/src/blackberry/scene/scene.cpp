@@ -90,6 +90,8 @@ namespace Blackberry {
     }
 
     void Scene::OnRuntimeUpdate() {
+        if (m_Paused) return;
+
         auto scriptView = m_ECS->GetEntitiesWithComponents<ScriptComponent>();
 
         scriptView.each([&](auto entity, ScriptComponent& script) {
@@ -217,6 +219,14 @@ namespace Blackberry {
 
         m_ECS->DestroyEntity(m_EntityMap.at(uuid));
         m_EntityMap.erase(uuid);
+    }
+
+    void Scene::SetPaused(bool pause) {
+        m_Paused = pause;
+    }
+
+    bool Scene::IsPaused() const {
+        return m_Paused;
     }
 
     EntityID Scene::GetEntity(const std::string& name) {

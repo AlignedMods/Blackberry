@@ -14,6 +14,8 @@ namespace BlackberryRuntime {
             m_CurrentScene = &Project::GetStartScene().Scene;
 
             m_CurrentScene->OnPlay();
+
+            m_Camera = m_CurrentScene->GetSceneCamera();
         }
 
         virtual void OnDetach() override {

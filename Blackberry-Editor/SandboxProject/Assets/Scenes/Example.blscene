@@ -37,20 +37,7 @@
         "ID - 1": {
             "CameraComponent": {
                 "Far": 1.0,
-                "Near": -1.0,
-                "Offset": [
-                    960.0,
-                    540.0
-                ],
-                "Position": [
-                    568.7876586914063,
-                    499.96868896484375
-                ],
-                "Rotation": 0.0,
-                "Size": [
-                    1920.0,
-                    1080.0
-                ]
+                "Near": -1.0
             },
             "TagComponent": {
                 "Name": "Camera",

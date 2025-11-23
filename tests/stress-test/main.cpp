@@ -10,7 +10,7 @@ struct Rabbit {
 class StressTestLayer : public Blackberry::Layer {
 public:
     virtual void OnAttach() override {
-        m_RabbitTexture.Create("Assets/rabbit.png");
+        m_RabbitTexture = Blackberry::Texture2D::Create("Assets/rabbit.png");
 
         srand(BL_APP.GetWindow().GetTime() * 1000);
     }
@@ -68,6 +68,7 @@ public:
 
 private:
     Blackberry::Texture2D m_RabbitTexture;
+    // Blackberry::SceneCamera m_Camera;
 
     std::vector<Rabbit> m_Rabbits;
 };
@@ -75,7 +76,7 @@ private:
 
 Blackberry::Application* Blackberry::CreateApplication(u32 argc, char** argv) {
     ApplicationSpecification spec;
-    spec.Name = "Blackberry stress test";
+    spec.Title = "Blackberry stress test";
     spec.Width = 1280;
     spec.Height = 720;
     spec.EnableImGui = true;

@@ -259,6 +259,7 @@ namespace BlackberryEditor {
         m_PlayIcon          = Texture2D::Create("Assets/icons/play.png");
         m_StopIcon          = Texture2D::Create("Assets/icons/stop.png");
         m_PauseIcon         = Texture2D::Create("Assets/icons/pause.png");
+        m_ResumeIcon        = Texture2D::Create("Assets/icons/resume.png");
     
         m_CurrentDirectory = Project::GetAssetDirecory();
         m_BaseDirectory = Project::GetAssetDirecory();
@@ -563,7 +564,7 @@ namespace BlackberryEditor {
         ImGui::PopStyleColor();
 
         auto playIcon = (m_EditorState == EditorState::Edit) ? m_PlayIcon : m_StopIcon;
-        auto pauseIcon = m_PauseIcon;
+        auto pauseIcon = (m_CurrentScene->IsPaused()) ? m_ResumeIcon : m_PauseIcon;
 
         f32 size = ImGui::GetWindowHeight() - 4.0f;
         f32 firstButtonPos = (ImGui::GetWindowContentRegionMax().x * 0.5f);
@@ -588,7 +589,7 @@ namespace BlackberryEditor {
 
         if (m_EditorState == EditorState::Play) {
             if (ImGui::ImageButton("##PauseButton", pauseIcon.ID, ImVec2(size, size))) {
-                // OnScenePause();
+                m_CurrentScene->SetPaused(!m_CurrentScene->IsPaused());
             }
         }
 
