@@ -265,7 +265,6 @@ namespace BlackberryEditor {
         m_BaseDirectory = Project::GetAssetDirecory();
 
         m_EditorCamera.Transform.Scale = BlVec3(m_RenderTexture.Size.x, m_RenderTexture.Size.y, 1u);
-        m_EditorCamera.Camera.Type = CameraType::Orthographic;
         m_CurrentCamera = &m_EditorCamera;
 
         // gizmo styles
@@ -316,24 +315,30 @@ namespace BlackberryEditor {
             }
 
             if (acceptInput || m_ViewportHovered) {
+                // camera controller
                 if (Input::GetScrollLevel() != 0.0f) {
-                    // BlVec2 screenPos = Input::GetMousePosition() - BlVec2(m_ViewportBounds.x, m_ViewportBounds.y);
-                    // screenPos *= BlVec2(m_EditorCamera.Size.x / m_ViewportBounds.w, m_EditorCamera.Size.y / m_ViewportBounds.h);
-                    // BlVec2 worldPos = m_EditorCamera.GetScreenPosToWorld(screenPos);
-                    // 
-                    // BL_INFO("Screen pos: {}, {}", screenPos.x, screenPos.y);
-                    // 
-                    // m_EditorCamera.Offset = BlVec2(1920.0f / 2.0f, 1080.0f / 2.0f);
-                
                     f32 scale = 0.1f * Input::GetScrollLevel();
                     m_EditorCamera.Camera.Zoom = std::clamp(std::exp(std::log(m_EditorCamera.Camera.Zoom)+scale), 0.125f, 64.0f);
                 }
 
                 if (Input::IsMouseDown(MouseButton::Right)) { 
                     BlVec2 delta = Input::GetMouseDelta();
-                    delta.x *= -1.0f;
+                    delta.y *= -1.0f; // invert y axis
+                    
+                    m_EditorCamera.Transform.Rotation += BlVec3(delta);
 
-                    m_EditorCamera.Transform.Position -= BlVec3<f32>(delta * BlVec2(m_EditorCamera.Camera.Zoom));
+                    if (Input::IsKeyDown(KeyCode::W)) {
+                        m_EditorCamera.Transform.Position += m_EditorCamera.GetForwardVector() * ts;
+                    }
+                    if (Input::IsKeyDown(KeyCode::S)) {
+                        m_EditorCamera.Transform.Position -= m_EditorCamera.GetForwardVector() * ts;
+                    }
+                    if (Input::IsKeyDown(KeyCode::A)) {
+                        m_EditorCamera.Transform.Position -= m_EditorCamera.GetRightVector() * ts;
+                    }
+                    if (Input::IsKeyDown(KeyCode::D)) {
+                        m_EditorCamera.Transform.Position += m_EditorCamera.GetRightVector() * ts;
+                    }
                 }
             }
         }
@@ -1161,7 +1166,7 @@ namespace BlackberryEditor {
                     case GizmoState::Scale: operation = ImGuizmo::OPERATION::SCALE; break;
                 }
 
-                f32 snapValue = 1.0f;
+                f32 snapValue = 0.05f;
 
                 if (m_GizmoState == GizmoState::Rotate) {
                     snapValue = 45.0f;
@@ -1171,7 +1176,6 @@ namespace BlackberryEditor {
 
                 ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
                 ImGuizmo::Enable(true);
-                ImGuizmo::SetOrthographic(true);
                 ImGuizmo::SetRect(min.x, min.y, max.x - min.x, max.y - min.y);
                 ImGuizmo::Manipulate(glm::value_ptr(camView), glm::value_ptr(camProjection), operation, ImGuizmo::MODE::LOCAL, glm::value_ptr(transformMatrix), nullptr, snapValues);
 

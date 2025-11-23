@@ -117,6 +117,10 @@ struct BlVec3 {
         return BlVec3<T>(x * rhs.x, y * rhs.y, z * rhs.z);
     }
 
+    constexpr inline BlVec3<T> operator*(T scalar) {
+        return BlVec3<T>(x * scalar, y * scalar, z * scalar);
+    }
+
     constexpr inline BlVec3<T> operator/(BlVec3<T> rhs) {
         return BlVec3<T>(x / rhs.x, y / rhs.y, z / rhs.z);
     }
@@ -124,25 +128,31 @@ struct BlVec3 {
     constexpr inline void operator+=(BlVec3<T> rhs) {
         x += rhs.x;
         y += rhs.y;
-        y += rhs.z;
+        z += rhs.z;
     }
 
     constexpr inline void operator-=(BlVec3<T> rhs) {
         x -= rhs.x;
         y -= rhs.y;
-        y -= rhs.z;
+        z -= rhs.z;
     }
 
     constexpr inline void operator*=(BlVec3<T> rhs) {
         x *= rhs.x;
         y *= rhs.y;
-        y *= rhs.z;
+        z *= rhs.z;
+    }
+
+    constexpr inline void operator*=(T scalar) {
+        x *= scalar;
+        y *= scalar;
+        z *= scalar;
     }
 
     constexpr inline void operator/=(BlVec3<T> rhs) {
         x /= rhs.x;
         y /= rhs.y;
-        y /= rhs.z;
+        z /= rhs.z;
     }
 
     constexpr inline bool operator==(BlVec3<T> rhs) {

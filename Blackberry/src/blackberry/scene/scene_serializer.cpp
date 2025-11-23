@@ -35,7 +35,7 @@ namespace Blackberry {
                 j["Entities"][name]["TransformComponent"] = { 
                     {"Position", {transform.Position.x, transform.Position.y, transform.Position.z} },
                     {"Rotation", {transform.Rotation.x, transform.Rotation.y, transform.Rotation.z} },
-                    {"Scale",    {transform.Scale.x,    transform.Scale.y,    transform.Scale.y   } }
+                    {"Scale",    {transform.Scale.x,    transform.Scale.y,    transform.Scale.z   } }
                 };
             }
 

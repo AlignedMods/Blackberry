@@ -26,17 +26,11 @@ namespace Blackberry {
         glm::mat4 GetCameraProjection() {
             glm::mat4 projection(1.0f);
 
-            if (Camera.Type == CameraType::Orthographic) {
-                projection = glm::ortho(
-                                        0.0f,                               // left
-                                        Transform.Scale.x,                  // right
-                                        0.0f,                               // bottom
-                                        Transform.Scale.y,                  // top
-                                        Camera.Near, Camera.Far             // near-far
-                );
-            } else if (Camera.Type == CameraType::Perspective) {
-                BL_ASSERT(false, "Not supported!");
-            }
+            projection = glm::perspective(
+                                    glm::radians(Camera.FOV / Camera.Zoom),
+                                    Transform.Scale.x / Transform.Scale.y,
+                                    Camera.Near, Camera.Far
+            );
 
             return projection;
         }
@@ -45,14 +39,40 @@ namespace Blackberry {
         glm::mat4 GetCameraView() {
             glm::mat4 view(1.0f);
 
-            glm::mat4 offset = glm::translate(glm::mat4(1.0f), glm::vec3(glm::vec2(Transform.Scale.x * 0.5f, Transform.Scale.y * 0.5f), 0.0f));
-            glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f / Camera.Zoom, 1.0f / Camera.Zoom, 1.0f));
-            glm::mat4 rot = glm::rotate(glm::mat4(1.0f), glm::radians(Transform.Rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-            glm::mat4 pos = glm::translate(glm::mat4(1.0f), glm::vec3(-glm::vec2(Transform.Position.x + Transform.Scale.x * 0.5f, Transform.Position.y + Transform.Scale.y * 0.5f), 0.0f));
+            glm::vec3 cameraPos   = glm::vec3(Transform.Position.x, Transform.Position.y, Transform.Position.z);
 
-            view = offset * scale * rot * pos;
+            // calculate front vector from rotation (euler angles in degrees)
+            glm::vec3 cameraFront;
+            cameraFront.x = glm::cos(glm::radians(Transform.Rotation.x)) * cos(glm::radians(Transform.Rotation.y));
+            cameraFront.y = glm::sin(glm::radians(Transform.Rotation.y));
+            cameraFront.z = glm::sin(glm::radians(Transform.Rotation.x)) * cos(glm::radians(Transform.Rotation.y));
+            cameraFront = glm::normalize(cameraFront);
 
-            return glm::inverse(view);
+            view = glm::lookAt(cameraPos, cameraPos + cameraFront, WorldUp);
+
+            return view;
+        }
+
+        BlVec3<f32> GetForwardVector() {
+            glm::vec3 cameraFront;
+            cameraFront.x = glm::cos(glm::radians(Transform.Rotation.x)) * cos(glm::radians(Transform.Rotation.y));
+            cameraFront.y = glm::sin(glm::radians(Transform.Rotation.y));
+            cameraFront.z = glm::sin(glm::radians(Transform.Rotation.x)) * cos(glm::radians(Transform.Rotation.y));
+            cameraFront = glm::normalize(cameraFront);
+
+            return BlVec3(cameraFront.x, cameraFront.y, cameraFront.z);
+        }
+
+        BlVec3<f32> GetRightVector() {
+            glm::vec3 cameraFront;
+            cameraFront.x = glm::cos(glm::radians(Transform.Rotation.x)) * cos(glm::radians(Transform.Rotation.y));
+            cameraFront.y = glm::sin(glm::radians(Transform.Rotation.y));
+            cameraFront.z = glm::sin(glm::radians(Transform.Rotation.x)) * cos(glm::radians(Transform.Rotation.y));
+            cameraFront = glm::normalize(cameraFront);
+
+            glm::vec3 cameraRight = glm::normalize(glm::cross(cameraFront, WorldUp));
+
+            return BlVec3(cameraRight.x, cameraRight.y, cameraRight.z);
         }
 
         f32* GetCameraMatrixFloat() {
@@ -80,6 +100,8 @@ namespace Blackberry {
         // Components which get set externally
         TransformComponent Transform;
         CameraComponent Camera;
+
+        glm::vec3 WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
     };
 
 } // namespace Blackberry

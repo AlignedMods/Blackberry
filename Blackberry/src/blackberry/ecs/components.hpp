@@ -22,11 +22,6 @@ namespace Blackberry {
         Polygon = 3
     };
 
-    enum class CameraType {
-        Orthographic = 0,
-        Perspective = 1
-    };
-
     struct TagComponent {
         std::string Name;
         u64 UUID = 0;
@@ -60,11 +55,11 @@ namespace Blackberry {
     };
 
     struct CameraComponent {
-        f32 Near = -10.0f;
+        f32 FOV = 60.0f;
+        f32 Near = 0.1f;
         f32 Far = 10.0f;
         f32 Zoom = 1.0f;
 
-        CameraType Type = CameraType::Orthographic;
         bool Active = true;
     };
 
