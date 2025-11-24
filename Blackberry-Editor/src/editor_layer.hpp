@@ -95,6 +95,8 @@ namespace BlackberryEditor {
         bool m_ShowDemoWindow = false;
 
         std::filesystem::path m_AppDataDirectory;
+
+        Blackberry::Mesh m_Cube;
     };
 
 } // namespace BlackberryEditor

@@ -176,6 +176,7 @@ namespace Blackberry {
                     break;
                 case ShapeType::Rectangle:
                     Renderer3D::DrawRectangle(transform.GetMatrix(), shapeRenderer.Color);
+                    // Renderer3D::DrawCube(transform.GetMatrix(), shapeRenderer.Color);
                     break;
                 case ShapeType::Circle:
                     Renderer3D::DrawElipse(transform.GetMatrix(), shapeRenderer.Color);

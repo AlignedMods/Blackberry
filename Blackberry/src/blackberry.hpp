@@ -21,6 +21,9 @@
 // ecs
 #include "blackberry/ecs/components.hpp"
 
+// meshes
+#include "blackberry/model/mesh.hpp"
+
 // scenes
 #include "blackberry/scene/scene.hpp"
 #include "blackberry/scene/entity.hpp"

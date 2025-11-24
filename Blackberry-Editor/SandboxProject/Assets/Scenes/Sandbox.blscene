@@ -126,6 +126,38 @@
                     0.33399146795272827
                 ]
             }
+        },
+        "ID - 4": {
+            "ShapeRendererComponent": {
+                "Color": [
+                    67,
+                    255,
+                    195,
+                    255
+                ],
+                "ShapeType": 1
+            },
+            "TagComponent": {
+                "Name": "Rectangle",
+                "UUID": 6986289907314900783
+            },
+            "TransformComponent": {
+                "Position": [
+                    1.0,
+                    1.0,
+                    0.0
+                ],
+                "Rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "Scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
         }
     }
 }

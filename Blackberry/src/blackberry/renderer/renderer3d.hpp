@@ -2,6 +2,7 @@
 #include "blackberry/core/types.hpp"
 #include "blackberry/font/font.hpp"
 #include "blackberry/scene/camera.hpp"
+#include "blackberry/model/mesh.hpp"
 
 #include <string>
 
@@ -61,6 +62,8 @@ namespace Blackberry {
 
         static void DrawTexturedQuad(const glm::mat4& transform, BlRec area, Texture2D texture, BlColor color);
         static void DrawTexturedTriangle(const glm::mat4& transform, BlRec area, Texture2D texture, BlColor color);
+
+        static void DrawMesh(const glm::mat4& transform, Mesh& mesh, BlColor color);
 
         static void DrawRenderTexture(BlVec3<f32> pos, BlVec2<f32> dimensions, RenderTexture texture);
 

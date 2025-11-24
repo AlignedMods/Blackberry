@@ -28,6 +28,7 @@ project "Blackberry" -- The game engine
                   "%{BlackberryIncludes.msdfgen}/static/",
                   "%{BlackberryIncludes.msdf_atlas_gen}",
                   "vendor/stb/",
+                  "vendor/cgltf/",
                   "vendor/lua/src/" }
 
     files { "src/platform/opengl/**.cpp", "src/platform/opengl/**.hpp" }

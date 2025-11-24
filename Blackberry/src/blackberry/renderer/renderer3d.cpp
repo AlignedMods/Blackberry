@@ -240,6 +240,25 @@ namespace Blackberry {
         }};
         const std::array<u32, 3> TriangleIndices = {{ 0, 1, 2 }};
 
+        const std::array<glm::vec4, 8> CubeVertexPositions = {{
+            { -0.5f, -0.5f, -0.5f, 1.0f },
+            {  0.5f, -0.5f, -0.5f, 1.0f },
+            {  0.5f,  0.5f, -0.5f, 1.0f },
+            { -0.5f,  0.5f, -0.5f, 1.0f },
+            { -0.5f, -0.5f,  0.5f, 1.0f },
+            {  0.5f, -0.5f,  0.5f, 1.0f },
+            {  0.5f,  0.5f,  0.5f, 1.0f },
+            { -0.5f,  0.5f,  0.5f, 1.0f }
+        }};
+        const std::array<u32, 36> CubeIndices = {{
+            0, 1, 2, 2, 3, 0,
+            1, 5, 6, 6, 2, 1,
+            5, 4, 7, 7, 6, 5,
+            4, 0, 3, 3, 7, 4,
+            3, 2, 6, 6, 7, 3,
+            4, 5, 1, 1, 0, 4
+        }};
+
         Renderer3DStats Stats;
     };
 
@@ -527,6 +546,26 @@ namespace Blackberry {
 
         Renderer3DState.ShapeVertexCount += 3;
         Renderer3DState.ShapeIndexCount += 3;
+    }
+
+    void Renderer3D::DrawMesh(const glm::mat4& transform, Mesh& mesh, BlColor color) {
+        BlVec4 normalizedColor = NormalizeColor(color);
+
+        // vertices
+        for (u32 i = 0; i < mesh.Positions.size(); i++) {
+            glm::vec4 pos = transform * glm::vec4(mesh.Positions[i].x, mesh.Positions[i].y, mesh.Positions[i].z, 1.0f);
+            BlShapeVertex vert = BlShapeVertex(BlVec3<f32>(pos.x, pos.y, pos.z), normalizedColor, BlVec2<f32>(0.0f), 0.0f);
+            Renderer3DState.ShapeVertices.push_back(vert);
+        }
+
+        // indices
+        for (u32 i = 0; i < mesh.Indices.size(); i++) {
+            const u32 vertexCount = Renderer3DState.ShapeVertexCount;
+            Renderer3DState.ShapeIndices.push_back(mesh.Indices[i] + vertexCount);
+        }
+
+        Renderer3DState.ShapeIndexCount += mesh.Indices.size();
+        Renderer3DState.ShapeVertexCount += mesh.Positions.size();
     }
 
     void Renderer3D::DrawRenderTexture(BlVec3<f32> pos, BlVec2<f32> dimensions, RenderTexture texture) {

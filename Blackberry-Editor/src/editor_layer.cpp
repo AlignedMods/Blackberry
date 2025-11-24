@@ -281,6 +281,8 @@ namespace BlackberryEditor {
         m_EditingScene = &Project::GetStartScene().Scene;
         m_CurrentScene = m_EditingScene;
 
+        m_Cube = Mesh::Create("Assets/cube.glb");
+
         // ImGui::GetIO().IniFilename = std::filesystem::path(m_AppDataDirectory / "Blackberry-Editor" / "editor_layout.ini").string().c_str();
     }
 
@@ -348,7 +350,13 @@ namespace BlackberryEditor {
         Renderer3D::BindRenderTexture(m_RenderTexture);
         Renderer3D::Clear(BlColor(0x69, 0x69, 0x69, 0xff));
 
+        TransformComponent meshTransform;
+        meshTransform.Position = BlVec3(3.0f, 2.0f, 4.0f);
+        meshTransform.Scale = BlVec3(2.0f, 2.0f, 2.0f);
+        meshTransform.Rotation = BlVec3(45.0f, 45.0f, 45.0f);
+
         m_CurrentScene->SetCamera(m_CurrentCamera);
+        Renderer3D::DrawMesh(meshTransform.GetMatrix(), m_Cube, Colors::Red);
         m_CurrentScene->OnRender();
 
         Renderer3D::UnBindRenderTexture();
