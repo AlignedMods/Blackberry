@@ -345,13 +345,13 @@ namespace BlackberryEditor {
     }
     
     void EditorLayer::OnRender() {
-        Renderer2D::BindRenderTexture(m_RenderTexture);
-        Renderer2D::Clear(BlColor(0x69, 0x69, 0x69, 0xff));
+        Renderer3D::BindRenderTexture(m_RenderTexture);
+        Renderer3D::Clear(BlColor(0x69, 0x69, 0x69, 0xff));
 
         m_CurrentScene->SetCamera(m_CurrentCamera);
         m_CurrentScene->OnRender();
 
-        Renderer2D::UnBindRenderTexture();
+        Renderer3D::UnBindRenderTexture();
     }
 
     void EditorLayer::OnUIRender() {
@@ -425,10 +425,10 @@ namespace BlackberryEditor {
         Entity entity = Entity(m_SelectedEntity, m_CurrentScene);
 
         // mask
-        Renderer2D::BindRenderTexture(m_MaskTexture);
-        Renderer2D::Clear(BlColor(0, 0, 0, 255));
+        Renderer3D::BindRenderTexture(m_MaskTexture);
+        Renderer3D::Clear(BlColor(0, 0, 0, 255));
 
-        Renderer2D::SetProjection(*m_CurrentCamera);
+        Renderer3D::SetProjection(*m_CurrentCamera);
 
         if (entity.HasComponent<TransformComponent>()) {
             TransformComponent& transform = entity.GetComponent<TransformComponent>();
@@ -440,31 +440,31 @@ namespace BlackberryEditor {
 
                 switch (ren.Shape) {
                     case ShapeType::Triangle:
-                        Renderer2D::DrawTriangle(transform.GetMatrix(), Colors::White);
+                        Renderer3D::DrawTriangle(transform.GetMatrix(), Colors::White);
                         break;
                     case ShapeType::Rectangle:
-                        Renderer2D::DrawRectangle(transform.GetMatrix(), Colors::White);
+                        Renderer3D::DrawRectangle(transform.GetMatrix(), Colors::White);
                         break;
                     case ShapeType::Circle:
-                        Renderer2D::DrawElipse(transform.GetMatrix(), Colors::White);
+                        Renderer3D::DrawElipse(transform.GetMatrix(), Colors::White);
                         break;
                 }
             };
 
             // wierd syntax honestly
             if (!drawWhiteEntity.template operator()<SpriteRendererComponent>() && !drawWhiteEntity.template operator()<ShapeRendererComponent>()) {
-                Renderer2D::DrawRectangle(transform.GetMatrix(), Colors::White);
+                Renderer3D::DrawRectangle(transform.GetMatrix(), Colors::White);
             };
 
         }
 
-        Renderer2D::Render();
+        Renderer3D::Render();
 
-        Renderer2D::ResetProjection();
-        Renderer2D::UnBindRenderTexture();
+        Renderer3D::ResetProjection();
+        Renderer3D::UnBindRenderTexture();
 
-        Renderer2D::BindRenderTexture(m_OutlineTexture);
-        Renderer2D::Clear(BlColor(0, 0, 0, 0));
+        Renderer3D::BindRenderTexture(m_OutlineTexture);
+        Renderer3D::Clear(BlColor(0, 0, 0, 0));
 
         // outline effect
         static f32 quadVertices[] = {
@@ -521,7 +521,7 @@ namespace BlackberryEditor {
 
         renderer.UnBindTexture();
 
-        Renderer2D::UnBindRenderTexture();
+        Renderer3D::UnBindRenderTexture();
     }
     
     void EditorLayer::OnEvent(const Event& event) {
@@ -1196,7 +1196,7 @@ namespace BlackberryEditor {
     void EditorLayer::UI_RendererStats() {
         ImGui::Begin("Renderer Stats");
 
-        auto stats = Renderer2D::GetRenderingInfo();
+        auto stats = Renderer3D::GetRendererStats();
 
         ImGui::Text("Draw Calls: %u", stats.DrawCalls);
         ImGui::Text("Verticies: %u", stats.Vertices);

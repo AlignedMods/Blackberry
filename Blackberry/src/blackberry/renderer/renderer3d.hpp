@@ -7,18 +7,9 @@
 
 #undef DrawText // windows i will genuenly kill you
 
-struct BlRenderer2DInfo {
-    u32 DrawCalls = 0;
-    u32 Vertices = 0;
-    u32 Indicies = 0;
-    u32 ActiveTextures = 0;
-    u32 ReservedTextures = 0;
-};
-
 namespace Blackberry {
 
-    namespace Colors
-    {
+    namespace Colors {
 
         inline BlColor White = BlColor(255, 255, 255, 255);
         inline BlColor Black = BlColor(0, 0, 0, 255);
@@ -32,7 +23,17 @@ namespace Blackberry {
         f32 LineSpacing = 0.0f;
     };
 
-    class Renderer2D {
+    struct Renderer3DStats {
+        u32 DrawCalls = 0;
+        u32 Vertices = 0;
+        u32 Indicies = 0;
+        u32 ActiveTextures = 0;
+        u32 ReservedTextures = 0;
+    };
+
+    // NOTE: Despite the fact that is called Renderer3D, it can also render 2D shapes as well
+    // Just currently we do not support an orthographic camera yet
+    class Renderer3D {
     public:
         static void Init();
         static void Shutdown();
@@ -72,7 +73,7 @@ namespace Blackberry {
         static void Render();
 
         static BlVec2<f32> MeasureText(const std::string& text, Font& font, TextParams parameters);
-        static BlRenderer2DInfo GetRenderingInfo();
+        static Renderer3DStats GetRendererStats();
     };
 
     // font rendering and utilities

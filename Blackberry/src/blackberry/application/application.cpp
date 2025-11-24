@@ -8,7 +8,7 @@
 #include "blackberry/ecs/ecs.hpp"
 #include "platform/glfw/glfw_window.hpp"
 #include "platform/opengl/opengl3_renderer.hpp"
-#include "blackberry/renderer/renderer2d.hpp"
+#include "blackberry/renderer/renderer3d.hpp"
 #include "blackberry/lua/lua.hpp"
 
 #include "imgui.h"
@@ -40,7 +40,7 @@ namespace Blackberry {
         m_LastTime = m_Window->GetTime();
 
         Lua::Init();
-        Renderer2D::Init();
+        Renderer3D::Init();
 
         m_LayerStack = new LayerStack;
 
@@ -56,7 +56,7 @@ namespace Blackberry {
         delete m_LayerStack; // we want on detach to be called right here
 
         Lua::Shutdown();
-        Renderer2D::Shutdown();
+        Renderer3D::Shutdown();
 
         delete m_Window;
         delete m_Renderer;
@@ -141,14 +141,14 @@ namespace Blackberry {
     }
 
     void Application::OnRender() {
-        Renderer2D::NewFrame();
-        Renderer2D::Clear(Colors::Black);
+        Renderer3D::NewFrame();
+        Renderer3D::Clear(Colors::Black);
 
         for (auto layer : m_LayerStack->GetAllLayers()) {
             layer->OnRender();
         }
 
-        Renderer2D::Render();
+        Renderer3D::Render();
     }
 
     void Application::OnUIRender() {
@@ -169,7 +169,7 @@ namespace Blackberry {
             layer->OnOverlayRender();
         }
 
-        Renderer2D::Render();
+        Renderer3D::Render();
     }
 
     void Application::OnEvent(const Event& event) {

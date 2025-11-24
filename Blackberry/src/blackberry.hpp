@@ -31,7 +31,7 @@
 #include "blackberry/core/util.hpp"
 
 // rendering abstractions
-#include "blackberry/renderer/renderer2d.hpp"
+#include "blackberry/renderer/renderer3d.hpp"
 #include "blackberry/renderer/texture.hpp"
 
 // asset manager

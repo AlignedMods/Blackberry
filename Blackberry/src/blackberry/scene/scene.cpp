@@ -1,7 +1,7 @@
 #include "blackberry/scene/scene.hpp"
 #include "blackberry/ecs/ecs.hpp"
 #include "blackberry/core/log.hpp"
-#include "blackberry/renderer/renderer2d.hpp"
+#include "blackberry/renderer/renderer3d.hpp"
 #include "blackberry/core/util.hpp"
 #include "blackberry/lua/lua.hpp"
 #include "blackberry/scene/entity.hpp"
@@ -132,7 +132,7 @@ namespace Blackberry {
     void Scene::OnRender() {
         BL_ASSERT(m_Camera, "No camera set for current scene!");
 
-        Renderer2D::SetProjection(*m_Camera);
+        Renderer3D::SetProjection(*m_Camera);
 
         // Render
         auto view = m_ECS->GetEntitiesWithComponents<TransformComponent>();
@@ -141,8 +141,8 @@ namespace Blackberry {
             RenderEntity(entity);
         });
 
-        Renderer2D::Render();
-        Renderer2D::ResetProjection();
+        Renderer3D::Render();
+        Renderer3D::ResetProjection();
     }
 
     void Scene::RenderEntity(EntityID entity) {
@@ -158,10 +158,10 @@ namespace Blackberry {
 
                 switch (spriteRenderer.Shape) {
                     case ShapeType::Triangle:
-                        Renderer2D::DrawTexturedTriangle(transform.GetMatrix(), spriteRenderer.Area, tex, spriteRenderer.Color);
+                        Renderer3D::DrawTexturedTriangle(transform.GetMatrix(), spriteRenderer.Area, tex, spriteRenderer.Color);
                         break;
                     case ShapeType::Rectangle:
-                        Renderer2D::DrawTexturedQuad(transform.GetMatrix(), spriteRenderer.Area, tex, spriteRenderer.Color);
+                        Renderer3D::DrawTexturedQuad(transform.GetMatrix(), spriteRenderer.Area, tex, spriteRenderer.Color);
                         break;
                 }
             }
@@ -172,13 +172,13 @@ namespace Blackberry {
 
             switch (shapeRenderer.Shape) {
                 case ShapeType::Triangle:
-                    Renderer2D::DrawTriangle(transform.GetMatrix(), shapeRenderer.Color);
+                    Renderer3D::DrawTriangle(transform.GetMatrix(), shapeRenderer.Color);
                     break;
                 case ShapeType::Rectangle:
-                    Renderer2D::DrawRectangle(transform.GetMatrix(), shapeRenderer.Color);
+                    Renderer3D::DrawRectangle(transform.GetMatrix(), shapeRenderer.Color);
                     break;
                 case ShapeType::Circle:
-                    Renderer2D::DrawElipse(transform.GetMatrix(), shapeRenderer.Color);
+                    Renderer3D::DrawElipse(transform.GetMatrix(), shapeRenderer.Color);
                     break;
             }
         }
@@ -190,7 +190,7 @@ namespace Blackberry {
                 Asset asset = assetManager.GetAsset(text.FontHandle);
                 Font& font = std::get<Font>(asset.Data);
 
-                Renderer2D::DrawText(transform.GetMatrix(), text.Contents, font, {text.Kerning, text.LineSpacing});
+                Renderer3D::DrawText(transform.GetMatrix(), text.Contents, font, {text.Kerning, text.LineSpacing});
             }
         }
     }

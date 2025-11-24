@@ -1,4 +1,4 @@
-#include "blackberry/renderer/renderer2d.hpp"
+#include "blackberry/renderer/renderer3d.hpp"
 #include "blackberry/core/util.hpp"
 #include "blackberry/scene/camera.hpp"
 
@@ -188,7 +188,7 @@ namespace Blackberry {
         }
     );
 
-    struct _Renderer2DState {
+    struct _Renderer3DState {
         // shader
         BlShader ShapeShader;
         BlShader CircleShader;
@@ -240,22 +240,22 @@ namespace Blackberry {
         }};
         const std::array<u32, 3> TriangleIndices = {{ 0, 1, 2 }};
 
-        BlRenderer2DInfo Info;
+        Renderer3DStats Stats;
     };
 
-    static _Renderer2DState Renderer2DState;
+    static _Renderer3DState Renderer3DState;
 
     static f32 GetTexIndex(Texture2D texture) {
         f32 texIndex = 0.0f;
 
-        if (Renderer2DState.CurrentTexIndex >= 16) {
-            Renderer2D::Render();
+        if (Renderer3DState.CurrentTexIndex >= 16) {
+            Renderer3D::Render();
         }
 
         bool texAlreadyExists = false;
 
-        for (u32 i = 0; i < Renderer2DState.CurrentTexIndex; i++) {
-            if (texture.ID == Renderer2DState.CurrentAttachedTextures[i].ID) {
+        for (u32 i = 0; i < Renderer3DState.CurrentTexIndex; i++) {
+            if (texture.ID == Renderer3DState.CurrentAttachedTextures[i].ID) {
                 texIndex = static_cast<f32>(i);
                 texAlreadyExists = true;
 
@@ -264,10 +264,10 @@ namespace Blackberry {
         }
 
         if (!texAlreadyExists) {
-            texIndex = static_cast<f32>(Renderer2DState.CurrentTexIndex);
+            texIndex = static_cast<f32>(Renderer3DState.CurrentTexIndex);
 
-            Renderer2DState.CurrentAttachedTextures[Renderer2DState.CurrentTexIndex] = texture;
-            Renderer2DState.CurrentTexIndex++;
+            Renderer3DState.CurrentAttachedTextures[Renderer3DState.CurrentTexIndex] = texture;
+            Renderer3DState.CurrentTexIndex++;
             texAlreadyExists = true;
         }
 
@@ -283,102 +283,102 @@ namespace Blackberry {
         );
     }
 
-    void Renderer2D::Init() {
-        Renderer2DState.ShapeShader.Create(s_VertexShaderShapeSource, s_FragmentShaderShapeSource);
-        Renderer2DState.CircleShader.Create(s_VertexShaderCircleSource, s_FragmentShaderCircleSource);
-        Renderer2DState.FontShader.Create(s_VertexShaderFontSource, s_FragmentShaderFontSource);
-        Renderer2DState.WhiteTexture = Texture2D::Create(s_WhiteTextureData, 1, 1, ImageFormat::RGBA8);
+    void Renderer3D::Init() {
+        Renderer3DState.ShapeShader.Create(s_VertexShaderShapeSource, s_FragmentShaderShapeSource);
+        Renderer3DState.CircleShader.Create(s_VertexShaderCircleSource, s_FragmentShaderCircleSource);
+        Renderer3DState.FontShader.Create(s_VertexShaderFontSource, s_FragmentShaderFontSource);
+        Renderer3DState.WhiteTexture = Texture2D::Create(s_WhiteTextureData, 1, 1, ImageFormat::RGBA8);
 
-        Renderer2DState.CurrentAttachedTextures[0] = Renderer2DState.WhiteTexture; // 0 is reserved for white
+        Renderer3DState.CurrentAttachedTextures[0] = Renderer3DState.WhiteTexture; // 0 is reserved for white
 
-        Renderer2DState.DefaultCamera.Transform = { BlVec3(0.0f), BlVec3(0.0f), BlVec3(1920, 1280, 0)};
-        Renderer2DState.Camera = Renderer2DState.DefaultCamera;
+        Renderer3DState.DefaultCamera.Transform = { BlVec3(0.0f), BlVec3(0.0f), BlVec3(1920, 1280, 0)};
+        Renderer3DState.Camera = Renderer3DState.DefaultCamera;
     }
 
-    void Renderer2D::Shutdown() {
-        Renderer2DState.ShapeShader.Delete();
-        Renderer2DState.CircleShader.Delete();
+    void Renderer3D::Shutdown() {
+        Renderer3DState.ShapeShader.Delete();
+        Renderer3DState.CircleShader.Delete();
     }
 
-    void Renderer2D::Clear(BlColor color) {
+    void Renderer3D::Clear(BlColor color) {
         auto& renderer = BL_APP.GetRenderer();
 
         renderer.Clear(color);
     }
 
-    void Renderer2D::NewFrame() {
-        Renderer2DState.Info.DrawCalls = 0;
-        Renderer2DState.Info.Vertices = 0;
-        Renderer2DState.Info.Indicies = 0;
-        Renderer2DState.Info.ActiveTextures = 0;
+    void Renderer3D::NewFrame() {
+        Renderer3DState.Stats.DrawCalls = 0;
+        Renderer3DState.Stats.Vertices = 0;
+        Renderer3DState.Stats.Indicies = 0;
+        Renderer3DState.Stats.ActiveTextures = 0;
     }
 
-    void Renderer2D::DrawRectangle(BlVec3<f32> pos, BlVec2<f32> dimensions, BlColor color) {
+    void Renderer3D::DrawRectangle(BlVec3<f32> pos, BlVec2<f32> dimensions, BlColor color) {
         DrawRectangle(pos, dimensions, 0.0f, color);
     }
 
-    void Renderer2D::DrawRectangle(BlVec3<f32> position, BlVec2<f32> dimensions, f32 rotation, BlColor color) {
+    void Renderer3D::DrawRectangle(BlVec3<f32> position, BlVec2<f32> dimensions, f32 rotation, BlColor color) {
         glm::mat4 pos = glm::translate(glm::mat4(1.0f), glm::vec3(position.x, position.y, position.z));
         glm::mat4 rot = glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
         glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(dimensions.x, dimensions.y, 1.0f));
 
         glm::mat4 transform = pos * rot * scale;
-        DrawTexturedQuad(transform, BlRec(0, 0, 1, 1), Renderer2DState.WhiteTexture, color);
+        DrawTexturedQuad(transform, BlRec(0, 0, 1, 1), Renderer3DState.WhiteTexture, color);
     }
 
-    void Renderer2D::DrawRectangle(const glm::mat4& transform, BlColor color) {
-        DrawTexturedQuad(transform, BlRec(0, 0, 1, 1), Renderer2DState.WhiteTexture, color);
+    void Renderer3D::DrawRectangle(const glm::mat4& transform, BlColor color) {
+        DrawTexturedQuad(transform, BlRec(0, 0, 1, 1), Renderer3DState.WhiteTexture, color);
     }
 
-    void Renderer2D::DrawTriangle(BlVec3<f32> position, BlVec2<f32> dimensions, f32 rotation, BlColor color) {
+    void Renderer3D::DrawTriangle(BlVec3<f32> position, BlVec2<f32> dimensions, f32 rotation, BlColor color) {
         glm::mat4 pos = glm::translate(glm::mat4(1.0f), glm::vec3(position.x, position.y, position.z));
         glm::mat4 rot = glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
         glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(dimensions.x, dimensions.y, 1.0f));
 
         glm::mat4 transform = pos * rot * scale;
 
-        DrawTexturedTriangle(transform, BlRec(0, 0, 1, 1), Renderer2DState.WhiteTexture, color);
+        DrawTexturedTriangle(transform, BlRec(0, 0, 1, 1), Renderer3DState.WhiteTexture, color);
     }
 
-    void Renderer2D::DrawTriangle(const glm::mat4& transform, BlColor color) {
-        DrawTexturedTriangle(transform, BlRec(0, 0, 1, 1), Renderer2DState.WhiteTexture, color);
+    void Renderer3D::DrawTriangle(const glm::mat4& transform, BlColor color) {
+        DrawTexturedTriangle(transform, BlRec(0, 0, 1, 1), Renderer3DState.WhiteTexture, color);
     }
 
-    void Renderer2D::DrawCircle(BlVec3<f32> pos, f32 radius, BlColor color) {
+    void Renderer3D::DrawCircle(BlVec3<f32> pos, f32 radius, BlColor color) {
         // DrawElipse(pos, BlVec2<f32>(radius, radius), 0.0f, color);
     }
 
-    void Renderer2D::DrawElipse(const glm::mat4& transform, BlColor color) {
+    void Renderer3D::DrawElipse(const glm::mat4& transform, BlColor color) {
         BlVec4 normalizedColor = NormalizeColor(color);
 
         const BlVec2<f32> texCoords[4] = { BlVec2<f32>(0, 1), BlVec2<f32>(1, 0), BlVec2<f32>(1, 1), BlVec2<f32>(0, 0) };
 
         // vertices
-        for (u32 i = 0; i < Renderer2DState.QuadVertexPositions.size(); i++) {
-            glm::vec4 pos = transform * Renderer2DState.QuadVertexPositions[i];
+        for (u32 i = 0; i < Renderer3DState.QuadVertexPositions.size(); i++) {
+            glm::vec4 pos = transform * Renderer3DState.QuadVertexPositions[i];
             BlCircleVertex vert = BlCircleVertex(BlVec3<f32>(pos.x, pos.y, pos.z), normalizedColor, texCoords[i]);
-            Renderer2DState.CircleVertices.push_back(vert);
+            Renderer3DState.CircleVertices.push_back(vert);
         }
 
         // indices
-        for (u32 i = 0; i < Renderer2DState.QuadIndices.size(); i++) {
-            const u32 vertexCount = Renderer2DState.CircleVertexCount;
-            Renderer2DState.CircleIndices.push_back(Renderer2DState.QuadIndices[i] + vertexCount);
+        for (u32 i = 0; i < Renderer3DState.QuadIndices.size(); i++) {
+            const u32 vertexCount = Renderer3DState.CircleVertexCount;
+            Renderer3DState.CircleIndices.push_back(Renderer3DState.QuadIndices[i] + vertexCount);
         }
 
-        Renderer2DState.CircleVertexCount += 4;
-        Renderer2DState.CircleIndexCount += 6;
+        Renderer3DState.CircleVertexCount += 4;
+        Renderer3DState.CircleIndexCount += 6;
     }
 
-    void Renderer2D::DrawTexture(BlVec3<f32> pos, Texture2D texture, f32 rotation, BlColor color) {
+    void Renderer3D::DrawTexture(BlVec3<f32> pos, Texture2D texture, f32 rotation, BlColor color) {
         DrawTextureEx(pos, BlVec2<f32>(static_cast<f32>(texture.Size.x), static_cast<f32>(texture.Size.y)), texture, rotation, color);
     }
 
-    void Renderer2D::DrawTextureEx(BlVec3<f32> pos, BlVec2<f32> dimensions, Texture2D texture, f32 rotation, BlColor color)  {
+    void Renderer3D::DrawTextureEx(BlVec3<f32> pos, BlVec2<f32> dimensions, Texture2D texture, f32 rotation, BlColor color)  {
         DrawTextureArea(pos, dimensions, BlRec(0.0f, 0.0f, static_cast<f32>(texture.Size.x), static_cast<f32>(texture.Size.y)), texture, rotation, color);
     }
 
-    void Renderer2D::DrawTextureArea(BlVec3<f32> position, BlVec2<f32> dimensions, BlRec area, Texture2D texture, f32 rotation, BlColor color) {
+    void Renderer3D::DrawTextureArea(BlVec3<f32> position, BlVec2<f32> dimensions, BlRec area, Texture2D texture, f32 rotation, BlColor color) {
         glm::mat4 pos = glm::translate(glm::mat4(1.0f), glm::vec3(position.x, position.y, position.z));
         glm::mat4 rot = glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
         glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(dimensions.x, dimensions.y, 1.0f));
@@ -388,7 +388,7 @@ namespace Blackberry {
         DrawTexturedQuad(transform, area, texture, color);
     }
 
-    void Renderer2D::DrawText(BlVec3<f32> position, f32 fontSize, const std::string& text, Font& font, TextParams params, BlColor color) {
+    void Renderer3D::DrawText(BlVec3<f32> position, f32 fontSize, const std::string& text, Font& font, TextParams params, BlColor color) {
         glm::mat4 pos = glm::translate(glm::mat4(1.0f), glm::vec3(position.x, position.y, position.z));
         glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(fontSize / font.LineHeight, fontSize / font.LineHeight, 1.0f));
 
@@ -397,7 +397,7 @@ namespace Blackberry {
         DrawText(transform, text, font, params, color);
     }
 
-    void Renderer2D::DrawText(const glm::mat4& transform, const std::string& text, Font& font, TextParams params, BlColor color) {
+    void Renderer3D::DrawText(const glm::mat4& transform, const std::string& text, Font& font, TextParams params, BlColor color) {
         Texture2D tex = font.TextureAtlas;
         f32 fsScale = 1.0f / (font.Ascender - font.Descender);
         f32 currentX = 0.0f;
@@ -419,9 +419,9 @@ namespace Blackberry {
                 BlRec atlasBounds = glyph.AtlasRect;
                 BlRec planeBounds = glyph.PlaneRect;
 
-                if (tex.ID != Renderer2DState.CurrentFontAtlas.ID) {
+                if (tex.ID != Renderer3DState.CurrentFontAtlas.ID) {
                     Render();
-                    Renderer2DState.CurrentFontAtlas = tex;
+                    Renderer3DState.CurrentFontAtlas = tex;
                 }
 
                 BlVec2<f32> texCoordMin(atlasBounds.x, atlasBounds.y);
@@ -449,37 +449,37 @@ namespace Blackberry {
                 // vertices
                 glm::vec4 pos = finalTextTransform * glm::vec4(quadMin.x, quadMin.y, 0.0f, 1.0f);
                 BlFontVertex vert = BlFontVertex(BlVec3<f32>(pos.x, pos.y, pos.z), normalizedColor, BlVec2<f32>(texCoordMin.x, texCoordMax.y));
-                Renderer2DState.FontVertices.push_back(vert);
+                Renderer3DState.FontVertices.push_back(vert);
                 
                 pos = finalTextTransform * glm::vec4(quadMax.x, quadMax.y, 0.0f, 1.0f);
                 vert = BlFontVertex(BlVec3<f32>(pos.x, pos.y, pos.z), normalizedColor, BlVec2<f32>(texCoordMax.x, texCoordMin.y));
-                Renderer2DState.FontVertices.push_back(vert);
+                Renderer3DState.FontVertices.push_back(vert);
 
                 pos = finalTextTransform * glm::vec4(quadMax.x, quadMin.y, 0.0f, 1.0f);
                 vert = BlFontVertex(BlVec3<f32>(pos.x, pos.y, pos.z), normalizedColor, BlVec2<f32>(texCoordMax.x, texCoordMax.y));
-                Renderer2DState.FontVertices.push_back(vert);
+                Renderer3DState.FontVertices.push_back(vert);
 
                 pos = finalTextTransform * glm::vec4(quadMin.x, quadMax.y, 0.0f, 1.0f);
                 vert = BlFontVertex(BlVec3<f32>(pos.x, pos.y, pos.z), normalizedColor, BlVec2<f32>(texCoordMin.x, texCoordMin.y));
-                Renderer2DState.FontVertices.push_back(vert);
+                Renderer3DState.FontVertices.push_back(vert);
 
                 // indices
-                for (u32 i = 0; i < Renderer2DState.QuadIndices.size(); i++) {
-                    const u32 vertexCount = Renderer2DState.FontVertexCount;
-                    Renderer2DState.FontIndices.push_back(Renderer2DState.QuadIndices[i] + vertexCount);
+                for (u32 i = 0; i < Renderer3DState.QuadIndices.size(); i++) {
+                    const u32 vertexCount = Renderer3DState.FontVertexCount;
+                    Renderer3DState.FontIndices.push_back(Renderer3DState.QuadIndices[i] + vertexCount);
                 }
 
-                Renderer2DState.CurrentFontAtlas = tex;
+                Renderer3DState.CurrentFontAtlas = tex;
 
-                Renderer2DState.FontIndexCount += 6;
-                Renderer2DState.FontVertexCount += 4;
+                Renderer3DState.FontIndexCount += 6;
+                Renderer3DState.FontVertexCount += 4;
 
                 currentX += fsScale * (glyph.AdvanceX + params.Kerning);
             }
         }
     }
 
-    void Renderer2D::DrawTexturedQuad(const glm::mat4& transform, BlRec area, Texture2D texture, BlColor color) {
+    void Renderer3D::DrawTexturedQuad(const glm::mat4& transform, BlRec area, Texture2D texture, BlColor color) {
         BlVec4 normalizedColor = NormalizeColor(color);
         f32 texIndex = GetTexIndex(texture);
 
@@ -489,23 +489,23 @@ namespace Blackberry {
                                            BlVec2<f32>((area.w + area.x) / texSize.x, area.y / texSize.y), BlVec2<f32>(area.x / texSize.x, (area.h + area.y) / texSize.y)};
 
         // vertices
-        for (u32 i = 0; i < Renderer2DState.QuadVertexPositions.size(); i++) {
-            glm::vec4 pos = transform * Renderer2DState.QuadVertexPositions[i];
+        for (u32 i = 0; i < Renderer3DState.QuadVertexPositions.size(); i++) {
+            glm::vec4 pos = transform * Renderer3DState.QuadVertexPositions[i];
             BlShapeVertex vert = BlShapeVertex(BlVec3<f32>(pos.x, pos.y, pos.z), normalizedColor, texCoords[i], texIndex);
-            Renderer2DState.ShapeVertices.push_back(vert);
+            Renderer3DState.ShapeVertices.push_back(vert);
         }
 
         // indices
-        for (u32 i = 0; i < Renderer2DState.QuadIndices.size(); i++) {
-            const u32 vertexCount = Renderer2DState.ShapeVertexCount;
-            Renderer2DState.ShapeIndices.push_back(Renderer2DState.QuadIndices[i] + vertexCount);
+        for (u32 i = 0; i < Renderer3DState.QuadIndices.size(); i++) {
+            const u32 vertexCount = Renderer3DState.ShapeVertexCount;
+            Renderer3DState.ShapeIndices.push_back(Renderer3DState.QuadIndices[i] + vertexCount);
         }
 
-        Renderer2DState.ShapeIndexCount += 6;
-        Renderer2DState.ShapeVertexCount += 4;
+        Renderer3DState.ShapeIndexCount += 6;
+        Renderer3DState.ShapeVertexCount += 4;
     }
 
-    void Renderer2D::DrawTexturedTriangle(const glm::mat4& transform, BlRec area, Texture2D texture, BlColor color) {
+    void Renderer3D::DrawTexturedTriangle(const glm::mat4& transform, BlRec area, Texture2D texture, BlColor color) {
         BlVec4 normalizedColor = NormalizeColor(color);
         f32 texIndex = GetTexIndex(texture);
 
@@ -513,54 +513,54 @@ namespace Blackberry {
         const BlVec2<f32> texCoords[3] = { BlVec2<f32>(0.0f, 1.0f), BlVec2<f32>(0.5f, 0.0f), BlVec2<f32>(1.0f, 1.0f) };
 
         // vertices
-        for (u32 i = 0; i < Renderer2DState.TriangleVertexPositions.size(); i++) {
-            glm::vec4 pos = transform * Renderer2DState.TriangleVertexPositions[i];
+        for (u32 i = 0; i < Renderer3DState.TriangleVertexPositions.size(); i++) {
+            glm::vec4 pos = transform * Renderer3DState.TriangleVertexPositions[i];
             BlShapeVertex vert = BlShapeVertex(BlVec3<f32>(pos.x, pos.y, pos.z), normalizedColor, texCoords[i], texIndex);
-            Renderer2DState.ShapeVertices.push_back(vert);
+            Renderer3DState.ShapeVertices.push_back(vert);
         }
 
         // indices
-        for (u32 i = 0; i < Renderer2DState.TriangleIndices.size(); i++) {
-            const u32 vertexCount = Renderer2DState.ShapeVertexCount;
-            Renderer2DState.ShapeIndices.push_back(Renderer2DState.TriangleIndices[i] + vertexCount);
+        for (u32 i = 0; i < Renderer3DState.TriangleIndices.size(); i++) {
+            const u32 vertexCount = Renderer3DState.ShapeVertexCount;
+            Renderer3DState.ShapeIndices.push_back(Renderer3DState.TriangleIndices[i] + vertexCount);
         }
 
-        Renderer2DState.ShapeVertexCount += 3;
-        Renderer2DState.ShapeIndexCount += 3;
+        Renderer3DState.ShapeVertexCount += 3;
+        Renderer3DState.ShapeIndexCount += 3;
     }
 
-    void Renderer2D::DrawRenderTexture(BlVec3<f32> pos, BlVec2<f32> dimensions, RenderTexture texture) {
+    void Renderer3D::DrawRenderTexture(BlVec3<f32> pos, BlVec2<f32> dimensions, RenderTexture texture) {
         DrawTextureArea(pos, dimensions, BlRec(0.0f, 0.0f, static_cast<f32>(texture.Size.x), static_cast<f32>(texture.Size.y) * -1.0f), texture.ColorAttachment);
     }
 
-    void Renderer2D::BindRenderTexture(RenderTexture texture) {
+    void Renderer3D::BindRenderTexture(RenderTexture texture) {
         auto& renderer = BL_APP.GetRenderer();
 
         renderer.BindRenderTexture(texture);
     }
 
-    void Renderer2D::UnBindRenderTexture() {
+    void Renderer3D::UnBindRenderTexture() {
         auto& renderer = BL_APP.GetRenderer();
 
         renderer.UnBindRenderTexture();
     }
 
-    void Renderer2D::SetProjection(SceneCamera camera) {
-        Renderer2DState.Camera = camera;
+    void Renderer3D::SetProjection(SceneCamera camera) {
+        Renderer3DState.Camera = camera;
     }
 
-    void Renderer2D::ResetProjection() {
-        Renderer2DState.Camera = Renderer2DState.DefaultCamera;
+    void Renderer3D::ResetProjection() {
+        Renderer3DState.Camera = Renderer3DState.DefaultCamera;
     }
 
-    void Renderer2D::Render() {
-        Renderer2DState.Info.Vertices = Renderer2DState.ShapeVertexCount;
-        Renderer2DState.Info.Indicies = Renderer2DState.ShapeIndexCount;
+    void Renderer3D::Render() {
+        Renderer3DState.Stats.Vertices = Renderer3DState.ShapeVertexCount;
+        Renderer3DState.Stats.Indicies = Renderer3DState.ShapeIndexCount;
 
         auto& renderer = BL_APP.GetRenderer();
 
         // shape buffer
-        if (Renderer2DState.ShapeIndexCount > 0) {
+        if (Renderer3DState.ShapeIndexCount > 0) {
             BlDrawBufferLayout vertPosLayout;
             vertPosLayout.Index = 0;
             vertPosLayout.Count = 3;
@@ -589,57 +589,57 @@ namespace Blackberry {
             vertTexIndexLayout.Stride = sizeof(BlShapeVertex);
             vertTexIndexLayout.Offset = offsetof(BlShapeVertex, TexIndex);
 
-            Renderer2DState.ShapeDrawBuffer.Vertices = Renderer2DState.ShapeVertices.data();
-            Renderer2DState.ShapeDrawBuffer.VertexCount = Renderer2DState.ShapeVertexCount;
-            Renderer2DState.ShapeDrawBuffer.VertexSize = sizeof(BlShapeVertex);
+            Renderer3DState.ShapeDrawBuffer.Vertices = Renderer3DState.ShapeVertices.data();
+            Renderer3DState.ShapeDrawBuffer.VertexCount = Renderer3DState.ShapeVertexCount;
+            Renderer3DState.ShapeDrawBuffer.VertexSize = sizeof(BlShapeVertex);
 
-            Renderer2DState.ShapeDrawBuffer.Indices = Renderer2DState.ShapeIndices.data();
-            Renderer2DState.ShapeDrawBuffer.IndexCount = Renderer2DState.ShapeIndexCount;
-            Renderer2DState.ShapeDrawBuffer.IndexSize = sizeof(u32);
+            Renderer3DState.ShapeDrawBuffer.Indices = Renderer3DState.ShapeIndices.data();
+            Renderer3DState.ShapeDrawBuffer.IndexCount = Renderer3DState.ShapeIndexCount;
+            Renderer3DState.ShapeDrawBuffer.IndexSize = sizeof(u32);
 
-            renderer.SubmitDrawBuffer(Renderer2DState.ShapeDrawBuffer);
+            renderer.SubmitDrawBuffer(Renderer3DState.ShapeDrawBuffer);
             
             renderer.SetBufferLayout(vertPosLayout);
             renderer.SetBufferLayout(vertColorLayout);
             renderer.SetBufferLayout(vertTexCoordLayout);
             renderer.SetBufferLayout(vertTexIndexLayout);
             
-            renderer.BindShader(Renderer2DState.ShapeShader);
-            for (u32 i = 0; i < Renderer2DState.CurrentTexIndex; i++) {
-                renderer.BindTexture(Renderer2DState.CurrentAttachedTextures[i], i);
+            renderer.BindShader(Renderer3DState.ShapeShader);
+            for (u32 i = 0; i < Renderer3DState.CurrentTexIndex; i++) {
+                renderer.BindTexture(Renderer3DState.CurrentAttachedTextures[i], i);
             }
 
             int samplers[16]; // opengl texture IDs
-            for (u32 i = 0; i < Renderer2DState.CurrentAttachedTextures.size(); i++) {
+            for (u32 i = 0; i < Renderer3DState.CurrentAttachedTextures.size(); i++) {
                 samplers[i] = i;
             }
 
-            BlShader shader = Renderer2DState.ShapeShader;
+            BlShader shader = Renderer3DState.ShapeShader;
             shader.SetIntArray("u_Textures", 16, samplers);
-            shader.SetMatrix("u_Projection", Renderer2DState.Camera.GetCameraMatrixFloat());
+            shader.SetMatrix("u_Projection", Renderer3DState.Camera.GetCameraMatrixFloat());
 
-            renderer.DrawIndexed(Renderer2DState.ShapeIndexCount);
+            renderer.DrawIndexed(Renderer3DState.ShapeIndexCount);
 
             renderer.UnBindTexture();
 
-            Renderer2DState.Info.DrawCalls++;
-            Renderer2DState.Info.ActiveTextures = Renderer2DState.CurrentTexIndex;
-            Renderer2DState.Info.ReservedTextures = 1;
+            Renderer3DState.Stats.DrawCalls++;
+            Renderer3DState.Stats.ActiveTextures = Renderer3DState.CurrentTexIndex;
+            Renderer3DState.Stats.ReservedTextures = 1;
 
             // clear buffer after rendering
-            Renderer2DState.ShapeIndices.clear();
-            Renderer2DState.ShapeVertices.clear();
+            Renderer3DState.ShapeIndices.clear();
+            Renderer3DState.ShapeVertices.clear();
 
             // reserve memory again
-            Renderer2DState.ShapeIndices.reserve(2048);
-            Renderer2DState.ShapeVertices.reserve(2048);
-            Renderer2DState.ShapeIndexCount = 0;
-            Renderer2DState.ShapeVertexCount = 0;
-            Renderer2DState.CurrentTexIndex = 1; // 0 is reserved and never changes
+            Renderer3DState.ShapeIndices.reserve(2048);
+            Renderer3DState.ShapeVertices.reserve(2048);
+            Renderer3DState.ShapeIndexCount = 0;
+            Renderer3DState.ShapeVertexCount = 0;
+            Renderer3DState.CurrentTexIndex = 1; // 0 is reserved and never changes
         }
 
         // circle buffer
-        if (Renderer2DState.CircleIndexCount > 0) {
+        if (Renderer3DState.CircleIndexCount > 0) {
             BlDrawBufferLayout vertPosLayout;
             vertPosLayout.Index = 0;
             vertPosLayout.Count = 3;
@@ -661,41 +661,41 @@ namespace Blackberry {
             vertTexCoordLayout.Stride = sizeof(BlCircleVertex);
             vertTexCoordLayout.Offset = offsetof(BlCircleVertex, TexCoord);
 
-            Renderer2DState.CircleDrawBuffer.Vertices = Renderer2DState.CircleVertices.data();
-            Renderer2DState.CircleDrawBuffer.VertexCount = Renderer2DState.CircleVertexCount;
-            Renderer2DState.CircleDrawBuffer.VertexSize = sizeof(BlCircleVertex);
+            Renderer3DState.CircleDrawBuffer.Vertices = Renderer3DState.CircleVertices.data();
+            Renderer3DState.CircleDrawBuffer.VertexCount = Renderer3DState.CircleVertexCount;
+            Renderer3DState.CircleDrawBuffer.VertexSize = sizeof(BlCircleVertex);
 
-            Renderer2DState.CircleDrawBuffer.Indices = Renderer2DState.CircleIndices.data();
-            Renderer2DState.CircleDrawBuffer.IndexCount = Renderer2DState.CircleIndexCount;
-            Renderer2DState.CircleDrawBuffer.IndexSize = sizeof(u32);
+            Renderer3DState.CircleDrawBuffer.Indices = Renderer3DState.CircleIndices.data();
+            Renderer3DState.CircleDrawBuffer.IndexCount = Renderer3DState.CircleIndexCount;
+            Renderer3DState.CircleDrawBuffer.IndexSize = sizeof(u32);
 
-            renderer.SubmitDrawBuffer(Renderer2DState.CircleDrawBuffer);
+            renderer.SubmitDrawBuffer(Renderer3DState.CircleDrawBuffer);
 
             renderer.SetBufferLayout(vertPosLayout);
             renderer.SetBufferLayout(vertColorLayout);
             renderer.SetBufferLayout(vertTexCoordLayout);
 
-            renderer.BindShader(Renderer2DState.CircleShader);
+            renderer.BindShader(Renderer3DState.CircleShader);
 
-            Renderer2DState.CircleShader.SetMatrix("u_Projection", Renderer2DState.Camera.GetCameraMatrixFloat());
+            Renderer3DState.CircleShader.SetMatrix("u_Projection", Renderer3DState.Camera.GetCameraMatrixFloat());
 
-            renderer.DrawIndexed(Renderer2DState.CircleIndexCount);
+            renderer.DrawIndexed(Renderer3DState.CircleIndexCount);
 
-            Renderer2DState.Info.DrawCalls++;
+            Renderer3DState.Stats.DrawCalls++;
 
             // clear buffer after rendering
-            Renderer2DState.CircleIndices.clear();
-            Renderer2DState.CircleVertices.clear();
+            Renderer3DState.CircleIndices.clear();
+            Renderer3DState.CircleVertices.clear();
 
             // reserve memory again
-            Renderer2DState.CircleIndices.reserve(1024);
-            Renderer2DState.CircleVertices.reserve(1024);
-            Renderer2DState.CircleIndexCount = 0;
-            Renderer2DState.CircleVertexCount = 0;
+            Renderer3DState.CircleIndices.reserve(1024);
+            Renderer3DState.CircleVertices.reserve(1024);
+            Renderer3DState.CircleIndexCount = 0;
+            Renderer3DState.CircleVertexCount = 0;
         }
 
         // font buffer
-        if (Renderer2DState.FontIndexCount > 0) {
+        if (Renderer3DState.FontIndexCount > 0) {
             BlDrawBufferLayout vertPosLayout;
             vertPosLayout.Index = 0;
             vertPosLayout.Count = 3;
@@ -717,48 +717,48 @@ namespace Blackberry {
             vertTexCoordLayout.Stride = sizeof(BlFontVertex);
             vertTexCoordLayout.Offset = offsetof(BlFontVertex, TexCoord);
 
-            Renderer2DState.FontDrawBuffer.Vertices = Renderer2DState.FontVertices.data();
-            Renderer2DState.FontDrawBuffer.VertexCount = Renderer2DState.FontVertexCount;
-            Renderer2DState.FontDrawBuffer.VertexSize = sizeof(BlFontVertex);
+            Renderer3DState.FontDrawBuffer.Vertices = Renderer3DState.FontVertices.data();
+            Renderer3DState.FontDrawBuffer.VertexCount = Renderer3DState.FontVertexCount;
+            Renderer3DState.FontDrawBuffer.VertexSize = sizeof(BlFontVertex);
                             
-            Renderer2DState.FontDrawBuffer.Indices = Renderer2DState.FontIndices.data();
-            Renderer2DState.FontDrawBuffer.IndexCount = Renderer2DState.FontIndexCount;
-            Renderer2DState.FontDrawBuffer.IndexSize = sizeof(u32);
+            Renderer3DState.FontDrawBuffer.Indices = Renderer3DState.FontIndices.data();
+            Renderer3DState.FontDrawBuffer.IndexCount = Renderer3DState.FontIndexCount;
+            Renderer3DState.FontDrawBuffer.IndexSize = sizeof(u32);
 
-            renderer.SubmitDrawBuffer(Renderer2DState.FontDrawBuffer);
+            renderer.SubmitDrawBuffer(Renderer3DState.FontDrawBuffer);
             
             renderer.SetBufferLayout(vertPosLayout);
             renderer.SetBufferLayout(vertColorLayout);
             renderer.SetBufferLayout(vertTexCoordLayout);
             
-            renderer.BindShader(Renderer2DState.FontShader);
-            renderer.BindTexture(Renderer2DState.CurrentFontAtlas);
+            renderer.BindShader(Renderer3DState.FontShader);
+            renderer.BindTexture(Renderer3DState.CurrentFontAtlas);
 
-            BlShader shader = Renderer2DState.FontShader;
-            shader.SetMatrix("u_Projection", Renderer2DState.Camera.GetCameraMatrixFloat());
+            BlShader shader = Renderer3DState.FontShader;
+            shader.SetMatrix("u_Projection", Renderer3DState.Camera.GetCameraMatrixFloat());
 
-            renderer.DrawIndexed(Renderer2DState.FontIndexCount);
+            renderer.DrawIndexed(Renderer3DState.FontIndexCount);
 
             renderer.UnBindTexture();
 
-            Renderer2DState.Info.DrawCalls++;
-            // Renderer2DState.Info.ActiveTextures = Renderer2DState.CurrentFontIndex;
-            // Renderer2DState.Info.ReservedTextures = 1;
+            Renderer3DState.Stats.DrawCalls++;
+            // Renderer3DState.Info.ActiveTextures = Renderer3DState.CurrentFontIndex;
+            // Renderer3DState.Info.ReservedTextures = 1;
 
             // clear buffer after rendering
-            Renderer2DState.FontIndices.clear();
-            Renderer2DState.FontVertices.clear();
+            Renderer3DState.FontIndices.clear();
+            Renderer3DState.FontVertices.clear();
 
             // reserve memory again
-            Renderer2DState.FontIndices.reserve(2048);
-            Renderer2DState.FontVertices.reserve(2048);
-            Renderer2DState.FontIndexCount = 0;
-            Renderer2DState.FontVertexCount = 0;
-            Renderer2DState.CurrentTexIndex = 0;
+            Renderer3DState.FontIndices.reserve(2048);
+            Renderer3DState.FontVertices.reserve(2048);
+            Renderer3DState.FontIndexCount = 0;
+            Renderer3DState.FontVertexCount = 0;
+            Renderer3DState.CurrentTexIndex = 0;
         }
     }
 
-    BlVec2<f32> Renderer2D::MeasureText(const std::string& text, Font& font, TextParams parameters) {
+    BlVec2<f32> Renderer3D::MeasureText(const std::string& text, Font& font, TextParams parameters) {
         f32 fsScale = 1.0f / (font.Ascender - font.Descender);
         f32 currentX = 0.0f;
         f32 currentY = 0.0f;
@@ -774,8 +774,8 @@ namespace Blackberry {
         return BlVec2<f32>(currentX, currentY);
     }
 
-    BlRenderer2DInfo Renderer2D::GetRenderingInfo() {
-        return Renderer2DState.Info;
+    Renderer3DStats Renderer3D::GetRendererStats() {
+        return Renderer3DState.Stats;
     }
 
 } // namespace Blackberry
