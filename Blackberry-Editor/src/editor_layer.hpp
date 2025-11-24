@@ -96,7 +96,7 @@ namespace BlackberryEditor {
 
         std::filesystem::path m_AppDataDirectory;
 
-        Blackberry::Mesh m_Cube;
+        Blackberry::Mesh m_Duck;
     };
 
 } // namespace BlackberryEditor

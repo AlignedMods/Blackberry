@@ -3,6 +3,7 @@
 
 #define CGLTF_IMPLEMENTATION
 #include "cgltf.h"
+#include "stb_image.h" // no need for implementation here because image.cpp has it
 
 namespace Blackberry {
 
@@ -14,6 +15,7 @@ namespace Blackberry {
         return buffer + offset;
     }
 
+    // (aligned) TODO: Improve the loading here to not blindly assume everything
     Mesh Mesh::Create(const std::filesystem::path& path) {
         Mesh mesh;
 
@@ -106,6 +108,45 @@ namespace Blackberry {
                         mesh.Indices[i] = index;
                     }
                 }
+
+                // find tex coords
+                cgltf_accessor* texCoordAccessor = nullptr;
+                
+                for (cgltf_size ai = 0; ai < primitive.attributes_count; ++ai) {
+                    const cgltf_attribute& attr = primitive.attributes[ai];
+                    if (attr.type == cgltf_attribute_type_texcoord) {
+                        texCoordAccessor = attr.data;
+                        break;
+                    }
+                }
+
+                if (texCoordAccessor) {
+                    f32* rawTexCoords = reinterpret_cast<f32*>(GetAccessorData(texCoordAccessor));
+                    u32 count = texCoordAccessor->count;
+                    u32 stride = texCoordAccessor->stride;
+
+                    BL_CORE_INFO("TexCoord count: {}", count);
+
+                    // resize to prevent loads of heap allocations
+                    mesh.TexCoords.resize(count);
+
+                    for (u32 i = 0; i < count; ++i) {
+                        f32* p = reinterpret_cast<f32*>(reinterpret_cast<u8*>(rawTexCoords) + i * stride);
+                        
+                        BL_CORE_INFO("TexCoord: {}, {}", p[0], p[1]);
+                        mesh.TexCoords[i] = BlVec2<f32>(p[0], p[1]);
+                    }
+                }
+
+                // find textures
+                cgltf_buffer_view* texBufferView = data->textures[0].image->buffer_view;
+                void* imageBytes = reinterpret_cast<u8*>(texBufferView->buffer->data) + texBufferView->offset;
+                int width, height, channels;
+
+                u8* imageData = stbi_load_from_memory(reinterpret_cast<u8*>(imageBytes), texBufferView->buffer->size, &width, &height, &channels, 4);
+
+                mesh.Texture = Texture2D::Create(imageData, width, height, ImageFormat::RGBA8);
+                stbi_image_free(imageData);
             }
         }
 

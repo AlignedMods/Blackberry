@@ -550,11 +550,12 @@ namespace Blackberry {
 
     void Renderer3D::DrawMesh(const glm::mat4& transform, Mesh& mesh, BlColor color) {
         BlVec4 normalizedColor = NormalizeColor(color);
+        f32 texIndex = GetTexIndex(mesh.Texture);
 
         // vertices
         for (u32 i = 0; i < mesh.Positions.size(); i++) {
             glm::vec4 pos = transform * glm::vec4(mesh.Positions[i].x, mesh.Positions[i].y, mesh.Positions[i].z, 1.0f);
-            BlShapeVertex vert = BlShapeVertex(BlVec3<f32>(pos.x, pos.y, pos.z), normalizedColor, BlVec2<f32>(0.0f), 0.0f);
+            BlShapeVertex vert = BlShapeVertex(BlVec3<f32>(pos.x, pos.y, pos.z), normalizedColor, mesh.TexCoords[i], texIndex);
             Renderer3DState.ShapeVertices.push_back(vert);
         }
 

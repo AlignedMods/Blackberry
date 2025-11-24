@@ -281,7 +281,7 @@ namespace BlackberryEditor {
         m_EditingScene = &Project::GetStartScene().Scene;
         m_CurrentScene = m_EditingScene;
 
-        m_Cube = Mesh::Create("Assets/cube.glb");
+        m_Duck = Mesh::Create("Assets/duck.glb");
 
         // ImGui::GetIO().IniFilename = std::filesystem::path(m_AppDataDirectory / "Blackberry-Editor" / "editor_layout.ini").string().c_str();
     }
@@ -328,6 +328,7 @@ namespace BlackberryEditor {
                     delta.y *= -1.0f; // invert y axis
                     
                     m_EditorCamera.Transform.Rotation += BlVec3(delta);
+                    m_EditorCamera.Transform.Rotation.y = glm::clamp(m_EditorCamera.Transform.Rotation.y, -89.0f, 89.0f);
 
                     if (Input::IsKeyDown(KeyCode::W)) {
                         m_EditorCamera.Transform.Position += m_EditorCamera.GetForwardVector() * ts;
@@ -351,12 +352,12 @@ namespace BlackberryEditor {
         Renderer3D::Clear(BlColor(0x69, 0x69, 0x69, 0xff));
 
         TransformComponent meshTransform;
-        meshTransform.Position = BlVec3(3.0f, 2.0f, 4.0f);
+        meshTransform.Position = BlVec3(3.0f, 2.0f, -4.0f);
         meshTransform.Scale = BlVec3(2.0f, 2.0f, 2.0f);
-        meshTransform.Rotation = BlVec3(45.0f, 45.0f, 45.0f);
+        meshTransform.Rotation = BlVec3(90.0f, 0.0f, 180.0f);
 
         m_CurrentScene->SetCamera(m_CurrentCamera);
-        Renderer3D::DrawMesh(meshTransform.GetMatrix(), m_Cube, Colors::Red);
+        Renderer3D::DrawMesh(meshTransform.GetMatrix(), m_Duck, Colors::White);
         m_CurrentScene->OnRender();
 
         Renderer3D::UnBindRenderTexture();
