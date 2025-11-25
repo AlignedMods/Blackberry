@@ -5,6 +5,16 @@
             "Path": "Textures\\rabbit.jpg",
             "Type": "Texture"
         },
+        "Handle - 12120187917695872185": {
+            "Handle": 12120187917695872185,
+            "Path": "Meshes\\Default\\Cube.glb",
+            "Type": "Mesh"
+        },
+        "Handle - 13648184844694430662": {
+            "Handle": 13648184844694430662,
+            "Path": "Meshes\\Default\\Sphere.glb",
+            "Type": "Mesh"
+        },
         "Handle - 15162507589004987079": {
             "Handle": 15162507589004987079,
             "Path": "Textures\\cat.jpg",

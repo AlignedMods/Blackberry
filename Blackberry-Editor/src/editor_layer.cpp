@@ -281,8 +281,6 @@ namespace BlackberryEditor {
         m_EditingScene = &Project::GetStartScene().Scene;
         m_CurrentScene = m_EditingScene;
 
-        m_Duck = Mesh::Create("Assets/duck.glb");
-
         // ImGui::GetIO().IniFilename = std::filesystem::path(m_AppDataDirectory / "Blackberry-Editor" / "editor_layout.ini").string().c_str();
     }
 
@@ -351,13 +349,7 @@ namespace BlackberryEditor {
         Renderer3D::BindRenderTexture(m_RenderTexture);
         Renderer3D::Clear(BlColor(0x69, 0x69, 0x69, 0xff));
 
-        TransformComponent meshTransform;
-        meshTransform.Position = BlVec3(3.0f, 2.0f, -4.0f);
-        meshTransform.Scale = BlVec3(2.0f, 2.0f, 2.0f);
-        meshTransform.Rotation = BlVec3(90.0f, 0.0f, 180.0f);
-
         m_CurrentScene->SetCamera(m_CurrentCamera);
-        Renderer3D::DrawMesh(meshTransform.GetMatrix(), m_Duck, Colors::White);
         m_CurrentScene->OnRender();
 
         Renderer3D::UnBindRenderTexture();
@@ -441,30 +433,6 @@ namespace BlackberryEditor {
 
         if (entity.HasComponent<TransformComponent>()) {
             TransformComponent& transform = entity.GetComponent<TransformComponent>();
-
-            auto drawWhiteEntity = [&]<typename T>() -> bool {
-                if (!entity.HasComponent<T>()) { return false; }
-
-                T& ren = entity.GetComponent<T>();
-
-                switch (ren.Shape) {
-                    case ShapeType::Triangle:
-                        Renderer3D::DrawTriangle(transform.GetMatrix(), Colors::White);
-                        break;
-                    case ShapeType::Rectangle:
-                        Renderer3D::DrawRectangle(transform.GetMatrix(), Colors::White);
-                        break;
-                    case ShapeType::Circle:
-                        Renderer3D::DrawElipse(transform.GetMatrix(), Colors::White);
-                        break;
-                }
-            };
-
-            // wierd syntax honestly
-            if (!drawWhiteEntity.template operator()<SpriteRendererComponent>() && !drawWhiteEntity.template operator()<ShapeRendererComponent>()) {
-                Renderer3D::DrawRectangle(transform.GetMatrix(), Colors::White);
-            };
-
         }
 
         Renderer3D::Render();
@@ -676,10 +644,9 @@ namespace BlackberryEditor {
                 }
 
                 if (ImGui::BeginPopupContextItem()) {
-                    if (ImGui::MenuItem("Create asset handle")) {
+                    if (ImGui::MenuItem("Create Asset Out Of Item")) {
                         createAssetPopup = true;
                         assetFile = file;
-                        ImGui::OpenPopup("CreateAssetPopup");
                     }
                     ImGui::EndPopup();
                 }
@@ -697,11 +664,13 @@ namespace BlackberryEditor {
         }
 
         if (ImGui::BeginPopup("CreateAssetPopup")) {
-                static bool s_IsTexture = false;
-                ImGui::Checkbox("Is texture?", &s_IsTexture);
+                static const char* assetTypeNames[] = { "Texture", "Font", "Mesh" };
+                static int currentAssetType = 0;
+
+                ImGui::Combo("##AssetType", &currentAssetType, assetTypeNames, IM_ARRAYSIZE(assetTypeNames));
 
                 if (ImGui::Button("Create")) {
-                    if (s_IsTexture) {
+                    if (currentAssetType == 0) { // texture
                         Texture2D tex = Texture2D::Create(assetFile);
                         Asset asset;
                         asset.Type = AssetType::Texture;
@@ -709,12 +678,20 @@ namespace BlackberryEditor {
                         asset.Data = tex;
 
                         Project::GetAssetManager().AddAsset("cart", asset);
-                    } else {
+                    } else if (currentAssetType == 1) { // font
                         Font font = Font::Create(assetFile);
                         Asset asset;
                         asset.Type = AssetType::Font;
                         asset.FilePath = fs::relative(assetFile, m_BaseDirectory);
                         asset.Data = font;
+
+                        Project::GetAssetManager().AddAsset("cart", asset);
+                    } else if (currentAssetType == 2) { // mesh
+                        Mesh mesh = Mesh::Create(assetFile);
+                        Asset asset;
+                        asset.Type = AssetType::Mesh;
+                        asset.FilePath = fs::relative(assetFile, m_BaseDirectory);
+                        asset.Data = mesh;
 
                         Project::GetAssetManager().AddAsset("cart", asset);
                     }
@@ -790,17 +767,11 @@ namespace BlackberryEditor {
 
             ImGui::Separator();
 
-            if (ImGui::BeginMenu("Shape")) {
-                if (ImGui::MenuItem("Rectangle")) {
-                    Entity entity(m_CurrentScene->CreateEntity("Rectangle"), m_CurrentScene);
+            if (ImGui::BeginMenu("Mesh")) {
+                if (ImGui::MenuItem("Cube")) {
+                    Entity entity(m_CurrentScene->CreateEntity("Cube"), m_CurrentScene);
 
-                    entity.AddComponent<ShapeRendererComponent>();
-                    entity.AddComponent<TransformComponent>({BlVec3(m_RenderTexture.Size.x / 2.0f - 100.0f, m_RenderTexture.Size.y / 2.0f - 50.0f, 0.0f), BlVec3(0.0f), BlVec3(200.0f, 100.0f, 1.0f)});
-                };
-
-                if (ImGui::MenuItem("Triangle")) {
-                    Entity entity(m_CurrentScene->CreateEntity("Triangle"), m_CurrentScene);
-                    entity.AddComponent<ShapeRendererComponent>({.Shape = ShapeType::Triangle});
+                    entity.AddComponent<MeshRendererComponent>();
                     entity.AddComponent<TransformComponent>({BlVec3(m_RenderTexture.Size.x / 2.0f - 100.0f, m_RenderTexture.Size.y / 2.0f - 50.0f, 0.0f), BlVec3(0.0f), BlVec3(200.0f, 100.0f, 1.0f)});
                 };
                 
@@ -884,8 +855,7 @@ namespace BlackberryEditor {
                 if (ImGui::BeginMenu("Add Component")) {
                     AddComponentListOption<TransformComponent>("Transform", entity);
                     AddComponentListOption<TextComponent>("Text", entity);
-                    AddComponentListOption<ShapeRendererComponent>("Shape Renderer", entity);
-                    AddComponentListOption<SpriteRendererComponent>("Sprite Renderer", entity);
+                    AddComponentListOption<MeshRendererComponent>("Mesh Renderer", entity);
                     AddComponentListOption<CameraComponent>("Camera", entity);
                     AddComponentListOption<ScriptComponent>("Script", entity);
                     AddComponentListOption<RigidBodyComponent>("Rigid Body", entity);
@@ -913,48 +883,16 @@ namespace BlackberryEditor {
 
                 DrawVec3Control("Scale: ", &transform.Scale);
             });
-            DrawComponent<ShapeRendererComponent>("Shape Renderer", entity, [](ShapeRendererComponent& shapeRenderer) {
-                DrawColorControl("Color: ", &shapeRenderer.Color);
+            DrawComponent<MeshRendererComponent>("Mesh Renderer", entity, [this](MeshRendererComponent& meshRenderer) {
+                DrawColorControl("Color: ", &meshRenderer.Color);
+
                 ImGui::Separator();
-
-                ImGuiIO& io = ImGui::GetIO();
-
-                static const char* shapeNames[] = { "Triangle", "Rectangle", "Circle", "Polygon" };
-                int currentShape = static_cast<int>(shapeRenderer.Shape);
-
-                ImGui::Text("Shape: ");
-                ImGui::Indent();
-
-                if (ImGui::Combo("##Shape Type", &currentShape, shapeNames, IM_ARRAYSIZE(shapeNames))) {
-                    shapeRenderer.Shape = static_cast<ShapeType>(currentShape);
-                }
-
-                ImGui::Unindent();
-            });
-            DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [this](SpriteRendererComponent& spriteRenderer) {
-                DrawColorControl("Color: ", &spriteRenderer.Color);
-                ImGui::Separator();
-
-                ImGuiIO& io = ImGui::GetIO();
-
-                static const char* shapeNames[] = { "Triangle", "Rectangle", "Circle", "Polygon" };
-                int currentShape = static_cast<int>(spriteRenderer.Shape);
-
-                ImGui::Text("Shape: ");
-                ImGui::Indent();
-    
-                if (ImGui::Combo("##Shape Type", &currentShape, shapeNames, IM_ARRAYSIZE(shapeNames))) {
-                    spriteRenderer.Shape = static_cast<ShapeType>(currentShape);
-                }
-
-                ImGui::Unindent();
-                ImGui::Separator();
-                ImGui::Text("Texture: ");
+                ImGui::Text("Mesh: ");
                 ImGui::Indent();
 
                 std::string mat;
-                if (Project::GetAssetManager().ContainsAsset(spriteRenderer.TextureHandle)) {
-                    mat = Project::GetAssetManager().GetAsset(spriteRenderer.TextureHandle).FilePath.stem().string();
+                if (Project::GetAssetManager().ContainsAsset(meshRenderer.MeshHandle)) {
+                    mat = Project::GetAssetManager().GetAsset(meshRenderer.MeshHandle).FilePath.stem().string();
                 } else {
                     mat = "NULL";
                 }
@@ -968,9 +906,9 @@ namespace BlackberryEditor {
                     ImGui::Button(mat.c_str(), ImVec2(size, 0.0f));
                 }
 
-                if (ImGui::BeginPopupContextItem("TextureHandlePopup")) {
-                    if (ImGui::MenuItem("Remove Texture")) {
-                        spriteRenderer.TextureHandle = 0;
+                if (ImGui::BeginPopupContextItem("MeshHandlePopup")) {
+                    if (ImGui::MenuItem("Remove Mesh")) {
+                        meshRenderer.MeshHandle = 0;
                     }
 
                     ImGui::EndPopup();
@@ -980,13 +918,11 @@ namespace BlackberryEditor {
                     const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_MANAGER_DRAG_DROP");
 
                     if (payload) {
-                        spriteRenderer.TextureHandle = *reinterpret_cast<u64*>(payload->Data); // seems sus
+                        meshRenderer.MeshHandle = *reinterpret_cast<u64*>(payload->Data); // seems sus
                     }
                 }
 
                 ImGui::Unindent();
-
-                DrawRecControl("Area", &spriteRenderer.Area);
             });
             DrawComponent<TextComponent>("Text", entity, [this](TextComponent& text) {
                 ImGui::Text("Contents: ");
@@ -1072,9 +1008,9 @@ namespace BlackberryEditor {
                 script.FilePath = m_BaseDirectory / script.ModulePath;
             });
             DrawComponent<RigidBodyComponent>("Rigid Body", entity, [](RigidBodyComponent& rigidBody) {
-                DrawVec2Control("Velocity: ", &rigidBody.Velocity);
-                DrawVec2Control("Acceleration: ", &rigidBody.Acceleration);
-                DrawVec2Control("Force: ", &rigidBody.Force);
+                DrawVec3Control("Velocity: ", &rigidBody.Velocity);
+                DrawVec3Control("Acceleration: ", &rigidBody.Acceleration);
+                DrawVec3Control("Force: ", &rigidBody.Force);
 
                 ImGui::DragFloat("Mass", &rigidBody.Mass);
             });

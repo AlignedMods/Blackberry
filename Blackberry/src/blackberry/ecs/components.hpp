@@ -15,11 +15,17 @@ namespace Blackberry {
 
     class Font;
 
-    enum class ShapeType : u16 {
-        Triangle = 0,
-        Rectangle = 1,
-        Circle = 2,
-        Polygon = 3
+    enum class MeshType : u16 {
+        Plane = 0,
+        Cube = 1,
+        Sphere = 2,
+        Cylinder = 3
+    };
+
+    enum class RigidBodyType : u16 {
+        Static = 0,
+        Dynamic = 1,
+        Kinematic = 2
     };
 
     struct TagComponent {
@@ -41,17 +47,9 @@ namespace Blackberry {
         }
     };
 
-    struct ShapeRendererComponent {
+    struct MeshRendererComponent {
         BlColor Color = BlColor(0xff, 0xff, 0xff, 0xff);
-        ShapeType Shape = ShapeType::Rectangle;
-    };
-
-    struct SpriteRendererComponent {
-        BlColor Color = BlColor(0xff, 0xff, 0xff, 0xff);
-        ShapeType Shape = ShapeType::Rectangle;
-
-        u64 TextureHandle = 0;
-        BlRec Area;
+        u64 MeshHandle = 0;
     };
 
     struct CameraComponent {
@@ -64,11 +62,20 @@ namespace Blackberry {
     };
 
     struct RigidBodyComponent {
-        BlVec2<f32> Velocity;
-        BlVec2<f32> Acceleration;
-        BlVec2<f32> Force;
+        RigidBodyType Type = RigidBodyType::Static;
+
+        // NOTE: Do NOT serialize/allow editing of these fields directly
+        // they are only here so they can be accessed through the physics system/displayed as read only values in debug menus
+        // also i won't make them private since then i would have to add getters or add "friend class" which is stupid
+        BlVec3<f32> Velocity;
+        BlVec3<f32> Acceleration;
+        BlVec3<f32> Force;
 
         f32 Mass = 10.0f;
+
+        inline void AddForce(BlVec3<f32> force) {
+            Force += force;
+        }
     };
 
     struct BoxColliderComponent {

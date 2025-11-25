@@ -57,15 +57,12 @@ namespace Blackberry {
                     u32 count = posAccessor->count;
                     u32 stride = posAccessor->stride;
 
-                    BL_CORE_INFO("Vertex count: {}", count);
-
                     // resize to prevent loads of heap allocations
                     mesh.Positions.resize(count);
 
                     for (u32 i = 0; i < count; ++i) {
                         f32* p = reinterpret_cast<f32*>(reinterpret_cast<u8*>(rawPositions) + i * stride);
                         
-                        BL_CORE_INFO("Vertex position: {}, {}, {}", p[0], p[1], p[2]);
                         mesh.Positions[i] = BlVec3<f32>(p[0], p[1], p[2]);
                     }
                 }
@@ -78,7 +75,6 @@ namespace Blackberry {
                     u8* rawIndices = reinterpret_cast<u8*>(GetAccessorData(indexAccessor));
                     u32 count = indexAccessor->count;
 
-                    BL_CORE_INFO("Index count: {}", count);
 
                     // allocate memory ahead of time
                     mesh.Indices.resize(count);
@@ -104,8 +100,33 @@ namespace Blackberry {
                                 break;
                         }
 
-                        BL_CORE_INFO("Index: {}", index);
                         mesh.Indices[i] = index;
+                    }
+                }
+
+                // find normals
+                cgltf_accessor* normalAccessor = nullptr;
+
+                for (cgltf_size ai = 0; ai < primitive.attributes_count; ++ai) {
+                    const cgltf_attribute& attr = primitive.attributes[ai];
+                    if (attr.type == cgltf_attribute_type_normal) {
+                        normalAccessor = attr.data;
+                        break;
+                    }
+                }
+
+                if (normalAccessor) {
+                    f32* rawNormals = reinterpret_cast<f32*>(GetAccessorData(normalAccessor));
+                    u32 count = normalAccessor->count;
+                    u32 stride = normalAccessor->stride;
+
+                    // resize to prevent loads of heap allocations
+                    mesh.Normals.resize(count);
+
+                    for (u32 i = 0; i < count; ++i) {
+                        f32* p = reinterpret_cast<f32*>(reinterpret_cast<u8*>(rawNormals) + i * stride);
+                        
+                        mesh.Normals[i] = BlVec3<f32>(p[0], p[1], p[2]);
                     }
                 }
 
@@ -125,28 +146,29 @@ namespace Blackberry {
                     u32 count = texCoordAccessor->count;
                     u32 stride = texCoordAccessor->stride;
 
-                    BL_CORE_INFO("TexCoord count: {}", count);
-
                     // resize to prevent loads of heap allocations
                     mesh.TexCoords.resize(count);
 
                     for (u32 i = 0; i < count; ++i) {
                         f32* p = reinterpret_cast<f32*>(reinterpret_cast<u8*>(rawTexCoords) + i * stride);
                         
-                        BL_CORE_INFO("TexCoord: {}, {}", p[0], p[1]);
                         mesh.TexCoords[i] = BlVec2<f32>(p[0], p[1]);
                     }
                 }
 
                 // find textures
-                cgltf_buffer_view* texBufferView = data->textures[0].image->buffer_view;
-                void* imageBytes = reinterpret_cast<u8*>(texBufferView->buffer->data) + texBufferView->offset;
-                int width, height, channels;
+                if (data->textures_count > 0) {
+                    cgltf_buffer_view* texBufferView = data->textures[0].image->buffer_view;
+                    void* imageBytes = reinterpret_cast<u8*>(texBufferView->buffer->data) + texBufferView->offset;
+                    int width, height, channels;
 
-                u8* imageData = stbi_load_from_memory(reinterpret_cast<u8*>(imageBytes), texBufferView->buffer->size, &width, &height, &channels, 4);
+                    u8* imageData = stbi_load_from_memory(reinterpret_cast<u8*>(imageBytes), texBufferView->buffer->size, &width, &height, &channels, 4);
 
-                mesh.Texture = Texture2D::Create(imageData, width, height, ImageFormat::RGBA8);
-                stbi_image_free(imageData);
+                    mesh.Texture = Texture2D::Create(imageData, width, height, ImageFormat::RGBA8);
+                    stbi_image_free(imageData);
+                } else {
+                    mesh.Texture = {};
+                }
             }
         }
 

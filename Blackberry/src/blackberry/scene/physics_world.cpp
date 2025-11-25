@@ -1,27 +1,31 @@
 #include "blackberry/scene/physics_world.hpp"
+#include "blackberry/scene/entity.hpp"
 
 namespace Blackberry {
 
-    void PhysicsWorld::AddEntity(const BlPhysicsEntity& entity) {
-        m_Entities.push_back(entity);
-    }
-
-    void PhysicsWorld::Reset() {
-        m_Entities.clear();
+    void PhysicsWorld::SetContext(ECS& ecs) {
+        m_Context = &ecs;
     }
 
     void PhysicsWorld::Step(f32 ts) {
-        for (auto& entity : m_Entities) {
-            entity.RigidBody->Force -= BlVec2(0.0f, m_Gravity * entity.RigidBody->Mass);
+        auto view = m_Context->GetEntitiesWithComponents<TransformComponent, RigidBodyComponent>();
 
-            entity.RigidBody->Acceleration = entity.RigidBody->Force * BlVec2(entity.RigidBody->Mass);
+        view.each([&](TransformComponent& transform, RigidBodyComponent& rb) {
+            if (rb.Mass == 0.0f) return; // not so fast (there are divisions by mass in here, aka 0 if mass is 0)
 
-            entity.RigidBody->Velocity += entity.RigidBody->Acceleration * BlVec2(ts);
-            entity.Transform->Position.x += entity.RigidBody->Velocity.x * ts;
-            entity.Transform->Position.y += entity.RigidBody->Velocity.y * ts;
+            // Add gravity
+            // F = mg, aka force = mass * g (gravitational constant)
+            rb.AddForce(BlVec3(0.0f, -(m_Gravity * rb.Mass), 0.0f));
 
-            entity.RigidBody->Force = BlVec2(0.0f);
-        }
+            // a = F / m, aka acceleration = force / mass (you may realize that this completely cancels out gravity, but gravity may not be the only force so
+            // we keep doing it this way)
+            rb.Acceleration = rb.Force / BlVec3(rb.Mass);
+
+            rb.Velocity += rb.Acceleration * BlVec3(ts);
+            transform.Position += rb.Velocity * ts;
+
+            rb.Force = BlVec3(0.0f);
+        });
     }
 
 } // namespace Blackberry

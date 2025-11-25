@@ -4,6 +4,7 @@
 #include "blackberry/scene/uuid.hpp"
 #include "blackberry/renderer/texture.hpp"
 #include "blackberry/font/font.hpp"
+#include "blackberry/model/mesh.hpp"
 
 #include <filesystem>
 #include <unordered_map>
@@ -15,13 +16,14 @@ namespace Blackberry {
 
     enum class AssetType {
         Texture = 0,
-        Font = 1
+        Font = 1,
+        Mesh = 2
     };
 
     struct Asset {
         std::filesystem::path FilePath;
         AssetType Type;
-        std::variant<Texture2D, Font> Data;
+        std::variant<Texture2D, Font, Mesh> Data;
     };
 
     class AssetManager {
@@ -43,6 +45,7 @@ namespace Blackberry {
         // helper functions (all you really need is AddAsset)
         void AddTextureFromPath(const std::string& name, const std::filesystem::path& path);
         void AddFontFromPath(const std::string& name, const std::filesystem::path& path);
+        void AddMeshFromPath(const std::string& name, const std::filesystem::path& path);
 
     public:
         std::filesystem::path AssetDirectory;

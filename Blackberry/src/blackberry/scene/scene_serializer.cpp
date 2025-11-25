@@ -8,6 +8,26 @@ using json = nlohmann::json;
 
 namespace Blackberry {
 
+    static const char* RigidBodyTypeToString(RigidBodyType type) {
+        switch (type) {
+            case RigidBodyType::Static: return "Static"; break;
+            case RigidBodyType::Dynamic: return "Dynamic"; break;
+            case RigidBodyType::Kinematic: return "Kinematic"; break;
+        }
+
+        BL_ASSERT(false, "Unreachable");
+        return "";
+    }
+
+    static RigidBodyType StringToRigidBodyType(const std::string& str) {
+        if (str == "Static") return RigidBodyType::Static;
+        if (str == "Dynamic") return RigidBodyType::Dynamic;
+        if (str == "Kinematic") return RigidBodyType::Kinematic;
+
+        BL_ASSERT(false, "Unreachable");
+        return RigidBodyType::Static;
+    }
+
     SceneSerializer::SceneSerializer(Scene* scene)
         : m_Scene(scene) {}
 
@@ -39,23 +59,12 @@ namespace Blackberry {
                 };
             }
 
-            if (entity.HasComponent<ShapeRendererComponent>()) {
-                ShapeRendererComponent& shapeRenderer = entity.GetComponent<ShapeRendererComponent>();
+            if (entity.HasComponent<MeshRendererComponent>()) {
+                MeshRendererComponent& meshRenderer = entity.GetComponent<MeshRendererComponent>();
 
-                j["Entities"][name]["ShapeRendererComponent"] = { 
-                    {"Color", {shapeRenderer.Color.r, shapeRenderer.Color.g, shapeRenderer.Color.b, shapeRenderer.Color.a}},
-                    {"ShapeType", static_cast<u16>(shapeRenderer.Shape) }
-                };
-            }
-
-            if (entity.HasComponent<SpriteRendererComponent>()) {
-                SpriteRendererComponent& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
-
-                j["Entities"][name]["SpriteRendererComponent"] = { 
-                    {"Color", {spriteRenderer.Color.r, spriteRenderer.Color.g, spriteRenderer.Color.b, spriteRenderer.Color.a}},
-                    {"ShapeType", static_cast<u16>(spriteRenderer.Shape) },
-                    {"TextureHandle", spriteRenderer.TextureHandle},
-                    {"TextureArea", {spriteRenderer.Area.x, spriteRenderer.Area.y, spriteRenderer.Area.w, spriteRenderer.Area.h}}
+                j["Entities"][name]["MeshRendererComponent"] = { 
+                    {"Color", {meshRenderer.Color.r, meshRenderer.Color.g, meshRenderer.Color.b, meshRenderer.Color.a}},
+                    {"MeshHandle", meshRenderer.MeshHandle},
                 };
             }
 
@@ -79,10 +88,8 @@ namespace Blackberry {
             if (entity.HasComponent<RigidBodyComponent>()) {
                 RigidBodyComponent& rigidBody = entity.GetComponent<RigidBodyComponent>();
 
-                j["Entities"][name]["RigidBodyComponent"] = { 
-                    {"Velocity", {rigidBody.Velocity.x, rigidBody.Velocity.y}},
-                    {"Acceleration", {rigidBody.Acceleration.x, rigidBody.Acceleration.y}},
-                    {"Force", {rigidBody.Force.x, rigidBody.Force.y}},
+                j["Entities"][name]["RigidBodyComponent"] = {
+                    {"Type", RigidBodyTypeToString(rigidBody.Type)},
                     {"Mass", rigidBody.Mass}
                 };
             }
@@ -133,25 +140,13 @@ namespace Blackberry {
                 entity.AddComponent<TransformComponent>({ BlVec3(position[0], position[1], position[2]), BlVec3(rotation[0], rotation[1], rotation[2]), BlVec3(scale[0], scale[1], scale[2]) });
             }
 
-            // ShapeRendererComponent
-            if (jsonEntity.contains("ShapeRendererComponent")) {
-                auto& jsonShapeRenderer = jsonEntity.at("ShapeRendererComponent");
-                std::array<u8, 4> color = jsonShapeRenderer.at("Color");
-                u16 shapeType = jsonShapeRenderer.at("ShapeType");
+            // MeshRendererComponent
+            if (jsonEntity.contains("MeshRendererComponent")) {
+                auto& jsonMeshRenderer = jsonEntity.at("MeshRendererComponent");
+                std::array<u8, 4> color = jsonMeshRenderer.at("Color");
+                u64 meshHandle = jsonMeshRenderer.at("MeshHandle");
 
-                entity.AddComponent<ShapeRendererComponent>({ BlColor(color[0], color[1], color[2], color[3]), static_cast<ShapeType>(shapeType) });
-            }
-
-            // SpriteRendererComponent
-            if (jsonEntity.contains("SpriteRendererComponent")) {
-                auto& jsonSpriteRenderer = jsonEntity.at("SpriteRendererComponent");
-                std::array<u8, 4> color = jsonSpriteRenderer.at("Color");
-                u16 shapeType = jsonSpriteRenderer.at("ShapeType");
-                u64 textureHandle = jsonSpriteRenderer.at("TextureHandle");
-                std::array<f32, 4> textureArea = jsonSpriteRenderer.at("TextureArea");
-
-                entity.AddComponent<SpriteRendererComponent>({ BlColor(color[0], color[1], color[2], color[3]), static_cast<ShapeType>(shapeType), 
-                                                      textureHandle, BlRec(textureArea[0], textureArea[1], textureArea[2], textureArea[3]) });
+                entity.AddComponent<MeshRendererComponent>({ BlColor(color[0], color[1], color[2], color[3]), meshHandle });
             }
 
             if (jsonEntity.contains("CameraComponent")) {
@@ -177,12 +172,10 @@ namespace Blackberry {
 
             if (jsonEntity.contains("RigidBodyComponent")) {
                 auto& jsonRigidBody = jsonEntity.at("RigidBodyComponent");
-                std::array<f32, 2> velocity = jsonRigidBody.at("Velocity");
-                std::array<f32, 2> acceleration = jsonRigidBody.at("Acceleration");
-                std::array<f32, 2> force = jsonRigidBody.at("Force");
+                std::string type = jsonRigidBody.at("Type");
                 f32 mass = jsonRigidBody.at("Mass");
 
-                entity.AddComponent<RigidBodyComponent>({ BlVec2(velocity[0], velocity[1]), BlVec2(acceleration[0], acceleration[1]), BlVec2(force[0], force[1]), mass });
+                entity.AddComponent<RigidBodyComponent>({ StringToRigidBodyType(type), BlVec3(), BlVec3(), BlVec3(), mass });
             }
 
             if (jsonEntity.contains("TextComponent")) {

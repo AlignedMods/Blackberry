@@ -1,23 +1,59 @@
 {
     "Entities": {
         "ID - 0": {
+            "MeshRendererComponent": {
+                "Color": [
+                    58,
+                    255,
+                    61,
+                    255
+                ],
+                "MeshHandle": 13648184844694430662
+            },
+            "RigidBodyComponent": {
+                "Mass": 1.0,
+                "Type": "Static"
+            },
+            "TagComponent": {
+                "Name": "Cube",
+                "UUID": 13414028426215513183
+            },
+            "TransformComponent": {
+                "Position": [
+                    1.0499999523162842,
+                    1.0,
+                    0.0
+                ],
+                "Rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "Scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        "ID - 1": {
             "CameraComponent": {
                 "Far": 10.0,
                 "Near": 0.10000000149011612
             },
             "TagComponent": {
                 "Name": "Camera",
-                "UUID": 10072752765799581591
+                "UUID": 15976876142301492207
             },
             "TransformComponent": {
                 "Position": [
-                    1.6147712469100952,
-                    1.381453037261963,
-                    -0.15106262266635895
+                    3.2858550548553467,
+                    1.6510692834854126,
+                    3.3197755813598633
                 ],
                 "Rotation": [
-                    607.0,
-                    -19.0,
+                    -120.0,
+                    0.0,
                     0.0
                 ],
                 "Scale": [
@@ -27,78 +63,7 @@
                 ]
             }
         },
-        "ID - 1": {
-            "SpriteRendererComponent": {
-                "Color": [
-                    255,
-                    255,
-                    255,
-                    255
-                ],
-                "ShapeType": 1,
-                "TextureArea": [
-                    0.0,
-                    0.0,
-                    3076.0,
-                    4102.0
-                ],
-                "TextureHandle": 15162507589004987079
-            },
-            "TagComponent": {
-                "Name": "Cat",
-                "UUID": 13781431752699742974
-            },
-            "TransformComponent": {
-                "Position": [
-                    -1.649593710899353,
-                    0.8008374571800232,
-                    -4.0
-                ],
-                "Rotation": [
-                    0.0,
-                    -0.0,
-                    -0.02907416969537735
-                ],
-                "Scale": [
-                    1.0020041465759277,
-                    1.0030159950256348,
-                    1.0030159950256348
-                ]
-            }
-        },
         "ID - 2": {
-            "ShapeRendererComponent": {
-                "Color": [
-                    173,
-                    173,
-                    255,
-                    255
-                ],
-                "ShapeType": 2
-            },
-            "TagComponent": {
-                "Name": "Circle",
-                "UUID": 8364094483482462239
-            },
-            "TransformComponent": {
-                "Position": [
-                    0.0,
-                    0.0,
-                    -4.400000095367432
-                ],
-                "Rotation": [
-                    0.0,
-                    -0.0,
-                    0.0
-                ],
-                "Scale": [
-                    2.0,
-                    2.0,
-                    5.0
-                ]
-            }
-        },
-        "ID - 3": {
             "TagComponent": {
                 "Name": "Text",
                 "UUID": 5489723198560109817
@@ -121,41 +86,9 @@
                     0.0
                 ],
                 "Scale": [
-                    0.3340003490447998,
-                    0.33399146795272827,
+                    1.0,
+                    1.0,
                     0.33399146795272827
-                ]
-            }
-        },
-        "ID - 4": {
-            "ShapeRendererComponent": {
-                "Color": [
-                    67,
-                    255,
-                    195,
-                    255
-                ],
-                "ShapeType": 1
-            },
-            "TagComponent": {
-                "Name": "Rectangle",
-                "UUID": 6986289907314900783
-            },
-            "TransformComponent": {
-                "Position": [
-                    1.0,
-                    1.0,
-                    0.0
-                ],
-                "Rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "Scale": [
-                    1.0,
-                    1.0,
-                    1.0
                 ]
             }
         }

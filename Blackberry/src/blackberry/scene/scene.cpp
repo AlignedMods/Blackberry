@@ -50,6 +50,9 @@ namespace Blackberry {
 
             script.IsLoaded = true;
         });
+
+        // set context for physics
+        m_PhysicsWorld->SetContext(*m_ECS);
     }
 
     void Scene::OnStop() {
@@ -118,15 +121,7 @@ namespace Blackberry {
             Lua::Pop(1);
         });
 
-        auto rigidBodyView = m_ECS->GetEntitiesWithComponents<TransformComponent, RigidBodyComponent>();
-        
-        rigidBodyView.each([this](entt::entity entity, TransformComponent& transform, RigidBodyComponent& rigidBody) {
-            m_PhysicsWorld->AddEntity({&transform, &rigidBody, nullptr});
-        });
-
         m_PhysicsWorld->Step(BL_APP.GetDeltaTime());
-
-        m_PhysicsWorld->Reset();
     }
 
     void Scene::OnRender() {
@@ -149,38 +144,14 @@ namespace Blackberry {
         TransformComponent& transform = m_ECS->GetComponent<TransformComponent>(entity);
         AssetManager& assetManager = Project::GetAssetManager();
 
-        if (m_ECS->HasComponent<SpriteRendererComponent>(entity)) {
-            SpriteRendererComponent& spriteRenderer = m_ECS->GetComponent<SpriteRendererComponent>(entity);
+        if (m_ECS->HasComponent<MeshRendererComponent>(entity)) {
+            MeshRendererComponent& meshRenderer = m_ECS->GetComponent<MeshRendererComponent>(entity);
 
-            if (spriteRenderer.TextureHandle > 0 && assetManager.ContainsAsset(spriteRenderer.TextureHandle)) {
-                Asset asset = assetManager.GetAsset(spriteRenderer.TextureHandle);
-                Texture2D tex = std::get<Texture2D>(asset.Data);
+            if (assetManager.ContainsAsset(meshRenderer.MeshHandle)) {
+                Asset asset = assetManager.GetAsset(meshRenderer.MeshHandle);
+                Mesh& mesh = std::get<Mesh>(asset.Data);
 
-                switch (spriteRenderer.Shape) {
-                    case ShapeType::Triangle:
-                        Renderer3D::DrawTexturedTriangle(transform.GetMatrix(), spriteRenderer.Area, tex, spriteRenderer.Color);
-                        break;
-                    case ShapeType::Rectangle:
-                        Renderer3D::DrawTexturedQuad(transform.GetMatrix(), spriteRenderer.Area, tex, spriteRenderer.Color);
-                        break;
-                }
-            }
-        }
-        
-        if (m_ECS->HasComponent<ShapeRendererComponent>(entity)) {
-            ShapeRendererComponent& shapeRenderer = m_ECS->GetComponent<ShapeRendererComponent>(entity);
-
-            switch (shapeRenderer.Shape) {
-                case ShapeType::Triangle:
-                    Renderer3D::DrawTriangle(transform.GetMatrix(), shapeRenderer.Color);
-                    break;
-                case ShapeType::Rectangle:
-                    Renderer3D::DrawRectangle(transform.GetMatrix(), shapeRenderer.Color);
-                    // Renderer3D::DrawCube(transform.GetMatrix(), shapeRenderer.Color);
-                    break;
-                case ShapeType::Circle:
-                    Renderer3D::DrawElipse(transform.GetMatrix(), shapeRenderer.Color);
-                    break;
+                Renderer3D::DrawMesh(transform.GetMatrix(), mesh, meshRenderer.Color);
             }
         }
 

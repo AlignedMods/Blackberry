@@ -32,8 +32,7 @@ namespace Blackberry {
         u32 ReservedTextures = 0;
     };
 
-    // NOTE: Despite the fact that is called Renderer3D, it can also render 2D shapes as well
-    // Just currently we do not support an orthographic camera yet
+    // 3D renderer used to render scenes
     class Renderer3D {
     public:
         static void Init();
@@ -43,29 +42,10 @@ namespace Blackberry {
 
         static void NewFrame();
 
-        static void DrawRectangle(BlVec3<f32> pos, BlVec2<f32> dimensions, BlColor color);
-        static void DrawRectangle(BlVec3<f32> pos, BlVec2<f32> dimensions, f32 rotation, BlColor color);
-        static void DrawRectangle(const glm::mat4& transform, BlColor color);
-
-        static void DrawTriangle(BlVec3<f32> pos, BlVec2<f32> dimensions, f32 rotation = 0.0f, BlColor color = Colors::White);
-        static void DrawTriangle(const glm::mat4& transform, BlColor color);
-
-        static void DrawCircle(BlVec3<f32> pos, f32 radius, BlColor color = Colors::White);
-        static void DrawElipse(const glm::mat4& transform, BlColor color = Colors::White);
-
-        static void DrawTexture(BlVec3<f32> pos, Texture2D texture, f32 rotation = 0.0f, BlColor color = Colors::White);
-        static void DrawTextureEx(BlVec3<f32> pos, BlVec2<f32> dimensions, Texture2D texture, f32 rotation = 0.0f, BlColor color = Colors::White);
-        static void DrawTextureArea(BlVec3<f32> pos, BlVec2<f32> dimensions, BlRec area, Texture2D texture, f32 rotation = 0.0f, BlColor color = Colors::White);
+        static void DrawMesh(const glm::mat4& transform, Mesh& mesh, BlColor color = Colors::White);
 
         static void DrawText(BlVec3<f32> pos, f32 fontSize, const std::string& text, Font& font, TextParams params = TextParams{}, BlColor color = Colors::White);
         static void DrawText(const glm::mat4& transform, const std::string& text, Font& font, TextParams params = TextParams{}, BlColor color = Colors::White);
-
-        static void DrawTexturedQuad(const glm::mat4& transform, BlRec area, Texture2D texture, BlColor color);
-        static void DrawTexturedTriangle(const glm::mat4& transform, BlRec area, Texture2D texture, BlColor color);
-
-        static void DrawMesh(const glm::mat4& transform, Mesh& mesh, BlColor color);
-
-        static void DrawRenderTexture(BlVec3<f32> pos, BlVec2<f32> dimensions, RenderTexture texture);
 
         static void BindRenderTexture(RenderTexture texture);
         static void UnBindRenderTexture();

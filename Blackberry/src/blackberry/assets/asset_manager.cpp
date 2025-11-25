@@ -52,4 +52,9 @@ namespace Blackberry {
         AddAsset(name, {path, AssetType::Font, font});
     }
 
+    void AssetManager::AddMeshFromPath(const std::string& name, const std::filesystem::path& path) {
+        Mesh mesh = Mesh::Create(path);
+        AddAsset(name, {path, AssetType::Mesh, mesh});
+    }
+
 } // namespace Blackberry

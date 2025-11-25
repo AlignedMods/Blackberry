@@ -6,58 +6,57 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-struct BlShapeVertex { // used for quads and triangles
-    BlVec3<f32> Pos;
-    BlVec4<f32> Color;
-    BlVec2<f32> TexCoord;
-    f32 TexIndex = 0.0f; // OpenGL is weird with passing integers to shaders (also 0 is a white texture)
-};
-
-struct BlCircleVertex {
-    BlVec3<f32> Pos;
-    BlVec4<f32> Color;
-    BlVec2<f32> TexCoord;
-};
-
-struct BlFontVertex {
-    BlVec3<f32> Pos;
-    BlVec4<f32> Color;
-    BlVec2<f32> TexCoord;
-};
-
 namespace Blackberry {
+
+    struct MeshVertex { // used for meshes (or just any 3d rendering)
+        BlVec3<f32> Pos;
+        BlVec3<f32> Normal;
+        BlVec4<f32> Color;
+        BlVec2<f32> TexCoord;
+        f32 TexIndex = 0.0f; // OpenGL is weird with passing integers to shaders (also 0 is a white texture)
+    };
+    
+    struct FontVertex {
+        BlVec3<f32> Pos;
+        BlVec4<f32> Color;
+        BlVec2<f32> TexCoord;
+    };
 
     static u8 s_WhiteTextureData[] = {0xff, 0xff, 0xff, 0xff}; // dead simple white texture (1x1 pixel)
 
-    static const char* s_VertexShaderShapeSource = BL_STR(
+    static const char* s_VertexShaderMeshSource = BL_STR(
         \x23version 460 core\n
 
-        layout (location = 0) in vec3 a_Pos; // BlShapeVertex.Pos (also we can have comments like this because preproccesor ignores them!)
-        layout (location = 1) in vec4 a_Color; // BlShapeVertex.Color
-        layout (location = 2) in vec2 a_TexCoord; // BlShapeVertex.TexCoord
-        layout (location = 3) in float a_TexIndex; // BlShapeVertex.TexIndex
+        layout (location = 0) in vec3 a_Pos;
+        layout (location = 1) in vec3 a_Normal;
+        layout (location = 2) in vec4 a_Color;
+        layout (location = 3) in vec2 a_TexCoord;
+        layout (location = 4) in float a_TexIndex;
 
         uniform mat4 u_Projection;
 
-        layout (location = 0) out vec4 o_Color;
-        layout (location = 1) out vec2 o_TexCoord;
-        layout (location = 2) out flat float o_TexIndex;
+        layout (location = 0) out vec3 o_Normal;
+        layout (location = 1) out vec4 o_Color;
+        layout (location = 2) out vec2 o_TexCoord;
+        layout (location = 3) out flat float o_TexIndex;
 
         void main() {
             gl_Position = u_Projection * vec4(a_Pos, 1.0f);
 
+            o_Normal = a_Normal;
             o_Color = a_Color;
             o_TexCoord = a_TexCoord;
             o_TexIndex = a_TexIndex;
         }
     );
 
-    static const char* s_FragmentShaderShapeSource = BL_STR(
+    static const char* s_FragmentShaderMeshSource = BL_STR(
         \x23version 460 core\n
 
-        layout (location = 0) in vec4 a_Color;
-        layout (location = 1) in vec2 a_TexCoord;
-        layout (location = 2) in flat float a_TexIndex;
+        layout (location = 0) in vec3 a_Normal;
+        layout (location = 1) in vec4 a_Color;
+        layout (location = 2) in vec2 a_TexCoord;
+        layout (location = 3) in flat float a_TexIndex;
 
         uniform sampler2D u_Textures[16];
 
@@ -88,56 +87,17 @@ namespace Blackberry {
 
             if (texColor.a == 0.0) { discard; }
 
-            o_FragColor = texColor;
-        }
-    );
-
-    static const char* s_VertexShaderCircleSource = BL_STR(
-        \x23version 460 core\n
-
-        layout (location = 0) in vec3 a_Pos;
-        layout (location = 1) in vec4 a_Color;
-        layout (location = 2) in vec2 a_TexCoord;
-
-        uniform mat4 u_Projection;
-
-        layout (location = 0) out vec4 o_Color;
-        layout (location = 1) out vec2 o_TexCoord;
-
-        void main() {
-            gl_Position = u_Projection * vec4(a_Pos, 1.0);
-
-            o_Color = a_Color;
-            o_TexCoord = a_TexCoord;
-        }
-    );
-
-    static const char* s_FragmentShaderCircleSource = BL_STR(
-        \x23version 460 core\n
-
-        layout (location = 0) in vec4 a_Color;
-        layout (location = 1) in vec2 a_TexCoord;
-
-        out vec4 o_FragColor;
-
-        void main() {
-            vec2 uv = a_TexCoord * 2.0 - 1.0;
-            
-            // Calculate distance (acts as an alpha channel)
-            float distance = 1.0 - length(uv);
-            distance = step(0.0, distance);
-
-            // Set output color
-            o_FragColor = a_Color * distance;
+            o_FragColor = a_Color;
+            // o_FragColor = vec4(a_Normal * 0.5 + 0.5, 1.0);
         }
     );
 
     static const char* s_VertexShaderFontSource = BL_STR(
         \x23version 460 core\n
 
-        layout (location = 0) in vec3 a_Pos; // BlShapeVertex.Pos (also we can have comments like this because preproccesor ignores them!)
-        layout (location = 1) in vec4 a_Color; // BlShapeVertex.Color
-        layout (location = 2) in vec2 a_TexCoord; // BlShapeVertex.TexCoord
+        layout (location = 0) in vec3 a_Pos;
+        layout (location = 1) in vec4 a_Color;
+        layout (location = 2) in vec2 a_TexCoord;
 
         uniform mat4 u_Projection;
 
@@ -189,31 +149,23 @@ namespace Blackberry {
     );
 
     struct _Renderer3DState {
-        // shader
-        BlShader ShapeShader;
-        BlShader CircleShader;
+        // shaders
+        BlShader MeshShader;
         BlShader FontShader;
 
         Texture2D WhiteTexture;
 
-        // Shape buffer data
-        u32 ShapeIndexCount = 0;
-        u32 ShapeVertexCount = 0;
-        std::vector<BlShapeVertex> ShapeVertices;
-        std::vector<u32> ShapeIndices;
-        BlDrawBuffer ShapeDrawBuffer;
-
-        // Circle buffer data
-        u32 CircleIndexCount = 0;
-        u32 CircleVertexCount = 0;
-        std::vector<BlCircleVertex> CircleVertices;
-        std::vector<u32> CircleIndices;
-        BlDrawBuffer CircleDrawBuffer;
+        // Mesh buffer data
+        u32 MeshIndexCount = 0;
+        u32 MeshVertexCount = 0;
+        std::vector<MeshVertex> MeshVertices;
+        std::vector<u32> MeshIndices;
+        BlDrawBuffer MeshDrawBuffer;
 
         // Font buffer data
         u32 FontIndexCount = 0;
         u32 FontVertexCount = 0;
-        std::vector<BlFontVertex> FontVertices;
+        std::vector<FontVertex> FontVertices;
         std::vector<u32> FontIndices;
         BlDrawBuffer FontDrawBuffer;
         Texture2D CurrentFontAtlas;
@@ -222,9 +174,7 @@ namespace Blackberry {
         u32 CurrentTexIndex = 1; // NOTE: 0 is reserved for a blank white texture!!!
         std::array<Texture2D, 16> CurrentAttachedTextures;
 
-        SceneCamera Camera;
-        SceneCamera DefaultCamera; // by default the camera is initialized to a basic 1x scale pixel-by-pixel orthographic projection (outdated now!!)
-
+        // we still depend on these for things like font rendering
         const std::array<glm::vec4, 4> QuadVertexPositions = {{
             { -0.5f,  0.5f, 0.0f, 1.0f },
             {  0.5f, -0.5f, 0.0f, 1.0f },
@@ -233,31 +183,8 @@ namespace Blackberry {
         }};
         const std::array<u32, 6> QuadIndices = {{ 0, 1, 2, 0, 3, 1 }};
 
-        const std::array<glm::vec4, 3> TriangleVertexPositions = {{
-            { -0.5f,  0.5f, 0.0f, 1.0f },
-            {  0.0f, -0.5f, 0.0f, 1.0f },
-            {  0.5f,  0.5f, 0.0f, 1.0f }
-        }};
-        const std::array<u32, 3> TriangleIndices = {{ 0, 1, 2 }};
-
-        const std::array<glm::vec4, 8> CubeVertexPositions = {{
-            { -0.5f, -0.5f, -0.5f, 1.0f },
-            {  0.5f, -0.5f, -0.5f, 1.0f },
-            {  0.5f,  0.5f, -0.5f, 1.0f },
-            { -0.5f,  0.5f, -0.5f, 1.0f },
-            { -0.5f, -0.5f,  0.5f, 1.0f },
-            {  0.5f, -0.5f,  0.5f, 1.0f },
-            {  0.5f,  0.5f,  0.5f, 1.0f },
-            { -0.5f,  0.5f,  0.5f, 1.0f }
-        }};
-        const std::array<u32, 36> CubeIndices = {{
-            0, 1, 2, 2, 3, 0,
-            1, 5, 6, 6, 2, 1,
-            5, 4, 7, 7, 6, 5,
-            4, 0, 3, 3, 7, 4,
-            3, 2, 6, 6, 7, 3,
-            4, 5, 1, 1, 0, 4
-        }};
+        SceneCamera Camera;
+        SceneCamera DefaultCamera; // by default the camera is initialized to a basic 1x scale pixel-by-pixel orthographic projection (outdated now!!)
 
         Renderer3DStats Stats;
     };
@@ -265,6 +192,8 @@ namespace Blackberry {
     static _Renderer3DState Renderer3DState;
 
     static f32 GetTexIndex(Texture2D texture) {
+        if (texture.ID == 0) return 0.0f; // return WhiteTexture if there is no texture
+
         f32 texIndex = 0.0f;
 
         if (Renderer3DState.CurrentTexIndex >= 16) {
@@ -303,8 +232,7 @@ namespace Blackberry {
     }
 
     void Renderer3D::Init() {
-        Renderer3DState.ShapeShader.Create(s_VertexShaderShapeSource, s_FragmentShaderShapeSource);
-        Renderer3DState.CircleShader.Create(s_VertexShaderCircleSource, s_FragmentShaderCircleSource);
+        Renderer3DState.MeshShader.Create(s_VertexShaderMeshSource, s_FragmentShaderMeshSource);
         Renderer3DState.FontShader.Create(s_VertexShaderFontSource, s_FragmentShaderFontSource);
         Renderer3DState.WhiteTexture = Texture2D::Create(s_WhiteTextureData, 1, 1, ImageFormat::RGBA8);
 
@@ -315,8 +243,8 @@ namespace Blackberry {
     }
 
     void Renderer3D::Shutdown() {
-        Renderer3DState.ShapeShader.Delete();
-        Renderer3DState.CircleShader.Delete();
+        Renderer3DState.MeshShader.Delete();
+        Renderer3DState.FontShader.Delete();
     }
 
     void Renderer3D::Clear(BlColor color) {
@@ -330,81 +258,6 @@ namespace Blackberry {
         Renderer3DState.Stats.Vertices = 0;
         Renderer3DState.Stats.Indicies = 0;
         Renderer3DState.Stats.ActiveTextures = 0;
-    }
-
-    void Renderer3D::DrawRectangle(BlVec3<f32> pos, BlVec2<f32> dimensions, BlColor color) {
-        DrawRectangle(pos, dimensions, 0.0f, color);
-    }
-
-    void Renderer3D::DrawRectangle(BlVec3<f32> position, BlVec2<f32> dimensions, f32 rotation, BlColor color) {
-        glm::mat4 pos = glm::translate(glm::mat4(1.0f), glm::vec3(position.x, position.y, position.z));
-        glm::mat4 rot = glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
-        glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(dimensions.x, dimensions.y, 1.0f));
-
-        glm::mat4 transform = pos * rot * scale;
-        DrawTexturedQuad(transform, BlRec(0, 0, 1, 1), Renderer3DState.WhiteTexture, color);
-    }
-
-    void Renderer3D::DrawRectangle(const glm::mat4& transform, BlColor color) {
-        DrawTexturedQuad(transform, BlRec(0, 0, 1, 1), Renderer3DState.WhiteTexture, color);
-    }
-
-    void Renderer3D::DrawTriangle(BlVec3<f32> position, BlVec2<f32> dimensions, f32 rotation, BlColor color) {
-        glm::mat4 pos = glm::translate(glm::mat4(1.0f), glm::vec3(position.x, position.y, position.z));
-        glm::mat4 rot = glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
-        glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(dimensions.x, dimensions.y, 1.0f));
-
-        glm::mat4 transform = pos * rot * scale;
-
-        DrawTexturedTriangle(transform, BlRec(0, 0, 1, 1), Renderer3DState.WhiteTexture, color);
-    }
-
-    void Renderer3D::DrawTriangle(const glm::mat4& transform, BlColor color) {
-        DrawTexturedTriangle(transform, BlRec(0, 0, 1, 1), Renderer3DState.WhiteTexture, color);
-    }
-
-    void Renderer3D::DrawCircle(BlVec3<f32> pos, f32 radius, BlColor color) {
-        // DrawElipse(pos, BlVec2<f32>(radius, radius), 0.0f, color);
-    }
-
-    void Renderer3D::DrawElipse(const glm::mat4& transform, BlColor color) {
-        BlVec4 normalizedColor = NormalizeColor(color);
-
-        const BlVec2<f32> texCoords[4] = { BlVec2<f32>(0, 1), BlVec2<f32>(1, 0), BlVec2<f32>(1, 1), BlVec2<f32>(0, 0) };
-
-        // vertices
-        for (u32 i = 0; i < Renderer3DState.QuadVertexPositions.size(); i++) {
-            glm::vec4 pos = transform * Renderer3DState.QuadVertexPositions[i];
-            BlCircleVertex vert = BlCircleVertex(BlVec3<f32>(pos.x, pos.y, pos.z), normalizedColor, texCoords[i]);
-            Renderer3DState.CircleVertices.push_back(vert);
-        }
-
-        // indices
-        for (u32 i = 0; i < Renderer3DState.QuadIndices.size(); i++) {
-            const u32 vertexCount = Renderer3DState.CircleVertexCount;
-            Renderer3DState.CircleIndices.push_back(Renderer3DState.QuadIndices[i] + vertexCount);
-        }
-
-        Renderer3DState.CircleVertexCount += 4;
-        Renderer3DState.CircleIndexCount += 6;
-    }
-
-    void Renderer3D::DrawTexture(BlVec3<f32> pos, Texture2D texture, f32 rotation, BlColor color) {
-        DrawTextureEx(pos, BlVec2<f32>(static_cast<f32>(texture.Size.x), static_cast<f32>(texture.Size.y)), texture, rotation, color);
-    }
-
-    void Renderer3D::DrawTextureEx(BlVec3<f32> pos, BlVec2<f32> dimensions, Texture2D texture, f32 rotation, BlColor color)  {
-        DrawTextureArea(pos, dimensions, BlRec(0.0f, 0.0f, static_cast<f32>(texture.Size.x), static_cast<f32>(texture.Size.y)), texture, rotation, color);
-    }
-
-    void Renderer3D::DrawTextureArea(BlVec3<f32> position, BlVec2<f32> dimensions, BlRec area, Texture2D texture, f32 rotation, BlColor color) {
-        glm::mat4 pos = glm::translate(glm::mat4(1.0f), glm::vec3(position.x, position.y, position.z));
-        glm::mat4 rot = glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
-        glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(dimensions.x, dimensions.y, 1.0f));
-
-        glm::mat4 transform = pos * rot * scale;
-
-        DrawTexturedQuad(transform, area, texture, color);
     }
 
     void Renderer3D::DrawText(BlVec3<f32> position, f32 fontSize, const std::string& text, Font& font, TextParams params, BlColor color) {
@@ -467,19 +320,19 @@ namespace Blackberry {
 
                 // vertices
                 glm::vec4 pos = finalTextTransform * glm::vec4(quadMin.x, quadMin.y, 0.0f, 1.0f);
-                BlFontVertex vert = BlFontVertex(BlVec3<f32>(pos.x, pos.y, pos.z), normalizedColor, BlVec2<f32>(texCoordMin.x, texCoordMax.y));
+                FontVertex vert = FontVertex(BlVec3<f32>(pos.x, pos.y, pos.z), normalizedColor, BlVec2<f32>(texCoordMin.x, texCoordMax.y));
                 Renderer3DState.FontVertices.push_back(vert);
                 
                 pos = finalTextTransform * glm::vec4(quadMax.x, quadMax.y, 0.0f, 1.0f);
-                vert = BlFontVertex(BlVec3<f32>(pos.x, pos.y, pos.z), normalizedColor, BlVec2<f32>(texCoordMax.x, texCoordMin.y));
+                vert = FontVertex(BlVec3<f32>(pos.x, pos.y, pos.z), normalizedColor, BlVec2<f32>(texCoordMax.x, texCoordMin.y));
                 Renderer3DState.FontVertices.push_back(vert);
 
                 pos = finalTextTransform * glm::vec4(quadMax.x, quadMin.y, 0.0f, 1.0f);
-                vert = BlFontVertex(BlVec3<f32>(pos.x, pos.y, pos.z), normalizedColor, BlVec2<f32>(texCoordMax.x, texCoordMax.y));
+                vert = FontVertex(BlVec3<f32>(pos.x, pos.y, pos.z), normalizedColor, BlVec2<f32>(texCoordMax.x, texCoordMax.y));
                 Renderer3DState.FontVertices.push_back(vert);
 
                 pos = finalTextTransform * glm::vec4(quadMin.x, quadMax.y, 0.0f, 1.0f);
-                vert = BlFontVertex(BlVec3<f32>(pos.x, pos.y, pos.z), normalizedColor, BlVec2<f32>(texCoordMin.x, texCoordMin.y));
+                vert = FontVertex(BlVec3<f32>(pos.x, pos.y, pos.z), normalizedColor, BlVec2<f32>(texCoordMin.x, texCoordMin.y));
                 Renderer3DState.FontVertices.push_back(vert);
 
                 // indices
@@ -498,56 +351,6 @@ namespace Blackberry {
         }
     }
 
-    void Renderer3D::DrawTexturedQuad(const glm::mat4& transform, BlRec area, Texture2D texture, BlColor color) {
-        BlVec4 normalizedColor = NormalizeColor(color);
-        f32 texIndex = GetTexIndex(texture);
-
-        BlVec2<f32> texSize = BlVec2<f32>(static_cast<f32>(texture.Size.x), static_cast<f32>(texture.Size.y));
-
-        const BlVec2<f32> texCoords[4] = { BlVec2<f32>(area.x / texSize.x, area.y / texSize.y), BlVec2<f32>((area.w + area.x) / texSize.x, (area.h + area.y) / texSize.y),
-                                           BlVec2<f32>((area.w + area.x) / texSize.x, area.y / texSize.y), BlVec2<f32>(area.x / texSize.x, (area.h + area.y) / texSize.y)};
-
-        // vertices
-        for (u32 i = 0; i < Renderer3DState.QuadVertexPositions.size(); i++) {
-            glm::vec4 pos = transform * Renderer3DState.QuadVertexPositions[i];
-            BlShapeVertex vert = BlShapeVertex(BlVec3<f32>(pos.x, pos.y, pos.z), normalizedColor, texCoords[i], texIndex);
-            Renderer3DState.ShapeVertices.push_back(vert);
-        }
-
-        // indices
-        for (u32 i = 0; i < Renderer3DState.QuadIndices.size(); i++) {
-            const u32 vertexCount = Renderer3DState.ShapeVertexCount;
-            Renderer3DState.ShapeIndices.push_back(Renderer3DState.QuadIndices[i] + vertexCount);
-        }
-
-        Renderer3DState.ShapeIndexCount += 6;
-        Renderer3DState.ShapeVertexCount += 4;
-    }
-
-    void Renderer3D::DrawTexturedTriangle(const glm::mat4& transform, BlRec area, Texture2D texture, BlColor color) {
-        BlVec4 normalizedColor = NormalizeColor(color);
-        f32 texIndex = GetTexIndex(texture);
-
-        BlVec2<f32> texSize = BlVec2<f32>(static_cast<f32>(texture.Size.x), static_cast<f32>(texture.Size.y));
-        const BlVec2<f32> texCoords[3] = { BlVec2<f32>(0.0f, 1.0f), BlVec2<f32>(0.5f, 0.0f), BlVec2<f32>(1.0f, 1.0f) };
-
-        // vertices
-        for (u32 i = 0; i < Renderer3DState.TriangleVertexPositions.size(); i++) {
-            glm::vec4 pos = transform * Renderer3DState.TriangleVertexPositions[i];
-            BlShapeVertex vert = BlShapeVertex(BlVec3<f32>(pos.x, pos.y, pos.z), normalizedColor, texCoords[i], texIndex);
-            Renderer3DState.ShapeVertices.push_back(vert);
-        }
-
-        // indices
-        for (u32 i = 0; i < Renderer3DState.TriangleIndices.size(); i++) {
-            const u32 vertexCount = Renderer3DState.ShapeVertexCount;
-            Renderer3DState.ShapeIndices.push_back(Renderer3DState.TriangleIndices[i] + vertexCount);
-        }
-
-        Renderer3DState.ShapeVertexCount += 3;
-        Renderer3DState.ShapeIndexCount += 3;
-    }
-
     void Renderer3D::DrawMesh(const glm::mat4& transform, Mesh& mesh, BlColor color) {
         BlVec4 normalizedColor = NormalizeColor(color);
         f32 texIndex = GetTexIndex(mesh.Texture);
@@ -555,22 +358,18 @@ namespace Blackberry {
         // vertices
         for (u32 i = 0; i < mesh.Positions.size(); i++) {
             glm::vec4 pos = transform * glm::vec4(mesh.Positions[i].x, mesh.Positions[i].y, mesh.Positions[i].z, 1.0f);
-            BlShapeVertex vert = BlShapeVertex(BlVec3<f32>(pos.x, pos.y, pos.z), normalizedColor, mesh.TexCoords[i], texIndex);
-            Renderer3DState.ShapeVertices.push_back(vert);
+            MeshVertex vert = MeshVertex(BlVec3<f32>(pos.x, pos.y, pos.z), mesh.Normals[i], normalizedColor, mesh.TexCoords[i], texIndex);
+            Renderer3DState.MeshVertices.push_back(vert);
         }
 
         // indices
         for (u32 i = 0; i < mesh.Indices.size(); i++) {
-            const u32 vertexCount = Renderer3DState.ShapeVertexCount;
-            Renderer3DState.ShapeIndices.push_back(mesh.Indices[i] + vertexCount);
+            const u32 vertexCount = Renderer3DState.MeshVertexCount;
+            Renderer3DState.MeshIndices.push_back(mesh.Indices[i] + vertexCount);
         }
 
-        Renderer3DState.ShapeIndexCount += mesh.Indices.size();
-        Renderer3DState.ShapeVertexCount += mesh.Positions.size();
-    }
-
-    void Renderer3D::DrawRenderTexture(BlVec3<f32> pos, BlVec2<f32> dimensions, RenderTexture texture) {
-        DrawTextureArea(pos, dimensions, BlRec(0.0f, 0.0f, static_cast<f32>(texture.Size.x), static_cast<f32>(texture.Size.y) * -1.0f), texture.ColorAttachment);
+        Renderer3DState.MeshIndexCount += mesh.Indices.size();
+        Renderer3DState.MeshVertexCount += mesh.Positions.size();
     }
 
     void Renderer3D::BindRenderTexture(RenderTexture texture) {
@@ -594,57 +393,65 @@ namespace Blackberry {
     }
 
     void Renderer3D::Render() {
-        Renderer3DState.Stats.Vertices = Renderer3DState.ShapeVertexCount;
-        Renderer3DState.Stats.Indicies = Renderer3DState.ShapeIndexCount;
+        Renderer3DState.Stats.Vertices = Renderer3DState.MeshVertexCount;
+        Renderer3DState.Stats.Indicies = Renderer3DState.MeshIndexCount;
 
         auto& renderer = BL_APP.GetRenderer();
 
-        // shape buffer
-        if (Renderer3DState.ShapeIndexCount > 0) {
+        // mesh buffer
+        if (Renderer3DState.MeshIndexCount > 0) {
             BlDrawBufferLayout vertPosLayout;
             vertPosLayout.Index = 0;
             vertPosLayout.Count = 3;
             vertPosLayout.Type = BlDrawBufferLayout::ElementType::Float;
-            vertPosLayout.Stride = sizeof(BlShapeVertex);
-            vertPosLayout.Offset = offsetof(BlShapeVertex, Pos);
+            vertPosLayout.Stride = sizeof(MeshVertex);
+            vertPosLayout.Offset = offsetof(MeshVertex, Pos);
+
+            BlDrawBufferLayout vertNormalLayout;
+            vertNormalLayout.Index = 1;
+            vertNormalLayout.Count = 3;
+            vertNormalLayout.Type = BlDrawBufferLayout::ElementType::Float;
+            vertNormalLayout.Stride = sizeof(MeshVertex);
+            vertNormalLayout.Offset = offsetof(MeshVertex, Normal);
 
             BlDrawBufferLayout vertColorLayout;
-            vertColorLayout.Index = 1;
+            vertColorLayout.Index = 2;
             vertColorLayout.Count = 4;
             vertColorLayout.Type = BlDrawBufferLayout::ElementType::Float;
-            vertColorLayout.Stride = sizeof(BlShapeVertex);
-            vertColorLayout.Offset = offsetof(BlShapeVertex, Color);
+            vertColorLayout.Stride = sizeof(MeshVertex);
+            vertColorLayout.Offset = offsetof(MeshVertex, Color);
 
             BlDrawBufferLayout vertTexCoordLayout;
-            vertTexCoordLayout.Index = 2;
+            vertTexCoordLayout.Index = 3;
             vertTexCoordLayout.Count = 2;
             vertTexCoordLayout.Type = BlDrawBufferLayout::ElementType::Float;
-            vertTexCoordLayout.Stride = sizeof(BlShapeVertex);
-            vertTexCoordLayout.Offset = offsetof(BlShapeVertex, TexCoord);
+            vertTexCoordLayout.Stride = sizeof(MeshVertex);
+            vertTexCoordLayout.Offset = offsetof(MeshVertex, TexCoord);
 
             BlDrawBufferLayout vertTexIndexLayout;
-            vertTexIndexLayout.Index = 3;
+            vertTexIndexLayout.Index = 4;
             vertTexIndexLayout.Count = 1;
             vertTexIndexLayout.Type = BlDrawBufferLayout::ElementType::Float;
-            vertTexIndexLayout.Stride = sizeof(BlShapeVertex);
-            vertTexIndexLayout.Offset = offsetof(BlShapeVertex, TexIndex);
+            vertTexIndexLayout.Stride = sizeof(MeshVertex);
+            vertTexIndexLayout.Offset = offsetof(MeshVertex, TexIndex);
 
-            Renderer3DState.ShapeDrawBuffer.Vertices = Renderer3DState.ShapeVertices.data();
-            Renderer3DState.ShapeDrawBuffer.VertexCount = Renderer3DState.ShapeVertexCount;
-            Renderer3DState.ShapeDrawBuffer.VertexSize = sizeof(BlShapeVertex);
+            Renderer3DState.MeshDrawBuffer.Vertices = Renderer3DState.MeshVertices.data();
+            Renderer3DState.MeshDrawBuffer.VertexCount = Renderer3DState.MeshVertexCount;
+            Renderer3DState.MeshDrawBuffer.VertexSize = sizeof(MeshVertex);
+                            
+            Renderer3DState.MeshDrawBuffer.Indices = Renderer3DState.MeshIndices.data();
+            Renderer3DState.MeshDrawBuffer.IndexCount = Renderer3DState.MeshIndexCount;
+            Renderer3DState.MeshDrawBuffer.IndexSize = sizeof(u32);
 
-            Renderer3DState.ShapeDrawBuffer.Indices = Renderer3DState.ShapeIndices.data();
-            Renderer3DState.ShapeDrawBuffer.IndexCount = Renderer3DState.ShapeIndexCount;
-            Renderer3DState.ShapeDrawBuffer.IndexSize = sizeof(u32);
-
-            renderer.SubmitDrawBuffer(Renderer3DState.ShapeDrawBuffer);
+            renderer.SubmitDrawBuffer(Renderer3DState.MeshDrawBuffer);
             
             renderer.SetBufferLayout(vertPosLayout);
+            renderer.SetBufferLayout(vertNormalLayout);
             renderer.SetBufferLayout(vertColorLayout);
             renderer.SetBufferLayout(vertTexCoordLayout);
             renderer.SetBufferLayout(vertTexIndexLayout);
             
-            renderer.BindShader(Renderer3DState.ShapeShader);
+            renderer.BindShader(Renderer3DState.MeshShader);
             for (u32 i = 0; i < Renderer3DState.CurrentTexIndex; i++) {
                 renderer.BindTexture(Renderer3DState.CurrentAttachedTextures[i], i);
             }
@@ -654,11 +461,11 @@ namespace Blackberry {
                 samplers[i] = i;
             }
 
-            BlShader shader = Renderer3DState.ShapeShader;
+            BlShader shader = Renderer3DState.MeshShader;
             shader.SetIntArray("u_Textures", 16, samplers);
             shader.SetMatrix("u_Projection", Renderer3DState.Camera.GetCameraMatrixFloat());
 
-            renderer.DrawIndexed(Renderer3DState.ShapeIndexCount);
+            renderer.DrawIndexed(Renderer3DState.MeshIndexCount);
 
             renderer.UnBindTexture();
 
@@ -667,71 +474,15 @@ namespace Blackberry {
             Renderer3DState.Stats.ReservedTextures = 1;
 
             // clear buffer after rendering
-            Renderer3DState.ShapeIndices.clear();
-            Renderer3DState.ShapeVertices.clear();
+            Renderer3DState.MeshIndices.clear();
+            Renderer3DState.MeshVertices.clear();
 
             // reserve memory again
-            Renderer3DState.ShapeIndices.reserve(2048);
-            Renderer3DState.ShapeVertices.reserve(2048);
-            Renderer3DState.ShapeIndexCount = 0;
-            Renderer3DState.ShapeVertexCount = 0;
+            Renderer3DState.MeshIndices.reserve(2048);
+            Renderer3DState.MeshVertices.reserve(2048);
+            Renderer3DState.MeshIndexCount = 0;
+            Renderer3DState.MeshVertexCount = 0;
             Renderer3DState.CurrentTexIndex = 1; // 0 is reserved and never changes
-        }
-
-        // circle buffer
-        if (Renderer3DState.CircleIndexCount > 0) {
-            BlDrawBufferLayout vertPosLayout;
-            vertPosLayout.Index = 0;
-            vertPosLayout.Count = 3;
-            vertPosLayout.Type = BlDrawBufferLayout::ElementType::Float;
-            vertPosLayout.Stride = sizeof(BlCircleVertex);
-            vertPosLayout.Offset = offsetof(BlCircleVertex, Pos);
-
-            BlDrawBufferLayout vertColorLayout;
-            vertColorLayout.Index = 1;
-            vertColorLayout.Count = 4;
-            vertColorLayout.Type = BlDrawBufferLayout::ElementType::Float;
-            vertColorLayout.Stride = sizeof(BlCircleVertex);
-            vertColorLayout.Offset = offsetof(BlCircleVertex, Color);
-
-            BlDrawBufferLayout vertTexCoordLayout;
-            vertTexCoordLayout.Index = 2;
-            vertTexCoordLayout.Count = 2;
-            vertTexCoordLayout.Type = BlDrawBufferLayout::ElementType::Float;
-            vertTexCoordLayout.Stride = sizeof(BlCircleVertex);
-            vertTexCoordLayout.Offset = offsetof(BlCircleVertex, TexCoord);
-
-            Renderer3DState.CircleDrawBuffer.Vertices = Renderer3DState.CircleVertices.data();
-            Renderer3DState.CircleDrawBuffer.VertexCount = Renderer3DState.CircleVertexCount;
-            Renderer3DState.CircleDrawBuffer.VertexSize = sizeof(BlCircleVertex);
-
-            Renderer3DState.CircleDrawBuffer.Indices = Renderer3DState.CircleIndices.data();
-            Renderer3DState.CircleDrawBuffer.IndexCount = Renderer3DState.CircleIndexCount;
-            Renderer3DState.CircleDrawBuffer.IndexSize = sizeof(u32);
-
-            renderer.SubmitDrawBuffer(Renderer3DState.CircleDrawBuffer);
-
-            renderer.SetBufferLayout(vertPosLayout);
-            renderer.SetBufferLayout(vertColorLayout);
-            renderer.SetBufferLayout(vertTexCoordLayout);
-
-            renderer.BindShader(Renderer3DState.CircleShader);
-
-            Renderer3DState.CircleShader.SetMatrix("u_Projection", Renderer3DState.Camera.GetCameraMatrixFloat());
-
-            renderer.DrawIndexed(Renderer3DState.CircleIndexCount);
-
-            Renderer3DState.Stats.DrawCalls++;
-
-            // clear buffer after rendering
-            Renderer3DState.CircleIndices.clear();
-            Renderer3DState.CircleVertices.clear();
-
-            // reserve memory again
-            Renderer3DState.CircleIndices.reserve(1024);
-            Renderer3DState.CircleVertices.reserve(1024);
-            Renderer3DState.CircleIndexCount = 0;
-            Renderer3DState.CircleVertexCount = 0;
         }
 
         // font buffer
@@ -740,26 +491,26 @@ namespace Blackberry {
             vertPosLayout.Index = 0;
             vertPosLayout.Count = 3;
             vertPosLayout.Type = BlDrawBufferLayout::ElementType::Float;
-            vertPosLayout.Stride = sizeof(BlFontVertex);
-            vertPosLayout.Offset = offsetof(BlFontVertex, Pos);
+            vertPosLayout.Stride = sizeof(FontVertex);
+            vertPosLayout.Offset = offsetof(FontVertex, Pos);
 
             BlDrawBufferLayout vertColorLayout;
             vertColorLayout.Index = 1;
             vertColorLayout.Count = 4;
             vertColorLayout.Type = BlDrawBufferLayout::ElementType::Float;
-            vertColorLayout.Stride = sizeof(BlFontVertex);
-            vertColorLayout.Offset = offsetof(BlFontVertex, Color);
+            vertColorLayout.Stride = sizeof(FontVertex);
+            vertColorLayout.Offset = offsetof(FontVertex, Color);
 
             BlDrawBufferLayout vertTexCoordLayout;
             vertTexCoordLayout.Index = 2;
             vertTexCoordLayout.Count = 2;
             vertTexCoordLayout.Type = BlDrawBufferLayout::ElementType::Float;
-            vertTexCoordLayout.Stride = sizeof(BlFontVertex);
-            vertTexCoordLayout.Offset = offsetof(BlFontVertex, TexCoord);
+            vertTexCoordLayout.Stride = sizeof(FontVertex);
+            vertTexCoordLayout.Offset = offsetof(FontVertex, TexCoord);
 
             Renderer3DState.FontDrawBuffer.Vertices = Renderer3DState.FontVertices.data();
             Renderer3DState.FontDrawBuffer.VertexCount = Renderer3DState.FontVertexCount;
-            Renderer3DState.FontDrawBuffer.VertexSize = sizeof(BlFontVertex);
+            Renderer3DState.FontDrawBuffer.VertexSize = sizeof(FontVertex);
                             
             Renderer3DState.FontDrawBuffer.Indices = Renderer3DState.FontIndices.data();
             Renderer3DState.FontDrawBuffer.IndexCount = Renderer3DState.FontIndexCount;

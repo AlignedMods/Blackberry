@@ -15,6 +15,7 @@ namespace Blackberry {
     public:
         // data about mesh
         std::vector<BlVec3<f32>> Positions;
+        std::vector<BlVec3<f32>> Normals;
         std::vector<BlVec4<f32>> Colors;
         std::vector<BlVec2<f32>> TexCoords;
         std::vector<u32> Indices;

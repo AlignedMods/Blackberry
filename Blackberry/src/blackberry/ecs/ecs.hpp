@@ -35,8 +35,7 @@ namespace Blackberry {
 
             CopyComponent<TagComponent>(src, dest, target, newEntity);
             CopyComponent<TransformComponent>(src, dest, target, newEntity);
-            CopyComponent<ShapeRendererComponent>(src, dest, target, newEntity);
-            CopyComponent<SpriteRendererComponent>(src, dest, target, newEntity);
+            CopyComponent<MeshRendererComponent>(src, dest, target, newEntity);
             CopyComponent<CameraComponent>(src, dest, target, newEntity);
             CopyComponent<TextComponent>(src, dest, target, newEntity);
             CopyComponent<ScriptComponent>(src, dest, target, newEntity);
@@ -58,8 +57,7 @@ namespace Blackberry {
             dest->emplace<TagComponent>(newEntity, tag);
 
             CopyComponent<TransformComponent>(src, dest, target, newEntity);
-            CopyComponent<ShapeRendererComponent>(src, dest, target, newEntity);
-            CopyComponent<SpriteRendererComponent>(src, dest, target, newEntity);
+            CopyComponent<MeshRendererComponent>(src, dest, target, newEntity);
             CopyComponent<CameraComponent>(src, dest, target, newEntity);
             CopyComponent<TextComponent>(src, dest, target, newEntity);
             CopyComponent<ScriptComponent>(src, dest, target, newEntity);
@@ -92,9 +90,9 @@ namespace Blackberry {
             m_Registry.emplace<T>(entity, component);
         }
 
-        template <typename T>
+        template <typename... T>
         bool HasComponent(EntityID entity) {
-            return m_Registry.any_of<T>(entity);
+            return m_Registry.any_of<T...>(entity);
         }
 
         template <typename T>
