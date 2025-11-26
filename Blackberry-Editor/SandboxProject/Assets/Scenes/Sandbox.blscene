@@ -1,18 +1,26 @@
 {
     "Entities": {
         "ID - 0": {
+            "ColliderComponent": {
+                "Scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "Type": "Cube"
+            },
             "MeshRendererComponent": {
                 "Color": [
-                    58,
+                    0,
                     255,
-                    61,
+                    122,
                     255
                 ],
-                "MeshHandle": 13648184844694430662
+                "MeshHandle": 12120187917695872185
             },
             "RigidBodyComponent": {
                 "Mass": 1.0,
-                "Type": "Static"
+                "Type": "Dynamic"
             },
             "TagComponent": {
                 "Name": "Cube",
@@ -20,19 +28,19 @@
             },
             "TransformComponent": {
                 "Position": [
-                    1.0499999523162842,
+                    0.0,
                     1.0,
                     0.0
                 ],
                 "Rotation": [
-                    0.0,
-                    -0.0,
-                    0.0
+                    -9.050000517163426e-05,
+                    -6.8302874751680065e-06,
+                    0.0002511427737772465
                 ],
                 "Scale": [
-                    1.0,
-                    1.0,
-                    1.0
+                    0.49999263882637024,
+                    0.4999999403953552,
+                    0.4999963641166687
                 ]
             }
         },
@@ -43,17 +51,17 @@
             },
             "TagComponent": {
                 "Name": "Camera",
-                "UUID": 15976876142301492207
+                "UUID": 359200699864718052
             },
             "TransformComponent": {
                 "Position": [
-                    3.2858550548553467,
-                    1.6510692834854126,
-                    3.3197755813598633
+                    3.5949950218200684,
+                    0.5130096077919006,
+                    4.0088396072387695
                 ],
                 "Rotation": [
-                    -120.0,
-                    0.0,
+                    -114.0,
+                    -7.0,
                     0.0
                 ],
                 "Scale": [
@@ -89,6 +97,50 @@
                     1.0,
                     1.0,
                     0.33399146795272827
+                ]
+            }
+        },
+        "ID - 3": {
+            "ColliderComponent": {
+                "Scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "Type": "Cube"
+            },
+            "MeshRendererComponent": {
+                "Color": [
+                    213,
+                    139,
+                    70,
+                    255
+                ],
+                "MeshHandle": 12120187917695872185
+            },
+            "RigidBodyComponent": {
+                "Mass": 1.0,
+                "Type": "Static"
+            },
+            "TagComponent": {
+                "Name": "Cube",
+                "UUID": 16564804365468595603
+            },
+            "TransformComponent": {
+                "Position": [
+                    1.0499999523162842,
+                    -2.0,
+                    -0.5
+                ],
+                "Rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "Scale": [
+                    8.5,
+                    0.5,
+                    0.5
                 ]
             }
         }

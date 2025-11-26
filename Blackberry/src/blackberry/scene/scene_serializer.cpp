@@ -28,6 +28,22 @@ namespace Blackberry {
         return RigidBodyType::Static;
     }
 
+    static const char* ColliderTypeToString(ColliderType type) {
+        switch (type) {
+            case ColliderType::Cube: return "Cube"; break;
+        }
+
+        BL_ASSERT(false, "Unreachable");
+        return "";
+    }
+
+    static ColliderType StringToColliderType(const std::string& str) {
+        if (str == "Cube") return ColliderType::Cube;
+
+        BL_ASSERT(false, "Unreachable");
+        return ColliderType::Cube;
+    }
+
     SceneSerializer::SceneSerializer(Scene* scene)
         : m_Scene(scene) {}
 
@@ -91,6 +107,15 @@ namespace Blackberry {
                 j["Entities"][name]["RigidBodyComponent"] = {
                     {"Type", RigidBodyTypeToString(rigidBody.Type)},
                     {"Mass", rigidBody.Mass}
+                };
+            }
+
+            if (entity.HasComponent<ColliderComponent>()) {
+                ColliderComponent& collider = entity.GetComponent<ColliderComponent>();
+
+                j["Entities"][name]["ColliderComponent"] = {
+                    {"Type", ColliderTypeToString(collider.Type)},
+                    {"Scale", {collider.Scale.x, collider.Scale.y, collider.Scale.z}}
                 };
             }
 
@@ -175,7 +200,15 @@ namespace Blackberry {
                 std::string type = jsonRigidBody.at("Type");
                 f32 mass = jsonRigidBody.at("Mass");
 
-                entity.AddComponent<RigidBodyComponent>({ StringToRigidBodyType(type), BlVec3(), BlVec3(), BlVec3(), mass });
+                entity.AddComponent<RigidBodyComponent>({ StringToRigidBodyType(type), BlVec3(), BlVec3(), BlVec3(), BlVec3(), mass });
+            }
+
+            if (jsonEntity.contains("ColliderComponent")) {
+                auto& jsonCollider = jsonEntity.at("ColliderComponent");
+                std::string type = jsonCollider.at("Type");
+                std::array<f32, 3> scale = jsonCollider.at("Scale");
+
+                entity.AddComponent<ColliderComponent>({ StringToColliderType(type), BlVec3(scale[0], scale[1], scale[2]) });
             }
 
             if (jsonEntity.contains("TextComponent")) {

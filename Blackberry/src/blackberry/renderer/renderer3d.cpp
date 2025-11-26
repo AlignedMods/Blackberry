@@ -39,6 +39,7 @@ namespace Blackberry {
         layout (location = 1) out vec4 o_Color;
         layout (location = 2) out vec2 o_TexCoord;
         layout (location = 3) out flat float o_TexIndex;
+        layout (location = 4) out vec3 o_FragPos;
 
         void main() {
             gl_Position = u_Projection * vec4(a_Pos, 1.0f);
@@ -47,6 +48,7 @@ namespace Blackberry {
             o_Color = a_Color;
             o_TexCoord = a_TexCoord;
             o_TexIndex = a_TexIndex;
+            o_FragPos = a_Pos;
         }
     );
 
@@ -57,6 +59,7 @@ namespace Blackberry {
         layout (location = 1) in vec4 a_Color;
         layout (location = 2) in vec2 a_TexCoord;
         layout (location = 3) in flat float a_TexIndex;
+        layout (location = 4) in vec3 a_FragPos;
 
         uniform sampler2D u_Textures[16];
 

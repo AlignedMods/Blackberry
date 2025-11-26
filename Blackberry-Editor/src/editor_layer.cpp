@@ -859,6 +859,7 @@ namespace BlackberryEditor {
                     AddComponentListOption<CameraComponent>("Camera", entity);
                     AddComponentListOption<ScriptComponent>("Script", entity);
                     AddComponentListOption<RigidBodyComponent>("Rigid Body", entity);
+                    AddComponentListOption<ColliderComponent>("Collider", entity);
                     
                     ImGui::EndMenu();
                 }
@@ -1008,11 +1009,23 @@ namespace BlackberryEditor {
                 script.FilePath = m_BaseDirectory / script.ModulePath;
             });
             DrawComponent<RigidBodyComponent>("Rigid Body", entity, [](RigidBodyComponent& rigidBody) {
-                DrawVec3Control("Velocity: ", &rigidBody.Velocity);
-                DrawVec3Control("Acceleration: ", &rigidBody.Acceleration);
-                DrawVec3Control("Force: ", &rigidBody.Force);
+                static const char* const types[] = { "Static", "Dynamic", "Kinematic" };
+                static int currentType = static_cast<int>(rigidBody.Type);
 
-                ImGui::DragFloat("Mass", &rigidBody.Mass);
+                ImGui::Text("Type: ");
+                ImGui::Indent();
+                if (ImGui::Combo("##Type", &currentType, types, IM_ARRAYSIZE(types))) {
+                    rigidBody.Type = static_cast<RigidBodyType>(currentType);
+                }
+                ImGui::Unindent();
+
+                ImGui::Text("Mass: ");
+                ImGui::Indent();
+                ImGui::DragFloat("##Mass", &rigidBody.Mass);
+                ImGui::Unindent();
+            });
+            DrawComponent<ColliderComponent>("Collider", entity, [](ColliderComponent& collider) {
+                
             });
         }
     

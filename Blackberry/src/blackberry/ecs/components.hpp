@@ -28,6 +28,10 @@ namespace Blackberry {
         Kinematic = 2
     };
 
+    enum class ColliderType : u16 {
+        Cube
+    };
+
     struct TagComponent {
         std::string Name;
         u64 UUID = 0;
@@ -67,19 +71,28 @@ namespace Blackberry {
         // NOTE: Do NOT serialize/allow editing of these fields directly
         // they are only here so they can be accessed through the physics system/displayed as read only values in debug menus
         // also i won't make them private since then i would have to add getters or add "friend class" which is stupid
-        BlVec3<f32> Velocity;
-        BlVec3<f32> Acceleration;
-        BlVec3<f32> Force;
+        BlVec3<f32> LinearVelocity;
+        BlVec3<f32> AngularVelocity;
+
+        // Forces
+        BlVec3<f32> ForceAccumulator;
+        BlVec3<f32> ImpulseAccumulator;
 
         f32 Mass = 10.0f;
 
         inline void AddForce(BlVec3<f32> force) {
-            Force += force;
+            ForceAccumulator += force;
+        }
+
+        inline void AddImpulse(BlVec3<f32> impulse) {
+            ImpulseAccumulator += impulse;
         }
     };
 
-    struct BoxColliderComponent {
-        bool Active = true;
+    struct ColliderComponent {
+        ColliderType Type = ColliderType::Cube;
+
+        BlVec3<f32> Scale = BlVec3(1.0f);
     };
 
     struct TextComponent {
