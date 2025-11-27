@@ -28,6 +28,11 @@ namespace Blackberry {
         Kinematic = 2
     };
 
+    enum class ForceType {
+        Linear,
+        Angular
+    };
+
     enum class ColliderType : u16 {
         Cube
     };
@@ -79,6 +84,7 @@ namespace Blackberry {
         BlVec3<f32> ImpulseAccumulator;
 
         f32 Mass = 10.0f;
+        bool EnableGravity = true;
 
         inline void AddForce(BlVec3<f32> force) {
             ForceAccumulator += force;
@@ -107,6 +113,14 @@ namespace Blackberry {
         std::filesystem::path ModulePath;
         std::filesystem::path FilePath;
         bool IsLoaded = false;
+    };
+
+    struct DirectionalLightComponent {
+        BlVec3<f32> Direction;
+
+        BlColor Ambient;
+        BlColor Diffuse;
+        BlColor Specular;
     };
 
 } // namespace Blackberry

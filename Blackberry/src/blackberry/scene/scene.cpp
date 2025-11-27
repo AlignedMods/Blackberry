@@ -129,6 +129,19 @@ namespace Blackberry {
 
         Renderer3D::SetProjection(*m_Camera);
 
+        // Set directional light
+        auto dirLightView = m_ECS->GetEntitiesWithComponents<DirectionalLightComponent>();
+
+        dirLightView.each([&](DirectionalLightComponent& light) {
+            DirectionalLight l;
+            l.Direction = light.Direction;
+            l.Ambient = light.Ambient;
+            l.Diffuse = light.Diffuse;
+            l.Specular = light.Specular;
+
+            Renderer3D::SetDirectionalLight(l);
+        });
+
         // Render
         auto view = m_ECS->GetEntitiesWithComponents<TransformComponent>();
 

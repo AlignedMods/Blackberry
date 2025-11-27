@@ -11,14 +11,15 @@
             },
             "MeshRendererComponent": {
                 "Color": [
-                    0,
                     255,
-                    122,
+                    0,
+                    0,
                     255
                 ],
                 "MeshHandle": 12120187917695872185
             },
             "RigidBodyComponent": {
+                "EnableGravity": true,
                 "Mass": 1.0,
                 "Type": "Dynamic"
             },
@@ -33,12 +34,12 @@
                     0.0
                 ],
                 "Rotation": [
-                    -9.050000517163426e-05,
-                    -6.8302874751680065e-06,
-                    0.0002511427737772465
+                    15.0,
+                    12.0,
+                    0.0
                 ],
                 "Scale": [
-                    0.49999263882637024,
+                    0.49999260902404785,
                     0.4999999403953552,
                     0.4999963641166687
                 ]
@@ -119,6 +120,7 @@
                 "MeshHandle": 12120187917695872185
             },
             "RigidBodyComponent": {
+                "EnableGravity": true,
                 "Mass": 1.0,
                 "Type": "Static"
             },
@@ -134,7 +136,7 @@
                 ],
                 "Rotation": [
                     0.0,
-                    -0.0,
+                    0.0,
                     0.0
                 ],
                 "Scale": [
@@ -142,6 +144,12 @@
                     0.5,
                     0.5
                 ]
+            }
+        },
+        "ID - 4": {
+            "TagComponent": {
+                "Name": "Blank Entity",
+                "UUID": 18341993632070408446
             }
         }
     }

@@ -24,6 +24,14 @@ namespace Blackberry {
         f32 LineSpacing = 0.0f;
     };
 
+    struct DirectionalLight {
+        BlVec3<f32> Direction;
+
+        BlColor Ambient;
+        BlColor Diffuse;
+        BlColor Specular;
+    };
+
     struct Renderer3DStats {
         u32 DrawCalls = 0;
         u32 Vertices = 0;
@@ -52,6 +60,8 @@ namespace Blackberry {
 
         static void SetProjection(SceneCamera camera);
         static void ResetProjection();
+
+        static void SetDirectionalLight(const DirectionalLight& light);
 
         static void Render();
 

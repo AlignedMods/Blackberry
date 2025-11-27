@@ -106,7 +106,8 @@ namespace Blackberry {
 
                 j["Entities"][name]["RigidBodyComponent"] = {
                     {"Type", RigidBodyTypeToString(rigidBody.Type)},
-                    {"Mass", rigidBody.Mass}
+                    {"Mass", rigidBody.Mass},
+                    {"EnableGravity", rigidBody.EnableGravity}
                 };
             }
 

@@ -58,9 +58,12 @@ namespace Blackberry {
                 // Impulse forces
                 rb.LinearVelocity += rb.ImpulseAccumulator / BlVec3(rb.Mass);
 
-                // Add gravity
-                // F = mg, aka force = mass * g (gravitational constant)
-                rb.AddForce(BlVec3(0.0f, -(m_Gravity * rb.Mass), 0.0f));
+                // Add gravity if wanted
+                if (rb.EnableGravity) {
+                    // F = mg, aka force = mass * g (gravitational constant)
+                    // We also invert the gravity because in the engine a bigger value means going up
+                    rb.AddForce(BlVec3(0.0f, -(m_Gravity * rb.Mass), 0.0f));
+                }
 
                 // a = F / m, aka acceleration = force / mass (you may realize that this completely cancels out gravity, but gravity may not be the only force so
                 // we keep doing it this way)

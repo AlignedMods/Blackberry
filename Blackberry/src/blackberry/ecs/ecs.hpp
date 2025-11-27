@@ -41,6 +41,7 @@ namespace Blackberry {
             CopyComponent<ScriptComponent>(src, dest, target, newEntity);
             CopyComponent<RigidBodyComponent>(src, dest, target, newEntity);
             CopyComponent<ColliderComponent>(src, dest, target, newEntity);
+            CopyComponent<DirectionalLightComponent>(src, dest, target, newEntity);
         }
 
         // safer version on duplicate entity (generates new UUIDs)
@@ -64,6 +65,7 @@ namespace Blackberry {
             CopyComponent<ScriptComponent>(src, dest, target, newEntity);
             CopyComponent<RigidBodyComponent>(src, dest, target, newEntity);
             CopyComponent<ColliderComponent>(src, dest, target, newEntity);
+            CopyComponent<DirectionalLightComponent>(src, dest, target, newEntity);
         }
 
         static ECS* Copy(ECS* current) {

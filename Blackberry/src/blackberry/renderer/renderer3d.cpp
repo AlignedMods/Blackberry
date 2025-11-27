@@ -61,6 +61,16 @@ namespace Blackberry {
         layout (location = 3) in flat float a_TexIndex;
         layout (location = 4) in vec3 a_FragPos;
 
+        struct DirectionalLight {
+            vec3 Direction;
+
+            vec3 Ambient;
+            vec3 Diffuse;
+            vec3 Specular;
+        };
+
+        uniform vec3 u_ViewPos;
+        uniform DirectionalLight u_Light;
         uniform sampler2D u_Textures[16];
 
         out vec4 o_FragColor;
@@ -90,7 +100,23 @@ namespace Blackberry {
 
             if (texColor.a == 0.0) { discard; }
 
-            o_FragColor = a_Color;
+            // ambient
+            vec3 ambient = u_Light.Ambient;
+
+            // diffuse
+            vec3 norm = normalize(a_Normal);
+            vec3 lightDir = normalize(-u_Light.Direction);
+            float diff = max(dot(norm, lightDir), 0.0);
+            vec3 diffuse = u_Light.Diffuse * diff;
+
+            // specular
+            vec3 viewDir = normalize(u_ViewPos - a_FragPos);
+            vec3 reflectDir = reflect(-lightDir, norm);  
+            float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+            vec3 specular = u_Light.Specular * spec;  
+
+            vec4 result = vec4(ambient + diffuse + specular, 1.0);
+            o_FragColor = result * a_Color;
             // o_FragColor = vec4(a_Normal * 0.5 + 0.5, 1.0);
         }
     );
@@ -188,6 +214,8 @@ namespace Blackberry {
 
         SceneCamera Camera;
         SceneCamera DefaultCamera; // by default the camera is initialized to a basic 1x scale pixel-by-pixel orthographic projection (outdated now!!)
+
+        DirectionalLight DirLight;
 
         Renderer3DStats Stats;
     };
@@ -361,7 +389,8 @@ namespace Blackberry {
         // vertices
         for (u32 i = 0; i < mesh.Positions.size(); i++) {
             glm::vec4 pos = transform * glm::vec4(mesh.Positions[i].x, mesh.Positions[i].y, mesh.Positions[i].z, 1.0f);
-            MeshVertex vert = MeshVertex(BlVec3<f32>(pos.x, pos.y, pos.z), mesh.Normals[i], normalizedColor, mesh.TexCoords[i], texIndex);
+            glm::vec3 normal = glm::mat3(glm::transpose(glm::inverse(transform))) * glm::vec3(mesh.Normals[i].x, mesh.Normals[i].y, mesh.Normals[i].z);
+            MeshVertex vert = MeshVertex(BlVec3<f32>(pos.x, pos.y, pos.z), BlVec3<f32>(normal.x, normal.y, normal.z), normalizedColor, mesh.TexCoords[i], texIndex);
             Renderer3DState.MeshVertices.push_back(vert);
         }
 
@@ -393,6 +422,10 @@ namespace Blackberry {
 
     void Renderer3D::ResetProjection() {
         Renderer3DState.Camera = Renderer3DState.DefaultCamera;
+    }
+
+    void Renderer3D::SetDirectionalLight(const DirectionalLight& light) {
+        Renderer3DState.DirLight = light;
     }
 
     void Renderer3D::Render() {
@@ -465,8 +498,16 @@ namespace Blackberry {
             }
 
             BlShader shader = Renderer3DState.MeshShader;
-            shader.SetIntArray("u_Textures", 16, samplers);
             shader.SetMatrix("u_Projection", Renderer3DState.Camera.GetCameraMatrixFloat());
+            shader.SetIntArray("u_Textures", 16, samplers);
+            shader.SetVec3("u_ViewPos", Renderer3DState.Camera.Transform.Position);
+            // Set directional light
+            auto& light = Renderer3DState.DirLight;
+
+            shader.SetVec3("u_Light.Direction", BlVec3(light.Direction));
+            shader.SetVec3("u_Light.Ambient", BlVec3(light.Ambient.r / 255.0f, light.Ambient.g / 255.0f, light.Ambient.b / 255.0f));
+            shader.SetVec3("u_Light.Diffuse", BlVec3(light.Diffuse.r / 255.0f, light.Diffuse.g / 255.0f, light.Diffuse.b / 255.0f));
+            shader.SetVec3("u_Light.Specular", BlVec3(light.Specular.r / 255.0f, light.Specular.g / 255.0f, light.Specular.b / 255.0f));
 
             renderer.DrawIndexed(Renderer3DState.MeshIndexCount);
 

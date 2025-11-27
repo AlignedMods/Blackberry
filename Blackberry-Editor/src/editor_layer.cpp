@@ -860,6 +860,7 @@ namespace BlackberryEditor {
                     AddComponentListOption<ScriptComponent>("Script", entity);
                     AddComponentListOption<RigidBodyComponent>("Rigid Body", entity);
                     AddComponentListOption<ColliderComponent>("Collider", entity);
+                    AddComponentListOption<DirectionalLightComponent>("Directional Light", entity);
                     
                     ImGui::EndMenu();
                 }
@@ -1023,9 +1024,21 @@ namespace BlackberryEditor {
                 ImGui::Indent();
                 ImGui::DragFloat("##Mass", &rigidBody.Mass);
                 ImGui::Unindent();
+
+                ImGui::Text("Enable Gravity: ");
+                ImGui::Indent();
+                ImGui::Checkbox("##EnableGravity", &rigidBody.EnableGravity);
+                ImGui::Unindent();
             });
             DrawComponent<ColliderComponent>("Collider", entity, [](ColliderComponent& collider) {
                 
+            });
+            DrawComponent<DirectionalLightComponent>("Directional Light", entity, [](DirectionalLightComponent& light) {
+                DrawVec3Control("Direction: ", &light.Direction);
+
+                DrawColorControl("Ambient", &light.Ambient);
+                DrawColorControl("Diffuse", &light.Diffuse);
+                DrawColorControl("Specular", &light.Specular);
             });
         }
     
