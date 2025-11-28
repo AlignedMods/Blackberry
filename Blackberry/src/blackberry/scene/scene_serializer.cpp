@@ -130,6 +130,17 @@ namespace Blackberry {
                     {"LineSpacing", text.LineSpacing}
                 };
             }
+
+            if (entity.HasComponent<DirectionalLightComponent>()) {
+                DirectionalLightComponent& light = entity.GetComponent<DirectionalLightComponent>();
+
+                j["Entities"][name]["DirectionalLightComponent"] = {
+                    {"Direction", {light.Direction.x, light.Direction.y, light.Direction.z}},
+                    {"Ambient", {light.Ambient.r, light.Ambient.g, light.Ambient.b}},
+                    {"Diffuse", {light.Diffuse.r, light.Diffuse.g, light.Diffuse.b}},
+                    {"Specular", {light.Specular.r, light.Specular.g, light.Specular.b}},
+                };
+            }
         }
 
         std::ofstream stream(path);
@@ -220,6 +231,23 @@ namespace Blackberry {
                 f32 lineSpacing = jsonText.at("LineSpacing");
 
                 entity.AddComponent<TextComponent>({contents, fontHandle, kerning, lineSpacing});
+            }
+
+            if (jsonEntity.contains("DirectionalLightComponent")) {
+                auto& jsonLight = jsonEntity.at("DirectionalLightComponent");
+
+                std::array<f32, 3> direction = jsonLight.at("Direction");
+                std::array<u8, 3> ambient = jsonLight.at("Ambient");
+                std::array<u8, 3> diffuse = jsonLight.at("Diffuse");
+                std::array<u8, 3> specular = jsonLight.at("Specular");
+
+                DirectionalLightComponent light;
+                light.Direction = BlVec3(direction[0], direction[1], direction[2]);
+                light.Ambient = BlColor(ambient[0], ambient[1], ambient[2], 255);
+                light.Diffuse = BlColor(diffuse[0], diffuse[1], diffuse[2], 255);
+                light.Specular = BlColor(specular[0], specular[1], specular[2], 255);
+
+                entity.AddComponent<DirectionalLightComponent>(light);
             }
         }
     }

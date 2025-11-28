@@ -147,6 +147,28 @@
             }
         },
         "ID - 4": {
+            "DirectionalLightComponent": {
+                "Ambient": [
+                    160,
+                    160,
+                    160
+                ],
+                "Diffuse": [
+                    193,
+                    193,
+                    193
+                ],
+                "Direction": [
+                    2.0,
+                    -1.0,
+                    0.0
+                ],
+                "Specular": [
+                    255,
+                    255,
+                    255
+                ]
+            },
             "TagComponent": {
                 "Name": "Directional Light",
                 "UUID": 18341993632070408446
