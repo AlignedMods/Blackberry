@@ -162,9 +162,9 @@ namespace Blackberry {
 
             if (assetManager.ContainsAsset(meshRenderer.MeshHandle)) {
                 Asset asset = assetManager.GetAsset(meshRenderer.MeshHandle);
-                Mesh& mesh = std::get<Mesh>(asset.Data);
+                Model& model = std::get<Model>(asset.Data);
 
-                Renderer3D::DrawMesh(transform.GetMatrix(), mesh, meshRenderer.Color);
+                Renderer3D::DrawModel(transform.GetMatrix(), model, meshRenderer.Color);
             }
         }
 

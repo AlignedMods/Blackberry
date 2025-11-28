@@ -11,7 +11,7 @@ namespace Blackberry {
         switch (type) {
             case AssetType::Texture: return "Texture"; break;
             case AssetType::Font: return "Font"; break;
-            case AssetType::Mesh: return "Mesh"; break;
+            case AssetType::Model: return "Model"; break;
         }
 
         BL_ASSERT(false, "Unknown asset type! (memory corruption potential)");
@@ -21,7 +21,7 @@ namespace Blackberry {
     static AssetType StringToAssetType(const std::string& type) {
         if (type == "Texture") return AssetType::Texture;
         if (type == "Font") return AssetType::Font;
-        if (type == "Mesh") return AssetType::Mesh;
+        if (type == "Model") return AssetType::Model;
 
         BL_ASSERT(false, "Unknown asset type {}", type);
         return AssetType::Texture;
@@ -69,9 +69,9 @@ namespace Blackberry {
             } else if (asset.Type == AssetType::Font) {
                 Font font = Font::Create(Project::GetAssetPath(path));
                 asset.Data = font;
-            } else if (asset.Type == AssetType::Mesh) {
-                Mesh mesh = Mesh::Create(Project::GetAssetPath(path));
-                asset.Data = mesh;
+            } else if (asset.Type == AssetType::Model) {
+                Model model = Model::Create(Project::GetAssetPath(path));
+                asset.Data = model;
             }
 
             m_AssetManager->AddAssetWithHandle(jsonAsset.at("Handle"), asset);

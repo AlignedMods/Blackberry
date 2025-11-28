@@ -189,14 +189,14 @@ namespace Blackberry {
         u32 MeshVertexCount = 0;
         std::vector<MeshVertex> MeshVertices;
         std::vector<u32> MeshIndices;
-        BlDrawBuffer MeshDrawBuffer;
+        DrawBuffer MeshDrawBuffer;
 
         // Font buffer data
         u32 FontIndexCount = 0;
         u32 FontVertexCount = 0;
         std::vector<FontVertex> FontVertices;
         std::vector<u32> FontIndices;
-        BlDrawBuffer FontDrawBuffer;
+        DrawBuffer FontDrawBuffer;
         Texture2D CurrentFontAtlas;
 
         // for textures
@@ -404,6 +404,12 @@ namespace Blackberry {
         Renderer3DState.MeshVertexCount += mesh.Positions.size();
     }
 
+    void Renderer3D::DrawModel(const glm::mat4& transform, Model& model, BlColor color) {
+        for (u32 i = 0; i < model.MeshCount; ++i) {
+            DrawMesh(transform, model.Meshes[i], color);
+        }
+    }
+
     void Renderer3D::BindRenderTexture(RenderTexture texture) {
         auto& renderer = BL_APP.GetRenderer();
 
@@ -436,41 +442,6 @@ namespace Blackberry {
 
         // mesh buffer
         if (Renderer3DState.MeshIndexCount > 0) {
-            BlDrawBufferLayout vertPosLayout;
-            vertPosLayout.Index = 0;
-            vertPosLayout.Count = 3;
-            vertPosLayout.Type = BlDrawBufferLayout::ElementType::Float;
-            vertPosLayout.Stride = sizeof(MeshVertex);
-            vertPosLayout.Offset = offsetof(MeshVertex, Pos);
-
-            BlDrawBufferLayout vertNormalLayout;
-            vertNormalLayout.Index = 1;
-            vertNormalLayout.Count = 3;
-            vertNormalLayout.Type = BlDrawBufferLayout::ElementType::Float;
-            vertNormalLayout.Stride = sizeof(MeshVertex);
-            vertNormalLayout.Offset = offsetof(MeshVertex, Normal);
-
-            BlDrawBufferLayout vertColorLayout;
-            vertColorLayout.Index = 2;
-            vertColorLayout.Count = 4;
-            vertColorLayout.Type = BlDrawBufferLayout::ElementType::Float;
-            vertColorLayout.Stride = sizeof(MeshVertex);
-            vertColorLayout.Offset = offsetof(MeshVertex, Color);
-
-            BlDrawBufferLayout vertTexCoordLayout;
-            vertTexCoordLayout.Index = 3;
-            vertTexCoordLayout.Count = 2;
-            vertTexCoordLayout.Type = BlDrawBufferLayout::ElementType::Float;
-            vertTexCoordLayout.Stride = sizeof(MeshVertex);
-            vertTexCoordLayout.Offset = offsetof(MeshVertex, TexCoord);
-
-            BlDrawBufferLayout vertTexIndexLayout;
-            vertTexIndexLayout.Index = 4;
-            vertTexIndexLayout.Count = 1;
-            vertTexIndexLayout.Type = BlDrawBufferLayout::ElementType::Float;
-            vertTexIndexLayout.Stride = sizeof(MeshVertex);
-            vertTexIndexLayout.Offset = offsetof(MeshVertex, TexIndex);
-
             Renderer3DState.MeshDrawBuffer.Vertices = Renderer3DState.MeshVertices.data();
             Renderer3DState.MeshDrawBuffer.VertexCount = Renderer3DState.MeshVertexCount;
             Renderer3DState.MeshDrawBuffer.VertexSize = sizeof(MeshVertex);
@@ -481,11 +452,13 @@ namespace Blackberry {
 
             renderer.SubmitDrawBuffer(Renderer3DState.MeshDrawBuffer);
             
-            renderer.SetBufferLayout(vertPosLayout);
-            renderer.SetBufferLayout(vertNormalLayout);
-            renderer.SetBufferLayout(vertColorLayout);
-            renderer.SetBufferLayout(vertTexCoordLayout);
-            renderer.SetBufferLayout(vertTexIndexLayout);
+            renderer.SetBufferLayout({
+                { 0, ShaderDataType::Float3, "Position" },
+                { 1, ShaderDataType::Float3, "Normal"   },
+                { 2, ShaderDataType::Float4, "Color"    },
+                { 3, ShaderDataType::Float2, "TexCoord" },
+                { 4, ShaderDataType::Float,  "TexIndex" }
+            });
             
             renderer.BindShader(Renderer3DState.MeshShader);
             for (u32 i = 0; i < Renderer3DState.CurrentTexIndex; i++) {
@@ -531,27 +504,6 @@ namespace Blackberry {
 
         // font buffer
         if (Renderer3DState.FontIndexCount > 0) {
-            BlDrawBufferLayout vertPosLayout;
-            vertPosLayout.Index = 0;
-            vertPosLayout.Count = 3;
-            vertPosLayout.Type = BlDrawBufferLayout::ElementType::Float;
-            vertPosLayout.Stride = sizeof(FontVertex);
-            vertPosLayout.Offset = offsetof(FontVertex, Pos);
-
-            BlDrawBufferLayout vertColorLayout;
-            vertColorLayout.Index = 1;
-            vertColorLayout.Count = 4;
-            vertColorLayout.Type = BlDrawBufferLayout::ElementType::Float;
-            vertColorLayout.Stride = sizeof(FontVertex);
-            vertColorLayout.Offset = offsetof(FontVertex, Color);
-
-            BlDrawBufferLayout vertTexCoordLayout;
-            vertTexCoordLayout.Index = 2;
-            vertTexCoordLayout.Count = 2;
-            vertTexCoordLayout.Type = BlDrawBufferLayout::ElementType::Float;
-            vertTexCoordLayout.Stride = sizeof(FontVertex);
-            vertTexCoordLayout.Offset = offsetof(FontVertex, TexCoord);
-
             Renderer3DState.FontDrawBuffer.Vertices = Renderer3DState.FontVertices.data();
             Renderer3DState.FontDrawBuffer.VertexCount = Renderer3DState.FontVertexCount;
             Renderer3DState.FontDrawBuffer.VertexSize = sizeof(FontVertex);
@@ -562,9 +514,11 @@ namespace Blackberry {
 
             renderer.SubmitDrawBuffer(Renderer3DState.FontDrawBuffer);
             
-            renderer.SetBufferLayout(vertPosLayout);
-            renderer.SetBufferLayout(vertColorLayout);
-            renderer.SetBufferLayout(vertTexCoordLayout);
+            renderer.SetBufferLayout({
+                { 0, ShaderDataType::Float3, "Position" },
+                { 1, ShaderDataType::Float4, "Color"    },
+                { 2, ShaderDataType::Float2, "TexCoord" }
+            });
             
             renderer.BindShader(Renderer3DState.FontShader);
             renderer.BindTexture(Renderer3DState.CurrentFontAtlas);

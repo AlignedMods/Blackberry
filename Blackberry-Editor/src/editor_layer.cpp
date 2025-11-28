@@ -457,21 +457,7 @@ namespace BlackberryEditor {
 
         static u32 quadIndicies[] = { 0, 1, 2, 3, 4, 5 };
 
-        BlDrawBufferLayout vertPosLayout;
-        vertPosLayout.Index = 0;
-        vertPosLayout.Count = 2;
-        vertPosLayout.Type = BlDrawBufferLayout::ElementType::Float;
-        vertPosLayout.Stride = 4 * sizeof(f32);
-        vertPosLayout.Offset = 0;
-
-        BlDrawBufferLayout vertTexCoordLayout;
-        vertTexCoordLayout.Index = 1;
-        vertTexCoordLayout.Count = 2;
-        vertTexCoordLayout.Type = BlDrawBufferLayout::ElementType::Float;
-        vertTexCoordLayout.Stride = 4 * sizeof(f32);
-        vertTexCoordLayout.Offset = 2 * sizeof(f32);
-
-        BlDrawBuffer buffer;
+        DrawBuffer buffer;
         buffer.Vertices = quadVertices;
         buffer.VertexCount = 6;
         buffer.VertexSize = 4 * sizeof(f32);
@@ -484,8 +470,10 @@ namespace BlackberryEditor {
 
         renderer.SubmitDrawBuffer(buffer);
 
-        renderer.SetBufferLayout(vertPosLayout);
-        renderer.SetBufferLayout(vertTexCoordLayout);
+        renderer.SetBufferLayout({
+            { 0, ShaderDataType::Float2, "Position" },
+            { 1, ShaderDataType::Float2, "TexCoord" }
+        });
 
         renderer.BindShader(m_OutlineShader);
         renderer.BindTexture(m_MaskTexture.ColorAttachment);
@@ -664,7 +652,7 @@ namespace BlackberryEditor {
         }
 
         if (ImGui::BeginPopup("CreateAssetPopup")) {
-                static const char* assetTypeNames[] = { "Texture", "Font", "Mesh" };
+                static const char* assetTypeNames[] = { "Texture", "Font", "Model" };
                 static int currentAssetType = 0;
 
                 ImGui::Combo("##AssetType", &currentAssetType, assetTypeNames, IM_ARRAYSIZE(assetTypeNames));
@@ -686,12 +674,12 @@ namespace BlackberryEditor {
                         asset.Data = font;
 
                         Project::GetAssetManager().AddAsset("cart", asset);
-                    } else if (currentAssetType == 2) { // mesh
-                        Mesh mesh = Mesh::Create(assetFile);
+                    } else if (currentAssetType == 2) { // model
+                        Model model = Model::Create(assetFile);
                         Asset asset;
-                        asset.Type = AssetType::Mesh;
+                        asset.Type = AssetType::Model;
                         asset.FilePath = fs::relative(assetFile, m_BaseDirectory);
-                        asset.Data = mesh;
+                        asset.Data = model;
 
                         Project::GetAssetManager().AddAsset("cart", asset);
                     }

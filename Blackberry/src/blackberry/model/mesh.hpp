@@ -3,16 +3,10 @@
 #include "blackberry/core/types.hpp"
 #include "blackberry/renderer/texture.hpp"
 
-#include <filesystem>
-
 namespace Blackberry {
 
-    // NOTE: a mesh in Blackberry is what a lot of engines would call a "model"
-    class Mesh {
-    public:
-        static Mesh Create(const std::filesystem::path& path);
-
-    public:
+    // Basic mesh struct which holds info about a mesh (meshes can be created through models)
+    struct Mesh {
         // data about mesh
         std::vector<BlVec3<f32>> Positions;
         std::vector<BlVec3<f32>> Normals;
@@ -20,6 +14,7 @@ namespace Blackberry {
         std::vector<BlVec2<f32>> TexCoords;
         std::vector<u32> Indices;
 
+        // TODO (aligned): Replace with materials once we get them
         Texture2D Texture;
     };
 

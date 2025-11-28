@@ -2,7 +2,7 @@
 #include "blackberry/core/types.hpp"
 #include "blackberry/font/font.hpp"
 #include "blackberry/scene/camera.hpp"
-#include "blackberry/model/mesh.hpp"
+#include "blackberry/model/model.hpp"
 
 #include <string>
 
@@ -51,6 +51,7 @@ namespace Blackberry {
         static void NewFrame();
 
         static void DrawMesh(const glm::mat4& transform, Mesh& mesh, BlColor color = Colors::White);
+        static void DrawModel(const glm::mat4& transform, Model& model, BlColor color = Colors::White);
 
         static void DrawText(BlVec3<f32> pos, f32 fontSize, const std::string& text, Font& font, TextParams params = TextParams{}, BlColor color = Colors::White);
         static void DrawText(const glm::mat4& transform, const std::string& text, Font& font, TextParams params = TextParams{}, BlColor color = Colors::White);

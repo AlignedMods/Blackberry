@@ -130,31 +130,69 @@ namespace Blackberry {
         return m_CurrentViewportSize;
     }
 
-    void Renderer_OpenGL3::SetBufferLayout(const BlDrawBufferLayout& layout) {
-        GLenum type = GL_FLOAT;
-
-        switch (layout.Type)
-        {
-            case BlDrawBufferLayout::ElementType::Float:
-                type = GL_FLOAT;
-                break;
-            case BlDrawBufferLayout::ElementType::UInt:
-                type = GL_UNSIGNED_INT;
-                break;
-            default:
-                type = GL_FLOAT;
-                break;
-        }
-
+    void Renderer_OpenGL3::SetBufferLayout(const std::initializer_list<DrawBufferLayout>& layout) {
         glBindVertexArray(m_VAO);
 
-        glVertexAttribPointer(layout.Index, layout.Count, type, GL_FALSE, layout.Stride, (void*)layout.Offset);
-        glEnableVertexAttribArray(layout.Index);
+        u32 stride = 0;
+        u32 offset = 0;
+        for (auto& l : layout) {
+            u32 size = 0;
+
+            switch (l.Type) {
+                case ShaderDataType::Float:
+                    size = sizeof(GLfloat);
+                    break;
+                case ShaderDataType::Float2:
+                    size = sizeof(GLfloat) * 2;
+                    break;
+                case ShaderDataType::Float3:
+                    size = sizeof(GLfloat) * 3;
+                    break;
+                case ShaderDataType::Float4:
+                    size = sizeof(GLfloat) * 4;
+                    break;
+            }
+
+            stride += size;
+        }
+
+        for (auto& l : layout) {
+            GLenum type = GL_FLOAT;
+            u32 size = 0;
+            u32 count = 0;
+
+            switch (l.Type) {
+                case ShaderDataType::Float:
+                    type = GL_FLOAT;
+                    size = sizeof(GLfloat);
+                    count = 1;
+                    break;
+                case ShaderDataType::Float2:
+                    type = GL_FLOAT;
+                    size = sizeof(GLfloat) * 2;
+                    count = 2;
+                    break;
+                case ShaderDataType::Float3:
+                    type = GL_FLOAT;
+                    size = sizeof(GLfloat) * 3;
+                    count = 3;
+                    break;
+                case ShaderDataType::Float4:
+                    type = GL_FLOAT;
+                    size = sizeof(GLfloat) * 4;
+                    count = 4;
+                    break;
+            }
+
+            glVertexAttribPointer(l.Location, count, type, GL_FALSE, stride, reinterpret_cast<void*>(offset));
+            glEnableVertexAttribArray(l.Location);
+            offset += size;
+        }
 
         glBindVertexArray(0);
     }
 
-    void Renderer_OpenGL3::SubmitDrawBuffer(const BlDrawBuffer& buffer) {
+    void Renderer_OpenGL3::SubmitDrawBuffer(const DrawBuffer& buffer) {
         glBindVertexArray(m_VAO);
 
         glBufferData(GL_ARRAY_BUFFER, buffer.VertexCount * buffer.VertexSize, buffer.Vertices, GL_STREAM_DRAW);

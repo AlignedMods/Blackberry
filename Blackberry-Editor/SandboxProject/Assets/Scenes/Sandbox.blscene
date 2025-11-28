@@ -35,7 +35,7 @@
                 ],
                 "Rotation": [
                     15.0,
-                    12.0,
+                    78.0,
                     0.0
                 ],
                 "Scale": [
@@ -148,7 +148,7 @@
         },
         "ID - 4": {
             "TagComponent": {
-                "Name": "Blank Entity",
+                "Name": "Directional Light",
                 "UUID": 18341993632070408446
             }
         }

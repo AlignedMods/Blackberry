@@ -23,9 +23,9 @@ namespace Blackberry {
 
         virtual BlVec2<f32> GetViewportSize() const override;
 
-        virtual void SetBufferLayout(const BlDrawBufferLayout& layout) override;
+        virtual void SetBufferLayout(const std::initializer_list<DrawBufferLayout>& layout) override;
 
-        virtual void SubmitDrawBuffer(const BlDrawBuffer& buffer) override;
+        virtual void SubmitDrawBuffer(const DrawBuffer& buffer) override;
         virtual void DrawIndexed(u32 count) override;
         
         virtual void BindShader(BlShader shader) override;
