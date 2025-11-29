@@ -51,6 +51,7 @@ namespace Blackberry {
 
     struct MeshComponent {
         u64 MeshHandle = 0;
+        std::vector<u64> MaterialHandles;
     };
 
     struct CameraComponent {
@@ -108,11 +109,9 @@ namespace Blackberry {
     };
 
     struct DirectionalLightComponent {
-        BlVec3<f32> Direction;
-
-        BlColor Ambient;
-        BlColor Diffuse;
-        BlColor Specular;
+        BlVec3<f32> Ambient;
+        BlVec3<f32> Diffuse;
+        BlVec3<f32> Specular;
     };
 
 } // namespace Blackberry

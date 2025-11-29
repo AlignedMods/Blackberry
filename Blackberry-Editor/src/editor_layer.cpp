@@ -652,7 +652,7 @@ namespace BlackberryEditor {
         }
 
         if (ImGui::BeginPopup("CreateAssetPopup")) {
-                static const char* assetTypeNames[] = { "Texture", "Font", "Model" };
+                static const char* assetTypeNames[] = { "Texture", "Font", "Model", "Material" };
                 static int currentAssetType = 0;
 
                 ImGui::Combo("##AssetType", &currentAssetType, assetTypeNames, IM_ARRAYSIZE(assetTypeNames));
@@ -680,6 +680,14 @@ namespace BlackberryEditor {
                         asset.Type = AssetType::Model;
                         asset.FilePath = fs::relative(assetFile, m_BaseDirectory);
                         asset.Data = model;
+
+                        Project::GetAssetManager().AddAsset("cart", asset);
+                    } else if (currentAssetType == 3) { // material
+                        Material mat = Material::Create(assetFile);
+                        Asset asset;
+                        asset.Type = AssetType::Material;
+                        asset.FilePath = fs::relative(assetFile, m_BaseDirectory);
+                        asset.Data = mat;
 
                         Project::GetAssetManager().AddAsset("cart", asset);
                     }
@@ -878,20 +886,20 @@ namespace BlackberryEditor {
                 ImGui::Text("Mesh: ");
                 ImGui::Indent();
 
-                std::string mat;
+                std::string meshName;
                 if (Project::GetAssetManager().ContainsAsset(mesh.MeshHandle)) {
-                    mat = Project::GetAssetManager().GetAsset(mesh.MeshHandle).FilePath.stem().string();
+                    meshName = Project::GetAssetManager().GetAsset(mesh.MeshHandle).FilePath.stem().string();
                 } else {
-                    mat = "NULL";
+                    meshName = "NULL";
                 }
 
                 f32 size = ImGui::GetContentRegionAvail().x;
-                if (mat == "NULL") {
+                if (meshName == "NULL") {
                     ImGui::PushStyleColor(ImGuiCol_Text, 0xff0000ff);
-                    ImGui::Button(mat.c_str(), ImVec2(size, 0.0f));
+                    ImGui::Button(meshName.c_str(), ImVec2(size, 0.0f));
                     ImGui::PopStyleColor();
                 } else {
-                    ImGui::Button(mat.c_str(), ImVec2(size, 0.0f));
+                    ImGui::Button(meshName.c_str(), ImVec2(size, 0.0f));
                 }
 
                 if (ImGui::BeginPopupContextItem("MeshHandlePopup")) {
@@ -907,6 +915,44 @@ namespace BlackberryEditor {
 
                     if (payload) {
                         mesh.MeshHandle = *reinterpret_cast<u64*>(payload->Data); // seems sus
+                    }
+                }
+
+                ImGui::Unindent();
+
+                ImGui::Text("Materials: ");
+                ImGui::Indent();
+
+                if (Project::GetAssetManager().ContainsAsset(mesh.MeshHandle)) {
+                    Model& model = std::get<Model>(Project::GetAssetManager().GetAsset(mesh.MeshHandle).Data);
+
+                    for (u32 i = 0; i < model.MeshCount; i++) {
+                        f32 remainingSpace = ImGui::GetContentRegionAvail().x;
+                        ImGui::Text("Material [%u]: ", i); ImGui::SameLine();
+
+                        std::string matName;
+                        if (Project::GetAssetManager().ContainsAsset(model.Meshes[i].MaterialHandle)) {
+                            matName = Project::GetAssetManager().GetAsset(model.Meshes[i].MaterialHandle).FilePath.stem().string();
+                        } else {
+                            matName = "NULL";
+                        }
+
+                        size = ImGui::GetContentRegionAvail().x;
+                        if (matName == "NULL") {
+                            ImGui::PushStyleColor(ImGuiCol_Text, 0xff0000ff);
+                            ImGui::Button(matName.c_str(), ImVec2(size, 0.0f));
+                            ImGui::PopStyleColor();
+                        } else {
+                            ImGui::Button(matName.c_str(), ImVec2(size, 0.0f));
+                        }
+
+                        if (ImGui::BeginDragDropTarget()) {
+                            const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_MANAGER_DRAG_DROP");
+
+                            if (payload) {
+                                model.Meshes[i].MaterialHandle = *reinterpret_cast<u64*>(payload->Data);
+                            }
+                        }
                     }
                 }
 
@@ -1020,11 +1066,9 @@ namespace BlackberryEditor {
                 
             });
             DrawComponent<DirectionalLightComponent>("Directional Light", entity, [](DirectionalLightComponent& light) {
-                DrawVec3Control("Direction: ", &light.Direction);
-
-                DrawColorControl("Ambient", &light.Ambient);
-                DrawColorControl("Diffuse", &light.Diffuse);
-                DrawColorControl("Specular", &light.Specular);
+                ImGui::ColorEdit3("Ambient", &light.Ambient.x);
+                ImGui::ColorEdit3("Diffuse", &light.Diffuse.x);
+                ImGui::ColorEdit3("Specular", &light.Specular.x);
             });
         }
     

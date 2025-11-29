@@ -14,8 +14,7 @@ namespace Blackberry {
         std::vector<BlVec2<f32>> TexCoords;
         std::vector<u32> Indices;
 
-        // TODO (aligned): Replace with materials once we get them
-        Texture2D Texture;
+        u64 MaterialHandle = 0;
     };
 
 } // namespace Blackberry

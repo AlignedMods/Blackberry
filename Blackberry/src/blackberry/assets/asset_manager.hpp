@@ -5,6 +5,7 @@
 #include "blackberry/renderer/texture.hpp"
 #include "blackberry/font/font.hpp"
 #include "blackberry/model/model.hpp"
+#include "blackberry/model/material.hpp"
 
 #include <filesystem>
 #include <unordered_map>
@@ -17,13 +18,14 @@ namespace Blackberry {
     enum class AssetType {
         Texture = 0,
         Font = 1,
-        Model = 2
+        Model = 2,
+        Material = 3,
     };
 
     struct Asset {
         std::filesystem::path FilePath;
         AssetType Type;
-        std::variant<Texture2D, Font, Model> Data;
+        std::variant<Texture2D, Font, Model, Material> Data;
     };
 
     class AssetManager {
@@ -38,6 +40,7 @@ namespace Blackberry {
         void AddAssetWithHandle(AssetHandle handle, const Asset& asset);
 
         const Asset& GetAsset(AssetHandle handle) const;
+        Asset& GetAsset(AssetHandle handle);
         const bool ContainsAsset(AssetHandle handle) const;
         AssetHandle GetAssetHandle(const std::string& name) const;
         const HandleMap& GetAllAssets() const;

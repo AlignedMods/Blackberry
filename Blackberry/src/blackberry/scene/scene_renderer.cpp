@@ -12,12 +12,14 @@ namespace Blackberry {
         layout (location = 0) in vec3 a_Pos;
         layout (location = 1) in vec3 a_Normal;
         layout (location = 2) in vec4 a_Color;
+        layout (location = 3) in int a_MaterialIndex;
 
         uniform mat4 u_Projection;
 
         layout (location = 0) out vec3 o_Normal;
         layout (location = 1) out vec4 o_Color;
-        layout (location = 4) out vec3 o_FragPos;
+        layout (location = 2) out vec3 o_FragPos;
+        layout (location = 3) out flat int o_MaterialIndex;
 
         void main() {
             gl_Position = u_Projection * vec4(a_Pos, 1.0f);
@@ -25,6 +27,7 @@ namespace Blackberry {
             o_Normal = a_Normal;
             o_Color = a_Color;
             o_FragPos = a_Pos;
+            o_MaterialIndex = a_MaterialIndex;
         }
     );
 
@@ -33,7 +36,8 @@ namespace Blackberry {
 
         layout (location = 0) in vec3 a_Normal;
         layout (location = 1) in vec4 a_Color;
-        layout (location = 4) in vec3 a_FragPos;
+        layout (location = 2) in vec3 a_FragPos;
+        layout (location = 3) in flat int a_MaterialIndex;
 
         struct DirectionalLight {
             vec3 Direction;
@@ -43,31 +47,37 @@ namespace Blackberry {
             vec3 Specular;
         };
 
+        struct Material {
+            vec3 Ambient;
+            vec3 Diffuse;
+            vec3 Specular;
+            float Shininess;
+        };
+
         uniform vec3 u_ViewPos;
         uniform DirectionalLight u_Light;
-        uniform sampler2D u_Textures[16];
+        uniform Material u_Materials[16];
 
         out vec4 o_FragColor;
 
         void main() {
             // ambient
-            vec3 ambient = u_Light.Ambient;
+            vec3 ambient = u_Light.Ambient * u_Materials[a_MaterialIndex].Ambient;
 
             // diffuse
             vec3 norm = normalize(a_Normal);
             vec3 lightDir = normalize(-u_Light.Direction);
             float diff = max(dot(norm, lightDir), 0.0);
-            vec3 diffuse = u_Light.Diffuse * diff;
+            vec3 diffuse = u_Light.Diffuse * (diff * u_Materials[a_MaterialIndex].Diffuse);
 
             // specular
             vec3 viewDir = normalize(u_ViewPos - a_FragPos);
             vec3 reflectDir = reflect(-lightDir, norm);  
-            float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
-            vec3 specular = u_Light.Specular * spec;  
+            float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_Materials[a_MaterialIndex].Shininess);
+            vec3 specular = u_Light.Specular * (spec * u_Materials[a_MaterialIndex].Specular);  
 
             vec4 result = vec4(ambient + diffuse + specular, 1.0);
             o_FragColor = result * a_Color;
-            // o_FragColor = vec4(a_Normal * 0.5 + 0.5, 1.0);
         }
     );
 
@@ -146,16 +156,16 @@ namespace Blackberry {
     // SceneRenderer::~SceneRenderer() {}
 
     void SceneRenderer::Render(Scene* scene) {
-        auto dirLightView = scene->m_ECS->GetEntitiesWithComponents<DirectionalLightComponent>();
+        auto dirLightView = scene->m_ECS->GetEntitiesWithComponents<TransformComponent, DirectionalLightComponent>();
 
-        dirLightView.each([&](DirectionalLightComponent& light) {
-            AddDirectionalLight(light);    
+        dirLightView.each([&](TransformComponent& transform, DirectionalLightComponent& light) {
+            AddDirectionalLight(transform, light);    
         });
 
         auto meshView = scene->m_ECS->GetEntitiesWithComponents<TransformComponent, MeshComponent>();
 
         meshView.each([&](TransformComponent& transform, MeshComponent& mesh) {
-            Model model = std::get<Model>(Project::GetAssetManager().GetAsset(mesh.MeshHandle).Data);
+            Model& model = std::get<Model>(Project::GetAssetManager().GetAsset(mesh.MeshHandle).Data);
 
             AddModel(transform.GetMatrix(), model, BlColor(155, 255, 100, 255));
         });
@@ -168,13 +178,18 @@ namespace Blackberry {
     }
 
     void SceneRenderer::AddMesh(const glm::mat4& transform, const Mesh& mesh, BlColor color) {
+        if (!Project::GetAssetManager().ContainsAsset(mesh.MaterialHandle)) return;
+
+        Material& mat = std::get<Material>(Project::GetAssetManager().GetAsset(mesh.MaterialHandle).Data);
+
         BlVec4<f32> normColor = NormalizeColor(color);
+        u32 materialIndex = GetMaterialIndex(mat);
 
         // vertices
         for (u32 i = 0; i < mesh.Positions.size(); i++) {
             glm::vec4 pos = transform * glm::vec4(mesh.Positions[i].x, mesh.Positions[i].y, mesh.Positions[i].z, 1.0f);
             glm::vec3 normal = glm::mat3(glm::transpose(glm::inverse(transform))) * glm::vec3(mesh.Normals[i].x, mesh.Normals[i].y, mesh.Normals[i].z);
-            SceneMeshVertex vert = SceneMeshVertex(BlVec3<f32>(pos.x, pos.y, pos.z), BlVec3<f32>(normal.x, normal.y, normal.z), normColor);
+            SceneMeshVertex vert = SceneMeshVertex(BlVec3<f32>(pos.x, pos.y, pos.z), BlVec3<f32>(normal.x, normal.y, normal.z), normColor, materialIndex);
             m_State.MeshVertices.push_back(vert);
         }
 
@@ -194,8 +209,12 @@ namespace Blackberry {
         }
     }
 
-    void SceneRenderer::AddDirectionalLight(const DirectionalLightComponent& light) {
-        m_State.DirectionalLight = light;
+    void SceneRenderer::AddDirectionalLight(const TransformComponent& transform, const DirectionalLightComponent& light) {
+        m_State.DirectionalLight.Direction = transform.Rotation;
+        
+        m_State.DirectionalLight.Ambient = light.Ambient;
+        m_State.DirectionalLight.Diffuse = light.Diffuse;
+        m_State.DirectionalLight.Specular = light.Specular;
     }
 
     void SceneRenderer::Flush() {
@@ -216,6 +235,7 @@ namespace Blackberry {
                 {0, ShaderDataType::Float3, "Position"},
                 {1, ShaderDataType::Float3, "Normal"},
                 {2, ShaderDataType::Float4, "Color"},
+                {3, ShaderDataType::Int, "MaterialIndex"}
             });
 
             renderer.BindShader(m_State.MeshShader);
@@ -224,9 +244,19 @@ namespace Blackberry {
 
             auto& light = m_State.DirectionalLight;
             m_State.MeshShader.SetVec3("u_Light.Direction", BlVec3(light.Direction));
-            m_State.MeshShader.SetVec3("u_Light.Ambient", BlVec3(light.Ambient.r / 255.0f, light.Ambient.g / 255.0f, light.Ambient.b / 255.0f));
-            m_State.MeshShader.SetVec3("u_Light.Diffuse", BlVec3(light.Diffuse.r / 255.0f, light.Diffuse.g / 255.0f, light.Diffuse.b / 255.0f));
-            m_State.MeshShader.SetVec3("u_Light.Specular", BlVec3(light.Specular.r / 255.0f, light.Specular.g / 255.0f, light.Specular.b / 255.0f));
+            m_State.MeshShader.SetVec3("u_Light.Ambient", light.Ambient);
+            m_State.MeshShader.SetVec3("u_Light.Diffuse", light.Diffuse);
+            m_State.MeshShader.SetVec3("u_Light.Specular", light.Specular);
+
+            // apply materials
+            for (u32 i = 0; i < m_State.MaterialIndex; i++) {
+                Material& mat = m_State.Materials[i];
+
+                m_State.MeshShader.SetVec3(fmt::format("u_Materials[{}].Ambient", i), mat.Ambient);
+                m_State.MeshShader.SetVec3(fmt::format("u_Materials[{}].Diffuse", i), mat.Diffuse);
+                m_State.MeshShader.SetVec3(fmt::format("u_Materials[{}].Specular", i), mat.Specular);
+                m_State.MeshShader.SetFloat(fmt::format("u_Materials[{}].Shininess", i), mat.Shininess);
+            }
 
             renderer.DrawIndexed(m_State.MeshIndexCount);
 
@@ -236,6 +266,42 @@ namespace Blackberry {
             m_State.MeshVertexCount = 0;
             m_State.MeshIndexCount = 0;
         }
+
+        m_State.MaterialIndex = 0;
+    }
+
+    u32 SceneRenderer::GetMaterialIndex(const Material& mat) {
+        if (mat.ID == 0) return 0; // default material
+
+        u32 matIndex = 0;
+
+        if (m_State.MaterialIndex >= 16) {
+            Flush();
+        }
+
+        bool texAlreadyExists = false;
+
+        // Loop through all of the current materials to see if we already have a
+        // matching material
+        for (u32 i = 0; i < m_State.MaterialIndex; i++) {
+            if (mat.ID == m_State.Materials[i].ID) {
+                matIndex = i;
+                texAlreadyExists = true;
+
+                break;
+            }
+        }
+
+        // If we haven't found a suitable material we create a new slot
+        if (!texAlreadyExists) {
+            matIndex = m_State.MaterialIndex;
+
+            m_State.Materials[m_State.MaterialIndex] = mat;
+            m_State.MaterialIndex++;
+            texAlreadyExists = true;
+        }
+
+        return matIndex;
     }
 
 } // namespace Blackberry

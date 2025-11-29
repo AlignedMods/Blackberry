@@ -30,6 +30,10 @@ namespace Blackberry {
         return m_AssetMap.at(handle);
     }
 
+    Asset& AssetManager::GetAsset(AssetHandle handle) {
+        return m_AssetMap.at(handle);
+    }
+
     const bool AssetManager::ContainsAsset(AssetHandle handle) const {
         return m_AssetMap.contains(handle);
     }

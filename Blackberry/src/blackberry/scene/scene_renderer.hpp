@@ -3,6 +3,7 @@
 #include "blackberry/application/renderer.hpp"
 #include "blackberry/model/model.hpp"
 #include "blackberry/scene/camera.hpp"
+#include "blackberry/model/material.hpp"
 
 namespace Blackberry {
 
@@ -12,6 +13,15 @@ namespace Blackberry {
         BlVec3<f32> Position;
         BlVec3<f32> Normal;
         BlVec4<f32> Color;
+        u32 MaterialIndex = 0;
+    };
+
+    struct SceneDirectionalLight {
+        BlVec3<f32> Direction;
+
+        BlVec3<f32> Ambient;
+        BlVec3<f32> Diffuse;
+        BlVec3<f32> Specular;
     };
 
     struct SceneRendererState {
@@ -19,12 +29,15 @@ namespace Blackberry {
         Shader MeshShader;
         Shader FontShader;
 
-        DirectionalLightComponent DirectionalLight;
+        SceneDirectionalLight DirectionalLight;
 
         std::vector<SceneMeshVertex> MeshVertices;
         u32 MeshVertexCount = 0;
         std::vector<u32> MeshIndices;
         u32 MeshIndexCount = 0;
+
+        std::array<Material, 16> Materials;
+        u32 MaterialIndex = 0; // 0 is reserved for meshes without a material
     };
 
     class SceneRenderer {
@@ -38,9 +51,11 @@ namespace Blackberry {
         void AddMesh(const glm::mat4& transform, const Mesh& mesh, BlColor color);
         void AddModel(const glm::mat4& transform, const Model& model, BlColor color);
 
-        void AddDirectionalLight(const DirectionalLightComponent& light);
+        void AddDirectionalLight(const TransformComponent& transform, const DirectionalLightComponent& light);
 
         void Flush();
+
+        u32 GetMaterialIndex(const Material& mat);
 
     private:
         SceneRendererState m_State;

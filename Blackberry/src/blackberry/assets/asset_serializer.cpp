@@ -12,6 +12,7 @@ namespace Blackberry {
             case AssetType::Texture: return "Texture"; break;
             case AssetType::Font: return "Font"; break;
             case AssetType::Model: return "Model"; break;
+            case AssetType::Material: return "Material"; break;
         }
 
         BL_ASSERT(false, "Unknown asset type! (memory corruption potential)");
@@ -22,6 +23,7 @@ namespace Blackberry {
         if (type == "Texture") return AssetType::Texture;
         if (type == "Font") return AssetType::Font;
         if (type == "Model") return AssetType::Model;
+        if (type == "Material") return AssetType::Material;
 
         BL_ASSERT(false, "Unknown asset type {}", type);
         return AssetType::Texture;
@@ -72,6 +74,9 @@ namespace Blackberry {
             } else if (asset.Type == AssetType::Model) {
                 Model model = Model::Create(Project::GetAssetPath(path));
                 asset.Data = model;
+            } else if (asset.Type == AssetType::Material) {
+                Material material = Material::Create(Project::GetAssetPath(path));
+                asset.Data = material;
             }
 
             m_AssetManager->AddAssetWithHandle(jsonAsset.at("Handle"), asset);

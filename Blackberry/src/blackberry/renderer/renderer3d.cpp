@@ -384,7 +384,7 @@ namespace Blackberry {
 
     void Renderer3D::DrawMesh(const glm::mat4& transform, Mesh& mesh, BlColor color) {
         BlVec4 normalizedColor = NormalizeColor(color);
-        f32 texIndex = GetTexIndex(mesh.Texture);
+        f32 texIndex = 0.0f;
 
         // vertices
         for (u32 i = 0; i < mesh.Positions.size(); i++) {

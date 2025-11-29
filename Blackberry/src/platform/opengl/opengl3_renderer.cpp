@@ -151,6 +151,9 @@ namespace Blackberry {
                 case ShaderDataType::Float4:
                     size = sizeof(GLfloat) * 4;
                     break;
+                case ShaderDataType::Int:
+                    size = sizeof(GLint);
+                    break;
             }
 
             stride += size;
@@ -182,10 +185,21 @@ namespace Blackberry {
                     size = sizeof(GLfloat) * 4;
                     count = 4;
                     break;
+                case ShaderDataType::Int:
+                    type = GL_INT;
+                    size = sizeof(GLint);
+                    count = 1;
+                    break;
             }
 
-            glVertexAttribPointer(l.Location, count, type, GL_FALSE, stride, reinterpret_cast<void*>(offset));
-            glEnableVertexAttribArray(l.Location);
+            if (l.Type == ShaderDataType::Int) {
+                glVertexAttribIPointer(l.Location, size, type, stride, reinterpret_cast<void*>(offset));
+                glEnableVertexAttribArray(l.Location);
+            } else {
+                glVertexAttribPointer(l.Location, count, type, GL_FALSE, stride, reinterpret_cast<void*>(offset));
+                glEnableVertexAttribArray(l.Location);
+            }
+            
             offset += size;
         }
 

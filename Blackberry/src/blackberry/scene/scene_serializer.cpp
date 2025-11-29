@@ -134,10 +134,9 @@ namespace Blackberry {
                 DirectionalLightComponent& light = entity.GetComponent<DirectionalLightComponent>();
 
                 j["Entities"][name]["DirectionalLightComponent"] = {
-                    {"Direction", {light.Direction.x, light.Direction.y, light.Direction.z}},
-                    {"Ambient", {light.Ambient.r, light.Ambient.g, light.Ambient.b}},
-                    {"Diffuse", {light.Diffuse.r, light.Diffuse.g, light.Diffuse.b}},
-                    {"Specular", {light.Specular.r, light.Specular.g, light.Specular.b}},
+                    {"Ambient", {light.Ambient.x, light.Ambient.y, light.Ambient.z}},
+                    {"Diffuse", {light.Diffuse.x, light.Diffuse.y, light.Diffuse.z}},
+                    {"Specular", {light.Specular.x, light.Specular.y, light.Specular.z}}
                 };
             }
         }
@@ -234,16 +233,14 @@ namespace Blackberry {
             if (jsonEntity.contains("DirectionalLightComponent")) {
                 auto& jsonLight = jsonEntity.at("DirectionalLightComponent");
 
-                std::array<f32, 3> direction = jsonLight.at("Direction");
-                std::array<u8, 3> ambient = jsonLight.at("Ambient");
-                std::array<u8, 3> diffuse = jsonLight.at("Diffuse");
-                std::array<u8, 3> specular = jsonLight.at("Specular");
+                std::array<f32, 3> ambient = jsonLight.at("Ambient");
+                std::array<f32, 3> diffuse = jsonLight.at("Diffuse");
+                std::array<f32, 3> specular = jsonLight.at("Specular");
 
                 DirectionalLightComponent light;
-                light.Direction = BlVec3(direction[0], direction[1], direction[2]);
-                light.Ambient = BlColor(ambient[0], ambient[1], ambient[2], 255);
-                light.Diffuse = BlColor(diffuse[0], diffuse[1], diffuse[2], 255);
-                light.Specular = BlColor(specular[0], specular[1], specular[2], 255);
+                light.Ambient = BlVec3<f32>(ambient[0], ambient[1], ambient[2]);
+                light.Diffuse = BlVec3<f32>(diffuse[0], diffuse[1], diffuse[2]);
+                light.Specular = BlVec3<f32>(specular[0], specular[1], specular[2]);
 
                 entity.AddComponent<DirectionalLightComponent>(light);
             }

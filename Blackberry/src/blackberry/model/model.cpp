@@ -160,18 +160,18 @@ namespace Blackberry {
                     }
 
                     // find textures
-                    if (data->textures_count > 0) {
-                        cgltf_buffer_view* texBufferView = data->textures[0].image->buffer_view;
-                        void* imageBytes = reinterpret_cast<u8*>(texBufferView->buffer->data) + texBufferView->offset;
-                        int width, height, channels;
-
-                        u8* imageData = stbi_load_from_memory(reinterpret_cast<u8*>(imageBytes), texBufferView->buffer->size, &width, &height, &channels, 4);
-
-                        mesh.Texture = Texture2D::Create(imageData, width, height, ImageFormat::RGBA8);
-                        stbi_image_free(imageData);
-                    } else {
-                        mesh.Texture = {};
-                    }
+                    // if (data->textures_count > 0) {
+                    //     cgltf_buffer_view* texBufferView = data->textures[0].image->buffer_view;
+                    //     void* imageBytes = reinterpret_cast<u8*>(texBufferView->buffer->data) + texBufferView->offset;
+                    //     int width, height, channels;
+                    // 
+                    //     u8* imageData = stbi_load_from_memory(reinterpret_cast<u8*>(imageBytes), texBufferView->buffer->size, &width, &height, &channels, 4);
+                    // 
+                    //     mesh.Texture = Texture2D::Create(imageData, width, height, ImageFormat::RGBA8);
+                    //     stbi_image_free(imageData);
+                    // } else {
+                    //     mesh.Texture = {};
+                    // }
                 }
 
                 model.Meshes.push_back(mesh);
