@@ -70,7 +70,7 @@ namespace BlackberryEditor {
 
         Blackberry::RenderTexture m_MaskTexture;
 
-        BlShader m_OutlineShader;
+        Blackberry::Shader m_OutlineShader;
 
         Blackberry::RenderTexture m_OutlineTexture;
     

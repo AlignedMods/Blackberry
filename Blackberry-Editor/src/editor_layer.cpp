@@ -249,7 +249,7 @@ namespace BlackberryEditor {
 
         std::string vs = ReadEntireFile("Assets/shaders/OutlineShader.vs");
         std::string fs = ReadEntireFile("Assets/shaders/OutlineShader.fs");
-        m_OutlineShader.Create(vs, fs);
+        m_OutlineShader = Shader::Create(vs, fs);
 
         LoadEditorState();
     
@@ -759,7 +759,7 @@ namespace BlackberryEditor {
                 if (ImGui::MenuItem("Cube")) {
                     Entity entity(m_CurrentScene->CreateEntity("Cube"), m_CurrentScene);
 
-                    entity.AddComponent<MeshRendererComponent>();
+                    entity.AddComponent<MeshComponent>();
                     entity.AddComponent<TransformComponent>({BlVec3(m_RenderTexture.Size.x / 2.0f - 100.0f, m_RenderTexture.Size.y / 2.0f - 50.0f, 0.0f), BlVec3(0.0f), BlVec3(200.0f, 100.0f, 1.0f)});
                 };
                 
@@ -843,7 +843,7 @@ namespace BlackberryEditor {
                 if (ImGui::BeginMenu("Add Component")) {
                     AddComponentListOption<TransformComponent>("Transform", entity);
                     AddComponentListOption<TextComponent>("Text", entity);
-                    AddComponentListOption<MeshRendererComponent>("Mesh Renderer", entity);
+                    AddComponentListOption<MeshComponent>("Mesh", entity);
                     AddComponentListOption<CameraComponent>("Camera", entity);
                     AddComponentListOption<ScriptComponent>("Script", entity);
                     AddComponentListOption<RigidBodyComponent>("Rigid Body", entity);
@@ -873,16 +873,14 @@ namespace BlackberryEditor {
 
                 DrawVec3Control("Scale: ", &transform.Scale);
             });
-            DrawComponent<MeshRendererComponent>("Mesh Renderer", entity, [this](MeshRendererComponent& meshRenderer) {
-                DrawColorControl("Color: ", &meshRenderer.Color);
-
+            DrawComponent<MeshComponent>("Mesh", entity, [this](MeshComponent& mesh) {
                 ImGui::Separator();
                 ImGui::Text("Mesh: ");
                 ImGui::Indent();
 
                 std::string mat;
-                if (Project::GetAssetManager().ContainsAsset(meshRenderer.MeshHandle)) {
-                    mat = Project::GetAssetManager().GetAsset(meshRenderer.MeshHandle).FilePath.stem().string();
+                if (Project::GetAssetManager().ContainsAsset(mesh.MeshHandle)) {
+                    mat = Project::GetAssetManager().GetAsset(mesh.MeshHandle).FilePath.stem().string();
                 } else {
                     mat = "NULL";
                 }
@@ -898,7 +896,7 @@ namespace BlackberryEditor {
 
                 if (ImGui::BeginPopupContextItem("MeshHandlePopup")) {
                     if (ImGui::MenuItem("Remove Mesh")) {
-                        meshRenderer.MeshHandle = 0;
+                        mesh.MeshHandle = 0;
                     }
 
                     ImGui::EndPopup();
@@ -908,7 +906,7 @@ namespace BlackberryEditor {
                     const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_MANAGER_DRAG_DROP");
 
                     if (payload) {
-                        meshRenderer.MeshHandle = *reinterpret_cast<u64*>(payload->Data); // seems sus
+                        mesh.MeshHandle = *reinterpret_cast<u64*>(payload->Data); // seems sus
                     }
                 }
 

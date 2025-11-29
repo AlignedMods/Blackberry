@@ -15,13 +15,6 @@ namespace Blackberry {
 
     class Font;
 
-    enum class MeshType : u16 {
-        Plane = 0,
-        Cube = 1,
-        Sphere = 2,
-        Cylinder = 3
-    };
-
     enum class RigidBodyType : u16 {
         Static = 0,
         Dynamic = 1,
@@ -56,8 +49,7 @@ namespace Blackberry {
         }
     };
 
-    struct MeshRendererComponent {
-        BlColor Color = BlColor(0xff, 0xff, 0xff, 0xff);
+    struct MeshComponent {
         u64 MeshHandle = 0;
     };
 

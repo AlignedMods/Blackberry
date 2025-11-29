@@ -6,6 +6,7 @@
 #include "blackberry/lua/lua.hpp"
 #include "blackberry/scene/entity.hpp"
 #include "blackberry/project/project.hpp"
+#include "blackberry/scene/scene_renderer.hpp"
 
 extern "C" {
     #include "lua.h"
@@ -16,7 +17,7 @@ extern "C" {
 namespace Blackberry {
 
     Scene::Scene()
-        : m_ECS(new ECS), m_PhysicsWorld(new PhysicsWorld) {
+        : m_ECS(new ECS), m_PhysicsWorld(new PhysicsWorld), m_Renderer(new SceneRenderer) {
         BL_CORE_TRACE("New scene created ({})", reinterpret_cast<void*>(this));
     }
 
@@ -94,6 +95,7 @@ namespace Blackberry {
 
     void Scene::SetCamera(SceneCamera* camera) {
         m_Camera = camera;
+        m_Renderer->SetCamera(*camera);
     }
 
     void Scene::OnUpdate() {
@@ -127,44 +129,21 @@ namespace Blackberry {
     void Scene::OnRender() {
         BL_ASSERT(m_Camera, "No camera set for current scene!");
 
-        Renderer3D::SetProjection(*m_Camera);
-
-        // Set directional light
-        auto dirLightView = m_ECS->GetEntitiesWithComponents<DirectionalLightComponent>();
-
-        dirLightView.each([&](DirectionalLightComponent& light) {
-            DirectionalLight l;
-            l.Direction = light.Direction;
-            l.Ambient = light.Ambient;
-            l.Diffuse = light.Diffuse;
-            l.Specular = light.Specular;
-
-            Renderer3D::SetDirectionalLight(l);
-        });
-
-        // Render
-        auto view = m_ECS->GetEntitiesWithComponents<TransformComponent>();
-
-        view.each([&](auto entity, TransformComponent& transform) {
-            RenderEntity(entity);
-        });
-
-        Renderer3D::Render();
-        Renderer3D::ResetProjection();
+        m_Renderer->Render(this);
     }
 
     void Scene::RenderEntity(EntityID entity) {
         TransformComponent& transform = m_ECS->GetComponent<TransformComponent>(entity);
         AssetManager& assetManager = Project::GetAssetManager();
 
-        if (m_ECS->HasComponent<MeshRendererComponent>(entity)) {
-            MeshRendererComponent& meshRenderer = m_ECS->GetComponent<MeshRendererComponent>(entity);
+        if (m_ECS->HasComponent<MeshComponent>(entity)) {
+            MeshComponent& mesh = m_ECS->GetComponent<MeshComponent>(entity);
 
-            if (assetManager.ContainsAsset(meshRenderer.MeshHandle)) {
-                Asset asset = assetManager.GetAsset(meshRenderer.MeshHandle);
+            if (assetManager.ContainsAsset(mesh.MeshHandle)) {
+                Asset asset = assetManager.GetAsset(mesh.MeshHandle);
                 Model& model = std::get<Model>(asset.Data);
 
-                Renderer3D::DrawModel(transform.GetMatrix(), model, meshRenderer.Color);
+                Renderer3D::DrawModel(transform.GetMatrix(), model, BlColor(155, 255, 100, 255));
             }
         }
 

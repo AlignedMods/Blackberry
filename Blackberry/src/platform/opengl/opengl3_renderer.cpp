@@ -105,7 +105,7 @@ namespace Blackberry {
 
     void Renderer_OpenGL3::NewFrame() {}
 
-    void Renderer_OpenGL3::BindShader(BlShader shader) {
+    void Renderer_OpenGL3::BindShader(Shader shader) {
         m_CurrentShader = shader;
         glUseProgram(shader.ID);
     }

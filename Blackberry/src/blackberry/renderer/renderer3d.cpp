@@ -179,8 +179,8 @@ namespace Blackberry {
 
     struct _Renderer3DState {
         // shaders
-        BlShader MeshShader;
-        BlShader FontShader;
+        Shader MeshShader;
+        Shader FontShader;
 
         Texture2D WhiteTexture;
 
@@ -263,8 +263,8 @@ namespace Blackberry {
     }
 
     void Renderer3D::Init() {
-        Renderer3DState.MeshShader.Create(s_VertexShaderMeshSource, s_FragmentShaderMeshSource);
-        Renderer3DState.FontShader.Create(s_VertexShaderFontSource, s_FragmentShaderFontSource);
+        Renderer3DState.MeshShader = Shader::Create(s_VertexShaderMeshSource, s_FragmentShaderMeshSource);
+        Renderer3DState.FontShader = Shader::Create(s_VertexShaderFontSource, s_FragmentShaderFontSource);
         Renderer3DState.WhiteTexture = Texture2D::Create(s_WhiteTextureData, 1, 1, ImageFormat::RGBA8);
 
         Renderer3DState.CurrentAttachedTextures[0] = Renderer3DState.WhiteTexture; // 0 is reserved for white
@@ -470,7 +470,7 @@ namespace Blackberry {
                 samplers[i] = i;
             }
 
-            BlShader shader = Renderer3DState.MeshShader;
+            Shader shader = Renderer3DState.MeshShader;
             shader.SetMatrix("u_Projection", Renderer3DState.Camera.GetCameraMatrixFloat());
             shader.SetIntArray("u_Textures", 16, samplers);
             shader.SetVec3("u_ViewPos", Renderer3DState.Camera.Transform.Position);
@@ -523,7 +523,7 @@ namespace Blackberry {
             renderer.BindShader(Renderer3DState.FontShader);
             renderer.BindTexture(Renderer3DState.CurrentFontAtlas);
 
-            BlShader shader = Renderer3DState.FontShader;
+            Shader shader = Renderer3DState.FontShader;
             shader.SetMatrix("u_Projection", Renderer3DState.Camera.GetCameraMatrixFloat());
 
             renderer.DrawIndexed(Renderer3DState.FontIndexCount);

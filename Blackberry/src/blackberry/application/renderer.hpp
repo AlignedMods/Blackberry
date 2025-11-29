@@ -52,7 +52,7 @@ namespace Blackberry {
         virtual void SubmitDrawBuffer(const DrawBuffer& buffer) = 0;
         virtual void DrawIndexed(u32 count) = 0;
 
-        virtual void BindShader(BlShader shader) = 0;
+        virtual void BindShader(Shader shader) = 0;
 
         virtual void BindTexture(Texture2D texture, u32 slot = 0) = 0;
         virtual void UnBindTexture() = 0;

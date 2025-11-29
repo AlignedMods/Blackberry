@@ -25,6 +25,11 @@
             "Path": "Fonts\\creato_display\\CreatoDisplay-Medium.otf",
             "Type": "Font"
         },
+        "Handle - 6020665715492184391": {
+            "Handle": 6020665715492184391,
+            "Path": "Meshes\\Default\\Cylinder.glb",
+            "Type": "Model"
+        },
         "Handle - 9023906316994206417": {
             "Handle": 9023906316994206417,
             "Path": "Textures\\MANGODIDDYBLUD.jpg",

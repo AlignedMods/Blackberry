@@ -10,6 +10,8 @@
 
 namespace Blackberry {
 
+    class SceneRenderer;
+
     class Scene {
     public:
         Scene();
@@ -48,6 +50,7 @@ namespace Blackberry {
         ECS* m_ECS = nullptr;
         PhysicsWorld* m_PhysicsWorld = nullptr;
         SceneCamera* m_Camera = nullptr; // gets set in OnRuntimeUpdate
+        SceneRenderer* m_Renderer = nullptr;
         std::unordered_map<u64, EntityID> m_EntityMap;
         std::unordered_map<std::string, u64> m_NamedEntityMap;
 
@@ -56,6 +59,7 @@ namespace Blackberry {
         bool m_Paused = false;
 
         friend class Entity;
+        friend class SceneRenderer;
     };
 
 } // namespace Blackberry

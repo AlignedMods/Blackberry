@@ -9,13 +9,7 @@
                 ],
                 "Type": "Cube"
             },
-            "MeshRendererComponent": {
-                "Color": [
-                    255,
-                    0,
-                    0,
-                    255
-                ],
+            "MeshComponent": {
                 "MeshHandle": 12120187917695872185
             },
             "RigidBodyComponent": {
@@ -110,14 +104,8 @@
                 ],
                 "Type": "Cube"
             },
-            "MeshRendererComponent": {
-                "Color": [
-                    213,
-                    139,
-                    70,
-                    255
-                ],
-                "MeshHandle": 12120187917695872185
+            "MeshComponent": {
+                "MeshHandle": 6020665715492184391
             },
             "RigidBodyComponent": {
                 "EnableGravity": true,
@@ -125,7 +113,7 @@
                 "Type": "Static"
             },
             "TagComponent": {
-                "Name": "Cube",
+                "Name": "Cylinder",
                 "UUID": 16564804365468595603
             },
             "TransformComponent": {
@@ -140,7 +128,7 @@
                     0.0
                 ],
                 "Scale": [
-                    8.5,
+                    0.5,
                     0.5,
                     0.5
                 ]
@@ -149,9 +137,9 @@
         "ID - 4": {
             "DirectionalLightComponent": {
                 "Ambient": [
-                    160,
-                    160,
-                    160
+                    144,
+                    144,
+                    144
                 ],
                 "Diffuse": [
                     193,
@@ -164,9 +152,9 @@
                     0.0
                 ],
                 "Specular": [
-                    255,
-                    255,
-                    255
+                    143,
+                    143,
+                    143
                 ]
             },
             "TagComponent": {

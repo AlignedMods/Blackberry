@@ -75,12 +75,11 @@ namespace Blackberry {
                 };
             }
 
-            if (entity.HasComponent<MeshRendererComponent>()) {
-                MeshRendererComponent& meshRenderer = entity.GetComponent<MeshRendererComponent>();
+            if (entity.HasComponent<MeshComponent>()) {
+                MeshComponent& mesh = entity.GetComponent<MeshComponent>();
 
-                j["Entities"][name]["MeshRendererComponent"] = { 
-                    {"Color", {meshRenderer.Color.r, meshRenderer.Color.g, meshRenderer.Color.b, meshRenderer.Color.a}},
-                    {"MeshHandle", meshRenderer.MeshHandle},
+                j["Entities"][name]["MeshComponent"] = { 
+                    {"MeshHandle", mesh.MeshHandle}
                 };
             }
 
@@ -177,13 +176,12 @@ namespace Blackberry {
                 entity.AddComponent<TransformComponent>({ BlVec3(position[0], position[1], position[2]), BlVec3(rotation[0], rotation[1], rotation[2]), BlVec3(scale[0], scale[1], scale[2]) });
             }
 
-            // MeshRendererComponent
-            if (jsonEntity.contains("MeshRendererComponent")) {
-                auto& jsonMeshRenderer = jsonEntity.at("MeshRendererComponent");
-                std::array<u8, 4> color = jsonMeshRenderer.at("Color");
-                u64 meshHandle = jsonMeshRenderer.at("MeshHandle");
+            // MeshComponent
+            if (jsonEntity.contains("MeshComponent")) {
+                auto& jsonMesh = jsonEntity.at("MeshComponent");
+                u64 meshHandle = jsonMesh.at("MeshHandle");
 
-                entity.AddComponent<MeshRendererComponent>({ BlColor(color[0], color[1], color[2], color[3]), meshHandle });
+                entity.AddComponent<MeshComponent>({ meshHandle });
             }
 
             if (jsonEntity.contains("CameraComponent")) {
