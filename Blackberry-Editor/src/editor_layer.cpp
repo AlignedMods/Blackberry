@@ -393,6 +393,12 @@ namespace BlackberryEditor {
     
                 ImGui::EndMenu();
             }
+
+            if (ImGui::BeginMenu("View")) {
+                ImGui::MenuItem("Material Editor", nullptr, &m_MaterialEditorOpen);
+
+                ImGui::EndMenu();
+            }
     
             ImGui::EndMenuBar();
         }
@@ -414,6 +420,8 @@ namespace BlackberryEditor {
         UI_Properties();
         UI_Viewport();
         UI_RendererStats();
+
+        m_MaterialEditor.OnUIRender(m_MaterialEditorOpen);
     
         if (m_ShowDemoWindow) {
             ImGui::ShowDemoWindow(&m_ShowDemoWindow);
@@ -725,6 +733,10 @@ namespace BlackberryEditor {
 
                 // ImGui::ImageButton(asset.FilePath.string().c_str(), std::get<BlTexture>(asset.Data).ID, ImVec2(128.0f, 128.0f));
                 ImGui::Button(asset.FilePath.string().c_str(), ImVec2(128.0f, 128.0f));
+
+                if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+                    m_MaterialEditor.SetContext(handle);
+                }
 
                 if (ImGui::BeginDragDropSource()) {
                     ImGui::SetDragDropPayload("ASSET_MANAGER_DRAG_DROP", &handle, sizeof(handle));

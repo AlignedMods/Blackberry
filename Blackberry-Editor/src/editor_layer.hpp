@@ -1,5 +1,7 @@
 #pragma once
 
+#include "panels/material_editor.hpp"
+
 #include "blackberry.hpp"
 
 namespace BlackberryEditor {
@@ -51,6 +53,10 @@ namespace BlackberryEditor {
         void LoadEditorState();
     
     private:
+        // panels
+        MaterialEditor m_MaterialEditor;
+        bool m_MaterialEditorOpen = true;
+
         bool m_ShowNewProjectWindow = false;
         bool m_ShowNewSceneWindow = false;
     

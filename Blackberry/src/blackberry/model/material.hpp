@@ -7,7 +7,8 @@
 namespace Blackberry {
 
     struct Material {
-        static Material Create(const std::filesystem::path& mat);
+        static Material Create(const std::filesystem::path& path);
+        static void Save(Material& mat, const std::filesystem::path& path);
 
         BlVec3<f32> Ambient;
         BlVec3<f32> Diffuse;

@@ -30,4 +30,16 @@ namespace Blackberry {
         return mat;
     }
 
+    void Material::Save(Material& mat, const std::filesystem::path& path) {
+        json j;
+
+        j["Ambient"] = { mat.Ambient.x, mat.Ambient.y, mat.Ambient.z };
+        j["Diffuse"] = { mat.Diffuse.x, mat.Diffuse.y, mat.Diffuse.z };
+        j["Specular"] = { mat.Specular.x, mat.Specular.y, mat.Specular.z };
+        j["Shininess"] = mat.Shininess;
+
+        std::ofstream file(path);
+        file << j.dump(4);
+    }
+
 } // namespace Blackberry
