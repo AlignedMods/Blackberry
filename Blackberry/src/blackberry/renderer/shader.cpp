@@ -60,6 +60,14 @@ namespace Blackberry {
     void Shader::SetFloat(const std::string& uniform, f32 val) {
         glUniform1f(glGetUniformLocation(ID, uniform.c_str()), val);
     }
+
+    void Shader::SetInt(const std::string& uniform, int val) {
+        glUniform1i(glGetUniformLocation(ID, uniform.c_str()), val);
+    }
+
+    void Shader::SetUInt(const std::string& uniform, u32 val) {
+        glUniform1ui(glGetUniformLocation(ID, uniform.c_str()), val);
+    }
     
     void Shader::SetIntArray(const std::string& uniform, u32 count, int* array) {
         glUniform1iv(glGetUniformLocation(ID, uniform.c_str()), count, array);

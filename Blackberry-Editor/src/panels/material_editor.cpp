@@ -11,9 +11,29 @@ namespace BlackberryEditor {
             if (Project::GetAssetManager().ContainsAsset(m_Context)) {
                 Material& mat = std::get<Material>(Project::GetAssetManager().GetAsset(m_Context).Data);
 
-                ImGui::ColorEdit3("Ambient", &mat.Ambient.x);
-                ImGui::ColorEdit3("Diffuse", &mat.Diffuse.x);
-                ImGui::ColorEdit3("Specular", &mat.Specular.x);
+                if (Project::GetAssetManager().ContainsAsset(mat.Diffuse)) {
+                    Texture2D diffuse = std::get<Texture2D>(Project::GetAssetManager().GetAsset(mat.Diffuse).Data);
+
+                    ImGui::Image(diffuse.ID, ImVec2(64.0f, 64.0f));
+
+                    if (ImGui::BeginItemTooltip()) {
+                        ImGui::Image(diffuse.ID, ImVec2(256.0f, 256.0f));
+                    
+                        ImGui::EndTooltip();
+                    }
+                }
+
+                if (Project::GetAssetManager().ContainsAsset(mat.Specular)) {
+                    Texture2D specular = std::get<Texture2D>(Project::GetAssetManager().GetAsset(mat.Specular).Data);
+
+                    ImGui::Image(specular.ID, ImVec2(64.0f, 64.0f));
+
+                    if (ImGui::BeginItemTooltip()) {
+                        ImGui::Image(specular.ID, ImVec2(256.0f, 256.0f));
+                    
+                        ImGui::EndTooltip();
+                    }
+                }
 
                 ImGui::SliderFloat("Shininess", &mat.Shininess, 1.0f, 512.0f, nullptr, ImGuiSliderFlags_Logarithmic);
 

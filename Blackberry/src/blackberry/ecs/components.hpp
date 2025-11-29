@@ -51,7 +51,6 @@ namespace Blackberry {
 
     struct MeshComponent {
         u64 MeshHandle = 0;
-        std::vector<u64> MaterialHandles;
     };
 
     struct CameraComponent {

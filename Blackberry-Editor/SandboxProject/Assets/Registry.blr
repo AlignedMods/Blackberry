@@ -20,6 +20,16 @@
             "Path": "Textures\\cat.jpg",
             "Type": "Texture"
         },
+        "Handle - 21128899974857072": {
+            "Handle": 21128899974857072,
+            "Path": "Textures\\Container.png",
+            "Type": "Texture"
+        },
+        "Handle - 3152177466728395767": {
+            "Handle": 3152177466728395767,
+            "Path": "Textures\\ContainerSpecular.png",
+            "Type": "Texture"
+        },
         "Handle - 5555962722629784639": {
             "Handle": 5555962722629784639,
             "Path": "Fonts\\creato_display\\CreatoDisplay-Medium.otf",

@@ -10,6 +10,9 @@
                 "Type": "Cube"
             },
             "MeshComponent": {
+                "Materials": [
+                    8439354752553943955
+                ],
                 "MeshHandle": 12120187917695872185
             },
             "RigidBodyComponent": {
@@ -105,6 +108,9 @@
                 "Type": "Cube"
             },
             "MeshComponent": {
+                "Materials": [
+                    8439354752553943955
+                ],
                 "MeshHandle": 6020665715492184391
             },
             "RigidBodyComponent": {

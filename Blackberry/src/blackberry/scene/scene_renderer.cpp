@@ -11,13 +11,13 @@ namespace Blackberry {
 
         layout (location = 0) in vec3 a_Pos;
         layout (location = 1) in vec3 a_Normal;
-        layout (location = 2) in vec4 a_Color;
+        layout (location = 2) in vec2 a_TexCoord;
         layout (location = 3) in int a_MaterialIndex;
 
         uniform mat4 u_Projection;
 
         layout (location = 0) out vec3 o_Normal;
-        layout (location = 1) out vec4 o_Color;
+        layout (location = 1) out vec2 o_TexCoord;
         layout (location = 2) out vec3 o_FragPos;
         layout (location = 3) out flat int o_MaterialIndex;
 
@@ -25,7 +25,7 @@ namespace Blackberry {
             gl_Position = u_Projection * vec4(a_Pos, 1.0f);
 
             o_Normal = a_Normal;
-            o_Color = a_Color;
+            o_TexCoord = a_TexCoord;
             o_FragPos = a_Pos;
             o_MaterialIndex = a_MaterialIndex;
         }
@@ -35,7 +35,7 @@ namespace Blackberry {
         \x23version 460 core\n
 
         layout (location = 0) in vec3 a_Normal;
-        layout (location = 1) in vec4 a_Color;
+        layout (location = 1) in vec2 a_TexCoord;
         layout (location = 2) in vec3 a_FragPos;
         layout (location = 3) in flat int a_MaterialIndex;
 
@@ -48,9 +48,8 @@ namespace Blackberry {
         };
 
         struct Material {
-            vec3 Ambient;
-            vec3 Diffuse;
-            vec3 Specular;
+            sampler2D Diffuse;
+            sampler2D Specular;
             float Shininess;
         };
 
@@ -62,22 +61,23 @@ namespace Blackberry {
 
         void main() {
             // ambient
-            vec3 ambient = u_Light.Ambient * u_Materials[a_MaterialIndex].Ambient;
+            vec3 ambient = u_Light.Ambient * texture(u_Materials[a_MaterialIndex].Diffuse, a_TexCoord).rgb;
 
             // diffuse
             vec3 norm = normalize(a_Normal);
             vec3 lightDir = normalize(-u_Light.Direction);
             float diff = max(dot(norm, lightDir), 0.0);
-            vec3 diffuse = u_Light.Diffuse * (diff * u_Materials[a_MaterialIndex].Diffuse);
+            vec3 diffuse = u_Light.Diffuse * diff * texture(u_Materials[a_MaterialIndex].Diffuse, a_TexCoord).rgb;
 
             // specular
             vec3 viewDir = normalize(u_ViewPos - a_FragPos);
             vec3 reflectDir = reflect(-lightDir, norm);  
             float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_Materials[a_MaterialIndex].Shininess);
-            vec3 specular = u_Light.Specular * (spec * u_Materials[a_MaterialIndex].Specular);  
+            vec3 specular = u_Light.Specular * spec * texture(u_Materials[a_MaterialIndex].Specular, a_TexCoord).rgb;  
 
             vec4 result = vec4(ambient + diffuse + specular, 1.0);
-            o_FragColor = result * a_Color;
+            o_FragColor = result;
+            //o_FragColor = vec4(a_TexCoord, 0.0, 1.0);
         }
     );
 
@@ -165,9 +165,11 @@ namespace Blackberry {
         auto meshView = scene->m_ECS->GetEntitiesWithComponents<TransformComponent, MeshComponent>();
 
         meshView.each([&](TransformComponent& transform, MeshComponent& mesh) {
-            Model& model = std::get<Model>(Project::GetAssetManager().GetAsset(mesh.MeshHandle).Data);
+            if (Project::GetAssetManager().ContainsAsset(mesh.MeshHandle)) {
+                Model& model = std::get<Model>(Project::GetAssetManager().GetAsset(mesh.MeshHandle).Data);
 
-            AddModel(transform.GetMatrix(), model, BlColor(155, 255, 100, 255));
+                AddModel(transform.GetMatrix(), model, BlColor(255, 255, 255, 255));
+            }
         });
 
         Flush();
@@ -189,7 +191,7 @@ namespace Blackberry {
         for (u32 i = 0; i < mesh.Positions.size(); i++) {
             glm::vec4 pos = transform * glm::vec4(mesh.Positions[i].x, mesh.Positions[i].y, mesh.Positions[i].z, 1.0f);
             glm::vec3 normal = glm::mat3(glm::transpose(glm::inverse(transform))) * glm::vec3(mesh.Normals[i].x, mesh.Normals[i].y, mesh.Normals[i].z);
-            SceneMeshVertex vert = SceneMeshVertex(BlVec3<f32>(pos.x, pos.y, pos.z), BlVec3<f32>(normal.x, normal.y, normal.z), normColor, materialIndex);
+            SceneMeshVertex vert = SceneMeshVertex(BlVec3<f32>(pos.x, pos.y, pos.z), BlVec3<f32>(normal.x, normal.y, normal.z), mesh.TexCoords[i], materialIndex);
             m_State.MeshVertices.push_back(vert);
         }
 
@@ -234,7 +236,7 @@ namespace Blackberry {
             renderer.SetBufferLayout({
                 {0, ShaderDataType::Float3, "Position"},
                 {1, ShaderDataType::Float3, "Normal"},
-                {2, ShaderDataType::Float4, "Color"},
+                {2, ShaderDataType::Float2, "TexCoord"},
                 {3, ShaderDataType::Int, "MaterialIndex"}
             });
 
@@ -252,10 +254,21 @@ namespace Blackberry {
             for (u32 i = 0; i < m_State.MaterialIndex; i++) {
                 Material& mat = m_State.Materials[i];
 
-                m_State.MeshShader.SetVec3(fmt::format("u_Materials[{}].Ambient", i), mat.Ambient);
-                m_State.MeshShader.SetVec3(fmt::format("u_Materials[{}].Diffuse", i), mat.Diffuse);
-                m_State.MeshShader.SetVec3(fmt::format("u_Materials[{}].Specular", i), mat.Specular);
                 m_State.MeshShader.SetFloat(fmt::format("u_Materials[{}].Shininess", i), mat.Shininess);
+
+                if (Project::GetAssetManager().ContainsAsset(mat.Diffuse)) {
+                    Texture2D diffuse = std::get<Texture2D>(Project::GetAssetManager().GetAsset(mat.Diffuse).Data);
+
+                    renderer.BindTexture(diffuse, i + 0);
+                    m_State.MeshShader.SetInt(fmt::format("u_Materials[{}].Diffuse", i), i + 0);
+                }
+
+                if (Project::GetAssetManager().ContainsAsset(mat.Specular)) {
+                    Texture2D specular = std::get<Texture2D>(Project::GetAssetManager().GetAsset(mat.Specular).Data);
+
+                    renderer.BindTexture(specular, i + 1);
+                    m_State.MeshShader.SetInt(fmt::format("u_Materials[{}].Specular", i), i + 1);
+                }
             }
 
             renderer.DrawIndexed(m_State.MeshIndexCount);

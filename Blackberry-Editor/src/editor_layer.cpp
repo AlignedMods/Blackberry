@@ -940,7 +940,7 @@ namespace BlackberryEditor {
 
                     for (u32 i = 0; i < model.MeshCount; i++) {
                         f32 remainingSpace = ImGui::GetContentRegionAvail().x;
-                        ImGui::Text("Material [%u]: ", i); ImGui::SameLine();
+                        ImGui::Text("[%u]: ", i); ImGui::SameLine();
 
                         std::string matName;
                         if (Project::GetAssetManager().ContainsAsset(model.Meshes[i].MaterialHandle)) {
@@ -949,6 +949,7 @@ namespace BlackberryEditor {
                             matName = "NULL";
                         }
 
+                        ImGui::PushID(i);
                         size = ImGui::GetContentRegionAvail().x;
                         if (matName == "NULL") {
                             ImGui::PushStyleColor(ImGuiCol_Text, 0xff0000ff);
@@ -965,6 +966,8 @@ namespace BlackberryEditor {
                                 model.Meshes[i].MaterialHandle = *reinterpret_cast<u64*>(payload->Data);
                             }
                         }
+
+                        ImGui::PopID();
                     }
                 }
 

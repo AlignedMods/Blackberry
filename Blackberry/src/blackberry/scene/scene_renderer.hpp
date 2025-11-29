@@ -12,7 +12,7 @@ namespace Blackberry {
     struct SceneMeshVertex {
         BlVec3<f32> Position;
         BlVec3<f32> Normal;
-        BlVec4<f32> Color;
+        BlVec2<f32> TexCoord;
         u32 MaterialIndex = 0;
     };
 

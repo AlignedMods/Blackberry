@@ -81,6 +81,16 @@ namespace Blackberry {
                 j["Entities"][name]["MeshComponent"] = { 
                     {"MeshHandle", mesh.MeshHandle}
                 };
+
+                if (Project::GetAssetManager().ContainsAsset(mesh.MeshHandle)) {
+                    Model& model = std::get<Model>(Project::GetAssetManager().GetAsset(mesh.MeshHandle).Data);
+
+                    for (u32 i = 0; i < model.MeshCount; i++) {
+                        j["Entities"][name]["MeshComponent"]["Materials"][i] = model.Meshes[i].MaterialHandle;
+                    }
+                } else {
+                    j["Entities"][name]["MeshComponent"]["Materials"] = json::array();
+                }
             }
 
             if (entity.HasComponent<CameraComponent>()) {
@@ -179,6 +189,16 @@ namespace Blackberry {
             if (jsonEntity.contains("MeshComponent")) {
                 auto& jsonMesh = jsonEntity.at("MeshComponent");
                 u64 meshHandle = jsonMesh.at("MeshHandle");
+                std::vector<u64> materials = jsonMesh.at("Materials");
+
+                // set materials
+                if (Project::GetAssetManager().ContainsAsset(meshHandle)) {
+                    Model& model = std::get<Model>(Project::GetAssetManager().GetAsset(meshHandle).Data);
+
+                    for (u32 i = 0; i < model.MeshCount; i++) {
+                        model.Meshes[i].MaterialHandle = materials[i];
+                    }
+                }
 
                 entity.AddComponent<MeshComponent>({ meshHandle });
             }

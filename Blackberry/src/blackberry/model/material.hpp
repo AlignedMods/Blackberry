@@ -10,9 +10,8 @@ namespace Blackberry {
         static Material Create(const std::filesystem::path& path);
         static void Save(Material& mat, const std::filesystem::path& path);
 
-        BlVec3<f32> Ambient;
-        BlVec3<f32> Diffuse;
-        BlVec3<f32> Specular;
+        u64 Diffuse = 0;
+        u64 Specular = 0;
         f32 Shininess = 32.0f;
 
         u32 ID = 0;
