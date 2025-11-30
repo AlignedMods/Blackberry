@@ -60,11 +60,6 @@ namespace Blackberry {
             glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
         }
 
-        // blending
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glEnable(GL_MULTISAMPLE);
-
         // depth
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LEQUAL);
@@ -226,7 +221,7 @@ namespace Blackberry {
 
     void Renderer_OpenGL3::BindRenderTexture(const RenderTexture texture) {
         glBindFramebuffer(GL_FRAMEBUFFER, texture.ID);
-        UpdateViewport(BlVec2<f32>(texture.Size.x, texture.Size.y));
+        UpdateViewport(BlVec2<f32>(texture.Specification.Size.x, texture.Specification.Size.y));
     }
 
     void Renderer_OpenGL3::UnBindRenderTexture() {

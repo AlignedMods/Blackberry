@@ -243,9 +243,15 @@ namespace BlackberryEditor {
         io.Fonts->AddFontFromFileTTF("Assets/creato_display/CreatoDisplay-Medium.otf", 18);
         io.Fonts->AddFontFromFileTTF("Assets/creato_display/CreatoDisplay-Bold.otf", 18);
     
-        m_RenderTexture = RenderTexture::Create(1920, 1080);
-        m_MaskTexture = RenderTexture::Create(1920, 1080);
-        m_OutlineTexture = RenderTexture::Create(1920, 1080);
+        RenderTextureSpecification spec;
+        spec.Size = BlVec2<u32>(1920, 1080);
+        spec.Attachments = { {0, RenderTextureAttachmentType::ColorRGBA8},
+                             {1, RenderTextureAttachmentType::Depth} };
+        spec.ActiveAttachments = { 0 };
+
+        m_RenderTexture = RenderTexture::Create(spec);
+        m_MaskTexture = RenderTexture::Create(spec);
+        m_OutlineTexture = RenderTexture::Create(spec);
 
         std::string vs = ReadEntireFile("Assets/shaders/OutlineShader.vs");
         std::string fs = ReadEntireFile("Assets/shaders/OutlineShader.fs");
@@ -264,7 +270,7 @@ namespace BlackberryEditor {
         m_CurrentDirectory = Project::GetAssetDirecory();
         m_BaseDirectory = Project::GetAssetDirecory();
 
-        m_EditorCamera.Transform.Scale = BlVec3(m_RenderTexture.Size.x, m_RenderTexture.Size.y, 1u);
+        m_EditorCamera.Transform.Scale = BlVec3(m_RenderTexture.Specification.Size.x, m_RenderTexture.Specification.Size.y, 1u);
         m_CurrentCamera = &m_EditorCamera;
 
         // gizmo styles
@@ -346,13 +352,8 @@ namespace BlackberryEditor {
     }
     
     void EditorLayer::OnRender() {
-        Renderer3D::BindRenderTexture(m_RenderTexture);
-        Renderer3D::Clear(BlColor(0x69, 0x69, 0x69, 0xff));
-
         m_CurrentScene->SetCamera(m_CurrentCamera);
-        m_CurrentScene->OnRender();
-
-        Renderer3D::UnBindRenderTexture();
+        m_CurrentScene->OnRender(&m_RenderTexture);
     }
 
     void EditorLayer::OnUIRender() {
@@ -396,6 +397,7 @@ namespace BlackberryEditor {
 
             if (ImGui::BeginMenu("View")) {
                 ImGui::MenuItem("Material Editor", nullptr, &m_MaterialEditorOpen);
+                ImGui::MenuItem("Scene Renderer View", nullptr, &m_SceneRendererViewOpen);
 
                 ImGui::EndMenu();
             }
@@ -419,9 +421,10 @@ namespace BlackberryEditor {
         UI_Explorer();
         UI_Properties();
         UI_Viewport();
-        UI_RendererStats();
 
         m_MaterialEditor.OnUIRender(m_MaterialEditorOpen);
+        m_SceneRendererView.SetContext(m_CurrentScene);
+        m_SceneRendererView.OnUIRender(m_SceneRendererViewOpen);
     
         if (m_ShowDemoWindow) {
             ImGui::ShowDemoWindow(&m_ShowDemoWindow);
@@ -484,9 +487,9 @@ namespace BlackberryEditor {
         });
 
         renderer.BindShader(m_OutlineShader);
-        renderer.BindTexture(m_MaskTexture.ColorAttachment);
+        renderer.BindTexture(m_MaskTexture.Attachments[0]);
 
-        m_OutlineShader.SetVec2("u_TexelSize", BlVec2(1.0f / m_OutlineTexture.Size.x, 1.0f / m_OutlineTexture.Size.y));
+        m_OutlineShader.SetVec2("u_TexelSize", BlVec2(1.0f / m_OutlineTexture.Specification.Size.x, 1.0f / m_OutlineTexture.Specification.Size.y));
         m_OutlineShader.SetFloat("u_Thickness", 2.0f);
         m_OutlineShader.SetVec3("u_OutlineColor", BlVec3(1.0f, 0.7f, 0.2f));
 
@@ -780,7 +783,7 @@ namespace BlackberryEditor {
                     Entity entity(m_CurrentScene->CreateEntity("Cube"), m_CurrentScene);
 
                     entity.AddComponent<MeshComponent>();
-                    entity.AddComponent<TransformComponent>({BlVec3(m_RenderTexture.Size.x / 2.0f - 100.0f, m_RenderTexture.Size.y / 2.0f - 50.0f, 0.0f), BlVec3(0.0f), BlVec3(200.0f, 100.0f, 1.0f)});
+                    entity.AddComponent<TransformComponent>({BlVec3(m_RenderTexture.Specification.Size.x / 2.0f - 100.0f, m_RenderTexture.Specification.Size.y / 2.0f - 50.0f, 0.0f), BlVec3(0.0f), BlVec3(200.0f, 100.0f, 1.0f)});
                 };
                 
                 ImGui::EndMenu();
@@ -869,6 +872,7 @@ namespace BlackberryEditor {
                     AddComponentListOption<RigidBodyComponent>("Rigid Body", entity);
                     AddComponentListOption<ColliderComponent>("Collider", entity);
                     AddComponentListOption<DirectionalLightComponent>("Directional Light", entity);
+                    AddComponentListOption<LightComponent>("Light", entity);
                     
                     ImGui::EndMenu();
                 }
@@ -1085,6 +1089,9 @@ namespace BlackberryEditor {
                 ImGui::ColorEdit3("Diffuse", &light.Diffuse.x);
                 ImGui::ColorEdit3("Specular", &light.Specular.x);
             });
+            DrawComponent<LightComponent>("Light", entity, [](LightComponent& light) {
+                ImGui::ColorEdit3("Color", &light.Color.x);    
+            });
         }
     
         ImGui::End();
@@ -1098,26 +1105,27 @@ namespace BlackberryEditor {
         ImGui::PopStyleVar();
 
         ImVec2 windowArea = ImGui::GetContentRegionAvail();
-        f32 scale = windowArea.x / static_cast<f32>(m_RenderTexture.Size.x);
-        f32 y = m_RenderTexture.Size.x * scale;
+        f32 scale = windowArea.x / static_cast<f32>(m_RenderTexture.Specification.Size.x);
+        f32 y = m_RenderTexture.Specification.Size.x * scale;
 
         // we want to make the viewport the smallest axis
         if (y > windowArea.y) {
-            scale = windowArea.y / static_cast<f32>(m_RenderTexture.Size.y);
+            scale = windowArea.y / static_cast<f32>(m_RenderTexture.Specification.Size.y);
         }
         
-        BlVec2 size = BlVec2(m_RenderTexture.Size.x * scale, m_RenderTexture.Size.y * scale);
+        BlVec2 size = BlVec2(m_RenderTexture.Specification.Size.x * scale, m_RenderTexture.Specification.Size.y * scale);
 
         f32 cursorX = ImGui::GetCursorPosX() + windowArea.x / 2.0f - size.x / 2.0f;
         f32 cursorY = ImGui::GetCursorPosY() + (windowArea.y / 2.0f - size.y / 2.0f);
 
         ImGui::SetCursorPosX(cursorX);
         ImGui::SetCursorPosY(cursorY);
-        ImGui::Image(m_RenderTexture.ColorAttachment.ID, ImVec2(size.x, size.y), ImVec2(0, 1), ImVec2(1, 0));
+        auto& rendererState = m_CurrentScene->GetSceneRenderer()->GetState();
+        ImGui::Image(m_RenderTexture.Attachments[0].ID, ImVec2(size.x, size.y), ImVec2(0, 1), ImVec2(1, 0));
 
         ImGui::SetCursorPosX(cursorX);
         ImGui::SetCursorPosY(cursorY);
-        ImGui::Image(m_OutlineTexture.ColorAttachment.ID, ImVec2(size.x, size.y), ImVec2(0, 1), ImVec2(1, 0));
+        // ImGui::Image(m_OutlineTexture.Attachments[0].ID, ImVec2(size.x, size.y), ImVec2(0, 1), ImVec2(1, 0));
 
         if (ImGui::IsItemHovered()) {
             m_ViewportHovered = true;
@@ -1206,26 +1214,6 @@ namespace BlackberryEditor {
             }
         }
     
-        ImGui::End();
-    }
-
-    void EditorLayer::UI_RendererStats() {
-        ImGui::Begin("Renderer Stats");
-
-        auto stats = Renderer3D::GetRendererStats();
-
-        ImGui::Text("Draw Calls: %u", stats.DrawCalls);
-        ImGui::Text("Verticies: %u", stats.Vertices);
-        ImGui::Text("Indicies: %u", stats.Indicies);
-        ImGui::Text("Active Textures: %u", stats.ActiveTextures);
-        ImGui::Text("Reserved Textures: %u", stats.ReservedTextures);
-
-        ImGui::End();
-
-        ImGui::Begin("Font");
-
-        ImGui::Image(m_EditorFont.TextureAtlas.ID, ImVec2(m_EditorFont.TextureAtlas.Size.x, m_EditorFont.TextureAtlas.Size.y));
-
         ImGui::End();
     }
     

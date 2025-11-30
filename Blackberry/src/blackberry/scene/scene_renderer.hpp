@@ -24,12 +24,19 @@ namespace Blackberry {
         BlVec3<f32> Specular;
     };
 
+    struct SceneLight {
+        BlVec3<f32> Position;
+        BlVec3<f32> Color;
+    };
+
     struct SceneRendererState {
         // shaders
-        Shader MeshShader;
+        Shader MeshGeometryShader;
+        Shader MeshLightingShader;
         Shader FontShader;
 
         SceneDirectionalLight DirectionalLight;
+        std::array<SceneLight, 32> Lights;
 
         std::vector<SceneMeshVertex> MeshVertices;
         u32 MeshVertexCount = 0;
@@ -37,21 +44,39 @@ namespace Blackberry {
         u32 MeshIndexCount = 0;
 
         std::array<Material, 16> Materials;
-        u32 MaterialIndex = 0; // 0 is reserved for meshes without a material
+        u32 MaterialIndex = 0;
+
+        // quad vertices (for fullscreen quads or text)
+        std::array<f32, 24> QuadVertices = {{
+            // pos      // texCoord
+            -1.0f,  1.0f,  0.0f, 1.0f,   // top-left
+            -1.0f, -1.0f,  0.0f, 0.0f,   // bottom-left
+             1.0f, -1.0f,  1.0f, 0.0f,   // bottom-right
+            
+            -1.0f,  1.0f,  0.0f, 1.0f,   // top-left
+             1.0f, -1.0f,  1.0f, 0.0f,   // bottom-right
+             1.0f,  1.0f,  1.0f, 1.0f    // top-right
+        }};
+        std::array<u32, 6> QuadIndices = {{ 0, 1, 2, 3, 4, 5 }};
+
+        RenderTexture GBuffer; // For deffered rendering
     };
 
     class SceneRenderer {
     public:
         SceneRenderer();
 
-        void Render(Scene* scene);
+        void Render(Scene* scene, RenderTexture* target);
         void SetCamera(const SceneCamera& camera);
+
+        SceneRendererState& GetState();
 
     private:
         void AddMesh(const glm::mat4& transform, const Mesh& mesh, BlColor color);
         void AddModel(const glm::mat4& transform, const Model& model, BlColor color);
 
         void AddDirectionalLight(const TransformComponent& transform, const DirectionalLightComponent& light);
+        void AddLight(const TransformComponent& transform, const LightComponent& light);
 
         void Flush();
 
@@ -61,6 +86,7 @@ namespace Blackberry {
         SceneRendererState m_State;
 
         SceneCamera m_Camera;
+        RenderTexture* m_Target = nullptr;
     };
 
 } // namespace Blackberry

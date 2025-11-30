@@ -126,10 +126,10 @@ namespace Blackberry {
         m_PhysicsWorld->Step(BL_APP.GetDeltaTime());
     }
 
-    void Scene::OnRender() {
+    void Scene::OnRender(RenderTexture* target) {
         BL_ASSERT(m_Camera, "No camera set for current scene!");
 
-        m_Renderer->Render(this);
+        m_Renderer->Render(this, target);
     }
 
     void Scene::RenderEntity(EntityID entity) {
@@ -211,6 +211,10 @@ namespace Blackberry {
 
     std::vector<EntityID> Scene::GetEntities() {
         return m_ECS->GetAllEntities();
+    }
+
+    SceneRenderer* Scene::GetSceneRenderer() {
+        return m_Renderer;
     }
 
 } // namespace Blackberry

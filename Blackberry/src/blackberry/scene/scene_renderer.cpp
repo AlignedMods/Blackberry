@@ -1,12 +1,13 @@
 #include "blackberry/scene/scene_renderer.hpp"
 #include "blackberry/scene/scene.hpp"
 #include "blackberry/project/project.hpp"
+#include "glad/glad.h"
 
 namespace Blackberry {
 
 #pragma region ShaderCode
 
-    static const char* s_VertexShaderMeshSource = BL_STR(
+    static const char* s_VertexShaderMeshGeometrySource = BL_STR(
         \x23version 460 core\n
 
         layout (location = 0) in vec3 a_Pos;
@@ -31,53 +32,94 @@ namespace Blackberry {
         }
     );
 
-    static const char* s_FragmentShaderMeshSource = BL_STR(
+    static const char* s_FragmentShaderMeshGeometrySource = BL_STR(
         \x23version 460 core\n
 
         layout (location = 0) in vec3 a_Normal;
         layout (location = 1) in vec2 a_TexCoord;
         layout (location = 2) in vec3 a_FragPos;
         layout (location = 3) in flat int a_MaterialIndex;
-
-        struct DirectionalLight {
-            vec3 Direction;
-
-            vec3 Ambient;
-            vec3 Diffuse;
-            vec3 Specular;
-        };
-
+        
         struct Material {
             sampler2D Diffuse;
             sampler2D Specular;
             float Shininess;
         };
-
-        uniform vec3 u_ViewPos;
-        uniform DirectionalLight u_Light;
+        
         uniform Material u_Materials[16];
+        
+        layout (location = 0) out vec4 o_GPosition;
+        layout (location = 1) out vec4 o_GNormal;
+        layout (location = 2) out vec4 o_GAlbedoSpec;
+         
+        void main() {
+            // Store the position in the first buffer
+            o_GPosition.rgb = a_FragPos;
+            // Store the normal in the second buffer
+            o_GNormal.rgb = normalize(a_Normal);
+            // Store the diffuse color in the rgb part of the third buffer
+            o_GAlbedoSpec.rgb = texture(u_Materials[a_MaterialIndex].Diffuse, a_TexCoord).rgb;
+            // Store the specular intensity in the alpha channel of the third buffer
+            o_GAlbedoSpec.a = texture(u_Materials[a_MaterialIndex].Specular, a_TexCoord).r;
+
+            // For visualizations of normals and positions (normally the alpha would just get set to 0.0)
+            o_GPosition.a = 1.0;
+            o_GNormal.a = 1.0;
+        }
+    );
+
+    static const char* s_VertexShaderMeshLightingSource = BL_STR(
+        \x23version 460 core\n
+
+        layout (location = 0) in vec2 a_Pos;
+        layout (location = 1) in vec2 a_TexCoord;
+
+        layout (location = 0) out vec2 o_TexCoord;
+
+        void main() {
+            gl_Position = vec4(a_Pos, 0.0, 1.0);
+            o_TexCoord = a_TexCoord;
+        }
+    );
+
+    static const char* s_FragmentShaderMeshLightingSource = BL_STR(
+        \x23version 460 core\n
+
+        layout (location = 0) in vec2 a_TexCoord;
+
+        uniform sampler2D u_GPosition;
+        uniform sampler2D u_GNormal;
+        uniform sampler2D u_GAlbedoSpec;
+
+        struct Light {
+            vec3 Position;
+            vec3 Color;
+        };
+        const int MAX_LIGHTS = 32;
+        uniform Light u_Lights[MAX_LIGHTS];
+        uniform vec3 u_ViewPos;
 
         out vec4 o_FragColor;
 
         void main() {
-            // ambient
-            vec3 ambient = u_Light.Ambient * texture(u_Materials[a_MaterialIndex].Diffuse, a_TexCoord).rgb;
+            // Retrieve data from gBuffer
+            vec3 fragPos = texture(u_GPosition, a_TexCoord).rgb;
+            vec3 normal = texture(u_GNormal, a_TexCoord).rgb;
+            vec3 albedo = texture(u_GAlbedoSpec, a_TexCoord).rgb;
+            float specular = texture(u_GAlbedoSpec, a_TexCoord).a;
 
-            // diffuse
-            vec3 norm = normalize(a_Normal);
-            vec3 lightDir = normalize(-u_Light.Direction);
-            float diff = max(dot(norm, lightDir), 0.0);
-            vec3 diffuse = u_Light.Diffuse * diff * texture(u_Materials[a_MaterialIndex].Diffuse, a_TexCoord).rgb;
+            vec3 lighting = albedo * 0.1;
+            vec3 viewDir = normalize(u_ViewPos - fragPos);
 
-            // specular
-            vec3 viewDir = normalize(u_ViewPos - a_FragPos);
-            vec3 reflectDir = reflect(-lightDir, norm);  
-            float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_Materials[a_MaterialIndex].Shininess);
-            vec3 specular = u_Light.Specular * spec * texture(u_Materials[a_MaterialIndex].Specular, a_TexCoord).rgb;  
+            for (int i = 0; i < MAX_LIGHTS; ++i) {
+                vec3 lightDir = normalize(u_Lights[i].Position - fragPos);
+                vec3 diffuse = max(dot(normal, lightDir), 0.0) * albedo * u_Lights[i].Color;
+                lighting += diffuse;
+            }
 
-            vec4 result = vec4(ambient + diffuse + specular, 1.0);
-            o_FragColor = result;
-            //o_FragColor = vec4(a_TexCoord, 0.0, 1.0);
+            o_FragColor = vec4(albedo, 1.0);
+            // o_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+            // o_FragColor = vec4(normal, 1.0);
         }
     );
 
@@ -149,17 +191,38 @@ namespace Blackberry {
     }
 
     SceneRenderer::SceneRenderer() {
-        m_State.MeshShader = Shader::Create(s_VertexShaderMeshSource, s_FragmentShaderMeshSource);
+        m_State.MeshGeometryShader = Shader::Create(s_VertexShaderMeshGeometrySource, s_FragmentShaderMeshGeometrySource);
+        m_State.MeshLightingShader = Shader::Create(s_VertexShaderMeshLightingSource, s_FragmentShaderMeshLightingSource);
         m_State.FontShader = Shader::Create(s_VertexShaderFontSource, s_FragmentShaderFontSource);
+
+        RenderTextureSpecification spec;
+        spec.Size = BlVec2<u32>(1920, 1080);
+        spec.Attachments = {
+            {0, RenderTextureAttachmentType::ColorRGBA16F}, // position color buffer
+            {1, RenderTextureAttachmentType::ColorRGBA16F}, // normal buffer
+            {2, RenderTextureAttachmentType::ColorRGBA8}, // color + specular buffer
+            {3, RenderTextureAttachmentType::Depth} // depth
+        };
+        spec.ActiveAttachments = {0, 1, 2}; // which attachments we want to use for rendering
+
+        m_State.GBuffer = RenderTexture::Create(spec);
     }
 
     // SceneRenderer::~SceneRenderer() {}
 
-    void SceneRenderer::Render(Scene* scene) {
+    void SceneRenderer::Render(Scene* scene, RenderTexture* target) {
+        m_Target = target;
+
         auto dirLightView = scene->m_ECS->GetEntitiesWithComponents<TransformComponent, DirectionalLightComponent>();
 
         dirLightView.each([&](TransformComponent& transform, DirectionalLightComponent& light) {
             AddDirectionalLight(transform, light);    
+        });
+
+        auto lightView = scene->m_ECS->GetEntitiesWithComponents<TransformComponent, LightComponent>();
+
+        lightView.each([&](TransformComponent& transform, LightComponent& light) {
+            AddLight(transform, light);
         });
 
         auto meshView = scene->m_ECS->GetEntitiesWithComponents<TransformComponent, MeshComponent>();
@@ -219,20 +282,27 @@ namespace Blackberry {
         m_State.DirectionalLight.Specular = light.Specular;
     }
 
+    void SceneRenderer::AddLight(const TransformComponent& transform, const LightComponent& light) {
+        SceneLight l;
+        l.Position = transform.Position;
+        l.Color = light.Color;
+    }
+
     void SceneRenderer::Flush() {
         auto& renderer = BL_APP.GetRenderer();
 
         if (m_State.MeshIndices.size() > 0) {
-            DrawBuffer buffer;
-            buffer.Vertices = m_State.MeshVertices.data();
-            buffer.VertexSize = sizeof(SceneMeshVertex);
-            buffer.VertexCount = m_State.MeshVertexCount;
+            // Geometry pass
+            DrawBuffer geometryBuffer;
+            geometryBuffer.Vertices = m_State.MeshVertices.data();
+            geometryBuffer.VertexSize = sizeof(SceneMeshVertex);
+            geometryBuffer.VertexCount = m_State.MeshVertexCount;
 
-            buffer.Indices = m_State.MeshIndices.data();
-            buffer.IndexSize = sizeof(u32);
-            buffer.IndexCount = m_State.MeshIndexCount;
+            geometryBuffer.Indices = m_State.MeshIndices.data();
+            geometryBuffer.IndexSize = sizeof(u32);
+            geometryBuffer.IndexCount = m_State.MeshIndexCount;
 
-            renderer.SubmitDrawBuffer(buffer);
+            renderer.SubmitDrawBuffer(geometryBuffer);
             renderer.SetBufferLayout({
                 {0, ShaderDataType::Float3, "Position"},
                 {1, ShaderDataType::Float3, "Normal"},
@@ -240,38 +310,79 @@ namespace Blackberry {
                 {3, ShaderDataType::Int, "MaterialIndex"}
             });
 
-            renderer.BindShader(m_State.MeshShader);
-            m_State.MeshShader.SetMatrix("u_Projection", m_Camera.GetCameraMatrixFloat());
-            m_State.MeshShader.SetVec3("u_ViewPos", m_Camera.Transform.Position);
-
-            auto& light = m_State.DirectionalLight;
-            m_State.MeshShader.SetVec3("u_Light.Direction", BlVec3(light.Direction));
-            m_State.MeshShader.SetVec3("u_Light.Ambient", light.Ambient);
-            m_State.MeshShader.SetVec3("u_Light.Diffuse", light.Diffuse);
-            m_State.MeshShader.SetVec3("u_Light.Specular", light.Specular);
+            renderer.BindShader(m_State.MeshGeometryShader);
+            m_State.MeshGeometryShader.SetMatrix("u_Projection", m_Camera.GetCameraMatrixFloat());
 
             // apply materials
             for (u32 i = 0; i < m_State.MaterialIndex; i++) {
                 Material& mat = m_State.Materials[i];
 
-                m_State.MeshShader.SetFloat(fmt::format("u_Materials[{}].Shininess", i), mat.Shininess);
+                m_State.MeshGeometryShader.SetFloat(fmt::format("u_Materials[{}].Shininess", i), mat.Shininess);
 
                 if (Project::GetAssetManager().ContainsAsset(mat.Diffuse)) {
                     Texture2D diffuse = std::get<Texture2D>(Project::GetAssetManager().GetAsset(mat.Diffuse).Data);
 
                     renderer.BindTexture(diffuse, i + 0);
-                    m_State.MeshShader.SetInt(fmt::format("u_Materials[{}].Diffuse", i), i + 0);
+                    m_State.MeshGeometryShader.SetInt(fmt::format("u_Materials[{}].Diffuse", i), i + 0);
                 }
 
                 if (Project::GetAssetManager().ContainsAsset(mat.Specular)) {
                     Texture2D specular = std::get<Texture2D>(Project::GetAssetManager().GetAsset(mat.Specular).Data);
 
                     renderer.BindTexture(specular, i + 1);
-                    m_State.MeshShader.SetInt(fmt::format("u_Materials[{}].Specular", i), i + 1);
+                    m_State.MeshGeometryShader.SetInt(fmt::format("u_Materials[{}].Specular", i), i + 1);
                 }
             }
 
+            renderer.BindRenderTexture(m_State.GBuffer);
+            renderer.Clear(BlColor(0, 0, 0, 255));
+
             renderer.DrawIndexed(m_State.MeshIndexCount);
+
+            renderer.UnBindRenderTexture();
+
+            // Lighting pass
+            if (m_Target) {
+                renderer.BindRenderTexture(*m_Target);
+                renderer.Clear(BlColor(69, 69, 69, 255));
+            }
+
+            DrawBuffer lightingBuffer;
+            lightingBuffer.Vertices = m_State.QuadVertices.data();
+            lightingBuffer.VertexSize = sizeof(f32) * 4;
+            lightingBuffer.VertexCount = 6;
+
+            lightingBuffer.Indices = m_State.QuadIndices.data();
+            lightingBuffer.IndexSize = sizeof(u32);
+            lightingBuffer.IndexCount = 6;
+
+            renderer.SubmitDrawBuffer(lightingBuffer);
+            renderer.SetBufferLayout({
+                {0, ShaderDataType::Float2, "Position"},
+                {1, ShaderDataType::Float2, "TexCoord"}
+            });
+
+            renderer.BindShader(m_State.MeshLightingShader);
+            m_State.MeshLightingShader.SetVec3("u_ViewPos", m_Camera.Transform.Position);
+
+            m_State.MeshLightingShader.SetInt("u_GPosition", 0);
+            m_State.MeshLightingShader.SetInt("u_GNormal", 1);
+            m_State.MeshLightingShader.SetInt("u_GAlbedoSpec", 2);
+
+            for (u32 i = 0; i < m_State.Lights.size(); i++) {
+                m_State.MeshLightingShader.SetVec3(fmt::format("u_Lights[{}].Position", i), BlVec3(m_State.Lights[i].Position));
+                m_State.MeshLightingShader.SetVec3(fmt::format("u_Lights[{}].Color", i), BlVec3(m_State.Lights[i].Color));
+            }
+
+            renderer.BindTexture(m_State.GBuffer.Attachments[0], 0);
+            renderer.BindTexture(m_State.GBuffer.Attachments[1], 1);
+            renderer.BindTexture(m_State.GBuffer.Attachments[2], 2);
+
+            renderer.DrawIndexed(6);
+
+            if (m_Target) {
+                renderer.UnBindRenderTexture();
+            }
 
             m_State.MeshVertices.clear();
             m_State.MeshIndices.clear();
@@ -315,6 +426,10 @@ namespace Blackberry {
         }
 
         return matIndex;
+    }
+
+    SceneRendererState& Blackberry::SceneRenderer::GetState() {
+        return m_State;
     }
 
 } // namespace Blackberry

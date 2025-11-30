@@ -7,6 +7,26 @@ namespace Blackberry {
 
     enum class TextureFiltering { Nearest, Linear };
 
+    enum class RenderTextureAttachmentType {
+        // Color attachments
+        ColorRGBA8,
+        ColorRGBA16F,
+
+        // Depth attachments
+        Depth
+    };
+
+    struct RenderTextureAttachment {
+        u32 Attachment = 0;
+        RenderTextureAttachmentType Type;
+    };
+
+    struct RenderTextureSpecification {
+        BlVec2<u32> Size;
+        std::initializer_list<RenderTextureAttachment> Attachments;
+        std::vector<u32> ActiveAttachments;
+    };
+
     struct Texture2D {
         Texture2D() = default;
 
@@ -27,13 +47,13 @@ namespace Blackberry {
     struct RenderTexture {
         RenderTexture() = default;
 
-        static RenderTexture Create(u32 width, u32 height);
+        static RenderTexture Create(const RenderTextureSpecification& spec);
         void Delete();
+        void Resize(BlVec2<u32> size);
     
         u32 ID = 0;
-        BlVec2<u32> Size;
-        Texture2D ColorAttachment;
-        Texture2D DepthAttachment;
+        RenderTextureSpecification Specification;
+        std::vector<Texture2D> Attachments;
     };
 
 } // namespace Blackberry

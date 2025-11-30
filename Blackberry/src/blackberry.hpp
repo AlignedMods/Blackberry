@@ -27,6 +27,7 @@
 // scenes
 #include "blackberry/scene/scene.hpp"
 #include "blackberry/scene/entity.hpp"
+#include "blackberry/scene/scene_renderer.hpp"
 
 // utils
 #include "blackberry/core/log.hpp"

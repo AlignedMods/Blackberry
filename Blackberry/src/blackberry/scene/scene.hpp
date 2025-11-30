@@ -28,7 +28,7 @@ namespace Blackberry {
 
         void OnUpdate();
         void OnRuntimeUpdate();
-        void OnRender();
+        void OnRender(RenderTexture* target = nullptr); // NOTE: you can use a custom framebuffer here!
 
         void RenderEntity(EntityID entity);
 
@@ -45,6 +45,8 @@ namespace Blackberry {
 
         EntityID GetEntity(const std::string& name);
         std::vector<EntityID> GetEntities();
+
+        SceneRenderer* GetSceneRenderer();
 
     private:
         ECS* m_ECS = nullptr;

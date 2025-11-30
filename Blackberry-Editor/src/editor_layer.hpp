@@ -1,6 +1,7 @@
 #pragma once
 
 #include "panels/material_editor.hpp"
+#include "panels/scene_renderer_view.hpp"
 
 #include "blackberry.hpp"
 
@@ -36,7 +37,6 @@ namespace BlackberryEditor {
         void UI_Explorer();
         void UI_Properties();
         void UI_Viewport();
-        void UI_RendererStats();
     
         void UI_NewProject();
         void UI_NewScene();
@@ -56,6 +56,9 @@ namespace BlackberryEditor {
         // panels
         MaterialEditor m_MaterialEditor;
         bool m_MaterialEditorOpen = true;
+
+        SceneRendererView m_SceneRendererView;
+        bool m_SceneRendererViewOpen = true;
 
         bool m_ShowNewProjectWindow = false;
         bool m_ShowNewSceneWindow = false;
