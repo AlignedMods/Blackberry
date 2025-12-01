@@ -30,7 +30,7 @@ namespace Blackberry {
         void main() {
             gl_Position = u_ViewProjection * Transforms[a_ObjectIndex] * vec4(a_Pos, 1.0f);
 
-            o_Normal = a_Normal;
+            o_Normal = mat3(transpose(inverse(Transforms[a_ObjectIndex]))) * a_Normal;
             o_TexCoord = a_TexCoord;
             o_FragPos = a_Pos;
             o_MaterialIndex = a_MaterialIndex;
@@ -268,7 +268,7 @@ namespace Blackberry {
 
 #pragma endregion
 
-    constexpr u32 MAX_OBJECTS = 10;
+    constexpr u32 MAX_OBJECTS = 8192;
 
     static BlVec4<f32> NormalizeColor(BlColor color) {
         return BlVec4<f32>(
