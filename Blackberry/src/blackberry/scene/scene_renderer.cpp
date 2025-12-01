@@ -14,8 +14,13 @@ namespace Blackberry {
         layout (location = 1) in vec3 a_Normal;
         layout (location = 2) in vec2 a_TexCoord;
         layout (location = 3) in int a_MaterialIndex;
+        layout (location = 4) in int a_ObjectIndex;
 
-        uniform mat4 u_Projection;
+        uniform mat4 u_ViewProjection;
+
+        layout(std430, binding = 0) buffer TransformBuffer {
+            mat4 Transforms[];
+        };
 
         layout (location = 0) out vec3 o_Normal;
         layout (location = 1) out vec2 o_TexCoord;
@@ -23,7 +28,7 @@ namespace Blackberry {
         layout (location = 3) out flat int o_MaterialIndex;
 
         void main() {
-            gl_Position = u_Projection * vec4(a_Pos, 1.0f);
+            gl_Position = u_ViewProjection * Transforms[a_ObjectIndex] * vec4(a_Pos, 1.0f);
 
             o_Normal = a_Normal;
             o_TexCoord = a_TexCoord;
@@ -263,6 +268,8 @@ namespace Blackberry {
 
 #pragma endregion
 
+    constexpr u32 MAX_OBJECTS = 10;
+
     static BlVec4<f32> NormalizeColor(BlColor color) {
         return BlVec4<f32>(
             static_cast<f32>(color.r) / 255.0f,
@@ -276,6 +283,9 @@ namespace Blackberry {
         m_State.MeshGeometryShader = Shader::Create(s_VertexShaderMeshGeometrySource, s_FragmentShaderMeshGeometrySource);
         m_State.MeshLightingShader = Shader::Create(s_VertexShaderMeshLightingSource, s_FragmentShaderMeshLightingSource);
         m_State.FontShader = Shader::Create(s_VertexShaderFontSource, s_FragmentShaderFontSource);
+
+        m_State.TransformBuffer = ShaderStorageBuffer::Create(0);
+        m_State.TransformBuffer.ReserveMemory(sizeof(glm::mat4) * MAX_OBJECTS);
 
         RenderTextureSpecification spec;
         spec.Size = BlVec2<u32>(1920, 1080);
@@ -335,10 +345,10 @@ namespace Blackberry {
 
         // vertices
         for (u32 i = 0; i < mesh.Positions.size(); i++) {
-            glm::vec4 pos = transform * glm::vec4(mesh.Positions[i].x, mesh.Positions[i].y, mesh.Positions[i].z, 1.0f);
-            glm::vec3 normal = glm::mat3(glm::transpose(glm::inverse(transform))) * glm::vec3(mesh.Normals[i].x, mesh.Normals[i].y, mesh.Normals[i].z);
+            // glm::vec4 pos = transform * glm::vec4(mesh.Positions[i].x, mesh.Positions[i].y, mesh.Positions[i].z, 1.0f);
+            // glm::vec3 normal = glm::mat3(glm::transpose(glm::inverse(transform))) * glm::vec3(mesh.Normals[i].x, mesh.Normals[i].y, mesh.Normals[i].z);
             // glm::vec3 normal = glm::vec3(mesh.Normals[i].x, mesh.Normals[i].y, mesh.Normals[i].z);
-            SceneMeshVertex vert = SceneMeshVertex(BlVec3<f32>(pos.x, pos.y, pos.z), BlVec3<f32>(normal.x, normal.y, normal.z), mesh.TexCoords[i], materialIndex);
+            SceneMeshVertex vert = SceneMeshVertex(mesh.Positions[i], mesh.Normals[i], mesh.TexCoords[i], materialIndex, m_State.ObjectIndex);
             m_State.MeshVertices.push_back(vert);
         }
 
@@ -348,8 +358,13 @@ namespace Blackberry {
             m_State.MeshIndices.push_back(mesh.Indices[i] + vertexCount);
         }
 
+        // Add transform which will be sent to shader
+        m_State.Transforms.push_back(transform);
+
         m_State.MeshVertexCount += mesh.Positions.size();
         m_State.MeshIndexCount += mesh.Indices.size();
+
+        m_State.ObjectIndex++;
     }
 
     void SceneRenderer::AddModel(const glm::mat4& transform, const Model& model, BlColor color) {
@@ -394,11 +409,22 @@ namespace Blackberry {
                 {0, ShaderDataType::Float3, "Position"},
                 {1, ShaderDataType::Float3, "Normal"},
                 {2, ShaderDataType::Float2, "TexCoord"},
-                {3, ShaderDataType::Int, "MaterialIndex"}
+                {3, ShaderDataType::Int, "MaterialIndex"},
+                {4, ShaderDataType::Int, "ObjectIndex"}
             });
 
             renderer.BindShader(m_State.MeshGeometryShader);
-            m_State.MeshGeometryShader.SetMatrix("u_Projection", m_Camera.GetCameraMatrixFloat());
+            m_State.MeshGeometryShader.SetMatrix("u_ViewProjection", m_Camera.GetCameraMatrixFloat());
+
+            // send tranform data
+            glm::mat4* tBuffer = reinterpret_cast<glm::mat4*>(m_State.TransformBuffer.MapMemory());
+
+            for (u32 i = 0; i < m_State.Transforms.size(); i++) {
+                tBuffer[i] = m_State.Transforms[i];
+            }
+
+            // we MUST unmap buffer
+            m_State.TransformBuffer.UnMapMemory();
 
             // apply materials
             for (u32 i = 0; i < m_State.MaterialIndex; i++) {
@@ -477,6 +503,8 @@ namespace Blackberry {
         }
 
         m_State.MaterialIndex = 0;
+        m_State.ObjectIndex = 0;
+        m_State.Transforms.clear();
         m_State.LightIndex = 0;
     }
 

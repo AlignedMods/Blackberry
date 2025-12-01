@@ -4,6 +4,7 @@
 #include "blackberry/model/model.hpp"
 #include "blackberry/scene/camera.hpp"
 #include "blackberry/model/material.hpp"
+#include "blackberry/renderer/shader_storage_buffer.hpp"
 
 namespace Blackberry {
 
@@ -14,6 +15,7 @@ namespace Blackberry {
         BlVec3<f32> Normal;
         BlVec2<f32> TexCoord;
         u32 MaterialIndex = 0;
+        u32 ObjectIndex = 0;
     };
 
     struct SceneDirectionalLight {
@@ -35,6 +37,11 @@ namespace Blackberry {
         Shader MeshLightingShader;
         Shader FontShader;
 
+        // shader buffers
+        ShaderStorageBuffer TransformBuffer;
+
+        std::vector<glm::mat4> Transforms;
+
         SceneDirectionalLight DirectionalLight;
         std::array<SceneLight, 32> Lights;
         u32 LightIndex = 0;
@@ -46,6 +53,7 @@ namespace Blackberry {
 
         std::array<Material, 16> Materials;
         u32 MaterialIndex = 0;
+        u32 ObjectIndex = 0;
 
         // quad vertices (for fullscreen quads or text)
         std::array<f32, 24> QuadVertices = {{
