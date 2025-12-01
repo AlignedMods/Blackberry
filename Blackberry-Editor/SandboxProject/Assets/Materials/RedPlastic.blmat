@@ -1,5 +1,6 @@
 {
-    "Diffuse": 0,
-    "Specular": 0,
-    "Shininess": 16.0
+    "Albedo": [1.0, 0.2, 0.2],
+    "Metallic": 0.3,
+    "Roughness": 0.9,
+    "AO": 0.0
 }

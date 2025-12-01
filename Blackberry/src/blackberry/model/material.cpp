@@ -14,13 +14,15 @@ namespace Blackberry {
         std::string contents = ReadEntireFile(path);
         json j = json::parse(contents);
 
-        u64 diffuse = j.at("Diffuse");
-        u64 specular = j.at("Specular");
-        f32 shininess = j.at("Shininess");
+        std::array<f32, 3> albedo = j.at("Albedo");
+        f32 metallic = j.at("Metallic");
+        f32 roughness = j.at("Roughness");
+        f32 ao = j.at("AO");
 
-        mat.Diffuse = diffuse;
-        mat.Specular = specular;
-        mat.Shininess = shininess;
+        mat.Albedo = BlVec3(albedo[0], albedo[1], albedo[2]);
+        mat.Metallic = metallic;
+        mat.Roughness = roughness;
+        mat.AO = ao;
 
         mat.ID = s_CurrentID;
         s_CurrentID++;
@@ -31,9 +33,10 @@ namespace Blackberry {
     void Material::Save(Material& mat, const std::filesystem::path& path) {
         json j;
 
-        j["Diffuse"] = mat.Diffuse;
-        j["Specular"] = mat.Specular;
-        j["Shininess"] = mat.Shininess;
+        j["Albedo"] = { mat.Albedo.x, mat.Albedo.y, mat.Albedo.z };
+        j["Metallic"] = mat.Metallic;
+        j["Roughness"] = mat.Roughness;
+        j["AO"] = mat.AO;
 
         std::ofstream file(path);
         file << j.dump(4);

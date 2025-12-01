@@ -41,30 +41,36 @@ namespace Blackberry {
         layout (location = 3) in flat int a_MaterialIndex;
         
         struct Material {
-            sampler2D Diffuse;
-            sampler2D Specular;
-            float Shininess;
+            vec3 Albedo;
+            float Metallic;
+            float Roughness;
+            float AO;
         };
         
         uniform Material u_Materials[16];
         
         layout (location = 0) out vec4 o_GPosition;
         layout (location = 1) out vec4 o_GNormal;
-        layout (location = 2) out vec4 o_GAlbedoSpec;
+        layout (location = 2) out vec4 o_GAlbedo;
+        layout (location = 3) out vec4 o_GMat;
          
         void main() {
             // Store the position in the first buffer
             o_GPosition.rgb = a_FragPos;
             // Store the normal in the second buffer
             o_GNormal.rgb = normalize(a_Normal);
-            // Store the diffuse color in the rgb part of the third buffer
-            o_GAlbedoSpec.rgb = texture(u_Materials[a_MaterialIndex].Diffuse, a_TexCoord).rgb;
-            // Store the specular intensity in the alpha channel of the third buffer
-            o_GAlbedoSpec.a = texture(u_Materials[a_MaterialIndex].Specular, a_TexCoord).r;
+            // Store the diffuse color in the third buffer
+            o_GAlbedo.rgb = u_Materials[a_MaterialIndex].Albedo.rgb;
+            // Store material information in the fourth buffer
+            o_GMat.r = u_Materials[a_MaterialIndex].Metallic;
+            o_GMat.g = u_Materials[a_MaterialIndex].Roughness;
+            o_GMat.b = u_Materials[a_MaterialIndex].AO;
 
-            // For visualizations of normals and positions (normally the alpha would just get set to 0.0)
+            // For visualizations (normally the alpha would just get set to 0.0)
             o_GPosition.a = 1.0;
             o_GNormal.a = 1.0;
+            o_GAlbedo.a = 1.0;
+            o_GMat.a = 1.0;
         }
     );
 
@@ -89,7 +95,8 @@ namespace Blackberry {
 
         uniform sampler2D u_GPosition;
         uniform sampler2D u_GNormal;
-        uniform sampler2D u_GAlbedoSpec;
+        uniform sampler2D u_GAlbedo;
+        uniform sampler2D u_GMat;
 
         struct Light {
             vec3 Position;
@@ -101,25 +108,100 @@ namespace Blackberry {
 
         out vec4 o_FragColor;
 
+        const float PI = 3.14159265359;
+
+        float DistributionGGX(vec3 N, vec3 H, float roughness);
+        float GeometrySchlickGGX(float NdotV, float roughness);
+        float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
+        vec3 FresnelSchlick(float cosTheta, vec3 F0);
+
         void main() {
-            // Retrieve data from gBuffer
-            vec3 fragPos = texture(u_GPosition, a_TexCoord).rgb;
+            vec3 worldPos = texture(u_GPosition, a_TexCoord).rgb;
             vec3 normal = texture(u_GNormal, a_TexCoord).rgb;
-            vec3 albedo = texture(u_GAlbedoSpec, a_TexCoord).rgb;
-            float specular = texture(u_GAlbedoSpec, a_TexCoord).a;
+            vec3 albedo = texture(u_GAlbedo, a_TexCoord).rgb;
+            float metallic = texture(u_GMat, a_TexCoord).r;
+            float roughness = texture(u_GMat, a_TexCoord).g;
+            float ao = texture(u_GMat, a_TexCoord).b;
 
-            vec3 lighting = albedo * 0.1;
-            vec3 viewDir = normalize(u_ViewPos - fragPos);
+            vec3 N = normal;
+            vec3 V = normalize(u_ViewPos - worldPos);
 
-            for (int i = 0; i < MAX_LIGHTS; ++i) {
-                vec3 lightDir = normalize(u_Lights[i].Position - fragPos);
-                vec3 diffuse = max(dot(normal, lightDir), 0.0) * albedo * u_Lights[i].Color;
-                lighting += diffuse;
+            vec3 F0 = vec3(0.04);
+            F0 = mix(F0, albedo, metallic);
+
+            // reflectance equation
+            vec3 Lo = vec3(0.0);
+            for (int i = 0; i < MAX_LIGHTS; i++) {
+                // calculate per light radiance
+                vec3 L = normalize(u_Lights[i].Position - worldPos);
+                vec3 H = normalize(V + L);
+                float distance = length(u_Lights[i].Position - worldPos);
+                float attenuation = 1.0 / (distance * distance);
+                vec3 radiance = u_Lights[i].Color * attenuation;
+
+                // cook-torrance brdf
+                float NDF = DistributionGGX(N, H, roughness);
+                float G = GeometrySmith(N, V, L, roughness);
+                vec3 F = FresnelSchlick(max(dot(H, V), 0.0), F0);
+
+                vec3 kS = F;
+                vec3 kD = vec3(1.0) - kS;
+                kD *= 1.0 - metallic;
+
+                vec3 numerator = NDF * G * F;
+                float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001;
+                vec3 specular = numerator / denominator;
+
+                // add to radiance
+                float NdotL = max(dot(N, L), 0.0);
+                Lo += (kD * albedo / PI + specular) * radiance * NdotL;
             }
 
-            o_FragColor = vec4(albedo, 1.0);
-            // o_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-            // o_FragColor = vec4(normal, 1.0);
+            vec3 ambient = vec3(0.03) * albedo * ao;
+            vec3 color = ambient + Lo;
+
+            // HDR tonemapping
+            color = color / (color + vec3(1.0));
+            // Gamma correct
+            color = pow(color, vec3(1.0 / 2.2));
+
+            o_FragColor = vec4(color, 1.0);
+        }
+
+        float DistributionGGX(vec3 N, vec3 H, float roughness) {
+            float a = roughness * roughness;
+            float a2 = a * a;
+            float NdotH = max(dot(N, H), 0.0);
+            float NdotH2 = NdotH * NdotH;
+        
+            float nom   = a2;
+            float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+            denom = PI * denom * denom;
+        
+            return nom / denom;
+        }
+
+        float GeometrySchlickGGX(float NdotV, float roughness) {
+            float r = (roughness + 1.0);
+            float k = (r * r) / 8.0;
+        
+            float nom   = NdotV;
+            float denom = NdotV * (1.0 - k) + k;
+        
+            return nom / denom;
+        }
+
+        float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness) {
+            float NdotV = max(dot(N, V), 0.0);
+            float NdotL = max(dot(N, L), 0.0);
+            float ggx2 = GeometrySchlickGGX(NdotV, roughness);
+            float ggx1 = GeometrySchlickGGX(NdotL, roughness);
+        
+            return ggx1 * ggx2;
+        }
+
+        vec3 FresnelSchlick(float cosTheta, vec3 F0) {
+            return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
         }
     );
 
@@ -200,10 +282,11 @@ namespace Blackberry {
         spec.Attachments = {
             {0, RenderTextureAttachmentType::ColorRGBA16F}, // position color buffer
             {1, RenderTextureAttachmentType::ColorRGBA16F}, // normal buffer
-            {2, RenderTextureAttachmentType::ColorRGBA8}, // color + specular buffer
-            {3, RenderTextureAttachmentType::Depth} // depth
+            {2, RenderTextureAttachmentType::ColorRGBA8}, // color buffer
+            {3, RenderTextureAttachmentType::ColorRGBA16F}, // material buffer
+            {4, RenderTextureAttachmentType::Depth} // depth
         };
-        spec.ActiveAttachments = {0, 1, 2}; // which attachments we want to use for rendering
+        spec.ActiveAttachments = {0, 1, 2, 3}; // which attachments we want to use for rendering
 
         m_State.GBuffer = RenderTexture::Create(spec);
     }
@@ -254,6 +337,7 @@ namespace Blackberry {
         for (u32 i = 0; i < mesh.Positions.size(); i++) {
             glm::vec4 pos = transform * glm::vec4(mesh.Positions[i].x, mesh.Positions[i].y, mesh.Positions[i].z, 1.0f);
             glm::vec3 normal = glm::mat3(glm::transpose(glm::inverse(transform))) * glm::vec3(mesh.Normals[i].x, mesh.Normals[i].y, mesh.Normals[i].z);
+            // glm::vec3 normal = glm::vec3(mesh.Normals[i].x, mesh.Normals[i].y, mesh.Normals[i].z);
             SceneMeshVertex vert = SceneMeshVertex(BlVec3<f32>(pos.x, pos.y, pos.z), BlVec3<f32>(normal.x, normal.y, normal.z), mesh.TexCoords[i], materialIndex);
             m_State.MeshVertices.push_back(vert);
         }
@@ -286,6 +370,9 @@ namespace Blackberry {
         SceneLight l;
         l.Position = transform.Position;
         l.Color = light.Color;
+
+        m_State.Lights[m_State.LightIndex] = l;
+        m_State.LightIndex++;
     }
 
     void SceneRenderer::Flush() {
@@ -317,21 +404,10 @@ namespace Blackberry {
             for (u32 i = 0; i < m_State.MaterialIndex; i++) {
                 Material& mat = m_State.Materials[i];
 
-                m_State.MeshGeometryShader.SetFloat(fmt::format("u_Materials[{}].Shininess", i), mat.Shininess);
-
-                if (Project::GetAssetManager().ContainsAsset(mat.Diffuse)) {
-                    Texture2D diffuse = std::get<Texture2D>(Project::GetAssetManager().GetAsset(mat.Diffuse).Data);
-
-                    renderer.BindTexture(diffuse, i + 0);
-                    m_State.MeshGeometryShader.SetInt(fmt::format("u_Materials[{}].Diffuse", i), i + 0);
-                }
-
-                if (Project::GetAssetManager().ContainsAsset(mat.Specular)) {
-                    Texture2D specular = std::get<Texture2D>(Project::GetAssetManager().GetAsset(mat.Specular).Data);
-
-                    renderer.BindTexture(specular, i + 1);
-                    m_State.MeshGeometryShader.SetInt(fmt::format("u_Materials[{}].Specular", i), i + 1);
-                }
+                m_State.MeshGeometryShader.SetVec3(fmt::format("u_Materials[{}].Albedo", i), mat.Albedo);
+                m_State.MeshGeometryShader.SetFloat(fmt::format("u_Materials[{}].Metallic", i), mat.Metallic);
+                m_State.MeshGeometryShader.SetFloat(fmt::format("u_Materials[{}].Roughness", i), mat.Roughness);
+                m_State.MeshGeometryShader.SetFloat(fmt::format("u_Materials[{}].AO", i), mat.AO);
             }
 
             renderer.BindRenderTexture(m_State.GBuffer);
@@ -367,16 +443,25 @@ namespace Blackberry {
 
             m_State.MeshLightingShader.SetInt("u_GPosition", 0);
             m_State.MeshLightingShader.SetInt("u_GNormal", 1);
-            m_State.MeshLightingShader.SetInt("u_GAlbedoSpec", 2);
+            m_State.MeshLightingShader.SetInt("u_GAlbedo", 2);
+            m_State.MeshLightingShader.SetInt("u_GMat", 3);
 
-            for (u32 i = 0; i < m_State.Lights.size(); i++) {
-                m_State.MeshLightingShader.SetVec3(fmt::format("u_Lights[{}].Position", i), BlVec3(m_State.Lights[i].Position));
-                m_State.MeshLightingShader.SetVec3(fmt::format("u_Lights[{}].Color", i), BlVec3(m_State.Lights[i].Color));
+            // set directional light
+            // m_State.MeshLightingShader.SetVec3("u_DirectionalLight.Direction", m_State.DirectionalLight.Direction);
+            // m_State.MeshLightingShader.SetVec3("u_DirectionalLight.Ambient", m_State.DirectionalLight.Ambient);
+            // m_State.MeshLightingShader.SetVec3("u_DirectionalLight.Diffuse", m_State.DirectionalLight.Diffuse);
+            // m_State.MeshLightingShader.SetVec3("u_DirectionalLight.Specular", m_State.DirectionalLight.Specular);
+
+            // set lights
+            for (u32 i = 0; i < 32; i++) {
+                m_State.MeshLightingShader.SetVec3(fmt::format("u_Lights[{}].Position", i), m_State.Lights[i].Position);
+                m_State.MeshLightingShader.SetVec3(fmt::format("u_Lights[{}].Color", i), m_State.Lights[i].Color);
             }
 
             renderer.BindTexture(m_State.GBuffer.Attachments[0], 0);
             renderer.BindTexture(m_State.GBuffer.Attachments[1], 1);
             renderer.BindTexture(m_State.GBuffer.Attachments[2], 2);
+            renderer.BindTexture(m_State.GBuffer.Attachments[3], 3);
 
             renderer.DrawIndexed(6);
 
@@ -392,6 +477,7 @@ namespace Blackberry {
         }
 
         m_State.MaterialIndex = 0;
+        m_State.LightIndex = 0;
     }
 
     u32 SceneRenderer::GetMaterialIndex(const Material& mat) {

@@ -37,6 +37,7 @@ namespace Blackberry {
 
         SceneDirectionalLight DirectionalLight;
         std::array<SceneLight, 32> Lights;
+        u32 LightIndex = 0;
 
         std::vector<SceneMeshVertex> MeshVertices;
         u32 MeshVertexCount = 0;

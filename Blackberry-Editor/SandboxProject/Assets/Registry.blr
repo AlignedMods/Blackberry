@@ -10,15 +10,15 @@
             "Path": "Meshes\\Default\\Cube.glb",
             "Type": "Model"
         },
-        "Handle - 13648184844694430662": {
-            "Handle": 13648184844694430662,
-            "Path": "Meshes\\Default\\Sphere.glb",
-            "Type": "Model"
-        },
         "Handle - 15162507589004987079": {
             "Handle": 15162507589004987079,
             "Path": "Textures\\cat.jpg",
             "Type": "Texture"
+        },
+        "Handle - 16676790944532672824": {
+            "Handle": 16676790944532672824,
+            "Path": "Meshes\\Default\\Sphere.glb",
+            "Type": "Model"
         },
         "Handle - 21128899974857072": {
             "Handle": 21128899974857072,
