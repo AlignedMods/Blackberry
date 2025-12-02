@@ -1,10 +1,6 @@
 {
-    "AO": 1.0,
-    "Albedo": [
-        1.0,
-        0.20000000298023224,
-        0.20000000298023224
-    ],
-    "Metallic": 0.4350000023841858,
-    "Roughness": 0.8999999761581421
+    "AO": "Textures/Rust/ao.png",
+    "Albedo": "Textures/Rust/albedo.png",
+    "Metallic": "Textures/Rust/metallic.png",
+    "Roughness": "Textures/Rust/roughness.png"
 }

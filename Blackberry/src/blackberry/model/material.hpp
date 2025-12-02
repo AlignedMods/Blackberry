@@ -1,6 +1,7 @@
 #pragma once
 
 #include "blackberry/core/types.hpp"
+#include "blackberry/renderer/texture.hpp"
 
 #include <filesystem>
 
@@ -11,10 +12,10 @@ namespace Blackberry {
         static Material Create(const std::filesystem::path& path);
         static void Save(Material& mat, const std::filesystem::path& path);
 
-        BlVec3<f32> Albedo;
-        f32 Metallic = 0.0;
-        f32 Roughness = 0.0f;
-        f32 AO = 0.0f;
+        Texture2D Albedo;
+        Texture2D Metallic;
+        Texture2D Roughness;
+        Texture2D AO;
 
         u32 ID = 0;
     };

@@ -46,13 +46,13 @@ namespace Blackberry {
         layout (location = 3) in flat int a_MaterialIndex;
         
         struct Material {
-            vec3 Albedo;
-            float Metallic;
-            float Roughness;
-            float AO;
+            sampler2D Albedo;
+            sampler2D Metallic;
+            sampler2D Roughness;
+            sampler2D AO;
         };
         
-        uniform Material u_Materials[16];
+        uniform Material u_Materials[8];
         
         layout (location = 0) out vec4 o_GPosition;
         layout (location = 1) out vec4 o_GNormal;
@@ -65,11 +65,11 @@ namespace Blackberry {
             // Store the normal in the second buffer
             o_GNormal.rgb = normalize(a_Normal);
             // Store the diffuse color in the third buffer
-            o_GAlbedo.rgb = u_Materials[a_MaterialIndex].Albedo.rgb;
+            o_GAlbedo.rgb = texture(u_Materials[a_MaterialIndex].Albedo, a_TexCoord).rgb;
             // Store material information in the fourth buffer
-            o_GMat.r = u_Materials[a_MaterialIndex].Metallic;
-            o_GMat.g = u_Materials[a_MaterialIndex].Roughness;
-            o_GMat.b = u_Materials[a_MaterialIndex].AO;
+            o_GMat.r = texture(u_Materials[a_MaterialIndex].Metallic, a_TexCoord).r;
+            o_GMat.g = texture(u_Materials[a_MaterialIndex].Roughness, a_TexCoord).r;
+            o_GMat.b = texture(u_Materials[a_MaterialIndex].AO, a_TexCoord).r;
 
             // For visualizations (normally the alpha would just get set to 0.0)
             o_GPosition.a = 1.0;
@@ -123,7 +123,7 @@ namespace Blackberry {
         void main() {
             vec3 worldPos = texture(u_GPosition, a_TexCoord).rgb;
             vec3 normal = texture(u_GNormal, a_TexCoord).rgb;
-            vec3 albedo = texture(u_GAlbedo, a_TexCoord).rgb;
+            vec3 albedo = pow(texture(u_GAlbedo, a_TexCoord).rgb, vec3(2.2));
             float metallic = texture(u_GMat, a_TexCoord).r;
             float roughness = texture(u_GMat, a_TexCoord).g;
             float ao = texture(u_GMat, a_TexCoord).b;
@@ -430,10 +430,15 @@ namespace Blackberry {
             for (u32 i = 0; i < m_State.MaterialIndex; i++) {
                 Material& mat = m_State.Materials[i];
 
-                m_State.MeshGeometryShader.SetVec3(fmt::format("u_Materials[{}].Albedo", i), mat.Albedo);
-                m_State.MeshGeometryShader.SetFloat(fmt::format("u_Materials[{}].Metallic", i), mat.Metallic);
-                m_State.MeshGeometryShader.SetFloat(fmt::format("u_Materials[{}].Roughness", i), mat.Roughness);
-                m_State.MeshGeometryShader.SetFloat(fmt::format("u_Materials[{}].AO", i), mat.AO);
+                m_State.MeshGeometryShader.SetInt(fmt::format("u_Materials[{}].Albedo", i), 0);
+                m_State.MeshGeometryShader.SetInt(fmt::format("u_Materials[{}].Metallic", i), 1);
+                m_State.MeshGeometryShader.SetInt(fmt::format("u_Materials[{}].Roughness", i), 2);
+                m_State.MeshGeometryShader.SetInt(fmt::format("u_Materials[{}].AO", i), 3);
+
+                renderer.BindTexture(mat.Albedo, 0);
+                renderer.BindTexture(mat.Metallic, 1);
+                renderer.BindTexture(mat.Roughness, 2);
+                renderer.BindTexture(mat.AO, 3);
             }
 
             renderer.BindRenderTexture(m_State.GBuffer);

@@ -188,8 +188,8 @@
             "TransformComponent": {
                 "Position": [
                     0.45000001788139343,
-                    0.20000004768371582,
-                    -1.649999976158142
+                    0.8500000238418579,
+                    -1.5
                 ],
                 "Rotation": [
                     0.0,
@@ -211,7 +211,7 @@
                 "MeshHandle": 16676790944532672824
             },
             "TagComponent": {
-                "Name": "Cube",
+                "Name": "Sphere",
                 "UUID": 12928185605232963448
             },
             "TransformComponent": {
