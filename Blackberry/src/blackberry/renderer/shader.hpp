@@ -13,6 +13,7 @@ namespace Blackberry {
         void SetFloat(const std::string& uniform, f32 val);
         void SetInt(const std::string& uniform, int val);
         void SetUInt(const std::string& uniform, u32 val);
+        void SetUInt64(const std::string& uniform, u64 val);
         void SetIntArray(const std::string& uniform, u32 count, int* array);
         void SetVec2(const std::string& uniform, BlVec2<f32> val);
         void SetVec3(const std::string& uniform, BlVec3<f32> val);

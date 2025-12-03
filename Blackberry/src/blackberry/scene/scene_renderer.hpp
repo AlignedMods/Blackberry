@@ -31,6 +31,13 @@ namespace Blackberry {
         BlVec3<f32> Color;
     };
 
+    struct GPUMaterial {
+        u64 Albedo = 0;
+        u64 Metallic = 0;
+        u64 Roughness = 0;
+        u64 AO = 0;
+    };
+
     struct SceneRendererState {
         // shaders
         Shader MeshGeometryShader;
@@ -39,6 +46,8 @@ namespace Blackberry {
 
         // shader buffers
         ShaderStorageBuffer TransformBuffer;
+        ShaderStorageBuffer MaterialBuffer;
+        ShaderStorageBuffer ShaderGBuffer;
 
         std::vector<glm::mat4> Transforms;
 
@@ -51,7 +60,7 @@ namespace Blackberry {
         std::vector<u32> MeshIndices;
         u32 MeshIndexCount = 0;
 
-        std::array<Material, 16> Materials;
+        std::vector<GPUMaterial> Materials;
         u32 MaterialIndex = 0;
         u32 ObjectIndex = 0;
 

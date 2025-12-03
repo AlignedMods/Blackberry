@@ -1,7 +1,7 @@
 #include "blackberry/renderer/texture.hpp"
 #include "blackberry/core/util.hpp"
 
-#include "glad/glad.h"
+#include "glad/gl.h"
 
 namespace Blackberry {
 
@@ -50,17 +50,15 @@ namespace Blackberry {
         tex.Size.y = height;
         tex.Format = pixelFormat;
     
-        glGenTextures(1, &tex.ID);
-        glBindTexture(GL_TEXTURE_2D, tex.ID);
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // <<< very important!
+        glCreateTextures(GL_TEXTURE_2D, 1, &tex.ID);
     
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTextureParameteri(tex.ID, GL_TEXTURE_WRAP_S, GL_REPEAT);	
+        glTextureParameteri(tex.ID, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTextureParameteri(tex.ID, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         if (filter == TextureFiltering::Nearest) {
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTextureParameteri(tex.ID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         } else {
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTextureParameteri(tex.ID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         }
     
         GLuint format = GL_RGBA;
@@ -92,17 +90,26 @@ namespace Blackberry {
                 break;
         }
     
-        glTexImage2D(GL_TEXTURE_2D, 0, glFormat, tex.Size.x, tex.Size.y, 0, format, type, pixels);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    
-        glBindTexture(GL_TEXTURE_2D, 0);
+        glTextureStorage2D(tex.ID, 1, glFormat, width, height);
+        glTextureSubImage2D(tex.ID, 0, 0, 0, width, height, format, type, pixels);
+
+        glGenerateTextureMipmap(tex.ID);
+
+        tex.BindlessHandle = glGetTextureHandleARB(tex.ID);
+        if (tex.BindlessHandle == 0 || !glIsTexture(tex.ID)) {
+            BL_CORE_CRITICAL("Failed to create bindless texture!");
+            exit(1);
+        }
+        glMakeTextureHandleResidentARB(tex.BindlessHandle);
 
         return tex;
     }
     
     void Texture2D::Delete() {
         glDeleteTextures(1, &ID);
+        glMakeTextureHandleNonResidentARB(BindlessHandle);
         ID = 0;
+        BindlessHandle = 0;
         Size.x = 0;
         Size.y = 0;
     }
@@ -131,31 +138,46 @@ namespace Blackberry {
         for (auto& attachment : spec.Attachments) {
             Texture2D texAttachment;
             texAttachment.Size = spec.Size;
+            bool createBindlessHandle = true;
 
             if (attachment.Type == RenderTextureAttachmentType::ColorRGBA8) {
                 u32 id = 0;
 
-                glGenTextures(1, &id);
-                glBindTexture(GL_TEXTURE_2D, id);
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, spec.Size.x, spec.Size.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                glCreateTextures(GL_TEXTURE_2D, 1, &id);
+
+                glTextureStorage2D(id, 1, GL_RGBA8, spec.Size.x, spec.Size.y);
+                glTextureSubImage2D(id, 0, 0, 0, spec.Size.x, spec.Size.y, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+
+                glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                glTextureParameteri(id, GL_TEXTURE_WRAP_S, GL_REPEAT);
+                glTextureParameteri(id, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachment.Attachment, GL_TEXTURE_2D, id, 0);
 
                 texAttachment.Format = ImageFormat::RGBA8;
                 texAttachment.ID = id;
+
+                createBindlessHandle = true;
             } else if (attachment.Type == RenderTextureAttachmentType::ColorRGBA16F) {
                 u32 id = 0;
 
-                glGenTextures(1, &id);
-                glBindTexture(GL_TEXTURE_2D, id);
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, spec.Size.x, spec.Size.y, 0, GL_RGBA, GL_FLOAT, nullptr);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                glCreateTextures(GL_TEXTURE_2D, 1, &id);
+
+                glTextureStorage2D(id, 1, GL_RGBA16F, spec.Size.x, spec.Size.y);
+                glTextureSubImage2D(id, 0, 0, 0, spec.Size.x, spec.Size.y, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+
+                glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                glTextureParameteri(id, GL_TEXTURE_WRAP_S, GL_REPEAT);
+                glTextureParameteri(id, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachment.Attachment, GL_TEXTURE_2D, id, 0);
 
                 texAttachment.Format = ImageFormat::RGBA32F;
                 texAttachment.ID = id;
+
+                createBindlessHandle = true;
             } else if (attachment.Type == RenderTextureAttachmentType::Depth) {
                 u32 id = 0;
 
@@ -166,6 +188,17 @@ namespace Blackberry {
 
                 texAttachment.Format = ImageFormat::RGBA8;
                 texAttachment.ID = id;
+
+                createBindlessHandle = false;
+            }
+
+            if (createBindlessHandle) {
+                texAttachment.BindlessHandle = glGetTextureHandleARB(texAttachment.ID);
+                if (texAttachment.BindlessHandle == 0 || !glIsTexture(texAttachment.ID)) {
+                    BL_CORE_CRITICAL("Failed to create bindless texture!");
+                    exit(1);
+                }
+                glMakeTextureHandleResidentARB(texAttachment.BindlessHandle);
             }
 
             tex.Attachments.push_back(texAttachment);

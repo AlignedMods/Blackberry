@@ -61,7 +61,7 @@ project "glad"
     targetdir("../build/bin/" .. OutputDir .. "/%{prj.name}")
     objdir("../build/obj/" .. OutputDir .. "/%{prj.name}")
 
-    files { "vendor/glad/src/glad.c" }
+    files { "vendor/glad/src/gl.c" }
 
     includedirs { "vendor/glad/include/" }
 

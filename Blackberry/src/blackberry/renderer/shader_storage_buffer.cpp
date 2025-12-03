@@ -1,6 +1,6 @@
 #include "shader_storage_buffer.hpp"
 
-#include "glad/glad.h"
+#include "glad/gl.h"
 
 namespace Blackberry {
 

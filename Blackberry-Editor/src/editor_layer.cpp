@@ -487,7 +487,7 @@ namespace BlackberryEditor {
         });
 
         renderer.BindShader(m_OutlineShader);
-        renderer.BindTexture(m_MaskTexture.Attachments[0]);
+        // renderer.BindTexture(m_MaskTexture.Attachments[0]);
 
         m_OutlineShader.SetVec2("u_TexelSize", BlVec2(1.0f / m_OutlineTexture.Specification.Size.x, 1.0f / m_OutlineTexture.Specification.Size.y));
         m_OutlineShader.SetFloat("u_Thickness", 2.0f);
@@ -495,7 +495,7 @@ namespace BlackberryEditor {
 
         renderer.DrawIndexed(6);
 
-        renderer.UnBindTexture();
+        // renderer.UnBindTexture();
 
         Renderer3D::UnBindRenderTexture();
     }

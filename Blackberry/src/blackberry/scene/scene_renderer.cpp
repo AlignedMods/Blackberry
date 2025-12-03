@@ -1,7 +1,6 @@
 #include "blackberry/scene/scene_renderer.hpp"
 #include "blackberry/scene/scene.hpp"
 #include "blackberry/project/project.hpp"
-#include "glad/glad.h"
 
 namespace Blackberry {
 
@@ -9,6 +8,7 @@ namespace Blackberry {
 
     static const char* s_VertexShaderMeshGeometrySource = BL_STR(
         \x23version 460 core\n
+        \x23 extension GL_ARB_bindless_texture : enable\n
 
         layout (location = 0) in vec3 a_Pos;
         layout (location = 1) in vec3 a_Normal;
@@ -39,6 +39,7 @@ namespace Blackberry {
 
     static const char* s_FragmentShaderMeshGeometrySource = BL_STR(
         \x23version 460 core\n
+        \x23 extension GL_ARB_bindless_texture : enable\n // enable ARB bindless textures
 
         layout (location = 0) in vec3 a_Normal;
         layout (location = 1) in vec2 a_TexCoord;
@@ -46,13 +47,15 @@ namespace Blackberry {
         layout (location = 3) in flat int a_MaterialIndex;
         
         struct Material {
-            sampler2D Albedo;
-            sampler2D Metallic;
-            sampler2D Roughness;
-            sampler2D AO;
+            uvec2 Albedo;
+            uvec2 Metallic;
+            uvec2 Roughness;
+            uvec2 AO;
         };
         
-        uniform Material u_Materials[8];
+        layout (std430, binding = 1) buffer MaterialBuffer {
+            Material Materials[];
+        };
         
         layout (location = 0) out vec4 o_GPosition;
         layout (location = 1) out vec4 o_GNormal;
@@ -65,11 +68,11 @@ namespace Blackberry {
             // Store the normal in the second buffer
             o_GNormal.rgb = normalize(a_Normal);
             // Store the diffuse color in the third buffer
-            o_GAlbedo.rgb = texture(u_Materials[a_MaterialIndex].Albedo, a_TexCoord).rgb;
+            o_GAlbedo.rgb = texture(sampler2D(Materials[a_MaterialIndex].Albedo), a_TexCoord).rgb;
             // Store material information in the fourth buffer
-            o_GMat.r = texture(u_Materials[a_MaterialIndex].Metallic, a_TexCoord).r;
-            o_GMat.g = texture(u_Materials[a_MaterialIndex].Roughness, a_TexCoord).r;
-            o_GMat.b = texture(u_Materials[a_MaterialIndex].AO, a_TexCoord).r;
+            o_GMat.r = texture(sampler2D(Materials[a_MaterialIndex].Metallic), a_TexCoord).r;
+            o_GMat.g = texture(sampler2D(Materials[a_MaterialIndex].Roughness), a_TexCoord).r;
+            o_GMat.b = texture(sampler2D(Materials[a_MaterialIndex].AO), a_TexCoord).r;
 
             // For visualizations (normally the alpha would just get set to 0.0)
             o_GPosition.a = 1.0;
@@ -81,6 +84,7 @@ namespace Blackberry {
 
     static const char* s_VertexShaderMeshLightingSource = BL_STR(
         \x23version 460 core\n
+        \x23 extension GL_ARB_bindless_texture : enable\n
 
         layout (location = 0) in vec2 a_Pos;
         layout (location = 1) in vec2 a_TexCoord;
@@ -95,13 +99,16 @@ namespace Blackberry {
 
     static const char* s_FragmentShaderMeshLightingSource = BL_STR(
         \x23version 460 core\n
+        \x23 extension GL_ARB_bindless_texture : enable\n
 
         layout (location = 0) in vec2 a_TexCoord;
 
-        uniform sampler2D u_GPosition;
-        uniform sampler2D u_GNormal;
-        uniform sampler2D u_GAlbedo;
-        uniform sampler2D u_GMat;
+        layout (std430, binding = 2) buffer GBuffer {
+            uvec2 GPosition;
+            uvec2 GNormal;
+            uvec2 GAlbedo;
+            uvec2 GMat;
+        };
 
         struct Light {
             vec3 Position;
@@ -121,19 +128,19 @@ namespace Blackberry {
         vec3 FresnelSchlick(float cosTheta, vec3 F0);
 
         void main() {
-            vec3 worldPos = texture(u_GPosition, a_TexCoord).rgb;
-            vec3 normal = texture(u_GNormal, a_TexCoord).rgb;
-            vec3 albedo = pow(texture(u_GAlbedo, a_TexCoord).rgb, vec3(2.2));
-            float metallic = texture(u_GMat, a_TexCoord).r;
-            float roughness = texture(u_GMat, a_TexCoord).g;
-            float ao = texture(u_GMat, a_TexCoord).b;
-
+            vec3 worldPos =   texture(sampler2D(GPosition), a_TexCoord).rgb;
+            vec3 normal =     texture(sampler2D(GNormal), a_TexCoord).rgb;
+            vec3 albedo = pow(texture(sampler2D(GAlbedo), a_TexCoord).rgb, vec3(2.2));
+            float metallic =  texture(sampler2D(GMat), a_TexCoord).r;
+            float roughness = texture(sampler2D(GMat), a_TexCoord).g;
+            float ao =        texture(sampler2D(GMat), a_TexCoord).b;
+            
             vec3 N = normal;
             vec3 V = normalize(u_ViewPos - worldPos);
-
+            
             vec3 F0 = vec3(0.04);
             F0 = mix(F0, albedo, metallic);
-
+            
             // reflectance equation
             vec3 Lo = vec3(0.0);
             for (int i = 0; i < MAX_LIGHTS; i++) {
@@ -143,33 +150,33 @@ namespace Blackberry {
                 float distance = length(u_Lights[i].Position - worldPos);
                 float attenuation = 1.0 / (distance * distance);
                 vec3 radiance = u_Lights[i].Color * attenuation;
-
+            
                 // cook-torrance brdf
                 float NDF = DistributionGGX(N, H, roughness);
                 float G = GeometrySmith(N, V, L, roughness);
                 vec3 F = FresnelSchlick(max(dot(H, V), 0.0), F0);
-
+            
                 vec3 kS = F;
                 vec3 kD = vec3(1.0) - kS;
                 kD *= 1.0 - metallic;
-
+            
                 vec3 numerator = NDF * G * F;
                 float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001;
                 vec3 specular = numerator / denominator;
-
+            
                 // add to radiance
                 float NdotL = max(dot(N, L), 0.0);
                 Lo += (kD * albedo / PI + specular) * radiance * NdotL;
             }
-
+            
             vec3 ambient = vec3(0.03) * albedo * ao;
             vec3 color = ambient + Lo;
-
+            
             // HDR tonemapping
             color = color / (color + vec3(1.0));
             // Gamma correct
             color = pow(color, vec3(1.0 / 2.2));
-
+            
             o_FragColor = vec4(color, 1.0);
         }
 
@@ -212,6 +219,7 @@ namespace Blackberry {
 
     static const char* s_VertexShaderFontSource = BL_STR(
         \x23version 460 core\n
+        \x23 extension GL_ARB_bindless_texture : enable\n
 
         layout (location = 0) in vec3 a_Pos;
         layout (location = 1) in vec4 a_Color;
@@ -232,6 +240,7 @@ namespace Blackberry {
 
     static const char* s_FragmentShaderFontSource = BL_STR(
         \x23version 460 core\n
+        \x23 extension GL_ARB_bindless_texture : enable\n
 
         layout (location = 0) in vec4 a_Color;
         layout (location = 1) in vec2 a_TexCoord;
@@ -269,6 +278,7 @@ namespace Blackberry {
 #pragma endregion
 
     constexpr u32 MAX_OBJECTS = 8192;
+    constexpr u32 MAX_MATERIALS = 2048;
 
     static BlVec4<f32> NormalizeColor(BlColor color) {
         return BlVec4<f32>(
@@ -286,6 +296,12 @@ namespace Blackberry {
 
         m_State.TransformBuffer = ShaderStorageBuffer::Create(0);
         m_State.TransformBuffer.ReserveMemory(sizeof(glm::mat4) * MAX_OBJECTS);
+
+        m_State.MaterialBuffer = ShaderStorageBuffer::Create(1);
+        m_State.MaterialBuffer.ReserveMemory(sizeof(GPUMaterial) * MAX_MATERIALS);
+
+        m_State.ShaderGBuffer = ShaderStorageBuffer::Create(2);
+        m_State.ShaderGBuffer.ReserveMemory(sizeof(u64) * 4); // four uvec2's
 
         RenderTextureSpecification spec;
         spec.Size = BlVec2<u32>(1920, 1080);
@@ -341,14 +357,13 @@ namespace Blackberry {
         Material& mat = std::get<Material>(Project::GetAssetManager().GetAsset(mesh.MaterialHandle).Data);
 
         BlVec4<f32> normColor = NormalizeColor(color);
-        u32 materialIndex = GetMaterialIndex(mat);
 
         // vertices
         for (u32 i = 0; i < mesh.Positions.size(); i++) {
             // glm::vec4 pos = transform * glm::vec4(mesh.Positions[i].x, mesh.Positions[i].y, mesh.Positions[i].z, 1.0f);
             // glm::vec3 normal = glm::mat3(glm::transpose(glm::inverse(transform))) * glm::vec3(mesh.Normals[i].x, mesh.Normals[i].y, mesh.Normals[i].z);
             // glm::vec3 normal = glm::vec3(mesh.Normals[i].x, mesh.Normals[i].y, mesh.Normals[i].z);
-            SceneMeshVertex vert = SceneMeshVertex(mesh.Positions[i], mesh.Normals[i], mesh.TexCoords[i], materialIndex, m_State.ObjectIndex);
+            SceneMeshVertex vert = SceneMeshVertex(mesh.Positions[i], mesh.Normals[i], mesh.TexCoords[i], m_State.MaterialIndex, m_State.ObjectIndex);
             m_State.MeshVertices.push_back(vert);
         }
 
@@ -361,10 +376,18 @@ namespace Blackberry {
         // Add transform which will be sent to shader
         m_State.Transforms.push_back(transform);
 
+        GPUMaterial gpuMat;
+        gpuMat.Albedo = mat.Albedo.BindlessHandle;
+        gpuMat.Metallic = mat.Metallic.BindlessHandle;
+        gpuMat.Roughness = mat.Roughness.BindlessHandle;
+        gpuMat.AO = mat.AO.BindlessHandle;
+        m_State.Materials.push_back(gpuMat);
+
         m_State.MeshVertexCount += mesh.Positions.size();
         m_State.MeshIndexCount += mesh.Indices.size();
 
         m_State.ObjectIndex++;
+        m_State.MaterialIndex++;
     }
 
     void SceneRenderer::AddModel(const glm::mat4& transform, const Model& model, BlColor color) {
@@ -426,20 +449,14 @@ namespace Blackberry {
             // we MUST unmap buffer
             m_State.TransformBuffer.UnMapMemory();
 
+            GPUMaterial* mBuffer = reinterpret_cast<GPUMaterial*>(m_State.MaterialBuffer.MapMemory());
+
             // apply materials
             for (u32 i = 0; i < m_State.MaterialIndex; i++) {
-                Material& mat = m_State.Materials[i];
-
-                m_State.MeshGeometryShader.SetInt(fmt::format("u_Materials[{}].Albedo", i), 0);
-                m_State.MeshGeometryShader.SetInt(fmt::format("u_Materials[{}].Metallic", i), 1);
-                m_State.MeshGeometryShader.SetInt(fmt::format("u_Materials[{}].Roughness", i), 2);
-                m_State.MeshGeometryShader.SetInt(fmt::format("u_Materials[{}].AO", i), 3);
-
-                renderer.BindTexture(mat.Albedo, 0);
-                renderer.BindTexture(mat.Metallic, 1);
-                renderer.BindTexture(mat.Roughness, 2);
-                renderer.BindTexture(mat.AO, 3);
+                mBuffer[i] = m_State.Materials[i];
             }
+
+            m_State.MaterialBuffer.UnMapMemory();
 
             renderer.BindRenderTexture(m_State.GBuffer);
             renderer.Clear(BlColor(0, 0, 0, 255));
@@ -472,10 +489,18 @@ namespace Blackberry {
             renderer.BindShader(m_State.MeshLightingShader);
             m_State.MeshLightingShader.SetVec3("u_ViewPos", m_Camera.Transform.Position);
 
-            m_State.MeshLightingShader.SetInt("u_GPosition", 0);
-            m_State.MeshLightingShader.SetInt("u_GNormal", 1);
-            m_State.MeshLightingShader.SetInt("u_GAlbedo", 2);
-            m_State.MeshLightingShader.SetInt("u_GMat", 3);
+            u64* gBuffer = reinterpret_cast<u64*>(m_State.ShaderGBuffer.MapMemory());
+
+            for (u32 i = 0; i < 4; i++) {
+                gBuffer[i] = m_State.GBuffer.Attachments[i].BindlessHandle;
+            }
+
+            m_State.ShaderGBuffer.UnMapMemory();
+
+            // m_State.MeshLightingShader.SetUInt64("u_GPosition", m_State.GBuffer.Attachments[0].BindlessHandle);
+            // m_State.MeshLightingShader.SetUInt64("u_GNormal",   m_State.GBuffer.Attachments[1].BindlessHandle);
+            // m_State.MeshLightingShader.SetUInt64("u_GAlbedo",   m_State.GBuffer.Attachments[2].BindlessHandle);
+            // m_State.MeshLightingShader.SetUInt64("u_GMat",      m_State.GBuffer.Attachments[3].BindlessHandle);
 
             // set directional light
             // m_State.MeshLightingShader.SetVec3("u_DirectionalLight.Direction", m_State.DirectionalLight.Direction);
@@ -488,11 +513,6 @@ namespace Blackberry {
                 m_State.MeshLightingShader.SetVec3(fmt::format("u_Lights[{}].Position", i), m_State.Lights[i].Position);
                 m_State.MeshLightingShader.SetVec3(fmt::format("u_Lights[{}].Color", i), m_State.Lights[i].Color);
             }
-
-            renderer.BindTexture(m_State.GBuffer.Attachments[0], 0);
-            renderer.BindTexture(m_State.GBuffer.Attachments[1], 1);
-            renderer.BindTexture(m_State.GBuffer.Attachments[2], 2);
-            renderer.BindTexture(m_State.GBuffer.Attachments[3], 3);
 
             renderer.DrawIndexed(6);
 
@@ -509,8 +529,9 @@ namespace Blackberry {
 
         m_State.MaterialIndex = 0;
         m_State.ObjectIndex = 0;
-        m_State.Transforms.clear();
         m_State.LightIndex = 0;
+        m_State.Transforms.clear();
+        m_State.Materials.clear();
     }
 
     u32 SceneRenderer::GetMaterialIndex(const Material& mat) {
@@ -526,23 +547,23 @@ namespace Blackberry {
 
         // Loop through all of the current materials to see if we already have a
         // matching material
-        for (u32 i = 0; i < m_State.MaterialIndex; i++) {
-            if (mat.ID == m_State.Materials[i].ID) {
-                matIndex = i;
-                texAlreadyExists = true;
-
-                break;
-            }
-        }
-
-        // If we haven't found a suitable material we create a new slot
-        if (!texAlreadyExists) {
-            matIndex = m_State.MaterialIndex;
-
-            m_State.Materials[m_State.MaterialIndex] = mat;
-            m_State.MaterialIndex++;
-            texAlreadyExists = true;
-        }
+        // for (u32 i = 0; i < m_State.MaterialIndex; i++) {
+        //     if (mat.ID == m_State.Materials[i].ID) {
+        //         matIndex = i;
+        //         texAlreadyExists = true;
+        // 
+        //         break;
+        //     }
+        // }
+        // 
+        // // If we haven't found a suitable material we create a new slot
+        // if (!texAlreadyExists) {
+        //     matIndex = m_State.MaterialIndex;
+        // 
+        //     m_State.Materials[m_State.MaterialIndex] = mat;
+        //     m_State.MaterialIndex++;
+        //     texAlreadyExists = true;
+        // }
 
         return matIndex;
     }

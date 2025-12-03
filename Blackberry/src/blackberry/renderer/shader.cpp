@@ -1,7 +1,7 @@
 #include "blackberry/renderer/shader.hpp"
 #include "blackberry/core/log.hpp"
 
-#include "glad/glad.h"
+#include "glad/gl.h"
 
 namespace Blackberry {
 
@@ -67,6 +67,10 @@ namespace Blackberry {
 
     void Shader::SetUInt(const std::string& uniform, u32 val) {
         glUniform1ui(glGetUniformLocation(ID, uniform.c_str()), val);
+    }
+
+    void Shader::SetUInt64(const std::string& uniform, u64 val) {
+        glUniform1ui64ARB(glGetUniformLocation(ID, uniform.c_str()), val);
     }
     
     void Shader::SetIntArray(const std::string& uniform, u32 count, int* array) {

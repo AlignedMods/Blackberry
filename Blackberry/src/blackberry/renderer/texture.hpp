@@ -40,6 +40,7 @@ namespace Blackberry {
         void* ReadPixels();
     
         u32 ID = 0;
+        u64 BindlessHandle = 0; // for bindless textures
         BlVec2<u32> Size;
         ImageFormat Format = ImageFormat::RGBA8;
     };

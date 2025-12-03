@@ -10,7 +10,7 @@
 #include "blackberry/input/input.hpp"
 
 #include "GLFW/glfw3.h"
-#include "glad/glad.h"
+#include "glad/gl.h"
 #include "imgui.h"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
@@ -226,7 +226,7 @@ namespace Blackberry {
         glfwSwapInterval(1);
 
         // load GLAD
-        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+        if (!gladLoadGL((GLADloadfunc)glfwGetProcAddress)) {
             BL_CRITICAL("Failed to init GLAD (Needed for OpenGL!)");
             glfwTerminate();
             exit(1);

@@ -462,7 +462,7 @@ namespace Blackberry {
             
             renderer.BindShader(Renderer3DState.MeshShader);
             for (u32 i = 0; i < Renderer3DState.CurrentTexIndex; i++) {
-                renderer.BindTexture(Renderer3DState.CurrentAttachedTextures[i], i);
+                // renderer.BindTexture(Renderer3DState.CurrentAttachedTextures[i], i);
             }
 
             int samplers[16]; // opengl texture IDs
@@ -484,7 +484,7 @@ namespace Blackberry {
 
             renderer.DrawIndexed(Renderer3DState.MeshIndexCount);
 
-            renderer.UnBindTexture();
+            // renderer.UnBindTexture();
 
             Renderer3DState.Stats.DrawCalls++;
             Renderer3DState.Stats.ActiveTextures = Renderer3DState.CurrentTexIndex;
@@ -521,14 +521,14 @@ namespace Blackberry {
             });
             
             renderer.BindShader(Renderer3DState.FontShader);
-            renderer.BindTexture(Renderer3DState.CurrentFontAtlas);
+            // renderer.BindTexture(Renderer3DState.CurrentFontAtlas);
 
             Shader shader = Renderer3DState.FontShader;
             shader.SetMatrix("u_Projection", Renderer3DState.Camera.GetCameraMatrixFloat());
 
             renderer.DrawIndexed(Renderer3DState.FontIndexCount);
 
-            renderer.UnBindTexture();
+            // renderer.UnBindTexture();
 
             Renderer3DState.Stats.DrawCalls++;
             // Renderer3DState.Info.ActiveTextures = Renderer3DState.CurrentFontIndex;

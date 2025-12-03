@@ -12,7 +12,7 @@
 #include "blackberry/lua/lua.hpp"
 
 #include "imgui.h"
-#include "glad/glad.h"
+#include "glad/gl.h"
 #include "stb_image.h"
 #include "backends/imgui_impl_opengl3.h"
 

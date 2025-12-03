@@ -2,7 +2,7 @@
 #include "blackberry/core/util.hpp"
 #include "blackberry/core/log.hpp"
 
-#include "glad/glad.h"
+#include "glad/gl.h"
 #include "stb_image.h"
 
 #include <iostream>
@@ -71,13 +71,19 @@ namespace Blackberry {
         BL_CORE_INFO("    Version: {}", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 
         int maxUnits;
+        int maxCombinedTexUnits;
         int maxTexSize;
         glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxUnits);
+        glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxCombinedTexUnits);
         glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTexSize);
 
         BL_CORE_INFO("OpenGL Capabilities:");
-        BL_CORE_INFO("    Max Texture Image Units: {}", maxUnits);
         BL_CORE_INFO("    Max Texture Size: {0}x{0}", maxTexSize);
+
+        if (!GLAD_GL_ARB_bindless_texture) {
+            BL_CORE_CRITICAL("Bindless textures are NOT supported!");
+            exit(1);
+        }
 
         // generate VAOs and VBOs
         glGenVertexArrays(1, &m_VAO);
@@ -103,15 +109,6 @@ namespace Blackberry {
     void Renderer_OpenGL3::BindShader(Shader shader) {
         m_CurrentShader = shader;
         glUseProgram(shader.ID);
-    }
-
-    void Renderer_OpenGL3::BindTexture(Texture2D texture, u32 slot) {
-        glActiveTexture(GL_TEXTURE0 + slot);
-        glBindTexture(GL_TEXTURE_2D, texture.ID);
-    }
-
-    void Renderer_OpenGL3::UnBindTexture() {
-        glBindTexture(GL_TEXTURE_2D, 0);
     }
 
     void Renderer_OpenGL3::EndFrame() {}
