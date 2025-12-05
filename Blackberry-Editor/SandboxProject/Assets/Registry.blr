@@ -37,18 +37,13 @@
         },
         "Handle - 581071103399731738": {
             "Handle": 581071103399731738,
-            "Path": "Materials\\RedPlastic.blmat",
+            "Path": "Materials\\Rusty-Metal.blmat",
             "Type": "Material"
         },
         "Handle - 6020665715492184391": {
             "Handle": 6020665715492184391,
             "Path": "Meshes\\Default\\Cylinder.glb",
             "Type": "Model"
-        },
-        "Handle - 8439354752553943955": {
-            "Handle": 8439354752553943955,
-            "Path": "Materials\\GreenPlastic.blmat",
-            "Type": "Material"
         },
         "Handle - 9023906316994206417": {
             "Handle": 9023906316994206417,

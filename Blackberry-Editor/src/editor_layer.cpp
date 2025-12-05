@@ -396,8 +396,9 @@ namespace BlackberryEditor {
             }
 
             if (ImGui::BeginMenu("View")) {
-                ImGui::MenuItem("Material Editor", nullptr, &m_MaterialEditorOpen);
-                ImGui::MenuItem("Scene Renderer View", nullptr, &m_SceneRendererViewOpen);
+                ImGui::MenuItem("Material Editor", nullptr, &m_MaterialEditorPanelOpen);
+                ImGui::MenuItem("Scene Renderer", nullptr, &m_SceneRendererPanelOpen);
+                ImGui::MenuItem("Asset Manager", nullptr, &m_AssetManagerPanelOpen);
 
                 ImGui::EndMenu();
             }
@@ -417,14 +418,15 @@ namespace BlackberryEditor {
     
         UI_Toolbar();
         UI_FileBrowser();
-        UI_AssetManager();
+        // UI_AssetManager();
         UI_Explorer();
         UI_Properties();
         UI_Viewport();
 
-        m_MaterialEditor.OnUIRender(m_MaterialEditorOpen);
-        m_SceneRendererView.SetContext(m_CurrentScene);
-        m_SceneRendererView.OnUIRender(m_SceneRendererViewOpen);
+        m_MaterialEditorPanel.OnUIRender(m_MaterialEditorPanelOpen);
+        m_SceneRendererPanel.SetContext(m_CurrentScene);
+        m_SceneRendererPanel.OnUIRender(m_SceneRendererPanelOpen);
+        m_AssetManagerPanel.OnUIRender(m_AssetManagerPanelOpen);
     
         if (m_ShowDemoWindow) {
             ImGui::ShowDemoWindow(&m_ShowDemoWindow);
@@ -738,7 +740,7 @@ namespace BlackberryEditor {
                 ImGui::Button(asset.FilePath.string().c_str(), ImVec2(128.0f, 128.0f));
 
                 if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-                    m_MaterialEditor.SetContext(handle);
+                    m_MaterialEditorPanel.SetContext(handle);
                 }
 
                 if (ImGui::BeginDragDropSource()) {
@@ -927,7 +929,7 @@ namespace BlackberryEditor {
                 }
 
                 if (ImGui::BeginDragDropTarget()) {
-                    const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_MANAGER_DRAG_DROP");
+                    const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_MANAGER_HANDLE_DRAG_DROP");
 
                     if (payload) {
                         mesh.MeshHandle = *reinterpret_cast<u64*>(payload->Data); // seems sus
@@ -964,7 +966,7 @@ namespace BlackberryEditor {
                         }
 
                         if (ImGui::BeginDragDropTarget()) {
-                            const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_MANAGER_DRAG_DROP");
+                            const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_MANAGER_HANDLE_DRAG_DROP");
 
                             if (payload) {
                                 model.Meshes[i].MaterialHandle = *reinterpret_cast<u64*>(payload->Data);
@@ -1012,7 +1014,7 @@ namespace BlackberryEditor {
                 }
 
                 if (ImGui::BeginDragDropTarget()) {
-                    const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_MANAGER_DRAG_DROP");
+                    const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_MANAGER_HANDLE_DRAG_DROP");
 
                     if (payload) {
                         text.FontHandle = *reinterpret_cast<u64*>(payload->Data); // seems sus

@@ -10,6 +10,7 @@
 #include "platform/opengl/opengl3_renderer.hpp"
 #include "blackberry/renderer/renderer3d.hpp"
 #include "blackberry/lua/lua.hpp"
+#include "blackberry/core/timer.hpp"
 
 #include "imgui.h"
 #include "glad/gl.h"
@@ -66,6 +67,8 @@ namespace Blackberry {
         m_Running = true;
 
         while (m_Running) {
+            ScopedTimer timer("Application::Run");
+
             m_Running = m_Running && !m_Window->ShouldClose();
 
             m_Window->OnUpdate();
@@ -195,6 +198,8 @@ namespace Blackberry {
         ImGuiIO& io = ImGui::GetIO();
         ImGuiStyle& style = ImGui::GetStyle();
         auto& colors = style.Colors; 
+
+        style.FrameRounding = 1.0f;
 
         // buttons
         colors[ImGuiCol_Button] = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);

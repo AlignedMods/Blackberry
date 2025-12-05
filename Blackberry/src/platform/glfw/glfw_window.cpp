@@ -8,6 +8,7 @@
 #include "blackberry/input/keycodes.hpp"
 #include "blackberry/input/mousebuttons.hpp"
 #include "blackberry/input/input.hpp"
+#include "blackberry/core/timer.hpp"
 
 #include "GLFW/glfw3.h"
 #include "glad/gl.h"
@@ -223,7 +224,7 @@ namespace Blackberry {
 
         // needed to use any opengl
         glfwMakeContextCurrent(m_Handle);
-        glfwSwapInterval(1);
+        // glfwSwapInterval(1);
 
         // load GLAD
         if (!gladLoadGL((GLADloadfunc)glfwGetProcAddress)) {
@@ -271,10 +272,14 @@ namespace Blackberry {
     }
 
     void Window_GLFW::OnUpdate() {
+        ScopedTimer timer("Window_GLFW::OnUpdate");
+
         glfwPollEvents();
     }
 
     void Window_GLFW::OnRenderStart() {
+        ScopedTimer timer("Window_GLFW::OnRenderStart");
+
         if (!m_ImGuiEnabled) { return; }
             
         ImGui_ImplOpenGL3_NewFrame();
@@ -283,6 +288,8 @@ namespace Blackberry {
     }
 
     void Window_GLFW::OnRenderFinish() {
+        ScopedTimer timer("Window_GLFW::OnRenderFinish");
+
         if (m_ImGuiEnabled) {
             ImGuiIO& io = ImGui::GetIO();
 

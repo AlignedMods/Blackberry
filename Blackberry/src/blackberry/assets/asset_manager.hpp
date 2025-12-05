@@ -6,6 +6,7 @@
 #include "blackberry/font/font.hpp"
 #include "blackberry/model/model.hpp"
 #include "blackberry/model/material.hpp"
+#include "blackberry/core/util.hpp"
 
 #include <filesystem>
 #include <unordered_map>
@@ -19,8 +20,30 @@ namespace Blackberry {
         Texture = 0,
         Font = 1,
         Model = 2,
-        Material = 3,
+        Material = 3
     };
+
+    inline const char* AssetTypeToString(AssetType type) {
+        switch (type) {
+            case AssetType::Texture: return "Texture"; break;
+            case AssetType::Font: return "Font"; break;
+            case AssetType::Model: return "Model"; break;
+            case AssetType::Material: return "Material"; break;
+        }
+
+        BL_ASSERT(false, "Unknown asset type! (memory corruption potential)");
+        return "";
+    }
+
+    inline AssetType StringToAssetType(const std::string& type) {
+        if (type == "Texture") return AssetType::Texture;
+        if (type == "Font") return AssetType::Font;
+        if (type == "Model") return AssetType::Model;
+        if (type == "Material") return AssetType::Material;
+
+        BL_ASSERT(false, "Unknown asset type {}", type);
+        return AssetType::Texture;
+    }
 
     struct Asset {
         std::filesystem::path FilePath;

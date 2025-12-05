@@ -4,7 +4,7 @@
 
 namespace BlackberryEditor {
 
-    class MaterialEditor {
+    class MaterialEditorPanel {
     public:
         void OnUIRender(bool& open);
 

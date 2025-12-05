@@ -23,7 +23,7 @@ namespace Blackberry {
 
     struct RenderTextureSpecification {
         BlVec2<u32> Size;
-        std::initializer_list<RenderTextureAttachment> Attachments;
+        std::vector<RenderTextureAttachment> Attachments;
         std::vector<u32> ActiveAttachments;
     };
 

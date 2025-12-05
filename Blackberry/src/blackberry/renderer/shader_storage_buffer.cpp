@@ -1,4 +1,5 @@
 #include "shader_storage_buffer.hpp"
+#include "blackberry/core/util.hpp"
 
 #include "glad/gl.h"
 
@@ -22,7 +23,7 @@ namespace Blackberry {
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
     }
 
-    void* ShaderStorageBuffer::MapMemory() {
+    void* ShaderStorageBuffer::MapMemory() const {
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, ID);
 
         void* mapped = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_WRITE_ONLY);
@@ -32,7 +33,7 @@ namespace Blackberry {
         return mapped;
     }
 
-    void ShaderStorageBuffer::UnMapMemory() {
+    void ShaderStorageBuffer::UnMapMemory() const {
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, ID);
 
         glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);

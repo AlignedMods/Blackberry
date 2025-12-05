@@ -1,7 +1,8 @@
 #pragma once
 
-#include "panels/material_editor.hpp"
-#include "panels/scene_renderer_view.hpp"
+#include "panels/material_editor_panel.hpp"
+#include "panels/scene_renderer_panel.hpp"
+#include "panels/asset_manager_panel.hpp"
 
 #include "blackberry.hpp"
 
@@ -54,11 +55,14 @@ namespace BlackberryEditor {
     
     private:
         // panels
-        MaterialEditor m_MaterialEditor;
-        bool m_MaterialEditorOpen = true;
+        MaterialEditorPanel m_MaterialEditorPanel;
+        bool m_MaterialEditorPanelOpen = true;
 
-        SceneRendererView m_SceneRendererView;
-        bool m_SceneRendererViewOpen = true;
+        SceneRendererPanel m_SceneRendererPanel;
+        bool m_SceneRendererPanelOpen = true;
+
+        AssetManagerPanel m_AssetManagerPanel;
+        bool m_AssetManagerPanelOpen = false;
 
         bool m_ShowNewProjectWindow = false;
         bool m_ShowNewSceneWindow = false;

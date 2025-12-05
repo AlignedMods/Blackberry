@@ -7,28 +7,6 @@ using json = nlohmann::json;
 
 namespace Blackberry {
 
-    static const char* AssetTypeToString(AssetType type) {
-        switch (type) {
-            case AssetType::Texture: return "Texture"; break;
-            case AssetType::Font: return "Font"; break;
-            case AssetType::Model: return "Model"; break;
-            case AssetType::Material: return "Material"; break;
-        }
-
-        BL_ASSERT(false, "Unknown asset type! (memory corruption potential)");
-        return "";
-    }
-
-    static AssetType StringToAssetType(const std::string& type) {
-        if (type == "Texture") return AssetType::Texture;
-        if (type == "Font") return AssetType::Font;
-        if (type == "Model") return AssetType::Model;
-        if (type == "Material") return AssetType::Material;
-
-        BL_ASSERT(false, "Unknown asset type {}", type);
-        return AssetType::Texture;
-    }
-
     AssetSerializer::AssetSerializer(AssetManager* assetManager)
         : m_AssetManager(assetManager) {}
 

@@ -1,6 +1,7 @@
 #include "platform/opengl/opengl3_renderer.hpp"
 #include "blackberry/core/util.hpp"
 #include "blackberry/core/log.hpp"
+#include "blackberry/core/timer.hpp"
 
 #include "glad/gl.h"
 #include "stb_image.h"
@@ -64,6 +65,9 @@ namespace Blackberry {
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LEQUAL);
         glDepthRange(0.0, 1.0);
+
+        // backface-culling
+        glEnable(GL_CULL_FACE);
 
         BL_CORE_INFO("Using OpenGL backend");
         BL_CORE_INFO("    Vendor: {}", reinterpret_cast<const char*>(glGetString(GL_VENDOR)));
@@ -208,6 +212,8 @@ namespace Blackberry {
     }
 
     void Renderer_OpenGL3::DrawIndexed(u32 count) {
+        ScopedTimer timer("Renderer_OpenGL::DrawIndexed");
+
         if (count == 0) {
             BL_CORE_WARN("Submiting draw call with ZERO elements!");
         }

@@ -1,6 +1,7 @@
 #include "blackberry/scene/scene_renderer.hpp"
 #include "blackberry/scene/scene.hpp"
 #include "blackberry/project/project.hpp"
+#include "blackberry/core/timer.hpp"
 
 namespace Blackberry {
 
@@ -414,110 +415,112 @@ namespace Blackberry {
     }
 
     void SceneRenderer::Flush() {
+        ScopedTimer timer("SceneRenderer::Flush");
+
         auto& renderer = BL_APP.GetRenderer();
 
         if (m_State.MeshIndices.size() > 0) {
-            // Geometry pass
-            DrawBuffer geometryBuffer;
-            geometryBuffer.Vertices = m_State.MeshVertices.data();
-            geometryBuffer.VertexSize = sizeof(SceneMeshVertex);
-            geometryBuffer.VertexCount = m_State.MeshVertexCount;
+            {
+                ScopedTimer geometryPassTimer("SceneRenderer::Flush/Geometry Pass");
 
-            geometryBuffer.Indices = m_State.MeshIndices.data();
-            geometryBuffer.IndexSize = sizeof(u32);
-            geometryBuffer.IndexCount = m_State.MeshIndexCount;
+                // Geometry pass
+                DrawBuffer geometryBuffer;
+                geometryBuffer.Vertices = m_State.MeshVertices.data();
+                geometryBuffer.VertexSize = sizeof(SceneMeshVertex);
+                geometryBuffer.VertexCount = m_State.MeshVertexCount;
 
-            renderer.SubmitDrawBuffer(geometryBuffer);
-            renderer.SetBufferLayout({
-                {0, ShaderDataType::Float3, "Position"},
-                {1, ShaderDataType::Float3, "Normal"},
-                {2, ShaderDataType::Float2, "TexCoord"},
-                {3, ShaderDataType::Int, "MaterialIndex"},
-                {4, ShaderDataType::Int, "ObjectIndex"}
-            });
+                geometryBuffer.Indices = m_State.MeshIndices.data();
+                geometryBuffer.IndexSize = sizeof(u32);
+                geometryBuffer.IndexCount = m_State.MeshIndexCount;
 
-            renderer.BindShader(m_State.MeshGeometryShader);
-            m_State.MeshGeometryShader.SetMatrix("u_ViewProjection", m_Camera.GetCameraMatrixFloat());
+                renderer.SubmitDrawBuffer(geometryBuffer);
+                renderer.SetBufferLayout({
+                    {0, ShaderDataType::Float3, "Position"},
+                    {1, ShaderDataType::Float3, "Normal"},
+                    {2, ShaderDataType::Float2, "TexCoord"},
+                    {3, ShaderDataType::Int, "MaterialIndex"},
+                    {4, ShaderDataType::Int, "ObjectIndex"}
+                });
 
-            // send tranform data
-            glm::mat4* tBuffer = reinterpret_cast<glm::mat4*>(m_State.TransformBuffer.MapMemory());
+                renderer.BindShader(m_State.MeshGeometryShader);
+                m_State.MeshGeometryShader.SetMatrix("u_ViewProjection", m_Camera.GetCameraMatrixFloat());
 
-            for (u32 i = 0; i < m_State.Transforms.size(); i++) {
-                tBuffer[i] = m_State.Transforms[i];
-            }
+                {
+                    ScopedTimer transformSettingTimer("SceneRenderer::Flush/Passing transforms");
 
-            // we MUST unmap buffer
-            m_State.TransformBuffer.UnMapMemory();
+                    // send tranform data
+                    glm::mat4* tBuffer = m_State.TransformBuffer.GetMappedMemory<glm::mat4*>();
 
-            GPUMaterial* mBuffer = reinterpret_cast<GPUMaterial*>(m_State.MaterialBuffer.MapMemory());
+                    for (u32 i = 0; i < m_State.Transforms.size(); i++) {
+                        tBuffer[i] = m_State.Transforms[i];
+                    }
 
-            // apply materials
-            for (u32 i = 0; i < m_State.MaterialIndex; i++) {
-                mBuffer[i] = m_State.Materials[i];
-            }
+                    m_State.TransformBuffer.UnMapMemory();
+                }
 
-            m_State.MaterialBuffer.UnMapMemory();
+                GPUMaterial* mBuffer = m_State.MaterialBuffer.GetMappedMemory<GPUMaterial*>();
 
-            renderer.BindRenderTexture(m_State.GBuffer);
-            renderer.Clear(BlColor(0, 0, 0, 255));
+                // apply materials
+                for (u32 i = 0; i < m_State.MaterialIndex; i++) {
+                    mBuffer[i] = m_State.Materials[i];
+                }
 
-            renderer.DrawIndexed(m_State.MeshIndexCount);
+                m_State.MaterialBuffer.UnMapMemory();
 
-            renderer.UnBindRenderTexture();
+                renderer.BindRenderTexture(m_State.GBuffer);
+                renderer.Clear(BlColor(0, 0, 0, 255));
 
-            // Lighting pass
-            if (m_Target) {
-                renderer.BindRenderTexture(*m_Target);
-                renderer.Clear(BlColor(69, 69, 69, 255));
-            }
+                renderer.DrawIndexed(m_State.MeshIndexCount);
 
-            DrawBuffer lightingBuffer;
-            lightingBuffer.Vertices = m_State.QuadVertices.data();
-            lightingBuffer.VertexSize = sizeof(f32) * 4;
-            lightingBuffer.VertexCount = 6;
-
-            lightingBuffer.Indices = m_State.QuadIndices.data();
-            lightingBuffer.IndexSize = sizeof(u32);
-            lightingBuffer.IndexCount = 6;
-
-            renderer.SubmitDrawBuffer(lightingBuffer);
-            renderer.SetBufferLayout({
-                {0, ShaderDataType::Float2, "Position"},
-                {1, ShaderDataType::Float2, "TexCoord"}
-            });
-
-            renderer.BindShader(m_State.MeshLightingShader);
-            m_State.MeshLightingShader.SetVec3("u_ViewPos", m_Camera.Transform.Position);
-
-            u64* gBuffer = reinterpret_cast<u64*>(m_State.ShaderGBuffer.MapMemory());
-
-            for (u32 i = 0; i < 4; i++) {
-                gBuffer[i] = m_State.GBuffer.Attachments[i].BindlessHandle;
-            }
-
-            m_State.ShaderGBuffer.UnMapMemory();
-
-            // m_State.MeshLightingShader.SetUInt64("u_GPosition", m_State.GBuffer.Attachments[0].BindlessHandle);
-            // m_State.MeshLightingShader.SetUInt64("u_GNormal",   m_State.GBuffer.Attachments[1].BindlessHandle);
-            // m_State.MeshLightingShader.SetUInt64("u_GAlbedo",   m_State.GBuffer.Attachments[2].BindlessHandle);
-            // m_State.MeshLightingShader.SetUInt64("u_GMat",      m_State.GBuffer.Attachments[3].BindlessHandle);
-
-            // set directional light
-            // m_State.MeshLightingShader.SetVec3("u_DirectionalLight.Direction", m_State.DirectionalLight.Direction);
-            // m_State.MeshLightingShader.SetVec3("u_DirectionalLight.Ambient", m_State.DirectionalLight.Ambient);
-            // m_State.MeshLightingShader.SetVec3("u_DirectionalLight.Diffuse", m_State.DirectionalLight.Diffuse);
-            // m_State.MeshLightingShader.SetVec3("u_DirectionalLight.Specular", m_State.DirectionalLight.Specular);
-
-            // set lights
-            for (u32 i = 0; i < 32; i++) {
-                m_State.MeshLightingShader.SetVec3(fmt::format("u_Lights[{}].Position", i), m_State.Lights[i].Position);
-                m_State.MeshLightingShader.SetVec3(fmt::format("u_Lights[{}].Color", i), m_State.Lights[i].Color);
-            }
-
-            renderer.DrawIndexed(6);
-
-            if (m_Target) {
                 renderer.UnBindRenderTexture();
+            }
+
+            {
+                ScopedTimer lightingPassTimer("SceneRenderer::Flush/Lighting Pass");
+
+                // Lighting pass
+                if (m_Target) {
+                    renderer.BindRenderTexture(*m_Target);
+                    renderer.Clear(BlColor(69, 69, 69, 255));
+                }
+
+                DrawBuffer lightingBuffer;
+                lightingBuffer.Vertices = m_State.QuadVertices.data();
+                lightingBuffer.VertexSize = sizeof(f32) * 4;
+                lightingBuffer.VertexCount = 6;
+
+                lightingBuffer.Indices = m_State.QuadIndices.data();
+                lightingBuffer.IndexSize = sizeof(u32);
+                lightingBuffer.IndexCount = 6;
+
+                renderer.SubmitDrawBuffer(lightingBuffer);
+                renderer.SetBufferLayout({
+                    {0, ShaderDataType::Float2, "Position"},
+                    {1, ShaderDataType::Float2, "TexCoord"}
+                });
+
+                renderer.BindShader(m_State.MeshLightingShader);
+                m_State.MeshLightingShader.SetVec3("u_ViewPos", m_Camera.Transform.Position);
+
+                u64* gBuffer = m_State.ShaderGBuffer.GetMappedMemory<u64*>();
+
+                for (u32 i = 0; i < 4; i++) {
+                    gBuffer[i] = m_State.GBuffer.Attachments[i].BindlessHandle;
+                }
+
+                m_State.ShaderGBuffer.UnMapMemory();
+
+                // set lights
+                for (u32 i = 0; i < 32; i++) {
+                    // m_State.MeshLightingShader.SetVec3(fmt::format("u_Lights[{}].Position", i), m_State.Lights[i].Position);
+                    // m_State.MeshLightingShader.SetVec3(fmt::format("u_Lights[{}].Color", i), m_State.Lights[i].Color);
+                }
+
+                renderer.DrawIndexed(6);
+
+                if (m_Target) {
+                    renderer.UnBindRenderTexture();
+                }
             }
 
             m_State.MeshVertices.clear();

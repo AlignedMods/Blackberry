@@ -1,4 +1,5 @@
 #include "blackberry/core/timer.hpp"
+#include "blackberry/core/log.hpp"
 
 #include <chrono>
 
@@ -13,11 +14,24 @@ namespace Blackberry {
     }
 
     f32 Timer::ElapsedSeconds() const {
-        return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - m_StartTime).count() * 0.001f * 0.001f * 0.001f;
+        return ElapsedMilliseconds() * 0.001f;
     }
 
     f32 Timer::ElapsedMilliseconds() const {
-        return ElapsedSeconds() * 1000.0f;
+        return ElapsedNanoseconds() * 0.001f * 0.001f;
+    }
+
+    f32 Timer::ElapsedNanoseconds() const {
+        return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - m_StartTime).count();
+    }
+
+    ScopedTimer::ScopedTimer(const char* name) {
+        m_Name = name;
+        m_Timer.Start();
+    }
+
+    ScopedTimer::~ScopedTimer() {
+        BL_CORE_INFO("Timer {} took {}ms", m_Name, m_Timer.ElapsedMilliseconds());
     }
 
 } // namespace Blackberry

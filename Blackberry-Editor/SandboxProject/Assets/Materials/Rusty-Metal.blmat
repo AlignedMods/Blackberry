@@ -1,0 +1,6 @@
+{
+    "AO": "Materials/Source/Rusty-Metal/AO.png",
+    "Albedo": "Materials/Source/Rusty-Metal/Albedo.png",
+    "Metallic": "Materials/Source/Rusty-Metal/Metallic.png",
+    "Roughness": "Materials/Source/Rusty-Metal/Roughness.png"
+}

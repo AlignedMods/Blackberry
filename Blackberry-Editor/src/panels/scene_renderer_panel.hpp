@@ -4,7 +4,7 @@
 
 namespace BlackberryEditor {
 
-    class SceneRendererView {
+    class SceneRendererPanel {
     public:
         void OnUIRender(bool& open);
 

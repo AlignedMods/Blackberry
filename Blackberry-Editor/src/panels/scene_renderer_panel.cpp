@@ -1,4 +1,4 @@
-#include "scene_renderer_view.hpp"
+#include "scene_renderer_panel.hpp"
 
 #include "blackberry.hpp"
 
@@ -6,7 +6,7 @@ using namespace Blackberry;
 
 namespace BlackberryEditor {
     
-    void SceneRendererView::OnUIRender(bool& open) {
+    void SceneRendererPanel::OnUIRender(bool& open) {
         if (!open) return;
 
         ImGui::Begin("Scene Renderer View", &open);
@@ -26,7 +26,7 @@ namespace BlackberryEditor {
         ImGui::End();
     }
 
-    void SceneRendererView::SetContext(Scene* scene) {
+    void SceneRendererPanel::SetContext(Scene* scene) {
         m_Context = scene;
     }
 
