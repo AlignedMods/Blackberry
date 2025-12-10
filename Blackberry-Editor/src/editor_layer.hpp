@@ -76,16 +76,16 @@ namespace BlackberryEditor {
         bool m_IsEntitySelected = false;
         GizmoState m_GizmoState = GizmoState::None;
     
-        Blackberry::RenderTexture m_RenderTexture;
+        Blackberry::Ref<Blackberry::RenderTexture> m_RenderTexture;
         BlRec m_ViewportBounds;
         f32 m_ViewportScale = 1.0f;
         bool m_ViewportHovered = false;
 
-        Blackberry::RenderTexture m_MaskTexture;
+        Blackberry::Ref<Blackberry::RenderTexture> m_MaskTexture;
 
         Blackberry::Shader m_OutlineShader;
 
-        Blackberry::RenderTexture m_OutlineTexture;
+        Blackberry::Ref<Blackberry::RenderTexture> m_OutlineTexture;
     
         Blackberry::Scene* m_EditingScene = nullptr;
         Blackberry::Scene* m_RuntimeScene = nullptr;
@@ -96,14 +96,14 @@ namespace BlackberryEditor {
         std::filesystem::path m_BaseDirectory;
     
         // icons
-        Blackberry::Texture2D m_DirectoryIcon;
-        Blackberry::Texture2D m_FileIcon;
-        Blackberry::Texture2D m_BackDirectoryIcon;
+        Blackberry::Ref<Blackberry::Texture2D> m_DirectoryIcon;
+        Blackberry::Ref<Blackberry::Texture2D> m_FileIcon;
+        Blackberry::Ref<Blackberry::Texture2D> m_BackDirectoryIcon;
 
-        Blackberry::Texture2D m_PlayIcon;
-        Blackberry::Texture2D m_StopIcon;
-        Blackberry::Texture2D m_PauseIcon;
-        Blackberry::Texture2D m_ResumeIcon;
+        Blackberry::Ref<Blackberry::Texture2D> m_PlayIcon;
+        Blackberry::Ref<Blackberry::Texture2D> m_StopIcon;
+        Blackberry::Ref<Blackberry::Texture2D> m_PauseIcon;
+        Blackberry::Ref<Blackberry::Texture2D> m_ResumeIcon;
     
         bool m_ShowDemoWindow = false;
 

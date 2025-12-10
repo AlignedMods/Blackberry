@@ -14,10 +14,12 @@ namespace Blackberry {
         return buf;
     }
 
-    void ShaderStorageBuffer::ReserveMemory(u32 size) const {
+    void ShaderStorageBuffer::ReserveMemory(u32 size, void* data) {
+        Size = size;
+
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, ID);
 
-        glBufferData(GL_SHADER_STORAGE_BUFFER, static_cast<GLsizeiptr>(size), nullptr, GL_DYNAMIC_DRAW);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, static_cast<GLsizeiptr>(size), data, GL_DYNAMIC_DRAW);
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, Binding, ID);
 
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
@@ -26,7 +28,7 @@ namespace Blackberry {
     void* ShaderStorageBuffer::MapMemory() const {
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, ID);
 
-        void* mapped = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_WRITE_ONLY);
+        void* mapped = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, Size, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
 
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 

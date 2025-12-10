@@ -33,6 +33,7 @@
 #include "blackberry/core/log.hpp"
 #include "blackberry/core/types.hpp"
 #include "blackberry/core/util.hpp"
+#include "blackberry/core/memory.hpp"
 
 // rendering abstractions
 #include "blackberry/renderer/renderer3d.hpp"

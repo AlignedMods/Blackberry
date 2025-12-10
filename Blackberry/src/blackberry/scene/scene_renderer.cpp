@@ -14,7 +14,7 @@ namespace Blackberry {
         layout (location = 0) in vec3 a_Pos;
         layout (location = 1) in vec3 a_Normal;
         layout (location = 2) in vec2 a_TexCoord;
-        layout (location = 3) in int a_MaterialIndex;
+        layout (location = 3) in int a_MaterialIndex;  
         layout (location = 4) in int a_ObjectIndex;
 
         uniform mat4 u_ViewProjection;
@@ -74,7 +74,7 @@ namespace Blackberry {
             o_GMat.r = texture(sampler2D(Materials[a_MaterialIndex].Metallic), a_TexCoord).r;
             o_GMat.g = texture(sampler2D(Materials[a_MaterialIndex].Roughness), a_TexCoord).r;
             o_GMat.b = texture(sampler2D(Materials[a_MaterialIndex].AO), a_TexCoord).r;
-
+        
             // For visualizations (normally the alpha would just get set to 0.0)
             o_GPosition.a = 1.0;
             o_GNormal.a = 1.0;
@@ -127,7 +127,7 @@ namespace Blackberry {
         float GeometrySchlickGGX(float NdotV, float roughness);
         float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
         vec3 FresnelSchlick(float cosTheta, vec3 F0);
-
+        
         void main() {
             vec3 worldPos =   texture(sampler2D(GPosition), a_TexCoord).rgb;
             vec3 normal =     texture(sampler2D(GNormal), a_TexCoord).rgb;
@@ -180,7 +180,7 @@ namespace Blackberry {
             
             o_FragColor = vec4(color, 1.0);
         }
-
+        
         float DistributionGGX(vec3 N, vec3 H, float roughness) {
             float a = roughness * roughness;
             float a2 = a * a;
@@ -193,7 +193,7 @@ namespace Blackberry {
         
             return nom / denom;
         }
-
+        
         float GeometrySchlickGGX(float NdotV, float roughness) {
             float r = (roughness + 1.0);
             float k = (r * r) / 8.0;
@@ -203,7 +203,7 @@ namespace Blackberry {
         
             return nom / denom;
         }
-
+        
         float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness) {
             float NdotV = max(dot(N, V), 0.0);
             float NdotL = max(dot(N, L), 0.0);
@@ -212,7 +212,7 @@ namespace Blackberry {
         
             return ggx1 * ggx2;
         }
-
+        
         vec3 FresnelSchlick(float cosTheta, vec3 F0) {
             return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
         }
@@ -278,7 +278,7 @@ namespace Blackberry {
 
 #pragma endregion
 
-    constexpr u32 MAX_OBJECTS = 8192;
+    constexpr u32 MAX_OBJECTS = 2048;
     constexpr u32 MAX_MATERIALS = 2048;
 
     static BlVec4<f32> NormalizeColor(BlColor color) {
@@ -291,8 +291,8 @@ namespace Blackberry {
     }
 
     SceneRenderer::SceneRenderer() {
-        m_State.MeshGeometryShader = Shader::Create(s_VertexShaderMeshGeometrySource, s_FragmentShaderMeshGeometrySource);
         m_State.MeshLightingShader = Shader::Create(s_VertexShaderMeshLightingSource, s_FragmentShaderMeshLightingSource);
+        m_State.MeshGeometryShader = Shader::Create(s_VertexShaderMeshGeometrySource, s_FragmentShaderMeshGeometrySource);
         m_State.FontShader = Shader::Create(s_VertexShaderFontSource, s_FragmentShaderFontSource);
 
         m_State.TransformBuffer = ShaderStorageBuffer::Create(0);
@@ -378,10 +378,10 @@ namespace Blackberry {
         m_State.Transforms.push_back(transform);
 
         GPUMaterial gpuMat;
-        gpuMat.Albedo = mat.Albedo.BindlessHandle;
-        gpuMat.Metallic = mat.Metallic.BindlessHandle;
-        gpuMat.Roughness = mat.Roughness.BindlessHandle;
-        gpuMat.AO = mat.AO.BindlessHandle;
+        gpuMat.Albedo = mat.Albedo->BindlessHandle;
+        gpuMat.Metallic = mat.Metallic->BindlessHandle;
+        gpuMat.Roughness = mat.Roughness->BindlessHandle;
+        gpuMat.AO = mat.AO->BindlessHandle;
         m_State.Materials.push_back(gpuMat);
 
         m_State.MeshVertexCount += mesh.Positions.size();
@@ -447,25 +447,14 @@ namespace Blackberry {
 
                 {
                     ScopedTimer transformSettingTimer("SceneRenderer::Flush/Passing transforms");
-
-                    // send tranform data
-                    glm::mat4* tBuffer = m_State.TransformBuffer.GetMappedMemory<glm::mat4*>();
-
-                    for (u32 i = 0; i < m_State.Transforms.size(); i++) {
-                        tBuffer[i] = m_State.Transforms[i];
-                    }
-
-                    m_State.TransformBuffer.UnMapMemory();
+                    m_State.TransformBuffer.ReserveMemory(sizeof(glm::mat4) * m_State.Transforms.size(), m_State.Transforms.data());
                 }
 
-                GPUMaterial* mBuffer = m_State.MaterialBuffer.GetMappedMemory<GPUMaterial*>();
-
-                // apply materials
-                for (u32 i = 0; i < m_State.MaterialIndex; i++) {
-                    mBuffer[i] = m_State.Materials[i];
+                {
+                    ScopedTimer materialSettingTimer("SceneRenderer::Flush/Passing materials");
+                    m_State.MaterialBuffer.ReserveMemory(sizeof(GPUMaterial) * m_State.Materials.size(), m_State.Materials.data());
                 }
 
-                m_State.MaterialBuffer.UnMapMemory();
 
                 renderer.BindRenderTexture(m_State.GBuffer);
                 renderer.Clear(BlColor(0, 0, 0, 255));
@@ -480,7 +469,7 @@ namespace Blackberry {
 
                 // Lighting pass
                 if (m_Target) {
-                    renderer.BindRenderTexture(*m_Target);
+                    renderer.BindRenderTexture(m_Target);
                     renderer.Clear(BlColor(69, 69, 69, 255));
                 }
 
@@ -502,13 +491,11 @@ namespace Blackberry {
                 renderer.BindShader(m_State.MeshLightingShader);
                 m_State.MeshLightingShader.SetVec3("u_ViewPos", m_Camera.Transform.Position);
 
-                u64* gBuffer = m_State.ShaderGBuffer.GetMappedMemory<u64*>();
-
+                u64 handles[4]{};
                 for (u32 i = 0; i < 4; i++) {
-                    gBuffer[i] = m_State.GBuffer.Attachments[i].BindlessHandle;
+                    handles[i] = m_State.GBuffer->Attachments[i]->BindlessHandle;
                 }
-
-                m_State.ShaderGBuffer.UnMapMemory();
+                m_State.ShaderGBuffer.ReserveMemory(sizeof(u64) * 4, handles);
 
                 // set lights
                 for (u32 i = 0; i < 32; i++) {

@@ -222,9 +222,9 @@ namespace Blackberry {
         glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(count), GL_UNSIGNED_INT, nullptr);
     }
 
-    void Renderer_OpenGL3::BindRenderTexture(const RenderTexture texture) {
-        glBindFramebuffer(GL_FRAMEBUFFER, texture.ID);
-        UpdateViewport(BlVec2<f32>(texture.Specification.Size.x, texture.Specification.Size.y));
+    void Renderer_OpenGL3::BindRenderTexture(Ref<RenderTexture> texture) {
+        glBindFramebuffer(GL_FRAMEBUFFER, texture->ID);
+        UpdateViewport(BlVec2<f32>(texture->Specification.Size.x, texture->Specification.Size.y));
     }
 
     void Renderer_OpenGL3::UnBindRenderTexture() {

@@ -71,7 +71,7 @@ namespace Blackberry {
         msdfgen::BitmapConstRef<u8, 3> bitmap(generator.atlasStorage());
 
         // funny cast
-        TextureAtlas = Texture2D::Create(const_cast<byte*>(bitmap.pixels), bitmap.width, bitmap.height, ImageFormat::RGB8, TextureFiltering::Linear);
+        // TextureAtlas = Texture2D::Create(const_cast<byte*>(bitmap.pixels), bitmap.width, bitmap.height, ImageFormat::RGB8, TextureFiltering::Linear);
 
         for (auto codepoint : Charset::ASCII) {
             auto glyph = fontGeometry.getGlyph(codepoint);

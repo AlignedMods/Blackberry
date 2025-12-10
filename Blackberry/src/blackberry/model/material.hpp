@@ -12,10 +12,10 @@ namespace Blackberry {
         static Material Create(const std::filesystem::path& path);
         static void Save(Material& mat, const std::filesystem::path& path);
 
-        Texture2D Albedo;
-        Texture2D Metallic;
-        Texture2D Roughness;
-        Texture2D AO;
+        Ref<Texture2D> Albedo;
+        Ref<Texture2D> Metallic;
+        Ref<Texture2D> Roughness;
+        Ref<Texture2D> AO;
 
         u32 ID = 0;
     };

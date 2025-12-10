@@ -270,7 +270,7 @@ namespace BlackberryEditor {
         m_CurrentDirectory = Project::GetAssetDirecory();
         m_BaseDirectory = Project::GetAssetDirecory();
 
-        m_EditorCamera.Transform.Scale = BlVec3(m_RenderTexture.Specification.Size.x, m_RenderTexture.Specification.Size.y, 1u);
+        m_EditorCamera.Transform.Scale = BlVec3(m_RenderTexture->Specification.Size.x, m_RenderTexture->Specification.Size.y, 1u);
         m_CurrentCamera = &m_EditorCamera;
 
         // gizmo styles
@@ -293,12 +293,6 @@ namespace BlackberryEditor {
     void EditorLayer::OnDetach() {
         Project::Save();
         SaveEditorState();
-
-        m_RenderTexture.Delete();
-    
-        m_DirectoryIcon.Delete();
-        m_FileIcon.Delete();
-        m_BackDirectoryIcon.Delete();
     }
     
     void EditorLayer::OnUpdate(f32 ts) {
@@ -353,7 +347,7 @@ namespace BlackberryEditor {
     
     void EditorLayer::OnRender() {
         m_CurrentScene->SetCamera(m_CurrentCamera);
-        m_CurrentScene->OnRender(&m_RenderTexture);
+        m_CurrentScene->OnRender(m_RenderTexture.Data());
     }
 
     void EditorLayer::OnUIRender() {
@@ -439,7 +433,7 @@ namespace BlackberryEditor {
         Entity entity = Entity(m_SelectedEntity, m_CurrentScene);
 
         // mask
-        Renderer3D::BindRenderTexture(m_MaskTexture);
+        Renderer3D::BindRenderTexture(*m_MaskTexture);
         Renderer3D::Clear(BlColor(0, 0, 0, 255));
 
         Renderer3D::SetProjection(*m_CurrentCamera);
@@ -453,7 +447,7 @@ namespace BlackberryEditor {
         Renderer3D::ResetProjection();
         Renderer3D::UnBindRenderTexture();
 
-        Renderer3D::BindRenderTexture(m_OutlineTexture);
+        Renderer3D::BindRenderTexture(*m_OutlineTexture);
         Renderer3D::Clear(BlColor(0, 0, 0, 0));
 
         // outline effect
@@ -491,7 +485,7 @@ namespace BlackberryEditor {
         renderer.BindShader(m_OutlineShader);
         // renderer.BindTexture(m_MaskTexture.Attachments[0]);
 
-        m_OutlineShader.SetVec2("u_TexelSize", BlVec2(1.0f / m_OutlineTexture.Specification.Size.x, 1.0f / m_OutlineTexture.Specification.Size.y));
+        m_OutlineShader.SetVec2("u_TexelSize", BlVec2(1.0f / m_OutlineTexture->Specification.Size.x, 1.0f / m_OutlineTexture->Specification.Size.y));
         m_OutlineShader.SetFloat("u_Thickness", 2.0f);
         m_OutlineShader.SetVec3("u_OutlineColor", BlVec3(1.0f, 0.7f, 0.2f));
 
@@ -564,7 +558,7 @@ namespace BlackberryEditor {
     
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.2f, 0.2f, 0.0f));
 
-        if (ImGui::ImageButton("##PlayButton", playIcon.ID, ImVec2(size, size))) {
+        if (ImGui::ImageButton("##PlayButton", playIcon->ID, ImVec2(size, size))) {
             if (m_EditorState == EditorState::Edit) {
                 OnScenePlay();
             } else {
@@ -575,7 +569,7 @@ namespace BlackberryEditor {
         ImGui::SameLine();
 
         if (m_EditorState == EditorState::Play) {
-            if (ImGui::ImageButton("##PauseButton", pauseIcon.ID, ImVec2(size, size))) {
+            if (ImGui::ImageButton("##PauseButton", pauseIcon->ID, ImVec2(size, size))) {
                 m_CurrentScene->SetPaused(!m_CurrentScene->IsPaused());
             }
         }
@@ -593,7 +587,7 @@ namespace BlackberryEditor {
         ImGui::Begin("File Browser");
     
         if (m_CurrentDirectory != m_BaseDirectory) {
-            if (ImGui::ImageButton("##BackDirectory", m_BackDirectoryIcon.ID, ImVec2(32.0f, 32.0f))) {
+            if (ImGui::ImageButton("##BackDirectory", m_BackDirectoryIcon->ID, ImVec2(32.0f, 32.0f))) {
                 m_CurrentDirectory = m_CurrentDirectory.parent_path();
             }
         }
@@ -623,9 +617,9 @@ namespace BlackberryEditor {
                 ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
     
                 if (file.is_directory()) {
-                    ImGui::ImageButton(name.c_str(), m_DirectoryIcon.ID, ImVec2(thumbnailSize, thumbnailSize));
+                    ImGui::ImageButton(name.c_str(), m_DirectoryIcon->ID, ImVec2(thumbnailSize, thumbnailSize));
                 } else {
-                    ImGui::ImageButton(name.c_str(), m_FileIcon.ID, ImVec2(thumbnailSize, thumbnailSize));
+                    ImGui::ImageButton(name.c_str(), m_FileIcon->ID, ImVec2(thumbnailSize, thumbnailSize));
                 }
     
                 ImGui::PopStyleVar();
@@ -672,7 +666,7 @@ namespace BlackberryEditor {
 
                 if (ImGui::Button("Create")) {
                     if (currentAssetType == 0) { // texture
-                        Texture2D tex = Texture2D::Create(assetFile);
+                        Ref<Texture2D> tex = Texture2D::Create(assetFile);
                         Asset asset;
                         asset.Type = AssetType::Texture;
                         asset.FilePath = fs::relative(assetFile, m_BaseDirectory);
@@ -785,7 +779,7 @@ namespace BlackberryEditor {
                     Entity entity(m_CurrentScene->CreateEntity("Cube"), m_CurrentScene);
 
                     entity.AddComponent<MeshComponent>();
-                    entity.AddComponent<TransformComponent>({BlVec3(m_RenderTexture.Specification.Size.x / 2.0f - 100.0f, m_RenderTexture.Specification.Size.y / 2.0f - 50.0f, 0.0f), BlVec3(0.0f), BlVec3(200.0f, 100.0f, 1.0f)});
+                    entity.AddComponent<TransformComponent>({BlVec3(m_RenderTexture->Specification.Size.x / 2.0f - 100.0f, m_RenderTexture->Specification.Size.y / 2.0f - 50.0f, 0.0f), BlVec3(0.0f), BlVec3(200.0f, 100.0f, 1.0f)});
                 };
                 
                 ImGui::EndMenu();
@@ -1107,15 +1101,15 @@ namespace BlackberryEditor {
         ImGui::PopStyleVar();
 
         ImVec2 windowArea = ImGui::GetContentRegionAvail();
-        f32 scale = windowArea.x / static_cast<f32>(m_RenderTexture.Specification.Size.x);
-        f32 y = m_RenderTexture.Specification.Size.x * scale;
+        f32 scale = windowArea.x / static_cast<f32>(m_RenderTexture->Specification.Size.x);
+        f32 y = m_RenderTexture->Specification.Size.x * scale;
 
         // we want to make the viewport the smallest axis
         if (y > windowArea.y) {
-            scale = windowArea.y / static_cast<f32>(m_RenderTexture.Specification.Size.y);
+            scale = windowArea.y / static_cast<f32>(m_RenderTexture->Specification.Size.y);
         }
         
-        BlVec2 size = BlVec2(m_RenderTexture.Specification.Size.x * scale, m_RenderTexture.Specification.Size.y * scale);
+        BlVec2 size = BlVec2(m_RenderTexture->Specification.Size.x * scale, m_RenderTexture->Specification.Size.y * scale);
 
         f32 cursorX = ImGui::GetCursorPosX() + windowArea.x / 2.0f - size.x / 2.0f;
         f32 cursorY = ImGui::GetCursorPosY() + (windowArea.y / 2.0f - size.y / 2.0f);
@@ -1123,7 +1117,7 @@ namespace BlackberryEditor {
         ImGui::SetCursorPosX(cursorX);
         ImGui::SetCursorPosY(cursorY);
         auto& rendererState = m_CurrentScene->GetSceneRenderer()->GetState();
-        ImGui::Image(m_RenderTexture.Attachments[0].ID, ImVec2(size.x, size.y), ImVec2(0, 1), ImVec2(1, 0));
+        ImGui::Image(m_RenderTexture->Attachments[0]->ID, ImVec2(size.x, size.y), ImVec2(0, 1), ImVec2(1, 0));
 
         ImGui::SetCursorPosX(cursorX);
         ImGui::SetCursorPosY(cursorY);

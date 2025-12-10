@@ -2,6 +2,7 @@
 
 #include "blackberry/core/types.hpp"
 #include "blackberry/image/image.hpp"
+#include "blackberry/core/memory.hpp"
 
 namespace Blackberry {
 
@@ -29,11 +30,12 @@ namespace Blackberry {
 
     struct Texture2D {
         Texture2D() = default;
+        ~Texture2D();
 
-        static Texture2D Create(u32 width, u32 height);
-        static Texture2D Create(const std::filesystem::path& path);
-        static Texture2D Create(const Image& image);
-        static Texture2D Create(void* pixels, u32 width, u32 height, ImageFormat pixelFormat, TextureFiltering filter = TextureFiltering::Nearest);
+        static Ref<Texture2D> Create(u32 width, u32 height);
+        static Ref<Texture2D> Create(const std::filesystem::path& path);
+        static Ref<Texture2D> Create(const Image& image);
+        static Ref<Texture2D> Create(void* pixels, u32 width, u32 height, ImageFormat pixelFormat, TextureFiltering filter = TextureFiltering::Nearest);
 
         void Delete();
     
@@ -47,14 +49,15 @@ namespace Blackberry {
     
     struct RenderTexture {
         RenderTexture() = default;
+        ~RenderTexture();
 
-        static RenderTexture Create(const RenderTextureSpecification& spec);
+        static Ref<RenderTexture> Create(const RenderTextureSpecification& spec);
         void Delete();
         void Resize(BlVec2<u32> size);
     
         u32 ID = 0;
         RenderTextureSpecification Specification;
-        std::vector<Texture2D> Attachments;
+        std::vector<Ref<Texture2D>> Attachments;
     };
 
 } // namespace Blackberry

@@ -77,7 +77,7 @@ namespace Blackberry {
         }};
         std::array<u32, 6> QuadIndices = {{ 0, 1, 2, 3, 4, 5 }};
 
-        RenderTexture GBuffer; // For deffered rendering
+        Ref<RenderTexture> GBuffer; // For deffered rendering
     };
 
     class SceneRenderer {

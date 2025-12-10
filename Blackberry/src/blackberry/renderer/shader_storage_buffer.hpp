@@ -7,7 +7,7 @@ namespace Blackberry {
     struct ShaderStorageBuffer {
         [[nodiscard]] static ShaderStorageBuffer Create(u32 binding);
 
-        void ReserveMemory(u32 size) const;
+        void ReserveMemory(u32 size, void* data = nullptr);
         
         void* MapMemory() const;
         void UnMapMemory() const;
@@ -19,6 +19,7 @@ namespace Blackberry {
 
         u32 ID = 0;
         u32 Binding = 0;
+        u32 Size = 0;
     };
 
 } // namespace Blackberry

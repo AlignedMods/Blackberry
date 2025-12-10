@@ -182,7 +182,7 @@ namespace Blackberry {
         Shader MeshShader;
         Shader FontShader;
 
-        Texture2D WhiteTexture;
+        Ref<Texture2D> WhiteTexture;
 
         // Mesh buffer data
         u32 MeshIndexCount = 0;
@@ -197,11 +197,11 @@ namespace Blackberry {
         std::vector<FontVertex> FontVertices;
         std::vector<u32> FontIndices;
         DrawBuffer FontDrawBuffer;
-        Texture2D CurrentFontAtlas;
+        Ref<Texture2D> CurrentFontAtlas;
 
         // for textures
         u32 CurrentTexIndex = 1; // NOTE: 0 is reserved for a blank white texture!!!
-        std::array<Texture2D, 16> CurrentAttachedTextures;
+        std::array<Ref<Texture2D>, 16> CurrentAttachedTextures;
 
         // we still depend on these for things like font rendering
         const std::array<glm::vec4, 4> QuadVertexPositions = {{
@@ -222,8 +222,8 @@ namespace Blackberry {
 
     static _Renderer3DState Renderer3DState;
 
-    static f32 GetTexIndex(Texture2D texture) {
-        if (texture.ID == 0) return 0.0f; // return WhiteTexture if there is no texture
+    static f32 GetTexIndex(Ref<Texture2D> texture) {
+        if (texture->ID == 0) return 0.0f; // return WhiteTexture if there is no texture
 
         f32 texIndex = 0.0f;
 
@@ -234,7 +234,7 @@ namespace Blackberry {
         bool texAlreadyExists = false;
 
         for (u32 i = 0; i < Renderer3DState.CurrentTexIndex; i++) {
-            if (texture.ID == Renderer3DState.CurrentAttachedTextures[i].ID) {
+            if (texture->ID == Renderer3DState.CurrentAttachedTextures[i]->ID) {
                 texIndex = static_cast<f32>(i);
                 texAlreadyExists = true;
 
@@ -301,7 +301,7 @@ namespace Blackberry {
     }
 
     void Renderer3D::DrawText(const glm::mat4& transform, const std::string& text, Font& font, TextParams params, BlColor color) {
-        Texture2D tex = font.TextureAtlas;
+        Ref<Texture2D> tex = font.TextureAtlas;
         f32 fsScale = 1.0f / (font.Ascender - font.Descender);
         f32 currentX = 0.0f;
         f32 currentY = 0.0f;
@@ -322,7 +322,7 @@ namespace Blackberry {
                 BlRec atlasBounds = glyph.AtlasRect;
                 BlRec planeBounds = glyph.PlaneRect;
 
-                if (tex.ID != Renderer3DState.CurrentFontAtlas.ID) {
+                if (tex->ID != Renderer3DState.CurrentFontAtlas->ID) {
                     Render();
                     Renderer3DState.CurrentFontAtlas = tex;
                 }
@@ -342,8 +342,8 @@ namespace Blackberry {
                 quadMin.x -= 0.25f; quadMax.x -= 0.25f;
                 quadMin.y -= 0.25f; quadMax.y -= 0.25f;
 
-                f32 texelWidth = 1.0f / tex.Size.x;
-                f32 texelHeight = 1.0f / tex.Size.y;
+                f32 texelWidth = 1.0f / tex->Size.x;
+                f32 texelHeight = 1.0f / tex->Size.y;
                 texCoordMin *= BlVec2<f32>(texelWidth, texelHeight);
                 texCoordMax *= BlVec2<f32>(texelWidth, texelHeight);
 
@@ -413,7 +413,7 @@ namespace Blackberry {
     void Renderer3D::BindRenderTexture(RenderTexture texture) {
         auto& renderer = BL_APP.GetRenderer();
 
-        renderer.BindRenderTexture(texture);
+        // renderer.BindRenderTexture(texture);
     }
 
     void Renderer3D::UnBindRenderTexture() {
