@@ -499,8 +499,8 @@ namespace Blackberry {
 
                 // set lights
                 for (u32 i = 0; i < 32; i++) {
-                    // m_State.MeshLightingShader.SetVec3(fmt::format("u_Lights[{}].Position", i), m_State.Lights[i].Position);
-                    // m_State.MeshLightingShader.SetVec3(fmt::format("u_Lights[{}].Color", i), m_State.Lights[i].Color);
+                    m_State.MeshLightingShader.SetVec3(fmt::format("u_Lights[{}].Position", i), m_State.Lights[i].Position);
+                    m_State.MeshLightingShader.SetVec3(fmt::format("u_Lights[{}].Color", i), m_State.Lights[i].Color);
                 }
 
                 renderer.DrawIndexed(6);

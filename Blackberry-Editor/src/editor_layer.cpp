@@ -428,6 +428,7 @@ namespace BlackberryEditor {
     }
 
     void EditorLayer::OnOverlayRender() {
+        return;
         if (!m_IsEntitySelected) { return; }
 
         Entity entity = Entity(m_SelectedEntity, m_CurrentScene);
