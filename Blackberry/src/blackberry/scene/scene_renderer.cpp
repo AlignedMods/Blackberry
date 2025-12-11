@@ -48,10 +48,21 @@ namespace Blackberry {
         layout (location = 3) in flat int a_MaterialIndex;
         
         struct Material {
-            uvec2 Albedo;
-            uvec2 Metallic;
-            uvec2 Roughness;
-            uvec2 AO;
+            int UseAlbedoTexture;
+            uvec2 AlbedoTexture;
+            vec4 AlbedoColor;
+
+            int UseMetallicTexture;
+            uvec2 MetallicTexture;
+            float MetallicFactor;
+
+            int UseRoughnessTexture;
+            uvec2 RoughnessTexture;
+            float RoughnessFactor;
+
+            int UseAOTexture;
+            uvec2 AOTexture;
+            float AOFactor;
         };
         
         layout (std430, binding = 1) buffer MaterialBuffer {
@@ -68,12 +79,30 @@ namespace Blackberry {
             o_GPosition.rgb = a_FragPos;
             // Store the normal in the second buffer
             o_GNormal.rgb = normalize(a_Normal);
-            // Store the diffuse color in the third buffer
-            o_GAlbedo.rgb = texture(sampler2D(Materials[a_MaterialIndex].Albedo), a_TexCoord).rgb;
+            // Store the albedo color in the third buffer
+            if (Materials[a_MaterialIndex].UseAlbedoTexture == 1) {
+                o_GAlbedo.rgb = texture(sampler2D(Materials[a_MaterialIndex].AlbedoTexture), a_TexCoord).rgb;
+            } else {
+                o_GAlbedo.rgb = Materials[a_MaterialIndex].AlbedoColor.rgb;
+            }
             // Store material information in the fourth buffer
-            o_GMat.r = texture(sampler2D(Materials[a_MaterialIndex].Metallic), a_TexCoord).r;
-            o_GMat.g = texture(sampler2D(Materials[a_MaterialIndex].Roughness), a_TexCoord).r;
-            o_GMat.b = texture(sampler2D(Materials[a_MaterialIndex].AO), a_TexCoord).r;
+            if (Materials[a_MaterialIndex].UseMetallicTexture == 1) {
+                o_GMat.r = texture(sampler2D(Materials[a_MaterialIndex].MetallicTexture), a_TexCoord).r;
+            } else {
+                o_GMat.r = Materials[a_MaterialIndex].MetallicFactor;
+            }
+            
+            if (Materials[a_MaterialIndex].UseRoughnessTexture == 1) {
+                o_GMat.g = texture(sampler2D(Materials[a_MaterialIndex].RoughnessTexture), a_TexCoord).r;
+            } else {
+                o_GMat.g = Materials[a_MaterialIndex].RoughnessFactor;
+            }
+            
+            if (Materials[a_MaterialIndex].UseAOTexture == 1) {
+                o_GMat.b = texture(sampler2D(Materials[a_MaterialIndex].AOTexture), a_TexCoord).r;
+            } else {
+                o_GMat.b = Materials[a_MaterialIndex].AOFactor;
+            }
         
             // For visualizations (normally the alpha would just get set to 0.0)
             o_GPosition.a = 1.0;
@@ -378,10 +407,22 @@ namespace Blackberry {
         m_State.Transforms.push_back(transform);
 
         GPUMaterial gpuMat;
-        gpuMat.Albedo = mat.Albedo->BindlessHandle;
-        gpuMat.Metallic = mat.Metallic->BindlessHandle;
-        gpuMat.Roughness = mat.Roughness->BindlessHandle;
-        gpuMat.AO = mat.AO->BindlessHandle;
+        gpuMat.UseAlbedoTexture = mat.UseAlbedoTexture;
+        gpuMat.AlbedoTexture = mat.AlbedoTexture->BindlessHandle;
+        gpuMat.AlbedoColor = mat.AlbedoColor;
+
+        gpuMat.UseMetallicTexture = mat.UseMetallicTexture;
+        gpuMat.MetallicTexture = mat.MetallicTexture->BindlessHandle;
+        gpuMat.MetallicFactor = mat.MetallicFactor;
+
+        gpuMat.UseRoughnessTexture = mat.UseRoughnessTexture;
+        gpuMat.RoughnessTexture = mat.RoughnessTexture->BindlessHandle;
+        gpuMat.RoughnessFactor = mat.RoughnessFactor;
+
+        gpuMat.UseAOTexture = mat.UseAOTexture;
+        gpuMat.AOTexture = mat.AOTexture->BindlessHandle;
+        gpuMat.AOFactor = mat.AOFactor;
+
         m_State.Materials.push_back(gpuMat);
 
         m_State.MeshVertexCount += mesh.Positions.size();

@@ -8,20 +8,60 @@ namespace BlackberryEditor {
         if (!open) return;
 
         if (ImGui::Begin("Material Editor", &open)) {
+            ImGui::Button(fmt::to_string(m_Context).c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0.0f));
+
+            if (ImGui::BeginDragDropTarget()) {
+                const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_MANAGER_HANDLE_DRAG_DROP");
+
+                if (payload) {
+                    SetContext(*reinterpret_cast<u64*>(payload->Data));
+                }
+
+                ImGui::EndDragDropTarget();
+            }
+
             if (Project::GetAssetManager().ContainsAsset(m_Context)) {
                 Material& mat = std::get<Material>(Project::GetAssetManager().GetAsset(m_Context).Data);
 
-                ImGui::Image(mat.Albedo->ID, ImVec2(128.0f, 128.0f)); ImGui::SameLine();
-                ImGui::Text("Albedo");
+                ImGui::Checkbox("Use Albedo Texture", &mat.UseAlbedoTexture);
 
-                ImGui::Image(mat.Metallic->ID, ImVec2(128.0f, 128.0f)); ImGui::SameLine();
-                ImGui::Text("Metallic");
+                if (mat.UseAlbedoTexture) {
+                    ImGui::Image(mat.AlbedoTexture->ID, ImVec2(128.0f, 128.0f)); ImGui::SameLine();
+                    ImGui::Text("Albedo");
+                } else {
+                    ImGui::ColorEdit4("##AlbedoColor", &mat.AlbedoColor.x); ImGui::SameLine();
+                    ImGui::Text("Albedo");
+                }
 
-                ImGui::Image(mat.Roughness->ID, ImVec2(128.0f, 128.0f)); ImGui::SameLine();
-                ImGui::Text("Roughness");
+                ImGui::Checkbox("Use Metallic Texture", &mat.UseMetallicTexture);
 
-                ImGui::Image(mat.AO->ID, ImVec2(128.0f, 128.0f)); ImGui::SameLine();
-                ImGui::Text("AO");
+                if (mat.UseMetallicTexture) {
+                    ImGui::Image(mat.MetallicTexture->ID, ImVec2(128.0f, 128.0f)); ImGui::SameLine();
+                    ImGui::Text("Metallic");
+                } else {
+                    ImGui::SliderFloat("##MetallicFactor", &mat.MetallicFactor, 0.0f, 1.0f); ImGui::SameLine();
+                    ImGui::Text("Metallic");
+                }
+
+                ImGui::Checkbox("Use Roughness Texture", &mat.UseRoughnessTexture);
+
+                if (mat.UseRoughnessTexture) {
+                    ImGui::Image(mat.RoughnessTexture->ID, ImVec2(128.0f, 128.0f)); ImGui::SameLine();
+                    ImGui::Text("Roughness");
+                } else {
+                    ImGui::SliderFloat("##RoughnessFactor", &mat.RoughnessFactor, 0.0f, 1.0f); ImGui::SameLine();
+                    ImGui::Text("Roughness");
+                }
+
+                ImGui::Checkbox("Use AO Texture", &mat.UseAOTexture);
+
+                if (mat.UseAOTexture) {
+                    ImGui::Image(mat.AOTexture->ID, ImVec2(128.0f, 128.0f)); ImGui::SameLine();
+                    ImGui::Text("AO");
+                } else {
+                    ImGui::SliderFloat("##AOFactor", &mat.AOFactor, 0.0f, 1.0f); ImGui::SameLine();
+                    ImGui::Text("AO");
+                }
 
                 if (ImGui::Button("Save")) {
                     auto path = Project::GetAssetPath(Project::GetAssetManager().GetAsset(m_Context).FilePath);

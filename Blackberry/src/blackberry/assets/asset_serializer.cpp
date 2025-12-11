@@ -31,7 +31,7 @@ namespace Blackberry {
     }
 
     void AssetSerializer::Deserialize(const std::filesystem::path& path) {
-        std::string contents = ReadEntireFile(path);
+        std::string contents = Util::ReadEntireFile(path);
 
         json j = json::parse(contents);
         auto& assets = j.at("Assets");

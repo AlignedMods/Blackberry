@@ -59,26 +59,32 @@ namespace Blackberry {
 
         static AssetManager* Copy(AssetManager* current);
 
-        AssetHandle AddAsset(const std::string& name, const Asset& asset);
+        AssetHandle AddAsset(const Asset& asset);
         void AddAssetWithHandle(AssetHandle handle, const Asset& asset);
 
         const Asset& GetAsset(AssetHandle handle) const;
         Asset& GetAsset(AssetHandle handle);
         const bool ContainsAsset(AssetHandle handle) const;
-        AssetHandle GetAssetHandle(const std::string& name) const;
+
+        const Asset& GetAssetFromPath(const std::filesystem::path& path) const;
+        Asset& GetAssetFromPath(const std::filesystem::path& path);
+        const bool ContainsAsset(const std::filesystem::path& path);
+
+        AssetHandle GetHandleFromPath(const std::filesystem::path& path) const;
+
         const HandleMap& GetAllAssets() const;
 
         // helper functions (all you really need is AddAsset)
-        void AddTextureFromPath(const std::string& name, const std::filesystem::path& path);
-        void AddFontFromPath(const std::string& name, const std::filesystem::path& path);
-        void AddModelFromPath(const std::string& name, const std::filesystem::path& path);
+        void AddTextureFromPath(const std::filesystem::path& path);
+        void AddFontFromPath(const std::filesystem::path& path);
+        void AddModelFromPath(const std::filesystem::path& path);
 
     public:
         std::filesystem::path AssetDirectory;
 
     private:
         HandleMap m_AssetMap;
-        std::unordered_map<std::string, AssetHandle> m_AssetHandleMap;
+        std::unordered_map<std::filesystem::path, AssetHandle> m_AssetHandleMap;
     };
 
 } // namespace Blackberry

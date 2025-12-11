@@ -12,18 +12,48 @@ namespace Blackberry {
     Material Material::Create(const std::filesystem::path& path) {
         Material mat;
 
-        std::string contents = ReadEntireFile(path);
+        std::string contents = Util::ReadEntireFile(path);
         json j = json::parse(contents);
 
-        std::string albedoPath = j.at("Albedo");
-        std::string metallicPath = j.at("Metallic");
-        std::string roughnessPath = j.at("Roughness");
-        std::string aoPath = j.at("AO");
+        // albedo
+        if (j.contains("Albedo-Texture")) {
+            std::string albedoPath = j.at("Albedo-Texture");
+            mat.AlbedoTexture = Texture2D::Create(Project::GetAssetPath(albedoPath));
+            mat.UseAlbedoTexture = true;
+        } else if (j.contains("Albedo-Color")) {
+            std::array<f32, 3> albedoColor = j.at("Albedo-Color");
+            mat.AlbedoColor = BlVec4(albedoColor[0], albedoColor[1], albedoColor[2], 1.0f);
+        }
 
-        mat.Albedo = Texture2D::Create(Project::GetAssetPath(albedoPath));
-        mat.Metallic = Texture2D::Create(Project::GetAssetPath(metallicPath));
-        mat.Roughness = Texture2D::Create(Project::GetAssetPath(roughnessPath));
-        mat.AO = Texture2D::Create(Project::GetAssetPath(aoPath));
+        // metallic
+        if (j.contains("Metallic-Texture")) {
+            std::string metallicPath = j.at("Metallic-Texture");
+            mat.MetallicTexture = Texture2D::Create(Project::GetAssetPath(metallicPath));
+            mat.UseMetallicTexture = true;
+        } else if (j.contains("Metallic-Factor")) {
+            f32 metallicFactor = j.at("Metallic-Factor");
+            mat.MetallicFactor = metallicFactor;
+        }
+
+        // roughness
+        if (j.contains("Roughness-Texture")) {
+            std::string roughnessPath = j.at("Roughness-Texture");
+            mat.RoughnessTexture = Texture2D::Create(Project::GetAssetPath(roughnessPath));
+            mat.UseRoughnessTexture = true;
+        } else if (j.contains("Roughness-Factor")) {
+            f32 roughnessFactor = j.at("Roughness-Factor");
+            mat.RoughnessFactor = roughnessFactor;
+        }
+
+        // AO
+        if (j.contains("AO-Texture")) {
+            std::string aoPath = j.at("AO-Texture");
+            mat.AOTexture = Texture2D::Create(Project::GetAssetPath(aoPath));
+            mat.UseAOTexture = true;
+        } else if (j.contains("AO-Factor")) {
+            f32 aoFactor = j.at("AO-Factor");
+            mat.AOFactor = aoFactor;
+        }
 
         mat.ID = s_CurrentID;
         s_CurrentID++;

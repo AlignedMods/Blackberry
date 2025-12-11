@@ -27,7 +27,7 @@
     #define BL_ASSERT(condition, ...) if (!(condition)) { BL_ERROR("Assertion failed (Line: {}, File: {})!\nMessage: {}", __LINE__, __FILE__, __VA_ARGS__); exit(1); }
 #endif
 
-namespace Blackberry {
+namespace Blackberry::Util {
 
     inline BlColor HexToCol(const u32 hex) {
         BlColor color;
@@ -50,4 +50,4 @@ namespace Blackberry {
         return contents; // implicit move
     }
 
-} // namespace Blackberry
+} // namespace Blackberry::Util

@@ -31,11 +31,22 @@ namespace Blackberry {
         BlVec3<f32> Color;
     };
 
-    struct GPUMaterial {
-        u64 Albedo = 0;
-        u64 Metallic = 0;
-        u64 Roughness = 0;
-        u64 AO = 0;
+    struct alignas(16) GPUMaterial {
+        int UseAlbedoTexture = false;
+        u64 AlbedoTexture = 0;
+        BlVec4<f32> AlbedoColor;
+
+        int UseMetallicTexture = false;
+        u64 MetallicTexture = 0;
+        f32 MetallicFactor = 0.0f;
+
+        int UseRoughnessTexture = false;
+        u64 RoughnessTexture = 0;
+        f32 RoughnessFactor = 0.0f;
+
+        int UseAOTexture = false;
+        u64 AOTexture = 0;
+        f32 AOFactor = 0.0f;
     };
 
     struct SceneRendererState {

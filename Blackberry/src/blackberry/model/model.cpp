@@ -1,5 +1,6 @@
 #include "blackberry/model/model.hpp"
 #include "blackberry/core/log.hpp"
+#include "blackberry/renderer/texture.hpp"
 
 #define CGLTF_IMPLEMENTATION
 #include "cgltf.h"
@@ -14,6 +15,14 @@ namespace Blackberry {
     
         size_t offset = view->offset + accessor->offset;
         return buffer + offset;
+    }
+
+    static Ref<Texture2D> GLTF_GetTexture(cgltf_texture_view& tex) {
+        if (!tex.texture) return CreateRef<Texture2D>();
+
+        BL_CORE_INFO("Texture name: {}", tex.texture->name);
+
+        return CreateRef<Texture2D>();
     }
 
     Model Model::Create(const std::filesystem::path& path) {
@@ -77,7 +86,6 @@ namespace Blackberry {
                     if (indexAccessor) {
                         u8* rawIndices = reinterpret_cast<u8*>(GLTF_GetAccessorData(indexAccessor));
                         u32 count = indexAccessor->count;
-
 
                         // allocate memory ahead of time
                         mesh.Indices.resize(mesh.Indices.size() + count);
@@ -156,6 +164,17 @@ namespace Blackberry {
                             f32* p = reinterpret_cast<f32*>(reinterpret_cast<u8*>(rawTexCoords) + i * stride);
                             
                             mesh.TexCoords[i] = BlVec2<f32>(p[0], p[1]);
+                        }
+                    }
+
+                    // find materials
+                    cgltf_material* material = primitive.material;
+
+                    if (material) {
+                        if (material->has_pbr_metallic_roughness) {
+                            auto pbr = material->pbr_metallic_roughness;
+
+                            Ref<Texture2D> albedo = GLTF_GetTexture(pbr.base_color_texture);
                         }
                     }
                 }

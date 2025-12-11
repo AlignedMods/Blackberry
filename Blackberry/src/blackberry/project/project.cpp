@@ -12,7 +12,7 @@ namespace Blackberry {
     void Project::Load(const std::filesystem::path& path) {
         if (!std::filesystem::exists(path)) { return; }
 
-        std::string contents = ReadEntireFile(path);
+        std::string contents = Util::ReadEntireFile(path);
         json j = json::parse(contents);
 
         s_ActiveProject = std::make_shared<Project>();

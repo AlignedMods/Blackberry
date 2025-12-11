@@ -10,6 +10,11 @@
             "Path": "Meshes\\Default\\Cube.glb",
             "Type": "Model"
         },
+        "Handle - 14759378279406288041": {
+            "Handle": 14759378279406288041,
+            "Path": "Meshes\\gun.glb",
+            "Type": "Model"
+        },
         "Handle - 15162507589004987079": {
             "Handle": 15162507589004987079,
             "Path": "Textures\\cat.jpg",
@@ -43,6 +48,11 @@
         "Handle - 6020665715492184391": {
             "Handle": 6020665715492184391,
             "Path": "Meshes\\Default\\Cylinder.glb",
+            "Type": "Model"
+        },
+        "Handle - 8535543139313001771": {
+            "Handle": 8535543139313001771,
+            "Path": "Meshes\\rubber_duck.glb",
             "Type": "Model"
         },
         "Handle - 9023906316994206417": {

@@ -253,8 +253,8 @@ namespace BlackberryEditor {
         m_MaskTexture = RenderTexture::Create(spec);
         m_OutlineTexture = RenderTexture::Create(spec);
 
-        std::string vs = ReadEntireFile("Assets/shaders/OutlineShader.vs");
-        std::string fs = ReadEntireFile("Assets/shaders/OutlineShader.fs");
+        std::string vs = Util::ReadEntireFile("Assets/shaders/OutlineShader.vs");
+        std::string fs = Util::ReadEntireFile("Assets/shaders/OutlineShader.fs");
         m_OutlineShader = Shader::Create(vs, fs);
 
         LoadEditorState();
@@ -636,6 +636,13 @@ namespace BlackberryEditor {
                 if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
                     if (file.is_directory()) {
                         m_CurrentDirectory /= path.filename();
+                    } else {
+                        if (Project::GetAssetManager().ContainsAsset(file.path())) {
+                            Asset& asset = Project::GetAssetManager().GetAssetFromPath(file.path());
+                            if (asset.Type == AssetType::Material) {
+                                m_MaterialEditorPanel.SetContext(Project::GetAssetManager().GetHandleFromPath(file.path()));
+                            }
+                        }
                     }
                 }
 
@@ -673,7 +680,7 @@ namespace BlackberryEditor {
                         asset.FilePath = fs::relative(assetFile, m_BaseDirectory);
                         asset.Data = tex;
 
-                        Project::GetAssetManager().AddAsset("cart", asset);
+                        Project::GetAssetManager().AddAsset(asset);
                     } else if (currentAssetType == 1) { // font
                         Font font = Font::Create(assetFile);
                         Asset asset;
@@ -681,7 +688,7 @@ namespace BlackberryEditor {
                         asset.FilePath = fs::relative(assetFile, m_BaseDirectory);
                         asset.Data = font;
 
-                        Project::GetAssetManager().AddAsset("cart", asset);
+                        Project::GetAssetManager().AddAsset(asset);
                     } else if (currentAssetType == 2) { // model
                         Model model = Model::Create(assetFile);
                         Asset asset;
@@ -689,7 +696,7 @@ namespace BlackberryEditor {
                         asset.FilePath = fs::relative(assetFile, m_BaseDirectory);
                         asset.Data = model;
 
-                        Project::GetAssetManager().AddAsset("cart", asset);
+                        Project::GetAssetManager().AddAsset(asset);
                     } else if (currentAssetType == 3) { // material
                         Material mat = Material::Create(assetFile);
                         Asset asset;
@@ -697,7 +704,7 @@ namespace BlackberryEditor {
                         asset.FilePath = fs::relative(assetFile, m_BaseDirectory);
                         asset.Data = mat;
 
-                        Project::GetAssetManager().AddAsset("cart", asset);
+                        Project::GetAssetManager().AddAsset(asset);
                     }
 
                     ImGui::CloseCurrentPopup();
@@ -779,8 +786,14 @@ namespace BlackberryEditor {
                 if (ImGui::MenuItem("Cube")) {
                     Entity entity(m_CurrentScene->CreateEntity("Cube"), m_CurrentScene);
 
-                    entity.AddComponent<MeshComponent>();
-                    entity.AddComponent<TransformComponent>({BlVec3(m_RenderTexture->Specification.Size.x / 2.0f - 100.0f, m_RenderTexture->Specification.Size.y / 2.0f - 50.0f, 0.0f), BlVec3(0.0f), BlVec3(200.0f, 100.0f, 1.0f)});
+                    if (!Project::GetAssetManager().ContainsAsset("Meshes/Default/Cube.glb")) {
+                        Model m = Model::Create(Project::GetAssetPath("Meshes/Default/Cube.glb"));
+
+                        Project::GetAssetManager().AddAsset({"Meshes/Default/Cube.glb", AssetType::Model, m});
+                    }
+
+                    // entity.AddComponent<MeshComponent>(std::get<Model>(Project::GetAssetManager().GetAssetFromPath("Meshes/Default/Cube.glb").Data));
+                    entity.AddComponent<TransformComponent>({BlVec3(0.0f), BlVec3(0.0f), BlVec3(1.0f)});
                 };
                 
                 ImGui::EndMenu();
@@ -1334,7 +1347,7 @@ namespace BlackberryEditor {
             return;
         }
 
-        std::string contents = ReadEntireFile(m_AppDataDirectory / "Blackberry-Editor" / "editor_state.blsettings");
+        std::string contents = Util::ReadEntireFile(m_AppDataDirectory / "Blackberry-Editor" / "editor_state.blsettings");
         json j = json::parse(contents);
 
         std::string lastProjectPath = j.at("LastProjectPath");

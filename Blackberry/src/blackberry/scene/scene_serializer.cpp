@@ -156,7 +156,7 @@ namespace Blackberry {
     }
 
     void SceneSerializer::Deserialize(const std::filesystem::path& path) {
-        std::string contents = ReadEntireFile(path);
+        std::string contents = Util::ReadEntireFile(path);
 
         json j = json::parse(contents);
         auto& entities = j.at("Entities");

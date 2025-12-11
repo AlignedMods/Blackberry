@@ -13,17 +13,16 @@ namespace Blackberry {
         return newAssetManager;
     }
 
-    AssetHandle AssetManager::AddAsset(const std::string& name, const Asset& asset) {
+    AssetHandle AssetManager::AddAsset(const Asset& asset) {
         AssetHandle handle = UUID();
         AddAssetWithHandle(handle, asset);
-
-        m_AssetHandleMap[name] = handle;
 
         return handle;
     }
 
     void AssetManager::AddAssetWithHandle(AssetHandle handle, const Asset& asset) {
         m_AssetMap[handle] = asset;
+        m_AssetHandleMap[asset.FilePath] = handle;
     }
 
     const Asset& AssetManager::GetAsset(AssetHandle handle) const {
@@ -38,27 +37,39 @@ namespace Blackberry {
         return m_AssetMap.contains(handle);
     }
 
-    AssetHandle AssetManager::GetAssetHandle(const std::string& name) const {
-        return m_AssetHandleMap.at(name);
+    const Asset& AssetManager::GetAssetFromPath(const std::filesystem::path& path) const {
+        return m_AssetMap.at(m_AssetHandleMap.at(path));
+    }
+
+    Asset& AssetManager::GetAssetFromPath(const std::filesystem::path& path) {
+        return m_AssetMap.at(m_AssetHandleMap.at(path));
+    }
+
+    const bool AssetManager::ContainsAsset(const std::filesystem::path& path) {
+        return m_AssetHandleMap.contains(path);
+    }
+
+    AssetHandle AssetManager::GetHandleFromPath(const std::filesystem::path& path) const {
+        return m_AssetHandleMap.at(path);
     }
 
     const AssetManager::HandleMap& AssetManager::GetAllAssets() const {
         return m_AssetMap;
     }
 
-    void AssetManager::AddTextureFromPath(const std::string& name, const std::filesystem::path& path) {
+    void AssetManager::AddTextureFromPath(const std::filesystem::path& path) {
         Ref<Texture2D> tex = Texture2D::Create(path);
-        AddAsset(name, {path, AssetType::Texture, tex});
+        AddAsset({path, AssetType::Texture, tex});
     }
 
-    void AssetManager::AddFontFromPath(const std::string& name, const std::filesystem::path& path) {
+    void AssetManager::AddFontFromPath(const std::filesystem::path& path) {
         Font font = Font::Create(path);
-        AddAsset(name, {path, AssetType::Font, font});
+        AddAsset({path, AssetType::Font, font});
     }
 
-    void AssetManager::AddModelFromPath(const std::string& name, const std::filesystem::path& path) {
+    void AssetManager::AddModelFromPath(const std::filesystem::path& path) {
         Model model = Model::Create(path);
-        AddAsset(name, {path, AssetType::Model, model});
+        AddAsset({path, AssetType::Model, model});
     }
 
 } // namespace Blackberry

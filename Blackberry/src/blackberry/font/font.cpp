@@ -19,7 +19,7 @@ namespace Blackberry {
 
         InitFreeType();
 
-        std::string contents = ReadEntireFile(path);
+        std::string contents = Util::ReadEntireFile(path);
         font.m_FontFileData.assign(contents.begin(), contents.end());
         font.GenerateAtlas();
 
