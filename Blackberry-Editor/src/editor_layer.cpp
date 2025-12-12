@@ -287,6 +287,9 @@ namespace BlackberryEditor {
         m_EditingScene = &Project::GetStartScene().Scene;
         m_CurrentScene = m_EditingScene;
 
+        FS::Path p("SandboxProject/");
+        FS::DirectoryIterator it(p);
+
         // ImGui::GetIO().IniFilename = std::filesystem::path(m_AppDataDirectory / "Blackberry-Editor" / "editor_layout.ini").string().c_str();
     }
 

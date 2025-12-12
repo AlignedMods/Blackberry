@@ -1,6 +1,9 @@
 #pragma once
 
+#include "blackberry/core/path.hpp"
+
 #include <string>
+#include <vector>
 
 namespace Blackberry {
 
@@ -9,6 +12,8 @@ namespace Blackberry {
         std::string OpenFile(const char* filter);
 
         std::string GetAppDataDirectory();
+
+        std::vector<FS::DirectoryFile> RetrieveDirectoryFiles(const char* base);
 
     } // namespace OS
 

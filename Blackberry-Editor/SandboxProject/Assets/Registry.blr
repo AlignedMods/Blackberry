@@ -2,62 +2,62 @@
     "Assets": {
         "Handle - 10803928294860902758": {
             "Handle": 10803928294860902758,
-            "Path": "Textures\\rabbit.jpg",
+            "Path": "Textures/rabbit.jpg",
             "Type": "Texture"
         },
         "Handle - 12120187917695872185": {
             "Handle": 12120187917695872185,
-            "Path": "Meshes\\Default\\Cube.glb",
+            "Path": "Meshes/Default/Cube.glb",
             "Type": "Model"
         },
         "Handle - 14759378279406288041": {
             "Handle": 14759378279406288041,
-            "Path": "Meshes\\gun.glb",
+            "Path": "Meshes/gun.glb",
             "Type": "Model"
         },
         "Handle - 15162507589004987079": {
             "Handle": 15162507589004987079,
-            "Path": "Textures\\cat.jpg",
+            "Path": "Textures/cat.jpg",
             "Type": "Texture"
         },
         "Handle - 16676790944532672824": {
             "Handle": 16676790944532672824,
-            "Path": "Meshes\\Default\\Sphere.glb",
+            "Path": "Meshes/Default/Sphere.glb",
             "Type": "Model"
         },
         "Handle - 21128899974857072": {
             "Handle": 21128899974857072,
-            "Path": "Textures\\Container.png",
+            "Path": "Textures/Container.png",
             "Type": "Texture"
         },
         "Handle - 3152177466728395767": {
             "Handle": 3152177466728395767,
-            "Path": "Textures\\ContainerSpecular.png",
+            "Path": "Textures/ContainerSpecular.png",
             "Type": "Texture"
         },
         "Handle - 5555962722629784639": {
             "Handle": 5555962722629784639,
-            "Path": "Fonts\\creato_display\\CreatoDisplay-Medium.otf",
+            "Path": "Fonts/creato_display/CreatoDisplay-Medium.otf",
             "Type": "Font"
         },
         "Handle - 581071103399731738": {
             "Handle": 581071103399731738,
-            "Path": "Materials\\Rusty-Metal.blmat",
+            "Path": "Materials/Rusty-Metal.blmat",
             "Type": "Material"
         },
         "Handle - 6020665715492184391": {
             "Handle": 6020665715492184391,
-            "Path": "Meshes\\Default\\Cylinder.glb",
+            "Path": "Meshes/Default/Cylinder.glb",
             "Type": "Model"
         },
         "Handle - 8535543139313001771": {
             "Handle": 8535543139313001771,
-            "Path": "Meshes\\rubber_duck.glb",
+            "Path": "Meshes/rubber_duck.glb",
             "Type": "Model"
         },
         "Handle - 9023906316994206417": {
             "Handle": 9023906316994206417,
-            "Path": "Textures\\MANGODIDDYBLUD.jpg",
+            "Path": "Textures/MANGODIDDYBLUD.jpg",
             "Type": "Texture"
         }
     }
