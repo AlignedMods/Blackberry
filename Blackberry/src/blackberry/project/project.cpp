@@ -9,15 +9,15 @@ namespace Blackberry {
 
     using json = nlohmann::json;
 
-    void Project::Load(const std::filesystem::path& path) {
-        if (!std::filesystem::exists(path)) { return; }
+    void Project::Load(const FS::Path& path) {
+        if (!FS::Exists(path)) { return; }
 
         std::string contents = Util::ReadEntireFile(path);
         json j = json::parse(contents);
 
         s_ActiveProject = std::make_shared<Project>();
 
-        s_ActiveProject->m_ProjectDirectory = path.parent_path();
+        s_ActiveProject->m_ProjectDirectory = path.ParentPath();
         std::string assetDir = j.at("AssetsDirectory");
         s_ActiveProject->m_Specification.AssetPath = s_ActiveProject->m_ProjectDirectory / assetDir;
 
@@ -26,7 +26,7 @@ namespace Blackberry {
         LoadAssetRegistry(s_ActiveProject->m_Specification.AssetPath / assetRegistry);
     
         std::string startScene = j.at("StartScene");
-        std::filesystem::path scenePath = s_ActiveProject->m_Specification.AssetPath / startScene;
+        FS::Path scenePath = s_ActiveProject->m_Specification.AssetPath / startScene;
         LoadScene(scenePath);
 
         s_ActiveProject->m_ProjectPath = path;
@@ -42,7 +42,7 @@ namespace Blackberry {
         SaveAssetRegistry(s_ActiveProject->m_Specification.AssetRegistry);
     }
 
-    Scene& Project::LoadScene(const std::filesystem::path& path) {
+    Scene& Project::LoadScene(const FS::Path& path) {
         BL_ASSERT(s_ActiveProject, "No active project!");
         ProjectScene scene;
         scene.Path = path;
@@ -53,12 +53,12 @@ namespace Blackberry {
         return s_ActiveProject->m_Specification.Scenes.emplace_back(scene).Scene;
     }
 
-    void Project::SaveScene(Scene& scene, const std::filesystem::path& path) {
+    void Project::SaveScene(Scene& scene, const FS::Path& path) {
         SceneSerializer serializer(&scene);
         serializer.Serialize(path);
     }
 
-    AssetManager& Project::LoadAssetRegistry(const std::filesystem::path& path) {
+    AssetManager& Project::LoadAssetRegistry(const FS::Path& path) {
         BL_ASSERT(s_ActiveProject, "No active project!");
         AssetSerializer serializer(&s_ActiveProject->m_AssetManager);
         serializer.Deserialize(path);
@@ -66,23 +66,23 @@ namespace Blackberry {
         return s_ActiveProject->m_AssetManager;
     }
 
-    void Project::SaveAssetRegistry(const std::filesystem::path& path) {
+    void Project::SaveAssetRegistry(const FS::Path& path) {
         BL_ASSERT(s_ActiveProject, "No active project!");
         AssetSerializer serializer(&s_ActiveProject->m_AssetManager);
         serializer.Serialize(path);
     }
 
-    std::filesystem::path Project::GetProjectPath() {
+    FS::Path Project::GetProjectPath() {
         BL_ASSERT(s_ActiveProject, "No active project!");
         return s_ActiveProject->m_ProjectPath;
     }
 
-    std::filesystem::path Project::GetAssetDirecory() {
+    FS::Path Project::GetAssetDirecory() {
         BL_ASSERT(s_ActiveProject, "No active project!");
         return s_ActiveProject->m_Specification.AssetPath;
     }
 
-    std::filesystem::path Project::GetAssetPath(const std::filesystem::path& path) {
+    FS::Path Project::GetAssetPath(const FS::Path& path) {
         BL_ASSERT(s_ActiveProject, "No active project!");
         return GetAssetDirecory() / path;
     }

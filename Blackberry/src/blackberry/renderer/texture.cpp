@@ -34,10 +34,10 @@ namespace Blackberry {
         return tex;
     }
     
-    Ref<Texture2D> Texture2D::Create(const std::filesystem::path& path) {
+    Ref<Texture2D> Texture2D::Create(const FS::Path& path) {
         Blackberry::Image image = Blackberry::Image::Create(path);
         if (image.Data == nullptr) {
-            BL_ERROR("Failed to load texture from path: {}", path.string());
+            BL_ERROR("Failed to load texture from path: {}", path.String());
             return CreateRef<Texture2D>();
         }
     

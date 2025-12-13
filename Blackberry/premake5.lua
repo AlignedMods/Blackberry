@@ -37,6 +37,7 @@ project "Blackberry" -- The game engine
         table.insert(BlackberryLinks, 1, "user32")
         table.insert(BlackberryLinks, 1, "gdi32")
         table.insert(BlackberryLinks, 1, "opengl32")
+        table.insert(BlackberryLinks, 1, "shlwapi")
 
         files { "src/platform/glfw/**.cpp", "src/platform/glfw/**.hpp" }
         files { "src/platform/win32/win32_platform.cpp" }

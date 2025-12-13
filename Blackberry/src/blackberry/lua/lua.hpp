@@ -1,15 +1,14 @@
 #pragma once
 
 #include "blackberry/core/types.hpp"
-
-#include <filesystem>
+#include "blackberry/core/path.hpp"
 
 namespace Blackberry::Lua {
 
     void Init();
     void Shutdown();
 
-    void RunFile(const std::filesystem::path& path, const std::string& moduleName);
+    void RunFile(const FS::Path& path, const std::string& moduleName);
 
     void SetExecutionContext(const std::string& moduleName);
 

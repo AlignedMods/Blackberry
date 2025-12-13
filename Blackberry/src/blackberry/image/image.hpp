@@ -1,6 +1,7 @@
 #pragma once
 
 #include "blackberry/core/types.hpp"
+#include "blackberry/core/path.hpp"
 // #include "blackberry/rendering/texture.hpp"
 
 #include <filesystem>
@@ -18,7 +19,7 @@ namespace Blackberry {
 
     class Image {
     public:
-        static Image Create(const std::filesystem::path& path);
+        static Image Create(const FS::Path& path);
         static Image Create(const void* data, u32 width, u32 height, ImageFormat format);
 
         void WriteOut(const std::string& fileName);

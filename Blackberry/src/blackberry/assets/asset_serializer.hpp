@@ -9,8 +9,8 @@ namespace Blackberry {
         AssetSerializer() = default;
         AssetSerializer(AssetManager* assetManager);
 
-        void Serialize(const std::filesystem::path& path);
-        void Deserialize(const std::filesystem::path& path);
+        void Serialize(const FS::Path& path);
+        void Deserialize(const FS::Path& path);
 
     private:
         AssetManager* m_AssetManager = nullptr;

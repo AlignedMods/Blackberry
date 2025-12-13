@@ -5,7 +5,10 @@
 namespace Blackberry::FS {
 
     Path::Path(const std::string& path)
-        : m_Path(path) {}
+        : m_Path(path) { Validate(); }
+
+    Path::Path(const char* path)
+        : m_Path(path) { Validate(); }
 
     Path::operator std::string() {
         return m_Path;
@@ -25,6 +28,10 @@ namespace Blackberry::FS {
         Append(otherPath);
     }
 
+    const bool Path::operator==(const Path& otherPath) const {
+        return m_Path == otherPath.m_Path;
+    }
+
     std::string Path::String() const {
         return m_Path;
     }
@@ -35,7 +42,7 @@ namespace Blackberry::FS {
 
     void Path::Append(const Path& otherPath) {
         // Add '/' if there isn't one at the end already
-        if (m_Path.at(m_Path.size()) != '/') {
+        if (m_Path.at(m_Path.size() - 1) != '/') {
             m_Path.append(1, '/');
         }
 
@@ -98,6 +105,27 @@ namespace Blackberry::FS {
         return extension;
     }
 
+    Path Path::ParentPath() const {
+        std::string properPath;
+        std::string parent;
+
+        properPath = m_Path;
+        if (properPath.at(properPath.size() - 1) == '/') properPath.pop_back(); // Remove '/' at the end of the path if it exists
+
+        std::string::const_iterator start = properPath.begin();
+        std::string::const_iterator end = properPath.end();
+
+        for (auto it = properPath.begin(); it != properPath.end(); it++) {
+            if (*it == '/') end = it;
+        }
+
+        for (auto it = start; it != end; it++) {
+            parent.append(1, *it);
+        }
+
+        return parent;
+    }
+
     void Path::Validate() {
         for (auto it = m_Path.begin(); it != m_Path.end(); it++) {
             if (*it == '\\') *it = '/';
@@ -105,13 +133,19 @@ namespace Blackberry::FS {
     }
 
     DirectoryIterator::DirectoryIterator(const Path& base) {
-        std::vector<DirectoryFile> files = OS::RetrieveDirectoryFiles(base.CString());
+        m_Files = OS::RetrieveDirectoryFiles(base.CString());
+    }
 
-        for (const auto& file : files) {
-            m_Files.push_back(file);
+    DirectoryIterator::iterator DirectoryIterator::begin() {
+        return m_Files.begin();
+    }
 
-            BL_CORE_INFO("Path: {}", file.Path().String());
-        }
+    DirectoryIterator::iterator DirectoryIterator::end() {
+        return m_Files.end();
+    }
+
+    bool Exists(const Path& path) {
+        return OS::PathExists(path.CString());
     }
 
 } // namespace Blackberry::FS

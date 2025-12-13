@@ -33,7 +33,7 @@ namespace Blackberry {
         ~Texture2D();
 
         static Ref<Texture2D> Create(u32 width, u32 height);
-        static Ref<Texture2D> Create(const std::filesystem::path& path);
+        static Ref<Texture2D> Create(const FS::Path& path);
         static Ref<Texture2D> Create(const Image& image);
         static Ref<Texture2D> Create(void* pixels, u32 width, u32 height, ImageFormat pixelFormat, TextureFiltering filter = TextureFiltering::Nearest);
 

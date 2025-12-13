@@ -288,7 +288,9 @@ namespace BlackberryEditor {
         m_CurrentScene = m_EditingScene;
 
         FS::Path p("SandboxProject/");
-        FS::DirectoryIterator it(p);
+        for (auto& file : FS::DirectoryIterator(p)) {
+            BL_CORE_INFO("File name: {}", file.Path().String());
+        }
 
         // ImGui::GetIO().IniFilename = std::filesystem::path(m_AppDataDirectory / "Blackberry-Editor" / "editor_layout.ini").string().c_str();
     }
@@ -586,13 +588,11 @@ namespace BlackberryEditor {
     }
 
     void EditorLayer::UI_FileBrowser() {
-        namespace fs = std::filesystem;
-    
         ImGui::Begin("File Browser");
     
         if (m_CurrentDirectory != m_BaseDirectory) {
             if (ImGui::ImageButton("##BackDirectory", m_BackDirectoryIcon->ID, ImVec2(32.0f, 32.0f))) {
-                m_CurrentDirectory = m_CurrentDirectory.parent_path();
+                m_CurrentDirectory = m_CurrentDirectory.ParentPath();
             }
         }
     
@@ -609,18 +609,18 @@ namespace BlackberryEditor {
         // ImGui::Columns(columnCount, 0, false);
 
         static bool createAssetPopup = false;
-        static fs::path assetFile;
+        static FS::Path assetFile;
 
         if (ImGui::BeginTable("##FunnyTable", columnCount)) {
-            for (const auto& file : fs::directory_iterator(m_CurrentDirectory)) {
+            for (const auto& file : FS::DirectoryIterator(m_CurrentDirectory)) {
                 ImGui::TableNextColumn();
 
-                const auto& path = file.path();
-                std::string name = path.filename().string();
+                const auto& path = file.Path();
+                std::string name = path.FileName().String();
     
                 ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
     
-                if (file.is_directory()) {
+                if (file.IsDirectory()) {
                     ImGui::ImageButton(name.c_str(), m_DirectoryIcon->ID, ImVec2(thumbnailSize, thumbnailSize));
                 } else {
                     ImGui::ImageButton(name.c_str(), m_FileIcon->ID, ImVec2(thumbnailSize, thumbnailSize));
@@ -629,21 +629,21 @@ namespace BlackberryEditor {
                 ImGui::PopStyleVar();
     
                 if (ImGui::BeginDragDropSource()) {
-                    auto relative = fs::relative(path, m_BaseDirectory);
-                    std::string filePath = relative.string();
-                    ImGui::SetDragDropPayload("FILE_BROWSER_DRAG_DROP", filePath.c_str(), filePath.size() + 1);
-                    ImGui::Text("%s", name.c_str());
+                    // auto relative = fs::relative(path, m_BaseDirectory);
+                    // std::string filePath = relative.string();
+                    // ImGui::SetDragDropPayload("FILE_BROWSER_DRAG_DROP", filePath.c_str(), filePath.size() + 1);
+                    // ImGui::Text("%s", name.c_str());
                     ImGui::EndDragDropSource();
                 }
     
                 if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-                    if (file.is_directory()) {
-                        m_CurrentDirectory /= path.filename();
+                    if (file.IsDirectory()) {
+                        m_CurrentDirectory /= path.FileName();
                     } else {
-                        if (Project::GetAssetManager().ContainsAsset(file.path())) {
-                            Asset& asset = Project::GetAssetManager().GetAssetFromPath(file.path());
+                        if (Project::GetAssetManager().ContainsAsset(file.Path())) {
+                            Asset& asset = Project::GetAssetManager().GetAssetFromPath(file.Path());
                             if (asset.Type == AssetType::Material) {
-                                m_MaterialEditorPanel.SetContext(Project::GetAssetManager().GetHandleFromPath(file.path()));
+                                m_MaterialEditorPanel.SetContext(Project::GetAssetManager().GetHandleFromPath(file.Path()));
                             }
                         }
                     }
@@ -652,7 +652,7 @@ namespace BlackberryEditor {
                 if (ImGui::BeginPopupContextItem()) {
                     if (ImGui::MenuItem("Create Asset Out Of Item")) {
                         createAssetPopup = true;
-                        assetFile = file;
+                        assetFile = file.Path();
                     }
                     ImGui::EndPopup();
                 }
@@ -676,39 +676,39 @@ namespace BlackberryEditor {
                 ImGui::Combo("##AssetType", &currentAssetType, assetTypeNames, IM_ARRAYSIZE(assetTypeNames));
 
                 if (ImGui::Button("Create")) {
-                    if (currentAssetType == 0) { // texture
-                        Ref<Texture2D> tex = Texture2D::Create(assetFile);
-                        Asset asset;
-                        asset.Type = AssetType::Texture;
-                        asset.FilePath = fs::relative(assetFile, m_BaseDirectory);
-                        asset.Data = tex;
-
-                        Project::GetAssetManager().AddAsset(asset);
-                    } else if (currentAssetType == 1) { // font
-                        Font font = Font::Create(assetFile);
-                        Asset asset;
-                        asset.Type = AssetType::Font;
-                        asset.FilePath = fs::relative(assetFile, m_BaseDirectory);
-                        asset.Data = font;
-
-                        Project::GetAssetManager().AddAsset(asset);
-                    } else if (currentAssetType == 2) { // model
-                        Model model = Model::Create(assetFile);
-                        Asset asset;
-                        asset.Type = AssetType::Model;
-                        asset.FilePath = fs::relative(assetFile, m_BaseDirectory);
-                        asset.Data = model;
-
-                        Project::GetAssetManager().AddAsset(asset);
-                    } else if (currentAssetType == 3) { // material
-                        Material mat = Material::Create(assetFile);
-                        Asset asset;
-                        asset.Type = AssetType::Material;
-                        asset.FilePath = fs::relative(assetFile, m_BaseDirectory);
-                        asset.Data = mat;
-
-                        Project::GetAssetManager().AddAsset(asset);
-                    }
+                    // if (currentAssetType == 0) { // texture
+                    //     Ref<Texture2D> tex = Texture2D::Create(assetFile);
+                    //     Asset asset;
+                    //     asset.Type = AssetType::Texture;
+                    //     asset.FilePath = fs::relative(assetFile, m_BaseDirectory);
+                    //     asset.Data = tex;
+                    // 
+                    //     Project::GetAssetManager().AddAsset(asset);
+                    // } else if (currentAssetType == 1) { // font
+                    //     Font font = Font::Create(assetFile);
+                    //     Asset asset;
+                    //     asset.Type = AssetType::Font;
+                    //     asset.FilePath = fs::relative(assetFile, m_BaseDirectory);
+                    //     asset.Data = font;
+                    // 
+                    //     Project::GetAssetManager().AddAsset(asset);
+                    // } else if (currentAssetType == 2) { // model
+                    //     Model model = Model::Create(assetFile);
+                    //     Asset asset;
+                    //     asset.Type = AssetType::Model;
+                    //     asset.FilePath = fs::relative(assetFile, m_BaseDirectory);
+                    //     asset.Data = model;
+                    // 
+                    //     Project::GetAssetManager().AddAsset(asset);
+                    // } else if (currentAssetType == 3) { // material
+                    //     Material mat = Material::Create(assetFile);
+                    //     Asset asset;
+                    //     asset.Type = AssetType::Material;
+                    //     asset.FilePath = fs::relative(assetFile, m_BaseDirectory);
+                    //     asset.Data = mat;
+                    // 
+                    //     Project::GetAssetManager().AddAsset(asset);
+                    // }
 
                     ImGui::CloseCurrentPopup();
                     createAssetPopup = false;
@@ -739,10 +739,10 @@ namespace BlackberryEditor {
             for (const auto&[handle, asset] : Project::GetAssetManager().GetAllAssets()) {
                 ImGui::TableNextColumn();
 
-                ImGui::PushID(asset.FilePath.string().c_str());
+                ImGui::PushID(asset.FilePath.CString());
 
                 // ImGui::ImageButton(asset.FilePath.string().c_str(), std::get<BlTexture>(asset.Data).ID, ImVec2(128.0f, 128.0f));
-                ImGui::Button(asset.FilePath.string().c_str(), ImVec2(128.0f, 128.0f));
+                ImGui::Button(asset.FilePath.CString(), ImVec2(128.0f, 128.0f));
 
                 if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
                     m_MaterialEditorPanel.SetContext(handle);
@@ -750,7 +750,7 @@ namespace BlackberryEditor {
 
                 if (ImGui::BeginDragDropSource()) {
                     ImGui::SetDragDropPayload("ASSET_MANAGER_DRAG_DROP", &handle, sizeof(handle));
-                    ImGui::Text(asset.FilePath.string().c_str()); // text that appears while dragging
+                    ImGui::Text(asset.FilePath.CString()); // text that appears while dragging
                     ImGui::EndDragDropSource();
                 }
 
@@ -917,7 +917,7 @@ namespace BlackberryEditor {
 
                 std::string meshName;
                 if (Project::GetAssetManager().ContainsAsset(mesh.MeshHandle)) {
-                    meshName = Project::GetAssetManager().GetAsset(mesh.MeshHandle).FilePath.stem().string();
+                    meshName = Project::GetAssetManager().GetAsset(mesh.MeshHandle).FilePath.Stem().String();
                 } else {
                     meshName = "NULL";
                 }
@@ -961,7 +961,7 @@ namespace BlackberryEditor {
 
                         std::string matName;
                         if (Project::GetAssetManager().ContainsAsset(model.Meshes[i].MaterialHandle)) {
-                            matName = Project::GetAssetManager().GetAsset(model.Meshes[i].MaterialHandle).FilePath.stem().string();
+                            matName = Project::GetAssetManager().GetAsset(model.Meshes[i].MaterialHandle).FilePath.Stem().String();
                         } else {
                             matName = "NULL";
                         }
@@ -1002,7 +1002,7 @@ namespace BlackberryEditor {
 
                 std::string mat;
                 if (Project::GetAssetManager().ContainsAsset(text.FontHandle)) {
-                    mat = Project::GetAssetManager().GetAsset(text.FontHandle).FilePath.stem().string();
+                    mat = Project::GetAssetManager().GetAsset(text.FontHandle).FilePath.Stem().String();
                 } else {
                     mat = "NULL";
                 }
@@ -1065,12 +1065,12 @@ namespace BlackberryEditor {
                 ImGui::Unindent();
             });
             DrawComponent<ScriptComponent>("Script", entity, [this](ScriptComponent& script) {
-                auto stringPath = script.ModulePath.string();
+                auto stringPath = script.ModulePath.String();
 
                 ImGui::Text("Module Path: "); ImGui::SameLine();
                 ImGui::InputText("##ModulePath", &stringPath);
 
-                script.ModulePath = std::filesystem::path(stringPath);
+                script.ModulePath = stringPath;
                 script.FilePath = m_BaseDirectory / script.ModulePath;
             });
             DrawComponent<RigidBodyComponent>("Rigid Body", entity, [](RigidBodyComponent& rigidBody) {
@@ -1161,7 +1161,7 @@ namespace BlackberryEditor {
                 bool sceneExists = false;
     
                 std::string strPath = reinterpret_cast<char*>(payload->Data);
-                std::filesystem::path path(strPath);
+                FS::Path path(strPath);
                 path = m_BaseDirectory / path;
                 
                 for (auto& scene : Project::GetScenes()) {
@@ -1332,8 +1332,8 @@ namespace BlackberryEditor {
     }
 
     void EditorLayer::SaveEditorState() {
-        if (!std::filesystem::exists(m_AppDataDirectory / "Blackberry-Editor")) {
-            std::filesystem::create_directory(m_AppDataDirectory / "Blackberry-Editor");
+        if (!FS::Exists(m_AppDataDirectory / "Blackberry-Editor")) {
+            // std::filesystem::create_directory(m_AppDataDirectory / "Blackberry-Editor");
         }
 
         json j;
@@ -1344,7 +1344,7 @@ namespace BlackberryEditor {
     }
 
     void EditorLayer::LoadEditorState() {
-        if (!std::filesystem::exists(m_AppDataDirectory / "Blackberry-Editor" / "editor_state.blsettings")) {
+        if (!FS::Exists(m_AppDataDirectory / "Blackberry-Editor" / "editor_state.blsettings")) {
             std::string path = OS::OpenFile("Blackberry Project (*.blproj)");
             Project::Load(path);
             return;

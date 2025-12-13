@@ -9,8 +9,8 @@ namespace Blackberry {
 
     // A PBR material which holds a unique id
     struct Material {
-        static Material Create(const std::filesystem::path& path);
-        static void Save(Material& mat, const std::filesystem::path& path);
+        static Material Create(const FS::Path& path);
+        static void Save(Material& mat, const FS::Path& path);
 
         bool UseAlbedoTexture = false;
         Ref<Texture2D> AlbedoTexture;

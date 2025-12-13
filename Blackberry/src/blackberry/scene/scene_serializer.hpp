@@ -1,6 +1,7 @@
 #pragma once
 
 #include "blackberry/scene/scene.hpp"
+#include "blackberry/core/path.hpp"
 
 namespace Blackberry {
 
@@ -9,8 +10,8 @@ namespace Blackberry {
         SceneSerializer() = default;
         SceneSerializer(Scene* scene);
 
-        void Serialize(const std::filesystem::path& path);
-        void Deserialize(const std::filesystem::path& path);
+        void Serialize(const FS::Path& path);
+        void Deserialize(const FS::Path& path);
 
     private:
         Scene* m_Scene = nullptr;

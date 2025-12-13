@@ -34,7 +34,7 @@ namespace BlackberryEditor {
                 ImGui::Separator();
 
                 ImGui::Text("Path: "); ImGui::SameLine(150.0f);
-                ImGui::Button(asset.FilePath.string().c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0.0f));
+                ImGui::Button(asset.FilePath.CString(), ImVec2(ImGui::GetContentRegionAvail().x, 0.0f));
                 ImGui::Separator();
 
                 ImGui::Text("Type: "); ImGui::SameLine(150.0f);

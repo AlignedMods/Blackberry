@@ -14,7 +14,7 @@ namespace Blackberry {
 
     static msdfgen::FreetypeHandle* s_FreetypeHandle = nullptr;
 
-    Font Font::Create(const std::filesystem::path& path) {
+    Font Font::Create(const FS::Path& path) {
         Font font;
 
         InitFreeType();

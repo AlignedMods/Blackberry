@@ -10,14 +10,14 @@
 
 namespace Blackberry {
 
-    Image Image::Create(const std::filesystem::path& path) {
+    Image Image::Create(const FS::Path& path) {
         Image im;
 
-        im.Data = stbi_load(path.string().c_str(), &im.Width, &im.Height, &im.Channels, 4);
+        im.Data = stbi_load(path.CString(), &im.Width, &im.Height, &im.Channels, 4);
         im.Format = ImageFormat::RGBA8;
 
         if (!im.Data) {
-            BL_CORE_ERROR("Failed to load image %s!", path.string().c_str());
+            BL_CORE_ERROR("Failed to load image {}!", path.String());
         }
 
         return im;

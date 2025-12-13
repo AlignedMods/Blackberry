@@ -4,6 +4,7 @@
 
 #include <string>
 #include <vector>
+#include <xhash>
 
 namespace Blackberry::FS {
 
@@ -14,12 +15,15 @@ namespace Blackberry::FS {
     public:
         Path() = default;
         Path(const std::string& path);
+        Path(const char* path);
 
         operator std::string();
         operator const std::string() const;
 
         Path operator/(const Path& otherPath) const;
         void operator/=(const Path& otherPath);
+
+        const bool operator==(const Path& otherPath) const;
 
         std::string String() const;
         const char* CString() const;
@@ -29,6 +33,8 @@ namespace Blackberry::FS {
         Path FileName() const;
         Path Stem() const;
         Path Extension() const;
+
+        Path ParentPath() const;
 
         // Validates a path and turns an invalid path into a valid one if needed
         void Validate();
@@ -58,8 +64,8 @@ namespace Blackberry::FS {
     class DirectoryIterator {
     public:
         // Standard c++ compatible iterators
-        using iterator = DirectoryFile*;
-        using const_iterator = const DirectoryFile*;
+        using iterator = std::vector<DirectoryFile>::iterator;
+        using const_iterator = std::vector<DirectoryFile>::const_iterator;
 
         DirectoryIterator() = default;
         DirectoryIterator(const Path& base);
@@ -72,7 +78,15 @@ namespace Blackberry::FS {
 
     private:
         std::vector<DirectoryFile> m_Files;
-        u32 m_CurrentPath = 0;
     };
 
+    bool Exists(const Path& path);
+
 } // namespace Blackberry::FS
+
+template<>
+struct std::hash<Blackberry::FS::Path> {
+    std::size_t operator()(const Blackberry::FS::Path& p) const {
+        return std::hash<std::string>()(p.String());
+    }
+};

@@ -3,45 +3,45 @@
 #include "blackberry/core/types.hpp"
 #include "blackberry/scene/scene.hpp"
 #include "blackberry/assets/asset_manager.hpp"
+#include "blackberry/core/path.hpp"
 
 #include <string>
-#include <filesystem>
 #include <memory>
 
 namespace Blackberry {
 
     struct ProjectScene {
-        std::filesystem::path Path;
+        FS::Path Path;
         Scene Scene;
     };
 
     struct ProjectSpecification {
         std::string Name;
 
-        std::filesystem::path AssetPath;
-        std::filesystem::path AssetRegistry;
-        std::filesystem::path StartScene;
+        FS::Path AssetPath;
+        FS::Path AssetRegistry;
+        FS::Path StartScene;
 
         std::vector<ProjectScene> Scenes;
     };
 
     class Project {
     public:
-        static void Load(const std::filesystem::path& path);
+        static void Load(const FS::Path& path);
         static void New();
 
         static void Save();
 
-        static Scene& LoadScene(const std::filesystem::path& path);
-        static void SaveScene(Scene& scene, const std::filesystem::path& path);
+        static Scene& LoadScene(const FS::Path& path);
+        static void SaveScene(Scene& scene, const FS::Path& path);
 
-        static AssetManager& LoadAssetRegistry(const std::filesystem::path& path);
-        static void SaveAssetRegistry(const std::filesystem::path& path);
+        static AssetManager& LoadAssetRegistry(const FS::Path& path);
+        static void SaveAssetRegistry(const FS::Path& path);
 
-        static std::filesystem::path GetProjectPath();
+        static FS::Path GetProjectPath();
 
-        static std::filesystem::path GetAssetDirecory();
-        static std::filesystem::path GetAssetPath(const std::filesystem::path& path);
+        static FS::Path GetAssetDirecory();
+        static FS::Path GetAssetPath(const FS::Path& path);
 
         static ProjectScene& GetStartScene();
         static std::vector<ProjectScene>& GetScenes();
@@ -49,8 +49,8 @@ namespace Blackberry {
         static AssetManager& GetAssetManager();
 
     private:
-        std::filesystem::path m_ProjectDirectory;
-        std::filesystem::path m_ProjectPath;
+        FS::Path m_ProjectDirectory;
+        FS::Path m_ProjectPath;
         AssetManager m_AssetManager;
         ProjectSpecification m_Specification;
 

@@ -8,7 +8,6 @@
 #include "blackberry/model/material.hpp"
 #include "blackberry/core/util.hpp"
 
-#include <filesystem>
 #include <unordered_map>
 #include <variant>
 
@@ -46,7 +45,7 @@ namespace Blackberry {
     }
 
     struct Asset {
-        std::filesystem::path FilePath;
+        FS::Path FilePath;
         AssetType Type;
         std::variant<Ref<Texture2D>, Font, Model, Material> Data;
     };
@@ -66,25 +65,25 @@ namespace Blackberry {
         Asset& GetAsset(AssetHandle handle);
         const bool ContainsAsset(AssetHandle handle) const;
 
-        const Asset& GetAssetFromPath(const std::filesystem::path& path) const;
-        Asset& GetAssetFromPath(const std::filesystem::path& path);
-        const bool ContainsAsset(const std::filesystem::path& path);
+        const Asset& GetAssetFromPath(const FS::Path& path) const;
+        Asset& GetAssetFromPath(const FS::Path& path);
+        const bool ContainsAsset(const FS::Path& path);
 
-        AssetHandle GetHandleFromPath(const std::filesystem::path& path) const;
+        AssetHandle GetHandleFromPath(const FS::Path& path) const;
 
         const HandleMap& GetAllAssets() const;
 
         // helper functions (all you really need is AddAsset)
-        void AddTextureFromPath(const std::filesystem::path& path);
-        void AddFontFromPath(const std::filesystem::path& path);
-        void AddModelFromPath(const std::filesystem::path& path);
+        void AddTextureFromPath(const FS::Path& path);
+        void AddFontFromPath(const FS::Path& path);
+        void AddModelFromPath(const FS::Path& path);
 
     public:
-        std::filesystem::path AssetDirectory;
+        FS::Path AssetDirectory;
 
     private:
         HandleMap m_AssetMap;
-        std::unordered_map<std::filesystem::path, AssetHandle> m_AssetHandleMap;
+        std::unordered_map<FS::Path, AssetHandle> m_AssetHandleMap;
     };
 
 } // namespace Blackberry

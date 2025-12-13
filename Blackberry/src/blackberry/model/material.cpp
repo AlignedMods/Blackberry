@@ -9,7 +9,7 @@ namespace Blackberry {
 
     static u32 s_CurrentID = 1;
 
-    Material Material::Create(const std::filesystem::path& path) {
+    Material Material::Create(const FS::Path& path) {
         Material mat;
 
         std::string contents = Util::ReadEntireFile(path);
@@ -61,7 +61,7 @@ namespace Blackberry {
         return mat;
     }
 
-    void Material::Save(Material& mat, const std::filesystem::path& path) {
+    void Material::Save(Material& mat, const FS::Path& path) {
         json j;
 
         // j["Albedo"] = { mat.Albedo.x, mat.Albedo.y, mat.Albedo.z };

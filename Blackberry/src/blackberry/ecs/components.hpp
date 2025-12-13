@@ -1,6 +1,7 @@
 #pragma once
 
 #include "blackberry/core/types.hpp"
+#include "blackberry/core/path.hpp"
 
 #include "glm/glm.hpp"
 #include "glm/ext/matrix_transform.hpp"
@@ -8,7 +9,6 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 
-#include <filesystem>
 #include <string>
 
 namespace Blackberry {
@@ -102,8 +102,8 @@ namespace Blackberry {
     };
 
     struct ScriptComponent {
-        std::filesystem::path ModulePath;
-        std::filesystem::path FilePath;
+        FS::Path ModulePath;
+        FS::Path FilePath;
         bool IsLoaded = false;
     };
 

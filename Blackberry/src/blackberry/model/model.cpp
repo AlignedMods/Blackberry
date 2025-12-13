@@ -25,22 +25,22 @@ namespace Blackberry {
         return CreateRef<Texture2D>();
     }
 
-    Model Model::Create(const std::filesystem::path& path) {
+    Model Model::Create(const FS::Path& path) {
         Model model;
 
-        if (path.extension().string() == ".glb" || path.extension() == ".gltf") { // We are loading a glTF
+        if (path.Extension() == ".glb" || path.Extension() == ".gltf") { // We are loading a glTF
             cgltf_options options{};
             cgltf_data* data = nullptr;
 
-            cgltf_result result = cgltf_parse_file(&options, path.string().c_str(), &data);
+            cgltf_result result = cgltf_parse_file(&options, path.CString(), &data);
             if (result != cgltf_result_success) {
-                BL_CORE_ERROR("Failed to load mesh from path: {}", path.string());
+                BL_CORE_ERROR("Failed to load mesh from path: {}", path.String());
                 return model;
             }
 
-            result = cgltf_load_buffers(&options, data, path.string().c_str());
+            result = cgltf_load_buffers(&options, data, path.CString());
             if (result != cgltf_result_success) {
-                BL_CORE_ERROR("Failed to load mesh buffers from path: {}", path.string());
+                BL_CORE_ERROR("Failed to load mesh buffers from path: {}", path.String());
                 cgltf_free(data);
                 return model;
             }

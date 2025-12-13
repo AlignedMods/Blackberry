@@ -6,7 +6,7 @@ namespace Blackberry {
 
     class Model {
     public:
-        static Model Create(const std::filesystem::path& path);
+        static Model Create(const FS::Path& path);
         static Model Create(const std::vector<Mesh>& meshes);
 
     public:

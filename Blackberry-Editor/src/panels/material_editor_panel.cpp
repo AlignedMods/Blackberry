@@ -66,7 +66,7 @@ namespace BlackberryEditor {
                 if (ImGui::Button("Save")) {
                     auto path = Project::GetAssetPath(Project::GetAssetManager().GetAsset(m_Context).FilePath);
 
-                    BL_CORE_TRACE("Saving material {} to {}", m_Context, path.string());
+                    BL_CORE_TRACE("Saving material {} to {}", m_Context, path.String());
                     Material::Save(mat, path);
                 }
             }

@@ -18,7 +18,7 @@ namespace Blackberry {
 
     class Font {
     public:
-        static Font Create(const std::filesystem::path& path);
+        static Font Create(const FS::Path& path);
         static void InitFreeType();
 
         GlyphInfo GetGlyphInfo(u8 codepoint, u32 size);

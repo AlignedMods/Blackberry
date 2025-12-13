@@ -2,6 +2,7 @@
 
 #include "blackberry/core/types.hpp"
 #include "blackberry/core/log.hpp"
+#include "blackberry/core/path.hpp"
 
 #include <filesystem>
 #include <fstream>
@@ -40,7 +41,7 @@ namespace Blackberry::Util {
         return color;
     }
 
-    inline std::string ReadEntireFile(const std::filesystem::path& path) {
+    inline std::string ReadEntireFile(const FS::Path& path) {
         std::ifstream file(path, std::ios::binary);
         std::stringstream ss;
         ss << file.rdbuf();

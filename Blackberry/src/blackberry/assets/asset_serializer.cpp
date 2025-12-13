@@ -10,7 +10,7 @@ namespace Blackberry {
     AssetSerializer::AssetSerializer(AssetManager* assetManager)
         : m_AssetManager(assetManager) {}
 
-    void AssetSerializer::Serialize(const std::filesystem::path& path) {
+    void AssetSerializer::Serialize(const FS::Path& path) {
         auto& assets = m_AssetManager->GetAllAssets();
         if (assets.size() == 0) return;
 
@@ -30,7 +30,7 @@ namespace Blackberry {
         stream << j.dump(4);
     }
 
-    void AssetSerializer::Deserialize(const std::filesystem::path& path) {
+    void AssetSerializer::Deserialize(const FS::Path& path) {
         std::string contents = Util::ReadEntireFile(path);
 
         json j = json::parse(contents);
@@ -40,20 +40,20 @@ namespace Blackberry {
             Asset asset;
             asset.Type = StringToAssetType(jsonAsset.at("Type"));
 
-            std::filesystem::path path = jsonAsset.at("Path");
-            asset.FilePath = path;
+            std::string assetPath = jsonAsset.at("Path");
+            asset.FilePath = assetPath;
             
             if (asset.Type == AssetType::Texture) {
-                Ref<Texture2D> tex = Texture2D::Create(Project::GetAssetPath(path));
+                Ref<Texture2D> tex = Texture2D::Create(Project::GetAssetPath(assetPath));
                 asset.Data = tex;
             } else if (asset.Type == AssetType::Font) {
-                Font font = Font::Create(Project::GetAssetPath(path));
+                Font font = Font::Create(Project::GetAssetPath(assetPath));
                 asset.Data = font;
             } else if (asset.Type == AssetType::Model) {
-                Model model = Model::Create(Project::GetAssetPath(path));
+                Model model = Model::Create(Project::GetAssetPath(assetPath));
                 asset.Data = model;
             } else if (asset.Type == AssetType::Material) {
-                Material material = Material::Create(Project::GetAssetPath(path));
+                Material material = Material::Create(Project::GetAssetPath(assetPath));
                 asset.Data = material;
             }
 

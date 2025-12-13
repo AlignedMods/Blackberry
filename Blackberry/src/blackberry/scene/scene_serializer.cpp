@@ -47,7 +47,7 @@ namespace Blackberry {
     SceneSerializer::SceneSerializer(Scene* scene)
         : m_Scene(scene) {}
 
-    void SceneSerializer::Serialize(const std::filesystem::path& path) {
+    void SceneSerializer::Serialize(const FS::Path& path) {
         if (m_Scene->GetEntities().size() == 0) return;
         json j;
 
@@ -106,7 +106,7 @@ namespace Blackberry {
                 ScriptComponent& script = entity.GetComponent<ScriptComponent>();
 
                 j["Entities"][name]["ScriptComponent"] = { 
-                    {"ModulePath", script.ModulePath.string()}
+                    {"ModulePath", script.ModulePath.String()}
                 };
             }
 
@@ -155,7 +155,7 @@ namespace Blackberry {
         stream << j.dump(4);
     }
 
-    void SceneSerializer::Deserialize(const std::filesystem::path& path) {
+    void SceneSerializer::Deserialize(const FS::Path& path) {
         std::string contents = Util::ReadEntireFile(path);
 
         json j = json::parse(contents);
@@ -219,8 +219,8 @@ namespace Blackberry {
 
             if (jsonEntity.contains("ScriptComponent")) {
                 auto& jsonScript = jsonEntity.at("ScriptComponent");
-                std::filesystem::path modulePath = jsonScript.at("ModulePath");
-                std::filesystem::path filePath = Project::GetAssetPath(modulePath);
+                std::string modulePath = jsonScript.at("ModulePath");
+                FS::Path filePath = Project::GetAssetPath(modulePath);
                 entity.AddComponent<ScriptComponent>({ modulePath, filePath });
             }
 

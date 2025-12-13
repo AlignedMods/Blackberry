@@ -1,6 +1,7 @@
 #include "blackberry/lua/lua.hpp"
 #include "blackberry/core/log.hpp"
 #include "blackberry/lua/lua_api.hpp"
+#include "blackberry/core/path.hpp"
 
 extern "C" {
     #include "lua.h"
@@ -30,8 +31,8 @@ namespace Blackberry::Lua {
         }
     }
 
-    void RunFile(const std::filesystem::path& path, const std::string& moduleName) {
-        std::string strPath = path.string();
+    void RunFile(const FS::Path& path, const std::string& moduleName) {
+        std::string strPath = path.String();
 
         if (luaL_dofile(s_LState, strPath.c_str()) != LUA_OK) {
             const char* errorMsg = lua_tostring(s_LState, -1);

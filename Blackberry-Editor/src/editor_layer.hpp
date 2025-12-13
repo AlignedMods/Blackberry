@@ -92,8 +92,8 @@ namespace BlackberryEditor {
         Blackberry::Scene* m_CurrentScene = nullptr;
         EditorState m_EditorState = EditorState::Edit;
     
-        std::filesystem::path m_CurrentDirectory;
-        std::filesystem::path m_BaseDirectory;
+        Blackberry::FS::Path m_CurrentDirectory;
+        Blackberry::FS::Path m_BaseDirectory;
     
         // icons
         Blackberry::Ref<Blackberry::Texture2D> m_DirectoryIcon;
@@ -107,7 +107,7 @@ namespace BlackberryEditor {
     
         bool m_ShowDemoWindow = false;
 
-        std::filesystem::path m_AppDataDirectory;
+        Blackberry::FS::Path m_AppDataDirectory;
 
         Blackberry::Mesh m_Duck;
     };

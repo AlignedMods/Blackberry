@@ -1,5 +1,6 @@
 #include "Windows.h"
 #include "ShlObj.h"
+#include "shlwapi.h"
 
 #include "blackberry/os/os.hpp"
 #include "blackberry/application/application.hpp"
@@ -38,6 +39,10 @@ namespace Blackberry {
             }
 
             return std::string{};
+        }
+
+        bool PathExists(const char* path) {
+            return PathFileExistsA(path);
         }
 
         std::vector<FS::DirectoryFile> RetrieveDirectoryFiles(const char* base) {

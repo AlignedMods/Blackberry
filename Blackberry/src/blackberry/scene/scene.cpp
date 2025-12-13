@@ -41,8 +41,8 @@ namespace Blackberry {
 
         view.each([&](auto entity, ScriptComponent& script) {
             // Execute script
-            Lua::RunFile(script.FilePath, script.ModulePath.string());
-            Lua::SetExecutionContext(script.ModulePath.string());
+            Lua::RunFile(script.FilePath, script.ModulePath.String());
+            Lua::SetExecutionContext(script.ModulePath.String());
 
             Lua::GetMember("OnAttach");
             Lua::CallFunction(0, 0);
@@ -61,7 +61,7 @@ namespace Blackberry {
 
         view.each([&](auto entity, ScriptComponent& script) {
             if (script.IsLoaded) {
-                Lua::SetExecutionContext(script.ModulePath.string());
+                Lua::SetExecutionContext(script.ModulePath.String());
 
                 Lua::GetMember("OnDetach");
                 Lua::CallFunction(0, 0);
@@ -110,7 +110,7 @@ namespace Blackberry {
         scriptView.each([&](auto entity, ScriptComponent& script) {
             Entity e(entity, this);
 
-            Lua::SetExecutionContext(script.ModulePath.string());
+            Lua::SetExecutionContext(script.ModulePath.String());
             
             Lua::GetMember("OnUpdate");
 
