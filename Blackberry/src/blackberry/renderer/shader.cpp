@@ -1,5 +1,6 @@
 #include "blackberry/renderer/shader.hpp"
 #include "blackberry/core/log.hpp"
+#include "blackberry/core/util.hpp"
 
 #include "glad/gl.h"
 
@@ -51,6 +52,13 @@ namespace Blackberry {
         glDeleteShader(vertexShader);
 
         return shader;
+    }
+
+    Shader Shader::Create(const FS::Path& vert, const FS::Path& frag) {
+        std::string vertSrc = Util::ReadEntireFile(vert);
+        std::string fragSrc = Util::ReadEntireFile(frag);
+
+        return Create(vertSrc, fragSrc);
     }
     
     void Shader::Delete() {

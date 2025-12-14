@@ -4,7 +4,6 @@
 #include "blackberry/core/log.hpp"
 #include "blackberry/core/path.hpp"
 
-#include <filesystem>
 #include <fstream>
 #include <sstream>
 

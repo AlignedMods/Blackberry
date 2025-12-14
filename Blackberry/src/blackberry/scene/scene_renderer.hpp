@@ -26,9 +26,11 @@ namespace Blackberry {
         BlVec3<f32> Specular;
     };
 
-    struct SceneLight {
-        BlVec3<f32> Position;
-        BlVec3<f32> Color;
+    // NOTE: we need to pad the vec3s since opengl expects vec3s to be 16 bytes
+    struct alignas(16) SceneLight {
+        BlVec4<f32> Position; // w is unused
+        BlVec4<f32> Color; // w is unused
+        BlVec4<f32> Params; // w is unused
     };
 
     struct alignas(16) GPUMaterial {
@@ -59,12 +61,10 @@ namespace Blackberry {
         ShaderStorageBuffer TransformBuffer;
         ShaderStorageBuffer MaterialBuffer;
         ShaderStorageBuffer ShaderGBuffer;
+        ShaderStorageBuffer LightBuffer;
 
         std::vector<glm::mat4> Transforms;
-
-        SceneDirectionalLight DirectionalLight;
-        std::array<SceneLight, 32> Lights;
-        u32 LightIndex = 0;
+        std::vector<SceneLight> Lights;
 
         std::vector<SceneMeshVertex> MeshVertices;
         u32 MeshVertexCount = 0;
@@ -105,7 +105,7 @@ namespace Blackberry {
         void AddModel(const glm::mat4& transform, const Model& model, BlColor color);
 
         void AddDirectionalLight(const TransformComponent& transform, const DirectionalLightComponent& light);
-        void AddLight(const TransformComponent& transform, const LightComponent& light);
+        void AddPointLight(const TransformComponent& transform, const PointLightComponent& light);
 
         void Flush();
 

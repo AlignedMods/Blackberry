@@ -48,6 +48,7 @@ namespace Blackberry {
         FS::Path FilePath;
         AssetType Type;
         std::variant<Ref<Texture2D>, Font, Model, Material> Data;
+        AssetHandle Handle = 0;
     };
 
     class AssetManager {

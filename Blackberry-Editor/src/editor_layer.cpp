@@ -253,19 +253,17 @@ namespace BlackberryEditor {
         m_MaskTexture = RenderTexture::Create(spec);
         m_OutlineTexture = RenderTexture::Create(spec);
 
-        std::string vs = Util::ReadEntireFile("Assets/shaders/OutlineShader.vs");
-        std::string fs = Util::ReadEntireFile("Assets/shaders/OutlineShader.fs");
-        m_OutlineShader = Shader::Create(vs, fs);
+        m_OutlineShader = Shader::Create(FS::Path("Assets/Shaders/OutlineShader.vs"), FS::Path("Assets/Shaders/OutlineShader.fs"));
 
         LoadEditorState();
     
-        m_DirectoryIcon     = Texture2D::Create("Assets/icons/directory.png");
-        m_FileIcon          = Texture2D::Create("Assets/icons/file.png");
-        m_BackDirectoryIcon = Texture2D::Create("Assets/icons/back_directory.png");
-        m_PlayIcon          = Texture2D::Create("Assets/icons/play.png");
-        m_StopIcon          = Texture2D::Create("Assets/icons/stop.png");
-        m_PauseIcon         = Texture2D::Create("Assets/icons/pause.png");
-        m_ResumeIcon        = Texture2D::Create("Assets/icons/resume.png");
+        m_DirectoryIcon     = Texture2D::Create("Assets/Icons/directory.png");
+        m_FileIcon          = Texture2D::Create("Assets/Icons/file.png");
+        m_BackDirectoryIcon = Texture2D::Create("Assets/Icons/back_directory.png");
+        m_PlayIcon          = Texture2D::Create("Assets/Icons/play.png");
+        m_StopIcon          = Texture2D::Create("Assets/Icons/stop.png");
+        m_PauseIcon         = Texture2D::Create("Assets/Icons/pause.png");
+        m_ResumeIcon        = Texture2D::Create("Assets/Icons/resume.png");
     
         m_CurrentDirectory = Project::GetAssetDirecory();
         m_BaseDirectory = Project::GetAssetDirecory();
@@ -786,6 +784,19 @@ namespace BlackberryEditor {
             ImGui::Separator();
 
             if (ImGui::BeginMenu("Mesh")) {
+                if (ImGui::MenuItem("Plane")) {
+                    Entity entity(m_CurrentScene->CreateEntity("Plane"), m_CurrentScene);
+
+                    if (!Project::GetAssetManager().ContainsAsset("Meshes/Default/Plane.glb")) {
+                        Model m = Model::Create(Project::GetAssetPath("Meshes/Default/Plane.glb"));
+
+                        Project::GetAssetManager().AddAsset({"Meshes/Default/Plane.glb", AssetType::Model, m});
+                    }
+
+                    entity.AddComponent<MeshComponent>({Project::GetAssetManager().GetAssetFromPath("Meshes/Default/Plane.glb").Handle});
+                    entity.AddComponent<TransformComponent>({BlVec3(0.0f), BlVec3(0.0f), BlVec3(1.0f)});
+                };
+
                 if (ImGui::MenuItem("Cube")) {
                     Entity entity(m_CurrentScene->CreateEntity("Cube"), m_CurrentScene);
 
@@ -795,9 +806,48 @@ namespace BlackberryEditor {
                         Project::GetAssetManager().AddAsset({"Meshes/Default/Cube.glb", AssetType::Model, m});
                     }
 
-                    // entity.AddComponent<MeshComponent>(std::get<Model>(Project::GetAssetManager().GetAssetFromPath("Meshes/Default/Cube.glb").Data));
+                    entity.AddComponent<MeshComponent>({Project::GetAssetManager().GetAssetFromPath("Meshes/Default/Cube.glb").Handle});
                     entity.AddComponent<TransformComponent>({BlVec3(0.0f), BlVec3(0.0f), BlVec3(1.0f)});
                 };
+
+                if (ImGui::MenuItem("Sphere")) {
+                    Entity entity(m_CurrentScene->CreateEntity("Sphere"), m_CurrentScene);
+
+                    if (!Project::GetAssetManager().ContainsAsset("Meshes/Default/Sphere.glb")) {
+                        Model m = Model::Create(Project::GetAssetPath("Meshes/Default/Sphere.glb"));
+
+                        Project::GetAssetManager().AddAsset({"Meshes/Default/Sphere.glb", AssetType::Model, m});
+                    }
+
+                    entity.AddComponent<MeshComponent>({Project::GetAssetManager().GetAssetFromPath("Meshes/Default/Sphere.glb").Handle});
+                    entity.AddComponent<TransformComponent>({BlVec3(0.0f), BlVec3(0.0f), BlVec3(1.0f)});
+                }
+
+                if (ImGui::MenuItem("Cylinder")) {
+                    Entity entity(m_CurrentScene->CreateEntity("Cylinder"), m_CurrentScene);
+
+                    if (!Project::GetAssetManager().ContainsAsset("Meshes/Default/Cylinder.glb")) {
+                        Model m = Model::Create(Project::GetAssetPath("Meshes/Default/Cylinder.glb"));
+
+                        Project::GetAssetManager().AddAsset({"Meshes/Default/Cylinder.glb", AssetType::Model, m});
+                    }
+
+                    entity.AddComponent<MeshComponent>({Project::GetAssetManager().GetAssetFromPath("Meshes/Default/Cylinder.glb").Handle});
+                    entity.AddComponent<TransformComponent>({BlVec3(0.0f), BlVec3(0.0f), BlVec3(1.0f)});
+                }
+
+                if (ImGui::MenuItem("Torus")) {
+                    Entity entity(m_CurrentScene->CreateEntity("Torus"), m_CurrentScene);
+
+                    if (!Project::GetAssetManager().ContainsAsset("Meshes/Default/Torus.glb")) {
+                        Model m = Model::Create(Project::GetAssetPath("Meshes/Default/Torus.glb"));
+
+                        Project::GetAssetManager().AddAsset({"Meshes/Default/Torus.glb", AssetType::Model, m});
+                    }
+
+                    entity.AddComponent<MeshComponent>({Project::GetAssetManager().GetAssetFromPath("Meshes/Default/Torus.glb").Handle});
+                    entity.AddComponent<TransformComponent>({BlVec3(0.0f), BlVec3(0.0f), BlVec3(1.0f)});
+                }
                 
                 ImGui::EndMenu();
             }
@@ -885,7 +935,7 @@ namespace BlackberryEditor {
                     AddComponentListOption<RigidBodyComponent>("Rigid Body", entity);
                     AddComponentListOption<ColliderComponent>("Collider", entity);
                     AddComponentListOption<DirectionalLightComponent>("Directional Light", entity);
-                    AddComponentListOption<LightComponent>("Light", entity);
+                    AddComponentListOption<PointLightComponent>("Point Light", entity);
                     
                     ImGui::EndMenu();
                 }
@@ -945,6 +995,8 @@ namespace BlackberryEditor {
                     if (payload) {
                         mesh.MeshHandle = *reinterpret_cast<u64*>(payload->Data); // seems sus
                     }
+
+                    ImGui::EndDragDropTarget();
                 }
 
                 ImGui::Unindent();
@@ -1102,8 +1154,11 @@ namespace BlackberryEditor {
                 ImGui::ColorEdit3("Diffuse", &light.Diffuse.x);
                 ImGui::ColorEdit3("Specular", &light.Specular.x);
             });
-            DrawComponent<LightComponent>("Light", entity, [](LightComponent& light) {
-                ImGui::ColorEdit3("Color", &light.Color.x);    
+            DrawComponent<PointLightComponent>("Point Light", entity, [](PointLightComponent& light) {
+                ImGui::ColorEdit3("Color", &light.Color.x);
+
+                ImGui::DragFloat("Radius", &light.Radius);
+                ImGui::DragFloat("Intensity", &light.Intensity);
             });
         }
     

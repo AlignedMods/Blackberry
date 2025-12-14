@@ -67,7 +67,7 @@ namespace Blackberry {
         glDepthRange(0.0, 1.0);
 
         // backface-culling
-        glEnable(GL_CULL_FACE);
+        // glEnable(GL_CULL_FACE);
 
         BL_CORE_INFO("Using OpenGL backend");
         BL_CORE_INFO("    Vendor: {}", reinterpret_cast<const char*>(glGetString(GL_VENDOR)));

@@ -23,8 +23,6 @@ namespace Blackberry::FS {
         Path operator/(const Path& otherPath) const;
         void operator/=(const Path& otherPath);
 
-        const bool operator==(const Path& otherPath) const;
-
         std::string String() const;
         const char* CString() const;
 
@@ -34,6 +32,7 @@ namespace Blackberry::FS {
         Path Stem() const;
         Path Extension() const;
 
+        const bool operator==(const Path& otherPath) const;
         Path ParentPath() const;
 
         // Validates a path and turns an invalid path into a valid one if needed

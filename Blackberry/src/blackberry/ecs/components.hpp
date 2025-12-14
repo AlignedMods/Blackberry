@@ -113,8 +113,10 @@ namespace Blackberry {
         BlVec3<f32> Specular;
     };
 
-    struct LightComponent {
+    struct PointLightComponent {
         BlVec3<f32> Color;
+        f32 Radius = 10.0f;
+        f32 Intensity = 1.0f;
     };
 
 } // namespace Blackberry

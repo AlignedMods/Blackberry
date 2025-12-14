@@ -22,6 +22,7 @@ namespace Blackberry {
 
     void AssetManager::AddAssetWithHandle(AssetHandle handle, const Asset& asset) {
         m_AssetMap[handle] = asset;
+        m_AssetMap[handle].Handle = handle;
         m_AssetHandleMap[asset.FilePath] = handle;
     }
 

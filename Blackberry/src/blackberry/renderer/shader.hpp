@@ -1,6 +1,7 @@
 #pragma once
 
 #include "blackberry/core/types.hpp"
+#include "blackberry/core/path.hpp"
 
 #include <string>
 
@@ -8,6 +9,7 @@ namespace Blackberry {
 
     struct Shader {
         static Shader Create(const std::string& vert, const std::string& frag);
+        static Shader Create(const FS::Path& vert, const FS::Path& frag);
         void Delete();
     
         void SetFloat(const std::string& uniform, f32 val);
