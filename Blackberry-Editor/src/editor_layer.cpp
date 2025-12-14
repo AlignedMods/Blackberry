@@ -1157,8 +1157,8 @@ namespace BlackberryEditor {
             DrawComponent<PointLightComponent>("Point Light", entity, [](PointLightComponent& light) {
                 ImGui::ColorEdit3("Color", &light.Color.x);
 
-                ImGui::DragFloat("Radius", &light.Radius);
-                ImGui::DragFloat("Intensity", &light.Intensity);
+                ImGui::DragFloat("Radius", &light.Radius, 0.1f);
+                ImGui::DragFloat("Intensity", &light.Intensity, 0.5f);
             });
         }
     

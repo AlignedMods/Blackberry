@@ -149,6 +149,16 @@ namespace Blackberry {
                     {"Specular", {light.Specular.x, light.Specular.y, light.Specular.z}}
                 };
             }
+
+            if (entity.HasComponent<PointLightComponent>()) {
+                PointLightComponent& light = entity.GetComponent<PointLightComponent>();
+
+                j["Entities"][name]["PointLightComponent"] = {
+                    {"Color", {light.Color.x, light.Color.y, light.Color.z}},
+                    {"Radius", light.Radius},
+                    {"Intensity", light.Intensity}
+                };
+            }
         }
 
         std::ofstream stream(path);
@@ -263,6 +273,16 @@ namespace Blackberry {
                 light.Specular = BlVec3<f32>(specular[0], specular[1], specular[2]);
 
                 entity.AddComponent<DirectionalLightComponent>(light);
+            }
+
+            if (jsonEntity.contains("PointLightComponent")) {
+                auto& jsonLight = jsonEntity.at("PointLightComponent");
+
+                std::array<f32, 3> color = jsonLight.at("Color");
+                f32 radius = jsonLight.at("Radius");
+                f32 intensity = jsonLight.at("Intensity");
+
+                entity.AddComponent<PointLightComponent>({BlVec3(color[0], color[1], color[2]), radius, intensity});
             }
         }
     }

@@ -61,7 +61,7 @@ void main() {
         float distance = max(length(position - worldPos), 0.0);
         float x = clamp(1.0 - (distance / radius), 0.0, 1.0);
         float attenuation = x * x;
-        vec3 radiance = color * attenuation;
+        vec3 radiance = color * attenuation * intensity;
         // radiance = vec3(1.0 / distance);
     
         // cook-torrance brdf

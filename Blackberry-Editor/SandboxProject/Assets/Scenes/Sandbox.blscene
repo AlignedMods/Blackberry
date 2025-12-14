@@ -210,6 +210,15 @@
             }
         },
         "ID - 6": {
+            "PointLightComponent": {
+                "Color": [
+                    1.0,
+                    0.23166024684906006,
+                    0.23166024684906006
+                ],
+                "Intensity": 100.0,
+                "Radius": 10.0
+            },
             "TagComponent": {
                 "Name": "Light",
                 "UUID": 14723215135644499209
@@ -262,6 +271,15 @@
             }
         },
         "ID - 8": {
+            "PointLightComponent": {
+                "Color": [
+                    0.13899612426757813,
+                    0.3916460871696472,
+                    1.0
+                ],
+                "Intensity": 100.0,
+                "Radius": 10.0
+            },
             "TagComponent": {
                 "Name": "Light 2",
                 "UUID": 2088877155414108191
