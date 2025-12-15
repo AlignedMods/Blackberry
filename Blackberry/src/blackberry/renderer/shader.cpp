@@ -92,6 +92,10 @@ namespace Blackberry {
     void Shader::SetVec3(const std::string& uniform, BlVec3<f32> val) {
         glUniform3f(glGetUniformLocation(ID, uniform.c_str()), val.x, val.y, val.z);
     }
+
+    void Shader::SetVec4(const std::string& uniform, BlVec4<f32> val) {
+        glUniform4f(glGetUniformLocation(ID, uniform.c_str()), val.x, val.y, val.z, val.w);
+    }
     
     void Shader::SetMatrix(const std::string& uniform, f32* mat) {
         glUniformMatrix4fv(glGetUniformLocation(ID, uniform.c_str()), 1, GL_FALSE, mat);

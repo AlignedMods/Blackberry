@@ -10,17 +10,24 @@ layout (std430, binding = 2) buffer GBuffer {
     uvec2 GMat;
 };
 
+struct DirectionalLight {
+    vec4 Direction; // w is unused
+    vec4 Color; // w is unused
+    vec4 Params; // g, b, w is unused
+};
+
 struct PointLight {
     vec4 Position; // w is unused
     vec4 Color; // w is unused
     vec4 Params; // w is unused
 };
 
-layout (std430, binding = 3) buffer LightBuffer {
-    PointLight Lights[];
+layout (std430, binding = 3) buffer PointLightBuffer {
+    PointLight PointLights[];
 };
 
-uniform int u_LightCount;
+uniform int u_PointLightCount;
+uniform DirectionalLight u_DirectionalLight;
 uniform vec3 u_ViewPos;
 
 out vec4 o_FragColor;
@@ -48,12 +55,42 @@ void main() {
     
     // reflectance equation
     vec3 Lo = vec3(0.0);
-    for (int i = 0; i < u_LightCount; i++) {
-        vec3 position = Lights[i].Position.xyz;
-        vec3 color = Lights[i].Color.rgb;
 
-        float radius = Lights[i].Params.r;
-        float intensity = Lights[i].Params.g;
+    // Directional Lights
+    {
+        vec3 color = u_DirectionalLight.Color.rgb;
+        float intensity = u_DirectionalLight.Params.r;
+
+        // calculate radiance
+        vec3 L = normalize(-u_DirectionalLight.Direction.xyz);
+        vec3 H = normalize(V + L);
+        vec3 radiance = color * intensity;
+
+        // cook-torrance brdf
+        float NDF = DistributionGGX(N, H, roughness);
+        float G = GeometrySmith(N, V, L, roughness);
+        vec3 F = FresnelSchlick(max(dot(H, V), 0.0), F0);
+    
+        vec3 kS = F;
+        vec3 kD = vec3(1.0) - kS;
+        kD *= 1.0 - metallic;
+    
+        vec3 numerator = NDF * G * F;
+        float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001;
+        vec3 specular = numerator / denominator;
+    
+        // add to radiance
+        float NdotL = max(dot(N, L), 0.0);
+        Lo = (kD * albedo / PI + specular) * radiance * NdotL;
+    }
+
+    // Point Lights
+    for (int i = 0; i < u_PointLightCount; i++) {
+        vec3 position = PointLights[i].Position.xyz;
+        vec3 color = PointLights[i].Color.rgb;
+
+        float radius = PointLights[i].Params.r;
+        float intensity = PointLights[i].Params.g;
 
         // calculate per light radiance
         vec3 L = normalize(position - worldPos);

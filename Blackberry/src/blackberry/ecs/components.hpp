@@ -108,9 +108,8 @@ namespace Blackberry {
     };
 
     struct DirectionalLightComponent {
-        BlVec3<f32> Ambient;
-        BlVec3<f32> Diffuse;
-        BlVec3<f32> Specular;
+        BlVec3<f32> Color;
+        f32 Intensity = 1.0f;
     };
 
     struct PointLightComponent {

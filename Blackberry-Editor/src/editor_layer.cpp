@@ -1150,9 +1150,8 @@ namespace BlackberryEditor {
                 
             });
             DrawComponent<DirectionalLightComponent>("Directional Light", entity, [](DirectionalLightComponent& light) {
-                ImGui::ColorEdit3("Ambient", &light.Ambient.x);
-                ImGui::ColorEdit3("Diffuse", &light.Diffuse.x);
-                ImGui::ColorEdit3("Specular", &light.Specular.x);
+                ImGui::ColorEdit3("Color", &light.Color.x);
+                ImGui::DragFloat("Intensity", &light.Intensity, 0.5f);
             });
             DrawComponent<PointLightComponent>("Point Light", entity, [](PointLightComponent& light) {
                 ImGui::ColorEdit3("Color", &light.Color.x);

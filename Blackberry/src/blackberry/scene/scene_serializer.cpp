@@ -144,9 +144,8 @@ namespace Blackberry {
                 DirectionalLightComponent& light = entity.GetComponent<DirectionalLightComponent>();
 
                 j["Entities"][name]["DirectionalLightComponent"] = {
-                    {"Ambient", {light.Ambient.x, light.Ambient.y, light.Ambient.z}},
-                    {"Diffuse", {light.Diffuse.x, light.Diffuse.y, light.Diffuse.z}},
-                    {"Specular", {light.Specular.x, light.Specular.y, light.Specular.z}}
+                    {"Color", {light.Color.x, light.Color.y, light.Color.z}},
+                    {"Intensity", light.Intensity}
                 };
             }
 
@@ -263,14 +262,12 @@ namespace Blackberry {
             if (jsonEntity.contains("DirectionalLightComponent")) {
                 auto& jsonLight = jsonEntity.at("DirectionalLightComponent");
 
-                std::array<f32, 3> ambient = jsonLight.at("Ambient");
-                std::array<f32, 3> diffuse = jsonLight.at("Diffuse");
-                std::array<f32, 3> specular = jsonLight.at("Specular");
+                std::array<f32, 3> color = jsonLight.at("Color");
+                f32 intensity = jsonLight.at("Intensity");
 
                 DirectionalLightComponent light;
-                light.Ambient = BlVec3<f32>(ambient[0], ambient[1], ambient[2]);
-                light.Diffuse = BlVec3<f32>(diffuse[0], diffuse[1], diffuse[2]);
-                light.Specular = BlVec3<f32>(specular[0], specular[1], specular[2]);
+                light.Color = BlVec3<f32>(color[0], color[1], color[2]);
+                light.Intensity = intensity;
 
                 entity.AddComponent<DirectionalLightComponent>(light);
             }

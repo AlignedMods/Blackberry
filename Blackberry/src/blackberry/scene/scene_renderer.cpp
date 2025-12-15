@@ -146,9 +146,6 @@ namespace Blackberry {
 
         // vertices
         for (u32 i = 0; i < mesh.Positions.size(); i++) {
-            // glm::vec4 pos = transform * glm::vec4(mesh.Positions[i].x, mesh.Positions[i].y, mesh.Positions[i].z, 1.0f);
-            // glm::vec3 normal = glm::mat3(glm::transpose(glm::inverse(transform))) * glm::vec3(mesh.Normals[i].x, mesh.Normals[i].y, mesh.Normals[i].z);
-            // glm::vec3 normal = glm::vec3(mesh.Normals[i].x, mesh.Normals[i].y, mesh.Normals[i].z);
             SceneMeshVertex vert = SceneMeshVertex(mesh.Positions[i], mesh.Normals[i], mesh.TexCoords[i], m_State.MaterialIndex, m_State.ObjectIndex);
             m_State.MeshVertices.push_back(vert);
         }
@@ -195,15 +192,21 @@ namespace Blackberry {
     }
 
     void SceneRenderer::AddDirectionalLight(const TransformComponent& transform, const DirectionalLightComponent& light) {
+        GPUDirectionalLight l;
+        l.Direction = BlVec4(transform.Rotation.x, transform.Rotation.y, transform.Rotation.z, 0.0f);
+        l.Color = BlVec4(light.Color.x, light.Color.y, light.Color.z, 0.0f);
+        l.Params.x = light.Intensity;
+
+        m_State.DirectionalLight = l;
     }
 
     void SceneRenderer::AddPointLight(const TransformComponent& transform, const PointLightComponent& light) {
-        SceneLight l;
+        GPUPointLight l;
         l.Position = BlVec4(transform.Position.x, transform.Position.y, transform.Position.z, 0.0f);
         l.Color = BlVec4(light.Color.x, light.Color.y, light.Color.z, 0.0f);
         l.Params = BlVec4(light.Radius, light.Intensity, 0.0f, 0.0f);
 
-        m_State.Lights.push_back(l);
+        m_State.PointLights.push_back(l);
     }
 
     void SceneRenderer::Flush() {
@@ -290,8 +293,12 @@ namespace Blackberry {
                 m_State.ShaderGBuffer.ReserveMemory(sizeof(u64) * 4, handles);
 
                 // set lights
-                m_State.LightBuffer.ReserveMemory(sizeof(SceneLight) * m_State.Lights.size(), m_State.Lights.data());
-                m_State.MeshLightingShader.SetInt("u_LightCount", m_State.Lights.size());
+                m_State.MeshLightingShader.SetVec4("u_DirectionalLight.Direction", m_State.DirectionalLight.Direction);
+                m_State.MeshLightingShader.SetVec4("u_DirectionalLight.Color", m_State.DirectionalLight.Color);
+                m_State.MeshLightingShader.SetVec4("u_DirectionalLight.Params", m_State.DirectionalLight.Params);
+
+                m_State.LightBuffer.ReserveMemory(sizeof(GPUPointLight) * m_State.PointLights.size(), m_State.PointLights.data());
+                m_State.MeshLightingShader.SetInt("u_PointLightCount", m_State.PointLights.size());
 
                 renderer.DrawIndexed(6);
 
@@ -311,7 +318,7 @@ namespace Blackberry {
         m_State.ObjectIndex = 0;
         m_State.Transforms.clear();
         m_State.Materials.clear();
-        m_State.Lights.clear();
+        m_State.PointLights.clear();
     }
 
     u32 SceneRenderer::GetMaterialIndex(const Material& mat) {

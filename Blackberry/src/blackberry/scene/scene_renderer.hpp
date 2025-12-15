@@ -18,16 +18,13 @@ namespace Blackberry {
         u32 ObjectIndex = 0;
     };
 
-    struct SceneDirectionalLight {
-        BlVec3<f32> Direction;
-
-        BlVec3<f32> Ambient;
-        BlVec3<f32> Diffuse;
-        BlVec3<f32> Specular;
+    struct GPUDirectionalLight {
+        BlVec4<f32> Direction; // w is unused
+        BlVec4<f32> Color; // w is unused
+        BlVec4<f32> Params; // g, b, w is unused
     };
 
-    // NOTE: we need to pad the vec3s since opengl expects vec3s to be 16 bytes
-    struct alignas(16) SceneLight {
+    struct alignas(16) GPUPointLight {
         BlVec4<f32> Position; // w is unused
         BlVec4<f32> Color; // w is unused
         BlVec4<f32> Params; // w is unused
@@ -64,14 +61,15 @@ namespace Blackberry {
         ShaderStorageBuffer LightBuffer;
 
         std::vector<glm::mat4> Transforms;
-        std::vector<SceneLight> Lights;
+        std::vector<GPUMaterial> Materials;
+        std::vector<GPUPointLight> PointLights;
+        GPUDirectionalLight DirectionalLight;
 
         std::vector<SceneMeshVertex> MeshVertices;
         u32 MeshVertexCount = 0;
         std::vector<u32> MeshIndices;
         u32 MeshIndexCount = 0;
 
-        std::vector<GPUMaterial> Materials;
         u32 MaterialIndex = 0;
         u32 ObjectIndex = 0;
 
