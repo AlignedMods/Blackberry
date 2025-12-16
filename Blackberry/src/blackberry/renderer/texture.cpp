@@ -52,10 +52,12 @@ namespace Blackberry {
 
         void* pixels = nullptr;
 
+        std::string strPath = path.String();
+
         if (!useFloatingPoint) {
-            pixels = stbi_load(path.CString(), &width, &height, nullptr, channelCount);
+            pixels = stbi_load(strPath.c_str(), &width, &height, nullptr, channelCount);
         } else {
-            pixels = stbi_loadf(path.CString(), &width, &height, nullptr, channelCount);
+            pixels = stbi_loadf(strPath.c_str(), &width, &height, nullptr, channelCount);
         }
 
         if (pixels == nullptr) {

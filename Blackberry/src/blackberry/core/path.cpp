@@ -4,22 +4,41 @@
 
 namespace Blackberry::FS {
 
-    Path::Path(const std::string& path)
-        : m_Path(path) { Validate(); }
+    Path::Path(const std::vector<std::string>& components)
+        : m_Components(components) {}
+
+    Path::Path(const std::string& path) {
+        std::string normalized;
+        for (auto c : path) {
+            if (c == '\\') normalized += '/';
+            else normalized += c;
+        }
+
+        // NOTE: '/' at the end of path does NOT signify directory, it's there so we know when the path is about to end
+        if (normalized.back() != '/') normalized += '/';
+
+        // Split path up into components
+        std::string buf;
+
+        for (auto it = normalized.begin(); it != normalized.end(); it++) {
+            if (*it != '/') buf += *it;
+            else { m_Components.push_back(buf); buf.clear(); }
+        }
+    }
 
     Path::Path(const char* path)
-        : m_Path(path) { Validate(); }
+        : Path(std::string(path)) {}
 
     Path::operator std::string() {
-        return m_Path;
+        return String();
     }
 
     Path::operator const std::string() const {
-        return m_Path;
+        return String();
     }
 
     Path Path::operator/(const Path& otherPath) const {
-        Path newPath = m_Path;
+        Path newPath(m_Components);
         newPath.Append(otherPath);
         return newPath;
     }
@@ -29,58 +48,43 @@ namespace Blackberry::FS {
     }
 
     const bool Path::operator==(const Path& otherPath) const {
-        return m_Path == otherPath.m_Path;
+        if (m_Components.size() != otherPath.m_Components.size()) return false;
+
+        for (u32 i = 0; i < m_Components.size(); i++) {
+            if (m_Components.at(i) != otherPath.m_Components.at(i)) return false;
+        }
+
+        return true;
     }
 
     std::string Path::String() const {
-        return m_Path;
-    }
+        std::string str;
 
-    const char* Path::CString() const {
-        return m_Path.c_str();
+        for (auto it = m_Components.begin(); it != m_Components.end(); it++) {
+            str += *it;
+
+            if (it + 1 != m_Components.end()) str += '/';
+        }
+
+        return str;
     }
 
     void Path::Append(const Path& otherPath) {
-        // Add '/' if there isn't one at the end already
-        if (m_Path.at(m_Path.size() - 1) != '/') {
-            m_Path.append(1, '/');
+        for (const auto& comp : otherPath.m_Components) {
+            m_Components.push_back(comp);
         }
-
-        m_Path.append(otherPath.m_Path);
     }
 
     Path Path::FileName() const {
-        std::string filename;
-
-        std::string::const_iterator lastFileNameStart;
-        std::string::const_iterator fileNameStart;
-
-        // Find last occurence of '/'
-        for (auto it = m_Path.begin(); it != m_Path.end(); it++) {
-            lastFileNameStart = fileNameStart;
-
-            if (*it == '/') {
-                // A forward slash could be the end of the path
-                if (it + 1 == m_Path.end()) { fileNameStart = lastFileNameStart; break; }
-                else fileNameStart = it;
-            }
-        }
-
-        // Get filename from last forward slash
-        for (auto it = fileNameStart; it != m_Path.end(); it++) {
-            // Skip forward slashes in the name
-            if (*it != '/') filename.append(1, *it);
-        }
-
-        return filename;
+        return m_Components.back();
     }
 
     Path Path::Stem() const {
         std::string stem;
-        Path last = FileName();
+        std::string last = FileName().String();
 
-        for (auto it = last.m_Path.begin(); it != last.m_Path.end(); it++) {
-            if (*it != '.') stem.append(1, *it);
+        for (auto comp : last) {
+            if (comp != '.') stem += comp;
             else break;
         }
 
@@ -89,11 +93,11 @@ namespace Blackberry::FS {
 
     Path Path::Extension() const {
         std::string extension;
-        Path last = FileName();
+        std::string last = FileName().String();
 
         bool found = false;
 
-        for (auto it = last.m_Path.rbegin(); it != last.m_Path.rend(); it++) {
+        for (auto it = last.rbegin(); it != last.rend(); it++) {
             if (found) break;
 
             if (*it != '.') extension.append(1, *it);
@@ -106,34 +110,42 @@ namespace Blackberry::FS {
     }
 
     Path Path::ParentPath() const {
-        std::string properPath;
-        std::string parent;
+        Path p = m_Components;
+        p.m_Components.pop_back();
+        
+        return p;
+    }
 
-        properPath = m_Path;
-        if (properPath.at(properPath.size() - 1) == '/') properPath.pop_back(); // Remove '/' at the end of the path if it exists
+    Path Path::Relative(const Path& base) const {
+        const auto& a = m_Components;
+        const auto& b = base.m_Components;
+        
+        u32 i = 0;
+        while (i < a.size() && i < b.size() && a[i] == b[i])
+            i++;
 
-        std::string::const_iterator start = properPath.begin();
-        std::string::const_iterator end = properPath.end();
+        std::vector<std::string> result;
 
-        for (auto it = properPath.begin(); it != properPath.end(); it++) {
-            if (*it == '/') end = it;
-        }
+        for (u32 j = i; j < b.size(); ++j)
+            result.push_back("..");
 
-        for (auto it = start; it != end; it++) {
-            parent.append(1, *it);
-        }
+        for (u32 j = i; j < a.size(); ++j)
+            result.push_back(a[j]);
 
-        return parent;
+        if (result.empty())
+            result.push_back(".");
+
+        return result;
     }
 
     void Path::Validate() {
-        for (auto it = m_Path.begin(); it != m_Path.end(); it++) {
-            if (*it == '\\') *it = '/';
-        }
+        // for (auto it = m_Path.begin(); it != m_Path.end(); it++) {
+        //     if (*it == '\\') *it = '/';
+        // }
     }
 
     DirectoryIterator::DirectoryIterator(const Path& base) {
-        m_Files = OS::RetrieveDirectoryFiles(base.CString());
+        m_Files = OS::RetrieveDirectoryFiles(base.String());
     }
 
     DirectoryIterator::iterator DirectoryIterator::begin() {
@@ -145,7 +157,12 @@ namespace Blackberry::FS {
     }
 
     bool Exists(const Path& path) {
-        return OS::PathExists(path.CString());
+        return OS::PathExists(path.String());
+    }
+
+    Path Relative(const Path& path, const Path& base) {
+        Path relative = path;
+        return relative.Relative(base);
     }
 
 } // namespace Blackberry::FS

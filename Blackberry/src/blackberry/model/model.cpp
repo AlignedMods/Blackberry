@@ -32,13 +32,15 @@ namespace Blackberry {
             cgltf_options options{};
             cgltf_data* data = nullptr;
 
-            cgltf_result result = cgltf_parse_file(&options, path.CString(), &data);
+            std::string strPath = path.String();
+
+            cgltf_result result = cgltf_parse_file(&options, strPath.c_str(), &data);
             if (result != cgltf_result_success) {
                 BL_CORE_ERROR("Failed to load mesh from path: {}", path.String());
                 return model;
             }
 
-            result = cgltf_load_buffers(&options, data, path.CString());
+            result = cgltf_load_buffers(&options, data, strPath.c_str());
             if (result != cgltf_result_success) {
                 BL_CORE_ERROR("Failed to load mesh buffers from path: {}", path.String());
                 cgltf_free(data);

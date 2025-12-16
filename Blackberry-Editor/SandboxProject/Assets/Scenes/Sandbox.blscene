@@ -292,6 +292,12 @@
                     1.0
                 ]
             }
+        },
+        "ID - 9": {
+            "TagComponent": {
+                "Name": "Blank Entity",
+                "UUID": 9208324181201598862
+            }
         }
     }
 }

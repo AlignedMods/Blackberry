@@ -14,6 +14,7 @@ namespace Blackberry::FS {
     class Path {
     public:
         Path() = default;
+        Path(const std::vector<std::string>& components);
         Path(const std::string& path);
         Path(const char* path);
 
@@ -24,7 +25,6 @@ namespace Blackberry::FS {
         void operator/=(const Path& otherPath);
 
         std::string String() const;
-        const char* CString() const;
 
         void Append(const Path& otherPath);
 
@@ -35,11 +35,13 @@ namespace Blackberry::FS {
         const bool operator==(const Path& otherPath) const;
         Path ParentPath() const;
 
+        Path Relative(const Path& base) const;
+
         // Validates a path and turns an invalid path into a valid one if needed
         void Validate();
 
     private:
-        std::string m_Path;
+        std::vector<std::string> m_Components;
     };
 
     enum FileType { File, Directory };
@@ -80,6 +82,8 @@ namespace Blackberry::FS {
     };
 
     bool Exists(const Path& path);
+
+    Path Relative(const Path& path, const Path& base);
 
 } // namespace Blackberry::FS
 

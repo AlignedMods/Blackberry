@@ -135,7 +135,8 @@ namespace Blackberry {
 
         Ref<RenderTexture> GBuffer; // For deffered rendering
 
-        Ref<EnviromentMap> EnviromentMap;
+        Ref<EnviromentMap> CurrentEnviromentMap;
+        Ref<EnviromentMap> DefaultEnviromentMap;
     };
 
     class SceneRenderer {
@@ -153,6 +154,8 @@ namespace Blackberry {
 
         void AddDirectionalLight(const TransformComponent& transform, const DirectionalLightComponent& light);
         void AddPointLight(const TransformComponent& transform, const PointLightComponent& light);
+
+        void AddEnviroment(const EnviromentComponent& env);
 
         void Flush();
 

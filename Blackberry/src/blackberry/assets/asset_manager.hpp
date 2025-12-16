@@ -7,6 +7,7 @@
 #include "blackberry/model/model.hpp"
 #include "blackberry/model/material.hpp"
 #include "blackberry/core/util.hpp"
+#include "blackberry/renderer/enviroment_map.hpp"
 
 #include <unordered_map>
 #include <variant>
@@ -19,7 +20,8 @@ namespace Blackberry {
         Texture = 0,
         Font = 1,
         Model = 2,
-        Material = 3
+        Material = 3,
+        EnviromentMap = 4
     };
 
     inline const char* AssetTypeToString(AssetType type) {
@@ -28,6 +30,7 @@ namespace Blackberry {
             case AssetType::Font: return "Font"; break;
             case AssetType::Model: return "Model"; break;
             case AssetType::Material: return "Material"; break;
+            case AssetType::EnviromentMap: return "Enviroment Map"; break;
         }
 
         BL_ASSERT(false, "Unknown asset type! (memory corruption potential)");
@@ -39,6 +42,7 @@ namespace Blackberry {
         if (type == "Font") return AssetType::Font;
         if (type == "Model") return AssetType::Model;
         if (type == "Material") return AssetType::Material;
+        if (type == "Enviroment Map") return AssetType::EnviromentMap;
 
         BL_ASSERT(false, "Unknown asset type {}", type);
         return AssetType::Texture;
@@ -47,7 +51,7 @@ namespace Blackberry {
     struct Asset {
         FS::Path FilePath;
         AssetType Type;
-        std::variant<Ref<Texture2D>, Font, Model, Material> Data;
+        std::variant<Ref<Texture2D>, Font, Model, Material, Ref<EnviromentMap>> Data;
         AssetHandle Handle = 0;
     };
 
@@ -78,6 +82,8 @@ namespace Blackberry {
         void AddTextureFromPath(const FS::Path& path);
         void AddFontFromPath(const FS::Path& path);
         void AddModelFromPath(const FS::Path& path);
+        void AddMaterialFromPath(const FS::Path& path);
+        void AddEnviromentMapFromPath(const FS::Path& path);
 
     public:
         FS::Path AssetDirectory;

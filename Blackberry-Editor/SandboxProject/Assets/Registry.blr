@@ -25,6 +25,11 @@
             "Path": "Meshes/Default/Sphere.glb",
             "Type": "Model"
         },
+        "Handle - 16970579584870424807": {
+            "Handle": 16970579584870424807,
+            "Path": "EnviromentMaps/BlueSky.hdr",
+            "Type": "Enviroment Map"
+        },
         "Handle - 21128899974857072": {
             "Handle": 21128899974857072,
             "Path": "Textures/Container.png",

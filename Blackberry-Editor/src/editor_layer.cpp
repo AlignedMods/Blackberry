@@ -611,6 +611,8 @@ namespace BlackberryEditor {
 
         if (ImGui::BeginTable("##FunnyTable", columnCount)) {
             for (const auto& file : FS::DirectoryIterator(m_CurrentDirectory)) {
+                BL_CORE_TRACE("File path: {}, Relative: {}", file.Path().String(), FS::Relative(file.Path(), m_BaseDirectory).String());
+
                 ImGui::TableNextColumn();
 
                 const auto& path = file.Path();
@@ -668,45 +670,23 @@ namespace BlackberryEditor {
         }
 
         if (ImGui::BeginPopup("CreateAssetPopup")) {
-                static const char* assetTypeNames[] = { "Texture", "Font", "Model", "Material" };
+                static const char* assetTypeNames[] = { "Texture", "Font", "Model", "Material", "Enviroment Map" };
                 static int currentAssetType = 0;
 
                 ImGui::Combo("##AssetType", &currentAssetType, assetTypeNames, IM_ARRAYSIZE(assetTypeNames));
 
                 if (ImGui::Button("Create")) {
-                    // if (currentAssetType == 0) { // texture
-                    //     Ref<Texture2D> tex = Texture2D::Create(assetFile);
-                    //     Asset asset;
-                    //     asset.Type = AssetType::Texture;
-                    //     asset.FilePath = fs::relative(assetFile, m_BaseDirectory);
-                    //     asset.Data = tex;
-                    // 
-                    //     Project::GetAssetManager().AddAsset(asset);
-                    // } else if (currentAssetType == 1) { // font
-                    //     Font font = Font::Create(assetFile);
-                    //     Asset asset;
-                    //     asset.Type = AssetType::Font;
-                    //     asset.FilePath = fs::relative(assetFile, m_BaseDirectory);
-                    //     asset.Data = font;
-                    // 
-                    //     Project::GetAssetManager().AddAsset(asset);
-                    // } else if (currentAssetType == 2) { // model
-                    //     Model model = Model::Create(assetFile);
-                    //     Asset asset;
-                    //     asset.Type = AssetType::Model;
-                    //     asset.FilePath = fs::relative(assetFile, m_BaseDirectory);
-                    //     asset.Data = model;
-                    // 
-                    //     Project::GetAssetManager().AddAsset(asset);
-                    // } else if (currentAssetType == 3) { // material
-                    //     Material mat = Material::Create(assetFile);
-                    //     Asset asset;
-                    //     asset.Type = AssetType::Material;
-                    //     asset.FilePath = fs::relative(assetFile, m_BaseDirectory);
-                    //     asset.Data = mat;
-                    // 
-                    //     Project::GetAssetManager().AddAsset(asset);
-                    // }
+                    if (currentAssetType == 0) { // texture
+                        Project::GetAssetManager().AddTextureFromPath(FS::Relative(assetFile, m_BaseDirectory));
+                    } else if (currentAssetType == 1) { // font
+                        Project::GetAssetManager().AddFontFromPath(FS::Relative(assetFile, m_BaseDirectory));
+                    } else if (currentAssetType == 2) { // model
+                        Project::GetAssetManager().AddModelFromPath(FS::Relative(assetFile, m_BaseDirectory));
+                    } else if (currentAssetType == 3) { // material
+                        Project::GetAssetManager().AddMaterialFromPath(FS::Relative(assetFile, m_BaseDirectory));
+                    } else if (currentAssetType == 4) { // env map
+                        Project::GetAssetManager().AddEnviromentMapFromPath(FS::Relative(assetFile, m_BaseDirectory));
+                    }
 
                     ImGui::CloseCurrentPopup();
                     createAssetPopup = false;
@@ -737,10 +717,11 @@ namespace BlackberryEditor {
             for (const auto&[handle, asset] : Project::GetAssetManager().GetAllAssets()) {
                 ImGui::TableNextColumn();
 
-                ImGui::PushID(asset.FilePath.CString());
+                std::string strPath = asset.FilePath;
+                ImGui::PushID(strPath.c_str());
 
                 // ImGui::ImageButton(asset.FilePath.string().c_str(), std::get<BlTexture>(asset.Data).ID, ImVec2(128.0f, 128.0f));
-                ImGui::Button(asset.FilePath.CString(), ImVec2(128.0f, 128.0f));
+                ImGui::Button(strPath.c_str(), ImVec2(128.0f, 128.0f));
 
                 if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
                     m_MaterialEditorPanel.SetContext(handle);
@@ -748,7 +729,7 @@ namespace BlackberryEditor {
 
                 if (ImGui::BeginDragDropSource()) {
                     ImGui::SetDragDropPayload("ASSET_MANAGER_DRAG_DROP", &handle, sizeof(handle));
-                    ImGui::Text(asset.FilePath.CString()); // text that appears while dragging
+                    ImGui::Text(strPath.c_str()); // text that appears while dragging
                     ImGui::EndDragDropSource();
                 }
 
@@ -936,6 +917,7 @@ namespace BlackberryEditor {
                     AddComponentListOption<ColliderComponent>("Collider", entity);
                     AddComponentListOption<DirectionalLightComponent>("Directional Light", entity);
                     AddComponentListOption<PointLightComponent>("Point Light", entity);
+                    AddComponentListOption<EnviromentComponent>("Enviroment", entity);
                     
                     ImGui::EndMenu();
                 }
@@ -1158,6 +1140,46 @@ namespace BlackberryEditor {
 
                 ImGui::DragFloat("Radius", &light.Radius, 0.1f);
                 ImGui::DragFloat("Intensity", &light.Intensity, 0.5f);
+            });
+            DrawComponent<EnviromentComponent>("Enviroment", entity, [](EnviromentComponent& env) {
+                ImGui::Text("Enviroment Map: ");
+                ImGui::Indent();
+
+                std::string meshName;
+                if (Project::GetAssetManager().ContainsAsset(env.EnviromentMap)) {
+                    meshName = Project::GetAssetManager().GetAsset(env.EnviromentMap).FilePath.Stem().String();
+                } else {
+                    meshName = "NULL";
+                }
+
+                f32 size = ImGui::GetContentRegionAvail().x;
+                if (meshName == "NULL") {
+                    ImGui::PushStyleColor(ImGuiCol_Text, 0xff0000ff);
+                    ImGui::Button(meshName.c_str(), ImVec2(size, 0.0f));
+                    ImGui::PopStyleColor();
+                } else {
+                    ImGui::Button(meshName.c_str(), ImVec2(size, 0.0f));
+                }
+
+                if (ImGui::BeginPopupContextItem("EnvMapHandlePopup")) {
+                    if (ImGui::MenuItem("Remove Enviroment Map")) {
+                        env.EnviromentMap = 0;
+                    }
+
+                    ImGui::EndPopup();
+                }
+
+                if (ImGui::BeginDragDropTarget()) {
+                    const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_MANAGER_HANDLE_DRAG_DROP");
+
+                    if (payload) {
+                        env.EnviromentMap = *reinterpret_cast<u64*>(payload->Data); // seems sus
+                    }
+
+                    ImGui::EndDragDropTarget();
+                }
+
+                ImGui::Unindent();
             });
         }
     

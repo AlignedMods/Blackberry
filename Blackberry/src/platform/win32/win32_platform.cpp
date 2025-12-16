@@ -41,17 +41,17 @@ namespace Blackberry {
             return std::string{};
         }
 
-        bool PathExists(const char* path) {
-            return PathFileExistsA(path);
+        bool PathExists(const std::string& path) {
+            return PathFileExistsA(path.c_str());
         }
 
-        std::vector<FS::DirectoryFile> RetrieveDirectoryFiles(const char* base) {
+        std::vector<FS::DirectoryFile> RetrieveDirectoryFiles(const std::string& base) {
             // Remove potential '/' at the end of directory name
             char baseDir[MAX_PATH];
             memset(baseDir, 0, sizeof(baseDir));
             
-            strcpy(baseDir, base);
-            int length = strlen(base);
+            strcpy(baseDir, base.c_str());
+            int length = strlen(base.c_str());
             if (baseDir[length - 1] == '/') baseDir[length - 1] = '\0';
 
             std::vector<FS::DirectoryFile> files;

@@ -13,8 +13,8 @@ namespace Blackberry {
 
         std::string GetAppDataDirectory();
 
-        bool PathExists(const char* path);
-        std::vector<FS::DirectoryFile> RetrieveDirectoryFiles(const char* base);
+        bool PathExists(const std::string& path);
+        std::vector<FS::DirectoryFile> RetrieveDirectoryFiles(const std::string& base);
 
     } // namespace OS
 

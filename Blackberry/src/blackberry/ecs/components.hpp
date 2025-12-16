@@ -118,4 +118,8 @@ namespace Blackberry {
         f32 Intensity = 1.0f;
     };
 
+    struct EnviromentComponent {
+        u64 EnviromentMap = 0;
+    };
+
 } // namespace Blackberry
