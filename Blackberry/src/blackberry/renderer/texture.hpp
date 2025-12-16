@@ -1,10 +1,17 @@
 #pragma once
 
 #include "blackberry/core/types.hpp"
-#include "blackberry/image/image.hpp"
 #include "blackberry/core/memory.hpp"
 
 namespace Blackberry {
+
+    enum class TextureFormat {
+        RGB8,
+        RGBA8,
+
+        RGB16F,
+        RGBA16F
+    };
 
     enum class TextureFiltering { Nearest, Linear };
 
@@ -14,7 +21,8 @@ namespace Blackberry {
         ColorRGBA16F,
 
         // Depth attachments
-        Depth
+        Depth,
+        Depth24
     };
 
     struct RenderTextureAttachment {
@@ -33,9 +41,8 @@ namespace Blackberry {
         ~Texture2D();
 
         static Ref<Texture2D> Create(u32 width, u32 height);
-        static Ref<Texture2D> Create(const FS::Path& path);
-        static Ref<Texture2D> Create(const Image& image);
-        static Ref<Texture2D> Create(void* pixels, u32 width, u32 height, ImageFormat pixelFormat, TextureFiltering filter = TextureFiltering::Linear);
+        static Ref<Texture2D> Create(const FS::Path& path, TextureFormat desiredFormat = TextureFormat::RGBA8);
+        static Ref<Texture2D> Create(void* pixels, u32 width, u32 height, TextureFormat pixelFormat, TextureFiltering filter = TextureFiltering::Linear);
 
         void Delete();
     
@@ -44,7 +51,7 @@ namespace Blackberry {
         u32 ID = 0;
         u64 BindlessHandle = 0; // for bindless textures
         BlVec2<u32> Size;
-        ImageFormat Format = ImageFormat::RGBA8;
+        TextureFormat Format = TextureFormat::RGBA8;
     };
     
     struct RenderTexture {

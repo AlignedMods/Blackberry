@@ -172,11 +172,11 @@
         "ID - 5": {
             "DirectionalLightComponent": {
                 "Color": [
+                    0.9407134652137756,
                     1.0,
-                    1.0,
-                    1.0
+                    0.6254826188087463
                 ],
-                "Intensity": 382.5
+                "Intensity": 59.5
             },
             "TagComponent": {
                 "Name": "Directional Light",

@@ -265,7 +265,7 @@ namespace Blackberry {
     void Renderer3D::Init() {
         // Renderer3DState.MeshShader = Shader::Create(s_VertexShaderMeshSource, s_FragmentShaderMeshSource);
         // Renderer3DState.FontShader = Shader::Create(s_VertexShaderFontSource, s_FragmentShaderFontSource);
-        Renderer3DState.WhiteTexture = Texture2D::Create(s_WhiteTextureData, 1, 1, ImageFormat::RGBA8);
+        Renderer3DState.WhiteTexture = Texture2D::Create(s_WhiteTextureData, 1, 1, TextureFormat::RGBA8);
 
         Renderer3DState.CurrentAttachedTextures[0] = Renderer3DState.WhiteTexture; // 0 is reserved for white
 

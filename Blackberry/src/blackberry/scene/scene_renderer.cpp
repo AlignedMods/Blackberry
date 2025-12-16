@@ -2,6 +2,9 @@
 #include "blackberry/scene/scene.hpp"
 #include "blackberry/project/project.hpp"
 #include "blackberry/core/timer.hpp"
+#include "blackberry/renderer/skybox_generation.hpp"
+
+#include "glad/gl.h"
 
 namespace Blackberry {
 
@@ -82,25 +85,30 @@ namespace Blackberry {
     SceneRenderer::SceneRenderer() {
         m_State.MeshGeometryShader = Shader::Create(FS::Path("Assets/Shaders/Default/GeometryPass.vert"), FS::Path("Assets/Shaders/Default/GeometryPass.frag"));
         m_State.MeshLightingShader = Shader::Create(FS::Path("Assets/Shaders/Default/LightingPass.vert"), FS::Path("Assets/Shaders/Default/LightingPass.frag"));
+        m_State.SkyboxShader = Shader::Create(FS::Path("Assets/Shaders/Default/Skybox.vert"), FS::Path("Assets/Shaders/Default/Skybox.frag"));
         // m_State.FontShader = Shader::Create(s_VertexShaderFontSource, s_FragmentShaderFontSource);
+
+        m_State.Skybox = GenerateSkybox("Assets/Textures/Skybox.hdr");
 
         m_State.TransformBuffer = ShaderStorageBuffer::Create(0);
         m_State.MaterialBuffer = ShaderStorageBuffer::Create(1);
         m_State.ShaderGBuffer = ShaderStorageBuffer::Create(2);
         m_State.LightBuffer = ShaderStorageBuffer::Create(3);
 
-        RenderTextureSpecification spec;
-        spec.Size = BlVec2<u32>(1920, 1080);
-        spec.Attachments = {
-            {0, RenderTextureAttachmentType::ColorRGBA16F}, // position color buffer
-            {1, RenderTextureAttachmentType::ColorRGBA16F}, // normal buffer
-            {2, RenderTextureAttachmentType::ColorRGBA8}, // color buffer
-            {3, RenderTextureAttachmentType::ColorRGBA16F}, // material buffer
-            {4, RenderTextureAttachmentType::Depth} // depth
-        };
-        spec.ActiveAttachments = {0, 1, 2, 3}; // which attachments we want to use for rendering
+        {
+            RenderTextureSpecification spec;
+            spec.Size = BlVec2<u32>(1920, 1080);
+            spec.Attachments = {
+                {0, RenderTextureAttachmentType::ColorRGBA16F}, // position color buffer
+                {1, RenderTextureAttachmentType::ColorRGBA16F}, // normal buffer
+                {2, RenderTextureAttachmentType::ColorRGBA8}, // color buffer
+                {3, RenderTextureAttachmentType::ColorRGBA16F}, // material buffer
+                {4, RenderTextureAttachmentType::Depth} // depth
+            };
+            spec.ActiveAttachments = {0, 1, 2, 3}; // which attachments we want to use for rendering
 
-        m_State.GBuffer = RenderTexture::Create(spec);
+            m_State.GBuffer = RenderTexture::Create(spec);
+        }
     }
 
     // SceneRenderer::~SceneRenderer() {}
@@ -262,10 +270,49 @@ namespace Blackberry {
             {
                 ScopedTimer lightingPassTimer("SceneRenderer::Flush/Lighting Pass");
 
+                if (m_Target) {
+                    renderer.BindRenderTexture(m_Target);
+                    renderer.Clear(BlColor(0, 0, 0, 255));
+                }
+
+                DrawBuffer skyboxBuffer;
+                skyboxBuffer.Vertices = m_State.CubeVertices.data();
+                skyboxBuffer.VertexSize = sizeof(f32) * 3;
+                skyboxBuffer.VertexCount = 36;
+
+                skyboxBuffer.Indices = m_State.CubeIndices.data();
+                skyboxBuffer.IndexSize = sizeof(u32);
+                skyboxBuffer.IndexCount = 36;
+
+                renderer.SubmitDrawBuffer(skyboxBuffer);
+                renderer.SetBufferLayout({
+                    {0, ShaderDataType::Float3, "Position"},
+                });
+
+                glDepthMask(GL_FALSE);
+
+                renderer.BindShader(m_State.SkyboxShader);
+
+                glm::mat4 projection = m_Camera.GetCameraProjection();
+                glm::mat4 view = m_Camera.GetCameraView();
+
+                m_State.SkyboxShader.SetMatrix("u_Projection", glm::value_ptr(projection));
+                m_State.SkyboxShader.SetMatrix("u_View", glm::value_ptr(view));
+
+                renderer.BindCubemap(m_State.Skybox, 0);
+
+                renderer.DrawIndexed(36);
+
+                glDepthMask(GL_TRUE);
+
+                if (m_Target) {
+                    renderer.UnBindRenderTexture();
+                }
+
                 // Lighting pass
                 if (m_Target) {
                     renderer.BindRenderTexture(m_Target);
-                    renderer.Clear(BlColor(69, 69, 69, 255));
+                    // renderer.Clear(BlColor(69, 69, 69, 255));
                 }
 
                 DrawBuffer lightingBuffer;

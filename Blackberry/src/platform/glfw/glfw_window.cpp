@@ -327,14 +327,14 @@ namespace Blackberry {
         glfwSwapInterval(enabled ? 1 : 0);
     }
 
-    void Window_GLFW::SetWindowIcon(const Image& image) {
-        GLFWimage im;
-        im.pixels = static_cast<u8*>(image.Data);
-        im.width = image.Width;
-        im.height = image.Height;
-
-        glfwSetWindowIcon(m_Handle, 1, &im);
-    }
+    // void Window_GLFW::SetWindowIcon(const Image& image) {
+    //     GLFWimage im;
+    //     im.pixels = static_cast<u8*>(image.Data);
+    //     im.width = image.Width;
+    //     im.height = image.Height;
+    // 
+    //     glfwSetWindowIcon(m_Handle, 1, &im);
+    // }
 
     void Window_GLFW::SetCursorMode(CursorMode mode) {
         int flag = 0;

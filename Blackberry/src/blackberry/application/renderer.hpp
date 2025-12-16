@@ -1,7 +1,6 @@
 #pragma once
 
 #include "blackberry/core/types.hpp"
-#include "blackberry/image/image.hpp"
 #include "blackberry/renderer/texture.hpp"
 #include "blackberry/renderer/shader.hpp"
 
@@ -54,6 +53,12 @@ namespace Blackberry {
         virtual void DrawIndexed(u32 count) = 0;
 
         virtual void BindShader(Shader shader) = 0;
+
+        virtual void BindTexture(Ref<Texture2D> texture, u32 unit) = 0;
+        virtual void UnBindTexture() = 0;
+
+        virtual void BindCubemap(Ref<Texture2D> cubemap, u32 unit) = 0;
+        virtual void UnBindCubemap() = 0;
 
         virtual void BindRenderTexture(Ref<RenderTexture> texture) = 0;
         virtual void UnBindRenderTexture() = 0;

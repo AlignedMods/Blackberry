@@ -115,6 +115,24 @@ namespace Blackberry {
         glUseProgram(shader.ID);
     }
 
+    void Renderer_OpenGL3::BindTexture(Ref<Texture2D> texture, u32 unit) {
+        glActiveTexture(GL_TEXTURE0 + unit);
+        glBindTexture(GL_TEXTURE_2D, texture->ID);
+    }
+
+    void Renderer_OpenGL3::UnBindTexture() {
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    void Renderer_OpenGL3::BindCubemap(Ref<Texture2D> cubemap, u32 unit) {
+        glActiveTexture(GL_TEXTURE0 + unit);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap->ID);
+    }
+
+    void Renderer_OpenGL3::UnBindCubemap() {
+        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+    }
+
     void Renderer_OpenGL3::EndFrame() {}
 
     void Renderer_OpenGL3::Clear(BlColor color) const {

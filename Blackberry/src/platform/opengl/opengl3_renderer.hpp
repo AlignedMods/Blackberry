@@ -30,6 +30,12 @@ namespace Blackberry {
         
         virtual void BindShader(Shader shader) override;
 
+        virtual void BindTexture(Ref<Texture2D> texture, u32 unit) override;
+        virtual void UnBindTexture() override;
+
+        virtual void BindCubemap(Ref<Texture2D> cubemap, u32 unit) override;
+        virtual void UnBindCubemap() override;
+
         virtual void BindRenderTexture(Ref<RenderTexture> texture) override;
         virtual void UnBindRenderTexture() override;
 

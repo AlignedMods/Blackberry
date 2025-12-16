@@ -1,6 +1,5 @@
 #pragma once
 
-#include "blackberry/image/image.hpp"
 #include "blackberry/renderer/texture.hpp"
 
 #include <filesystem>
@@ -26,7 +25,6 @@ namespace Blackberry {
 
     public:
         Ref<Texture2D> TextureAtlas;
-        Image ImageAtlas;
         u32 GlyphCount = 0;
         std::unordered_map<u8, GlyphInfo> Glyphs;
         f32 LineHeight = 0.0f;

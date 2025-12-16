@@ -39,6 +39,25 @@ float GeometrySchlickGGX(float NdotV, float roughness);
 float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
 vec3 FresnelSchlick(float cosTheta, vec3 F0);
 
+vec3 AddLight(vec3 N, vec3 H, vec3 V, vec3 L, vec3 F0, float roughness, float metallic, vec3 albedo, vec3 radiance) {
+    // cook-torrance brdf
+    float NDF = DistributionGGX(N, H, roughness);
+    float G = GeometrySmith(N, V, L, roughness);
+    vec3 F = FresnelSchlick(max(dot(H, V), 0.0), F0);
+    
+    vec3 kS = F;
+    vec3 kD = vec3(1.0) - kS;
+    kD *= 1.0 - metallic;
+    
+    vec3 numerator = NDF * G * F;
+    float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001;
+    vec3 specular = numerator / denominator;
+    
+    // add to radiance
+    float NdotL = max(dot(N, L), 0.0);
+    return (kD * albedo / PI + specular) * radiance * NdotL;
+}
+
 void main() {
     vec3 worldPos =   texture(sampler2D(GPosition), a_TexCoord).rgb;
     vec3 normal =     texture(sampler2D(GNormal), a_TexCoord).rgb;
@@ -56,7 +75,7 @@ void main() {
     // reflectance equation
     vec3 Lo = vec3(0.0);
 
-    // Directional Lights
+    // Directional Light
     {
         vec3 color = u_DirectionalLight.Color.rgb;
         float intensity = u_DirectionalLight.Params.r;
@@ -66,22 +85,7 @@ void main() {
         vec3 H = normalize(V + L);
         vec3 radiance = color * intensity;
 
-        // cook-torrance brdf
-        float NDF = DistributionGGX(N, H, roughness);
-        float G = GeometrySmith(N, V, L, roughness);
-        vec3 F = FresnelSchlick(max(dot(H, V), 0.0), F0);
-    
-        vec3 kS = F;
-        vec3 kD = vec3(1.0) - kS;
-        kD *= 1.0 - metallic;
-    
-        vec3 numerator = NDF * G * F;
-        float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001;
-        vec3 specular = numerator / denominator;
-    
-        // add to radiance
-        float NdotL = max(dot(N, L), 0.0);
-        Lo = (kD * albedo / PI + specular) * radiance * NdotL;
+        Lo = AddLight(N, H, V, L, F0, roughness, metallic, albedo, radiance);
     }
 
     // Point Lights
@@ -99,29 +103,15 @@ void main() {
         float x = clamp(1.0 - (distance / radius), 0.0, 1.0);
         float attenuation = x * x;
         vec3 radiance = color * attenuation * intensity;
-        // radiance = vec3(1.0 / distance);
-    
-        // cook-torrance brdf
-        float NDF = DistributionGGX(N, H, roughness);
-        float G = GeometrySmith(N, V, L, roughness);
-        vec3 F = FresnelSchlick(max(dot(H, V), 0.0), F0);
-    
-        vec3 kS = F;
-        vec3 kD = vec3(1.0) - kS;
-        kD *= 1.0 - metallic;
-    
-        vec3 numerator = NDF * G * F;
-        float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001;
-        vec3 specular = numerator / denominator;
-    
-        // add to radiance
-        float NdotL = max(dot(N, L), 0.0);
-        Lo += (kD * albedo / PI + specular) * radiance * NdotL;
-        // Lo += radiance;
+
+        Lo += AddLight(N, H, V, L, F0, roughness, metallic, albedo, radiance);
     }
     
     vec3 ambient = vec3(0.03) * albedo * ao;
     vec3 color = ambient + Lo;
+
+    if (color == vec3(0.0))
+        discard;
     
     // HDR tonemapping
     color = color / (color + vec3(1.0));
@@ -129,7 +119,6 @@ void main() {
     color = pow(color, vec3(1.0 / 2.2));
     
     o_FragColor = vec4(color, 1.0);
-    // o_FragColor = vec4(vec3(length(u_ViewPos - worldPos) / 10.0), 1.0);
 }
 
 float DistributionGGX(vec3 N, vec3 H, float roughness) {

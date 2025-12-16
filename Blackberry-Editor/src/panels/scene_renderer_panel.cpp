@@ -23,6 +23,8 @@ namespace BlackberryEditor {
         ImGui::SliderInt("Deferred rendering step", &m_CurrentDeferredImage, 0, IM_ARRAYSIZE(names) - 1, name);
         ImGui::Image(state.GBuffer->Attachments[m_CurrentDeferredImage]->ID, ImVec2(sizeX, sizeY), ImVec2(0, 1), ImVec2(1, 0));
 
+        // ImGui::Image(state.Skybox->ID, ImVec2(sizeX, sizeY));
+
         ImGui::End();
     }
 

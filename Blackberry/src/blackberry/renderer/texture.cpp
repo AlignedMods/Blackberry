@@ -3,6 +3,8 @@
 
 #include "glad/gl.h"
 #include "GLFW/glfw3.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 namespace Blackberry {
 
@@ -15,7 +17,7 @@ namespace Blackberry {
 
         tex->Size.x = width;
         tex->Size.y = height;
-        tex->Format = Blackberry::ImageFormat::RGBA8;
+        tex->Format = Blackberry::TextureFormat::RGBA8;
     
         glGenTextures(1, &tex->ID);
         glBindTexture(GL_TEXTURE_2D, tex->ID);
@@ -34,21 +36,41 @@ namespace Blackberry {
         return tex;
     }
     
-    Ref<Texture2D> Texture2D::Create(const FS::Path& path) {
-        Blackberry::Image image = Blackberry::Image::Create(path);
-        if (image.Data == nullptr) {
+    Ref<Texture2D> Texture2D::Create(const FS::Path& path, TextureFormat desiredFormat) {
+        int width = 0, height = 0;
+
+        bool useFloatingPoint = false;
+        int channelCount = 0;
+
+        switch (desiredFormat) {
+            case TextureFormat::RGB8: useFloatingPoint = false; channelCount = 3; break;
+            case TextureFormat::RGBA8: useFloatingPoint = false; channelCount = 4; break;
+
+            case TextureFormat::RGB16F: useFloatingPoint = true; channelCount = 3; break;
+            case TextureFormat::RGBA16F: useFloatingPoint = true; channelCount = 4; break;
+        }
+
+        void* pixels = nullptr;
+
+        if (!useFloatingPoint) {
+            pixels = stbi_load(path.CString(), &width, &height, nullptr, channelCount);
+        } else {
+            pixels = stbi_loadf(path.CString(), &width, &height, nullptr, channelCount);
+        }
+
+        if (pixels == nullptr) {
             BL_ERROR("Failed to load texture from path: {}", path.String());
             return CreateRef<Texture2D>();
         }
     
-        return Create(image);
+        Ref<Texture2D> texture = Create(pixels, width, height, desiredFormat);
+
+        stbi_image_free(pixels);
+
+        return texture;
     }
     
-    Ref<Texture2D> Texture2D::Create(const Blackberry::Image& image) {
-        return Create(image.Data, image.Width, image.Height, image.Format);
-    }
-    
-    Ref<Texture2D> Texture2D::Create(void* pixels, u32 width, u32 height, Blackberry::ImageFormat pixelFormat, TextureFiltering filter) {
+    Ref<Texture2D> Texture2D::Create(void* pixels, u32 width, u32 height, TextureFormat pixelFormat, TextureFiltering filter) {
         Ref<Texture2D> tex = CreateRef<Texture2D>();
 
         tex->Size.x = width;
@@ -76,26 +98,22 @@ namespace Blackberry {
         GLuint type = GL_UNSIGNED_BYTE;
     
         switch (pixelFormat) {
-            case Blackberry::ImageFormat::U8:
-                format = GL_RED;
-                glFormat = GL_R8;
-                break;
-            case Blackberry::ImageFormat::RGB8:
+            case TextureFormat::RGB8:
                 format = GL_RGB;
                 glFormat = GL_RGB8;
                 break;
-            case Blackberry::ImageFormat::RGBA8:
+            case TextureFormat::RGBA8:
                 format = GL_RGBA;
                 glFormat = GL_RGBA8;
                 break;
-            case Blackberry::ImageFormat::F32:
-                format = GL_RED;
-                glFormat = GL_R32F;
+            case TextureFormat::RGB16F:
+                format = GL_RGB;
+                glFormat = GL_RGB16F;
                 type = GL_FLOAT;
                 break;
-            case Blackberry::ImageFormat::RGB32F:
-                format = GL_RGB;
-                glFormat = GL_RGB32F;
+            case TextureFormat::RGBA16F:
+                format = GL_RGBA;
+                glFormat = GL_RGBA16F;
                 type = GL_FLOAT;
                 break;
         }
@@ -171,7 +189,7 @@ namespace Blackberry {
 
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachment.Attachment, GL_TEXTURE_2D, id, 0);
 
-                texAttachment->Format = ImageFormat::RGBA8;
+                texAttachment->Format = TextureFormat::RGBA8;
                 texAttachment->ID = id;
 
                 createBindlessHandle = true;
@@ -190,7 +208,7 @@ namespace Blackberry {
 
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachment.Attachment, GL_TEXTURE_2D, id, 0);
 
-                texAttachment->Format = ImageFormat::RGBA32F;
+                texAttachment->Format = TextureFormat::RGBA16F;
                 texAttachment->ID = id;
 
                 createBindlessHandle = true;
@@ -202,7 +220,19 @@ namespace Blackberry {
                 glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, spec.Size.x, spec.Size.y);
                 glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, id);
 
-                texAttachment->Format = ImageFormat::RGBA8;
+                texAttachment->Format = TextureFormat::RGBA8;
+                texAttachment->ID = id;
+
+                createBindlessHandle = false;
+            } else if (attachment.Type == RenderTextureAttachmentType::Depth24) {
+                u32 id = 0;
+
+                glGenRenderbuffers(1, &id);
+                glBindRenderbuffer(GL_RENDERBUFFER, id);
+                glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, spec.Size.x, spec.Size.y);
+                glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, id);
+
+                texAttachment->Format = TextureFormat::RGBA8;
                 texAttachment->ID = id;
 
                 createBindlessHandle = false;

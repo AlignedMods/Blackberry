@@ -109,9 +109,9 @@ namespace Blackberry {
         m_TargetFPS = fps;
     }
 
-    void Application::SetWindowIcon(const Image& image) {
-        m_Window->SetWindowIcon(image);
-    }
+    // void Application::SetWindowIcon(const Image& image) {
+    //     m_Window->SetWindowIcon(image);
+    // }
 
     void Application::Close() {
         m_Running = false;
