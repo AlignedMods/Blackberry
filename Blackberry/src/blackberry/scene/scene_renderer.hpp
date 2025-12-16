@@ -5,6 +5,7 @@
 #include "blackberry/scene/camera.hpp"
 #include "blackberry/model/material.hpp"
 #include "blackberry/renderer/shader_storage_buffer.hpp"
+#include "blackberry/renderer/enviroment_map.hpp"
 
 namespace Blackberry {
 
@@ -134,7 +135,7 @@ namespace Blackberry {
 
         Ref<RenderTexture> GBuffer; // For deffered rendering
 
-        Ref<Texture2D> Skybox;
+        Ref<EnviromentMap> EnviromentMap;
     };
 
     class SceneRenderer {

@@ -2,7 +2,6 @@
 #include "blackberry/scene/scene.hpp"
 #include "blackberry/project/project.hpp"
 #include "blackberry/core/timer.hpp"
-#include "blackberry/renderer/skybox_generation.hpp"
 
 #include "glad/gl.h"
 
@@ -88,7 +87,7 @@ namespace Blackberry {
         m_State.SkyboxShader = Shader::Create(FS::Path("Assets/Shaders/Default/Skybox.vert"), FS::Path("Assets/Shaders/Default/Skybox.frag"));
         // m_State.FontShader = Shader::Create(s_VertexShaderFontSource, s_FragmentShaderFontSource);
 
-        m_State.Skybox = GenerateSkybox("Assets/Textures/Skybox.hdr");
+        m_State.EnviromentMap = EnviromentMap::Create("Assets/Textures/Skybox.hdr");
 
         m_State.TransformBuffer = ShaderStorageBuffer::Create(0);
         m_State.MaterialBuffer = ShaderStorageBuffer::Create(1);
@@ -299,7 +298,7 @@ namespace Blackberry {
                 m_State.SkyboxShader.SetMatrix("u_Projection", glm::value_ptr(projection));
                 m_State.SkyboxShader.SetMatrix("u_View", glm::value_ptr(view));
 
-                renderer.BindCubemap(m_State.Skybox, 0);
+                renderer.BindCubemap(m_State.EnviromentMap->Skybox, 0);
 
                 renderer.DrawIndexed(36);
 
@@ -347,7 +346,11 @@ namespace Blackberry {
                 m_State.LightBuffer.ReserveMemory(sizeof(GPUPointLight) * m_State.PointLights.size(), m_State.PointLights.data());
                 m_State.MeshLightingShader.SetInt("u_PointLightCount", m_State.PointLights.size());
 
+                renderer.BindCubemap(m_State.EnviromentMap->Irradiance, 0);
+
                 renderer.DrawIndexed(6);
+
+                renderer.UnBindCubemap();
 
                 if (m_Target) {
                     renderer.UnBindRenderTexture();

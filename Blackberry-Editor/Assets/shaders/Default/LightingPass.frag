@@ -29,6 +29,7 @@ layout (std430, binding = 3) buffer PointLightBuffer {
 uniform int u_PointLightCount;
 uniform DirectionalLight u_DirectionalLight;
 uniform vec3 u_ViewPos;
+uniform samplerCube u_IrradianceMap;
 
 out vec4 o_FragColor;
 
@@ -107,10 +108,17 @@ void main() {
         Lo += AddLight(N, H, V, L, F0, roughness, metallic, albedo, radiance);
     }
     
-    vec3 ambient = vec3(0.03) * albedo * ao;
+    // vec3 ambient = vec3(0.03) * albedo * ao;
+    vec3 kS = FresnelSchlick(max(dot(N, V), 0.0), F0);
+    vec3 kD = 1.0 - kS;
+    kD *= 1.0 - metallic;
+    vec3 irradiance = texture(u_IrradianceMap, N).rgb;
+    vec3 diffuse = irradiance * albedo;
+    vec3 ambient = (diffuse) * ao;
+
     vec3 color = ambient + Lo;
 
-    if (color == vec3(0.0))
+    if (color == vec3(0.0)) // mainly here for skybox support
         discard;
     
     // HDR tonemapping
