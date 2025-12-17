@@ -23,3 +23,6 @@
 [submodule "Blackberry/vendor/msdf-atlas-gen"]
 	path = Blackberry/vendor/msdf-atlas-gen
 	url = https://github.com/Chlumsky/msdf-atlas-gen.git
+[submodule "Blackberry/vendor/yaml-cpp"]
+	path = Blackberry/vendor/yaml-cpp
+	url = https://github.com/jbeder/yaml-cpp.git

@@ -2,7 +2,7 @@ group "dependencies"
     include "external.lua"
 group ""
 
-BlackberryLinks = { "Blackberry", "glfw", "glad", "imgui", "imguizmo", "freetype", "lua", "msdfgen", "msdf-atlas-gen" }
+BlackberryLinks = { "Blackberry", "glfw", "glad", "imgui", "imguizmo", "freetype", "lua", "msdfgen", "msdf-atlas-gen", "yaml-cpp" }
 
 project "Blackberry" -- The game engine
     language "C++"
@@ -27,11 +27,14 @@ project "Blackberry" -- The game engine
                   "%{BlackberryIncludes.msdfgen}",
                   "%{BlackberryIncludes.msdfgen}/static/",
                   "%{BlackberryIncludes.msdf_atlas_gen}",
+                  "%{BlackberryIncludes.yaml}",
                   "vendor/stb/",
                   "vendor/cgltf/",
                   "vendor/lua/src/" }
 
     files { "src/platform/opengl/**.cpp", "src/platform/opengl/**.hpp" }
+
+    defines { "YAML_CPP_STATIC_DEFINE"}
 
     filter "system:Windows"
         table.insert(BlackberryLinks, 1, "user32")

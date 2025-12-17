@@ -1057,11 +1057,23 @@ namespace BlackberryEditor {
                         }
 
                         if (ImGui::BeginDragDropTarget()) {
-                            const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_MANAGER_HANDLE_DRAG_DROP");
+                            const ImGuiPayload* assetManagerPayload = ImGui::AcceptDragDropPayload("ASSET_MANAGER_HANDLE_DRAG_DROP");
+                            const ImGuiPayload* fileBrowserPayload = ImGui::AcceptDragDropPayload("FILE_BROWSER_FILE_DRAG_DROP");
 
-                            if (payload) {
-                                model.Meshes[i].MaterialHandle = *reinterpret_cast<u64*>(payload->Data);
+                            if (assetManagerPayload) {
+                                model.Meshes[i].MaterialHandle = *reinterpret_cast<u64*>(assetManagerPayload->Data);
+                            } else if (fileBrowserPayload) {
+                                FS::Path p = reinterpret_cast<char*>(fileBrowserPayload->Data);
+
+                                if (Project::GetAssetManager().ContainsAsset(p)) {
+                                    auto& asset = Project::GetAssetManager().GetAssetFromPath(p);
+                                    if (asset.Type == AssetType::Material) {
+                                        model.Meshes[i].MaterialHandle = asset.Handle;
+                                    }
+                                }
                             }
+
+                            ImGui::EndDragDropTarget();
                         }
 
                         ImGui::PopID();

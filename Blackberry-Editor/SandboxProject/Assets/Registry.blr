@@ -10,6 +10,11 @@
             "Path": "Meshes/Default/Cube.glb",
             "Type": "Model"
         },
+        "Handle - 14564222973131806585": {
+            "Handle": 14564222973131806585,
+            "Path": "Meshes/Default/Plane.glb",
+            "Type": "Model"
+        },
         "Handle - 14759378279406288041": {
             "Handle": 14759378279406288041,
             "Path": "Meshes/gun.glb",

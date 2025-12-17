@@ -1,315 +1,36 @@
-{
-    "Entities": {
-        "ID - 0": {
-            "ColliderComponent": {
-                "Scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "Type": "Cube"
-            },
-            "MeshComponent": {
-                "Materials": [
-                    581071103399731738
-                ],
-                "MeshHandle": 12120187917695872185
-            },
-            "PointLightComponent": {
-                "Color": [
-                    0.0,
-                    1.0,
-                    0.13127398490905762
-                ],
-                "Intensity": 74.0,
-                "Radius": 246.0
-            },
-            "RigidBodyComponent": {
-                "EnableGravity": true,
-                "Mass": 1.0,
-                "Type": "Dynamic"
-            },
-            "TagComponent": {
-                "Name": "Cube",
-                "UUID": 13414028426215513183
-            },
-            "TransformComponent": {
-                "Position": [
-                    0.0,
-                    1.0,
-                    0.0
-                ],
-                "Rotation": [
-                    14.95188045501709,
-                    77.96173095703125,
-                    -0.04909409582614899
-                ],
-                "Scale": [
-                    0.4999924302101135,
-                    0.4999999403953552,
-                    0.4999960660934448
-                ]
-            }
-        },
-        "ID - 1": {
-            "CameraComponent": {
-                "Far": 10.0,
-                "Near": 0.10000000149011612
-            },
-            "TagComponent": {
-                "Name": "Camera",
-                "UUID": 359200699864718052
-            },
-            "TransformComponent": {
-                "Position": [
-                    3.5949950218200684,
-                    0.5130096077919006,
-                    4.0088396072387695
-                ],
-                "Rotation": [
-                    -114.0,
-                    -7.0,
-                    0.0
-                ],
-                "Scale": [
-                    1920.0,
-                    1080.0,
-                    1.0
-                ]
-            }
-        },
-        "ID - 2": {
-            "MeshComponent": {
-                "Materials": [
-                    581071103399731738
-                ],
-                "MeshHandle": 12120187917695872185
-            },
-            "TagComponent": {
-                "Name": "Cube",
-                "UUID": 4399869526793689122
-            },
-            "TransformComponent": {
-                "Position": [
-                    0.0,
-                    0.0,
-                    1.3499999046325684
-                ],
-                "Rotation": [
-                    0.0,
-                    -0.0,
-                    0.0
-                ],
-                "Scale": [
-                    3.0,
-                    0.009999999776482582,
-                    3.0
-                ]
-            }
-        },
-        "ID - 3": {
-            "TagComponent": {
-                "Name": "Text",
-                "UUID": 5489723198560109817
-            },
-            "TextComponent": {
-                "Contents": "hello world!",
-                "FontHandle": 5555962722629784639,
-                "Kerning": 0.0,
-                "LineSpacing": 0.0
-            },
-            "TransformComponent": {
-                "Position": [
-                    -1.0499999523162842,
-                    0.0,
-                    -2.0
-                ],
-                "Rotation": [
-                    0.0,
-                    -0.0,
-                    0.0
-                ],
-                "Scale": [
-                    1.0,
-                    1.0,
-                    0.33399146795272827
-                ]
-            }
-        },
-        "ID - 4": {
-            "ColliderComponent": {
-                "Scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "Type": "Cube"
-            },
-            "MeshComponent": {
-                "Materials": [
-                    581071103399731738
-                ],
-                "MeshHandle": 6020665715492184391
-            },
-            "RigidBodyComponent": {
-                "EnableGravity": true,
-                "Mass": 1.0,
-                "Type": "Static"
-            },
-            "TagComponent": {
-                "Name": "Cylinder",
-                "UUID": 16564804365468595603
-            },
-            "TransformComponent": {
-                "Position": [
-                    1.0499999523162842,
-                    -2.0,
-                    -0.5
-                ],
-                "Rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "Scale": [
-                    0.5,
-                    0.5,
-                    0.5
-                ]
-            }
-        },
-        "ID - 5": {
-            "DirectionalLightComponent": {
-                "Color": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "Intensity": 59.5
-            },
-            "TagComponent": {
-                "Name": "Directional Light",
-                "UUID": 18341993632070408446
-            },
-            "TransformComponent": {
-                "Position": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "Rotation": [
-                    13.0,
-                    -137.0,
-                    346.0
-                ],
-                "Scale": [
-                    0.0,
-                    0.0,
-                    0.0
-                ]
-            }
-        },
-        "ID - 6": {
-            "PointLightComponent": {
-                "Color": [
-                    1.0,
-                    0.23166024684906006,
-                    0.23166024684906006
-                ],
-                "Intensity": 100.0,
-                "Radius": 10.0
-            },
-            "TagComponent": {
-                "Name": "Light",
-                "UUID": 14723215135644499209
-            },
-            "TransformComponent": {
-                "Position": [
-                    -0.8499999046325684,
-                    0.9999994039535522,
-                    -1.049999713897705
-                ],
-                "Rotation": [
-                    0.0,
-                    -0.0,
-                    0.0
-                ],
-                "Scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            }
-        },
-        "ID - 7": {
-            "MeshComponent": {
-                "Materials": [
-                    581071103399731738
-                ],
-                "MeshHandle": 16676790944532672824
-            },
-            "TagComponent": {
-                "Name": "Sphere",
-                "UUID": 12928185605232963448
-            },
-            "TransformComponent": {
-                "Position": [
-                    0.0,
-                    0.0,
-                    -1.2000000476837158
-                ],
-                "Rotation": [
-                    0.0,
-                    -0.0,
-                    0.0
-                ],
-                "Scale": [
-                    0.5,
-                    0.5,
-                    0.5
-                ]
-            }
-        },
-        "ID - 8": {
-            "PointLightComponent": {
-                "Color": [
-                    0.13899612426757813,
-                    0.3916460871696472,
-                    1.0
-                ],
-                "Intensity": 100.0,
-                "Radius": 10.0
-            },
-            "TagComponent": {
-                "Name": "Light 2",
-                "UUID": 2088877155414108191
-            },
-            "TransformComponent": {
-                "Position": [
-                    -0.949999988079071,
-                    1.0,
-                    -2.0
-                ],
-                "Rotation": [
-                    0.0,
-                    -0.0,
-                    0.0
-                ],
-                "Scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            }
-        },
-        "ID - 9": {
-            "EnviromentComponent": {
-                "EnviromentMap": 16970579584870424807
-            },
-            "TagComponent": {
-                "Name": "Enviroment",
-                "UUID": 9208324181201598862
-            }
-        }
-    }
-}
+Entities:
+  - TagComponent:
+      UUID: 12809064635662274665
+      Name: DirectionalLight
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [640.999, 79, 144.966]
+      Scale: [0.9999876, 0.9999912, 1]
+    DirectionalLightComponent:
+      Color: [1, 1, 1]
+      Intensity: 5.5
+  - TagComponent:
+      UUID: 11239897786458320513
+      Name: Camera
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1920, 1080, 1]
+    CameraComponent:
+      FOV: 60
+      Near: 0.1
+      Far: 10
+  - TagComponent:
+      UUID: 15682815334010866945
+      Name: Cube
+    TransformComponent:
+      Position: [4, 6, 0]
+      Rotation: [17.000042, -0, 0]
+      Scale: [1, 1, 1]
+    MeshComponent:
+      MeshHandle: 12120187917695872185
+  - TagComponent:
+      UUID: 1801923993421270264
+      Name: Enviroment
+    EnviromentComponent:
+      EnviromentMap: 16970579584870424807

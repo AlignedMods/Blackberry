@@ -10,6 +10,7 @@ BlackberryIncludes["spdlog"] = "%{wks.location}/Blackberry/vendor/spdlog/include
 BlackberryIncludes["freetype"] = "%{wks.location}/Blackberry/vendor/freetype/include/"
 BlackberryIncludes["msdfgen"] = "%{wks.location}/Blackberry/vendor/msdfgen/"
 BlackberryIncludes["msdf_atlas_gen"] = "%{wks.location}/Blackberry/vendor/msdf-atlas-gen/"
+BlackberryIncludes["yaml"] = "%{wks.location}/Blackberry/vendor/yaml-cpp/include/"
 
 project "glfw"
     language "C"
@@ -203,3 +204,20 @@ project "imguizmo"
 			"vendor/imguizmo/ImGuizmo.cpp" }
 
 	includedirs { "vendor/imguizmo/", "vendor/imgui/" }
+
+project "yaml-cpp"
+    language "C++"
+    cppdialect "C++20"
+    kind "StaticLib"
+    staticruntime "On"
+
+    targetdir("../build/bin/" .. OutputDir .. "/%{prj.name}")
+    objdir("../build/obj/" .. OutputDir .. "/%{prj.name}")
+
+    files { "vendor/yaml-cpp/src/*.cpp",
+            "vendor/yaml-cpp/src/*.h",
+            "vendor/yaml-cpp/include/yaml-cpp/**.hpp" }
+
+    includedirs { "vendor/yaml-cpp/include/", "vendor/yaml-cpp/src/" }
+
+    defines { "YAML_CPP_STATIC_DEFINE" }

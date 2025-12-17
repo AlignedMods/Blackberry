@@ -3,8 +3,34 @@
 #include "blackberry/core/util.hpp"
 #include "blackberry/project/project.hpp"
 
-#include "json.hpp"
-using json = nlohmann::json;
+#include "yaml-cpp/yaml.h"
+
+namespace YAML {
+    
+    template <>
+    struct convert<BlVec3<f32>> {
+        static Node encode(const BlVec3<f32>& rhs) {
+            Node node;
+            node.push_back(rhs.x);
+            node.push_back(rhs.y);
+            node.push_back(rhs.z);
+            return node;
+        }
+
+        static bool decode(const Node& node, BlVec3<f32>& rhs) {
+            if (!node.IsSequence() || node.size() != 3) {
+                return false;
+            }
+
+            rhs.x = node[0].as<f32>();
+            rhs.y = node[1].as<f32>();
+            rhs.z = node[2].as<f32>();
+
+            return true;
+        }
+    };
+
+} // namespace YAML
 
 namespace Blackberry {
 
@@ -44,258 +70,209 @@ namespace Blackberry {
         return ColliderType::Cube;
     }
 
+    YAML::Emitter& operator<<(YAML::Emitter& out, BlVec3<f32> vec) {
+        out << YAML::Flow << YAML::BeginSeq;
+        out << vec.x << vec.y << vec.z;
+        out << YAML::EndSeq;
+
+        return out;
+    }
+
+    static void SerializeEntity(YAML::Emitter& out, Entity e) {
+        BL_ASSERT(e.HasComponent<TagComponent>(), "All entities must have a TagComponent!");
+
+        out << YAML::BeginMap; // Entity
+
+        if (e.HasComponent<TagComponent>()) {
+            auto& tag = e.GetComponent<TagComponent>();
+
+            out << YAML::Key << "TagComponent";
+            out << YAML::BeginMap; // TagComponent
+
+            out << YAML::Key << "UUID" << YAML::Value << tag.UUID;
+            out << YAML::Key << "Name" << YAML::Value << tag.Name;
+
+            out << YAML::EndMap; // TagComponent
+        }
+
+        if (e.HasComponent<TransformComponent>()) {
+            auto& transform = e.GetComponent<TransformComponent>();
+
+            out << YAML::Key << "TransformComponent";
+            out << YAML::BeginMap; // TransformComponent
+
+            out << YAML::Key << "Position" << YAML::Value << transform.Position;
+            out << YAML::Key << "Rotation" << YAML::Value << transform.Rotation;
+            out << YAML::Key << "Scale" << YAML::Value << transform.Scale;
+
+            out << YAML::EndMap; // TransformComponent
+        }
+
+        if (e.HasComponent<MeshComponent>()) {
+            auto& mesh = e.GetComponent<MeshComponent>();
+
+            out << YAML::Key << "MeshComponent";
+            out << YAML::BeginMap; // MeshComponent
+
+            out << YAML::Key << "MeshHandle" << YAML::Value << mesh.MeshHandle;
+
+            out << YAML::EndMap; // MeshComponent
+        }
+
+        if (e.HasComponent<CameraComponent>()) {
+            auto& camera = e.GetComponent<CameraComponent>();
+
+            out << YAML::Key << "CameraComponent";
+            out << YAML::BeginMap; // CameraComponent
+
+            out << YAML::Key << "FOV" << YAML::Value << camera.FOV;
+            out << YAML::Key << "Near" << YAML::Value << camera.Near;
+            out << YAML::Key << "Far" << YAML::Value << camera.Far;
+
+            out << YAML::EndMap; // CameraComponent
+        }
+
+        if (e.HasComponent<DirectionalLightComponent>()) {
+            auto& light = e.GetComponent<DirectionalLightComponent>();
+
+            out << YAML::Key << "DirectionalLightComponent";
+            out << YAML::BeginMap; // DirectionalLightComponent
+
+            out << YAML::Key << "Color" << YAML::Value << light.Color;
+            out << YAML::Key << "Intensity" << YAML::Value << light.Intensity;
+
+            out << YAML::EndMap; // DirectionalLightComponent
+        }
+
+        if (e.HasComponent<PointLightComponent>()) {
+            auto& light = e.GetComponent<PointLightComponent>();
+
+            out << YAML::Key << "PointLightComponent";
+            out << YAML::BeginMap; // PointLightComponent
+
+            out << YAML::Key << "Color" << YAML::Value << light.Color;
+            out << YAML::Key << "Radius" << YAML::Value << light.Radius;
+            out << YAML::Key << "Intensity" << YAML::Value << light.Intensity;
+
+            out << YAML::EndMap; // PointLightComponent
+        }
+
+        if (e.HasComponent<EnviromentComponent>()) {
+            auto& env = e.GetComponent<EnviromentComponent>();
+
+            out << YAML::Key << "EnviromentComponent";
+            out << YAML::BeginMap; // EnviromentComponent
+
+            out << YAML::Key << "EnviromentMap" << YAML::Value << env.EnviromentMap;
+
+            out << YAML::EndMap; // EnviromentComponent
+        }
+
+        out << YAML::EndMap; // Entity
+    }
+
     SceneSerializer::SceneSerializer(Scene* scene)
         : m_Scene(scene) {}
 
     void SceneSerializer::Serialize(const FS::Path& path) {
         if (m_Scene->GetEntities().size() == 0) return;
-        json j;
+        YAML::Emitter out;
+
+        out << YAML::BeginMap;
+        out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
 
         // entities
         for (auto& id : m_Scene->GetEntities()) {
             Entity entity(id, m_Scene);
-            std::string name = "ID - " + std::to_string(static_cast<u32>(id));
-            
-            if (entity.HasComponent<TagComponent>()) {
-                TagComponent& tag = entity.GetComponent<TagComponent>();
-
-                j["Entities"][name]["TagComponent"] = { 
-                    {"Name", tag.Name},
-                    {"UUID", tag.UUID}
-                };
-            }
-
-            if (entity.HasComponent<TransformComponent>()) {
-                TransformComponent& transform = entity.GetComponent<TransformComponent>();
-
-                j["Entities"][name]["TransformComponent"] = { 
-                    {"Position", {transform.Position.x, transform.Position.y, transform.Position.z} },
-                    {"Rotation", {transform.Rotation.x, transform.Rotation.y, transform.Rotation.z} },
-                    {"Scale",    {transform.Scale.x,    transform.Scale.y,    transform.Scale.z   } }
-                };
-            }
-
-            if (entity.HasComponent<MeshComponent>()) {
-                MeshComponent& mesh = entity.GetComponent<MeshComponent>();
-
-                j["Entities"][name]["MeshComponent"] = { 
-                    {"MeshHandle", mesh.MeshHandle}
-                };
-
-                if (Project::GetAssetManager().ContainsAsset(mesh.MeshHandle)) {
-                    Model& model = std::get<Model>(Project::GetAssetManager().GetAsset(mesh.MeshHandle).Data);
-
-                    for (u32 i = 0; i < model.MeshCount; i++) {
-                        j["Entities"][name]["MeshComponent"]["Materials"][i] = model.Meshes[i].MaterialHandle;
-                    }
-                } else {
-                    j["Entities"][name]["MeshComponent"]["Materials"] = json::array();
-                }
-            }
-
-            if (entity.HasComponent<CameraComponent>()) {
-                CameraComponent& camera = entity.GetComponent<CameraComponent>();
-
-                j["Entities"][name]["CameraComponent"] = {
-                    {"Near", camera.Near},
-                    {"Far", camera.Far}
-                };
-            }
-
-            if (entity.HasComponent<ScriptComponent>()) {
-                ScriptComponent& script = entity.GetComponent<ScriptComponent>();
-
-                j["Entities"][name]["ScriptComponent"] = { 
-                    {"ModulePath", script.ModulePath.String()}
-                };
-            }
-
-            if (entity.HasComponent<RigidBodyComponent>()) {
-                RigidBodyComponent& rigidBody = entity.GetComponent<RigidBodyComponent>();
-
-                j["Entities"][name]["RigidBodyComponent"] = {
-                    {"Type", RigidBodyTypeToString(rigidBody.Type)},
-                    {"Mass", rigidBody.Mass},
-                    {"EnableGravity", rigidBody.EnableGravity}
-                };
-            }
-
-            if (entity.HasComponent<ColliderComponent>()) {
-                ColliderComponent& collider = entity.GetComponent<ColliderComponent>();
-
-                j["Entities"][name]["ColliderComponent"] = {
-                    {"Type", ColliderTypeToString(collider.Type)},
-                    {"Scale", {collider.Scale.x, collider.Scale.y, collider.Scale.z}}
-                };
-            }
-
-            if (entity.HasComponent<TextComponent>()) {
-                TextComponent& text = entity.GetComponent<TextComponent>();
-
-                j["Entities"][name]["TextComponent"] = {
-                    {"Contents", text.Contents},
-                    {"FontHandle", text.FontHandle},
-                    {"Kerning", text.Kerning},
-                    {"LineSpacing", text.LineSpacing}
-                };
-            }
-
-            if (entity.HasComponent<DirectionalLightComponent>()) {
-                DirectionalLightComponent& light = entity.GetComponent<DirectionalLightComponent>();
-
-                j["Entities"][name]["DirectionalLightComponent"] = {
-                    {"Color", {light.Color.x, light.Color.y, light.Color.z}},
-                    {"Intensity", light.Intensity}
-                };
-            }
-
-            if (entity.HasComponent<PointLightComponent>()) {
-                PointLightComponent& light = entity.GetComponent<PointLightComponent>();
-
-                j["Entities"][name]["PointLightComponent"] = {
-                    {"Color", {light.Color.x, light.Color.y, light.Color.z}},
-                    {"Radius", light.Radius},
-                    {"Intensity", light.Intensity}
-                };
-            }
-
-            if (entity.HasComponent<EnviromentComponent>()) {
-                EnviromentComponent& env = entity.GetComponent<EnviromentComponent>();
-
-                j["Entities"][name]["EnviromentComponent"] = {
-                    {"EnviromentMap", env.EnviromentMap}
-                };
-            }
+            SerializeEntity(out, entity);
         }
 
+        out << YAML::EndSeq << YAML::EndMap;
+
         std::ofstream stream(path);
-        stream << j.dump(4);
+        stream << out.c_str();
     }
 
     void SceneSerializer::Deserialize(const FS::Path& path) {
         std::string contents = Util::ReadEntireFile(path);
 
-        json j = json::parse(contents);
-        auto& entities = j.at("Entities");
+        YAML::Node node = YAML::Load(contents.c_str());
 
-        // entities
-        for (auto& jsonEntity : entities) {
-            Entity entity;
+        if (!node["Entities"]) return;
 
-            // TagComponent
-            // (aligned) TODO: potentially redo the way tags get handled?
-            if (jsonEntity.contains("TagComponent")) {
-                auto& jsonTag = jsonEntity.at("TagComponent");
+        YAML::Node entities = node["Entities"];
 
-                entity = Entity(m_Scene->CreateEntityWithUUID(jsonTag.at("UUID")), m_Scene);
-                TagComponent& entityTag = entity.GetComponent<TagComponent>();
-                entityTag.Name = jsonTag.at("Name");
+        for (auto entity : entities) {
+            Entity e;
+
+            // Still hate how this works
+            if (entity["TagComponent"]) {
+                auto yamlTag = entity["TagComponent"];
+
+                e = Entity(m_Scene->CreateEntityWithUUID(yamlTag["UUID"].as<u64>()), m_Scene);
+                TagComponent& tag = e.GetComponent<TagComponent>();
+                tag.Name = yamlTag["Name"].as<std::string>();
             }
 
-            // Transform2DComponent
-            if (jsonEntity.contains("TransformComponent")) {
-                auto& jsonTransform = jsonEntity.at("TransformComponent");
-                std::array<f32, 3> position = jsonTransform.at("Position");
-                std::array<f32, 3> rotation = jsonTransform.at("Rotation");
-                std::array<f32, 3> scale = jsonTransform.at("Scale");
-                
-                entity.AddComponent<TransformComponent>({ BlVec3(position[0], position[1], position[2]), BlVec3(rotation[0], rotation[1], rotation[2]), BlVec3(scale[0], scale[1], scale[2]) });
+            if (entity["TransformComponent"]) {
+                auto yamlTransform = entity["TransformComponent"];
+
+                TransformComponent transform;
+                transform.Position = yamlTransform["Position"].as<BlVec3<f32>>();
+                transform.Rotation = yamlTransform["Rotation"].as<BlVec3<f32>>();
+                transform.Scale = yamlTransform["Scale"].as<BlVec3<f32>>();
+
+                e.AddComponent<TransformComponent>(transform);
             }
 
-            // MeshComponent
-            if (jsonEntity.contains("MeshComponent")) {
-                auto& jsonMesh = jsonEntity.at("MeshComponent");
-                u64 meshHandle = jsonMesh.at("MeshHandle");
-                std::vector<u64> materials = jsonMesh.at("Materials");
+            if (entity["MeshComponent"]) {
+                auto yamlMesh = entity["MeshComponent"];
 
-                // set materials
-                if (Project::GetAssetManager().ContainsAsset(meshHandle)) {
-                    Model& model = std::get<Model>(Project::GetAssetManager().GetAsset(meshHandle).Data);
+                MeshComponent mesh;
+                mesh.MeshHandle = yamlMesh["MeshHandle"].as<u64>();
 
-                    for (u32 i = 0; i < model.MeshCount; i++) {
-                        model.Meshes[i].MaterialHandle = materials[i];
-                    }
-                }
-
-                entity.AddComponent<MeshComponent>({ meshHandle });
+                e.AddComponent<MeshComponent>(mesh);
             }
 
-            if (jsonEntity.contains("CameraComponent")) {
-                auto& jsonCamera = jsonEntity.at("CameraComponent");
-                CameraComponent cam;
+            if (entity["CameraComponent"]) {
+                auto yamlCamera = entity["CameraComponent"];
 
-                f32 nearZ = jsonCamera.at("Near");
-                f32 farZ = jsonCamera.at("Far");
+                CameraComponent camera;
+                camera.FOV = yamlCamera["FOV"].as<f32>();
+                camera.Near = yamlCamera["Near"].as<f32>();
+                camera.Far = yamlCamera["Far"].as<f32>();
 
-                cam.Near = nearZ;
-                cam.Far = farZ;
-                cam.Active = true;
-
-                entity.AddComponent<CameraComponent>(cam);
+                e.AddComponent<CameraComponent>(camera);
             }
 
-            if (jsonEntity.contains("ScriptComponent")) {
-                auto& jsonScript = jsonEntity.at("ScriptComponent");
-                std::string modulePath = jsonScript.at("ModulePath");
-                FS::Path filePath = Project::GetAssetPath(modulePath);
-                entity.AddComponent<ScriptComponent>({ modulePath, filePath });
-            }
-
-            if (jsonEntity.contains("RigidBodyComponent")) {
-                auto& jsonRigidBody = jsonEntity.at("RigidBodyComponent");
-                std::string type = jsonRigidBody.at("Type");
-                f32 mass = jsonRigidBody.at("Mass");
-
-                entity.AddComponent<RigidBodyComponent>({ StringToRigidBodyType(type), BlVec3(), BlVec3(), BlVec3(), BlVec3(), mass });
-            }
-
-            if (jsonEntity.contains("ColliderComponent")) {
-                auto& jsonCollider = jsonEntity.at("ColliderComponent");
-                std::string type = jsonCollider.at("Type");
-                std::array<f32, 3> scale = jsonCollider.at("Scale");
-
-                entity.AddComponent<ColliderComponent>({ StringToColliderType(type), BlVec3(scale[0], scale[1], scale[2]) });
-            }
-
-            if (jsonEntity.contains("TextComponent")) {
-                auto& jsonText = jsonEntity.at("TextComponent");
-                std::string contents = jsonText.at("Contents");
-                u64 fontHandle = jsonText.at("FontHandle");
-                f32 kerning = jsonText.at("Kerning");
-                f32 lineSpacing = jsonText.at("LineSpacing");
-
-                entity.AddComponent<TextComponent>({contents, fontHandle, kerning, lineSpacing});
-            }
-
-            if (jsonEntity.contains("DirectionalLightComponent")) {
-                auto& jsonLight = jsonEntity.at("DirectionalLightComponent");
-
-                std::array<f32, 3> color = jsonLight.at("Color");
-                f32 intensity = jsonLight.at("Intensity");
+            if (entity["DirectionalLightComponent"]) {
+                auto yamlLight = entity["DirectionalLightComponent"];
 
                 DirectionalLightComponent light;
-                light.Color = BlVec3<f32>(color[0], color[1], color[2]);
-                light.Intensity = intensity;
+                light.Color = yamlLight["Color"].as<BlVec3<f32>>();
+                light.Intensity = yamlLight["Intensity"].as<f32>();
 
-                entity.AddComponent<DirectionalLightComponent>(light);
+                e.AddComponent<DirectionalLightComponent>(light);
             }
 
-            if (jsonEntity.contains("PointLightComponent")) {
-                auto& jsonLight = jsonEntity.at("PointLightComponent");
+            if (entity["PointLightComponent"]) {
+                auto yamlLight = entity["PointLightComponent"];
 
-                std::array<f32, 3> color = jsonLight.at("Color");
-                f32 radius = jsonLight.at("Radius");
-                f32 intensity = jsonLight.at("Intensity");
+                PointLightComponent light;
+                light.Color = yamlLight["Color"].as<BlVec3<f32>>();
+                light.Radius = yamlLight["Radius"].as<f32>();
+                light.Intensity = yamlLight["Intensity"].as<f32>();
 
-                entity.AddComponent<PointLightComponent>({BlVec3(color[0], color[1], color[2]), radius, intensity});
+                e.AddComponent<PointLightComponent>(light);
             }
 
-            if (jsonEntity.contains("EnviromentComponent")) {
-                auto& jsonEnv = jsonEntity.at("EnviromentComponent");
+            if (entity["EnviromentComponent"]) {
+                auto yamlEnv = entity["EnviromentComponent"];
 
-                u64 envMapHandle = jsonEnv.at("EnviromentMap");
+                EnviromentComponent env;
+                env.EnviromentMap = yamlEnv["EnviromentMap"].as<u64>();
 
-                entity.AddComponent<EnviromentComponent>({envMapHandle});
+                e.AddComponent<EnviromentComponent>(env);
             }
         }
     }
