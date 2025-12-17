@@ -11,10 +11,21 @@ namespace BlackberryEditor {
             ImGui::Button(fmt::to_string(m_Context).c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0.0f));
 
             if (ImGui::BeginDragDropTarget()) {
-                const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_MANAGER_HANDLE_DRAG_DROP");
+                const ImGuiPayload* assetManagerPayload = ImGui::AcceptDragDropPayload("ASSET_MANAGER_HANDLE_DRAG_DROP");
+                const ImGuiPayload* fileBrowserPayload = ImGui::AcceptDragDropPayload("FILE_BROWSER_FILE_DRAG_DROP");
 
-                if (payload) {
-                    SetContext(*reinterpret_cast<u64*>(payload->Data));
+                if (assetManagerPayload) {
+                    SetContext(*reinterpret_cast<u64*>(assetManagerPayload->Data));
+                } else if (fileBrowserPayload) {
+                    // Get asset out of file browser payload
+                    FS::Path p = reinterpret_cast<char*>(fileBrowserPayload->Data);
+
+                    if (Project::GetAssetManager().ContainsAsset(p)) {
+                        auto& asset = Project::GetAssetManager().GetAssetFromPath(p);
+                        if (asset.Type == AssetType::Material) {
+                            SetContext(asset.Handle);
+                        }
+                    }
                 }
 
                 ImGui::EndDragDropTarget();

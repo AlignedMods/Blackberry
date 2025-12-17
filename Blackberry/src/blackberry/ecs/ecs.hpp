@@ -42,6 +42,7 @@ namespace Blackberry {
             CopyComponent<RigidBodyComponent>(src, dest, target, newEntity);
             CopyComponent<ColliderComponent>(src, dest, target, newEntity);
             CopyComponent<DirectionalLightComponent>(src, dest, target, newEntity);
+            CopyComponent<PointLightComponent>(src, dest, target, newEntity);
             CopyComponent<EnviromentComponent>(src, dest, target, newEntity);
         }
 
@@ -67,6 +68,7 @@ namespace Blackberry {
             CopyComponent<RigidBodyComponent>(src, dest, target, newEntity);
             CopyComponent<ColliderComponent>(src, dest, target, newEntity);
             CopyComponent<DirectionalLightComponent>(src, dest, target, newEntity);
+            CopyComponent<PointLightComponent>(src, dest, target, newEntity);
             CopyComponent<EnviromentComponent>(src, dest, target, newEntity);
         }
 

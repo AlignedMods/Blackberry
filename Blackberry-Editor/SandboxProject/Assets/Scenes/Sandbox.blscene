@@ -15,6 +15,15 @@
                 ],
                 "MeshHandle": 12120187917695872185
             },
+            "PointLightComponent": {
+                "Color": [
+                    0.0,
+                    1.0,
+                    0.13127398490905762
+                ],
+                "Intensity": 74.0,
+                "Radius": 246.0
+            },
             "RigidBodyComponent": {
                 "EnableGravity": true,
                 "Mass": 1.0,
@@ -172,9 +181,9 @@
         "ID - 5": {
             "DirectionalLightComponent": {
                 "Color": [
-                    0.9407134652137756,
                     1.0,
-                    0.6254826188087463
+                    1.0,
+                    1.0
                 ],
                 "Intensity": 59.5
             },
@@ -294,8 +303,11 @@
             }
         },
         "ID - 9": {
+            "EnviromentComponent": {
+                "EnviromentMap": 16970579584870424807
+            },
             "TagComponent": {
-                "Name": "Blank Entity",
+                "Name": "Enviroment",
                 "UUID": 9208324181201598862
             }
         }

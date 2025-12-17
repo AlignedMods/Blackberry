@@ -606,16 +606,54 @@ namespace BlackberryEditor {
     
         // ImGui::Columns(columnCount, 0, false);
 
-        static bool createAssetPopup = false;
+        static bool s_CreateAssetPopup = false;
         static FS::Path assetFile;
+
+        static std::string s_FileName;
+        static bool s_CreateMaterialPopup = false;
+
+        if (ImGui::BeginPopupContextWindow()) {
+            if (ImGui::BeginMenu("Create")) {
+                if (ImGui::MenuItem("Material")) {
+                    s_FileName.clear();
+                    s_CreateMaterialPopup = true;
+                }
+
+                ImGui::EndMenu();
+            }
+
+            ImGui::EndPopup();
+        }
+
+        if (s_CreateMaterialPopup) {
+            ImGui::OpenPopup("Create Material");
+            s_CreateMaterialPopup = false;
+        }
+
+        bool _cmopen = true;
+        if (ImGui::BeginPopupModal("Create Material", &_cmopen)) {
+            ImGui::InputText("File Name", &s_FileName);
+
+            ImGui::SetCursorPosY(ImGui::GetContentRegionMax().y - 30.0f);
+            if (ImGui::Button("Create")) {
+                FS::Path p = m_CurrentDirectory / s_FileName;
+
+                std::ofstream stream(p.String());
+                stream << "{\n";
+                stream << "}";
+
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::EndPopup();
+        }
 
         if (ImGui::BeginTable("##FunnyTable", columnCount)) {
             for (const auto& file : FS::DirectoryIterator(m_CurrentDirectory)) {
-                BL_CORE_TRACE("File path: {}, Relative: {}", file.Path().String(), FS::Relative(file.Path(), m_BaseDirectory).String());
-
                 ImGui::TableNextColumn();
 
                 const auto& path = file.Path();
+                const auto relative = FS::Relative(path, m_BaseDirectory);
                 std::string name = path.FileName().String();
     
                 ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
@@ -628,22 +666,24 @@ namespace BlackberryEditor {
     
                 ImGui::PopStyleVar();
     
-                if (ImGui::BeginDragDropSource()) {
-                    // auto relative = fs::relative(path, m_BaseDirectory);
-                    // std::string filePath = relative.string();
-                    // ImGui::SetDragDropPayload("FILE_BROWSER_DRAG_DROP", filePath.c_str(), filePath.size() + 1);
-                    // ImGui::Text("%s", name.c_str());
-                    ImGui::EndDragDropSource();
+                if (file.IsFile()) {
+                    if (ImGui::BeginDragDropSource()) {
+                        std::string filePath = relative.String();
+                        ImGui::SetDragDropPayload("FILE_BROWSER_FILE_DRAG_DROP", filePath.c_str(), filePath.size() + 1);
+                        ImGui::Text("%s", name.c_str());
+                        ImGui::EndDragDropSource();
+                    }
                 }
     
                 if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
                     if (file.IsDirectory()) {
                         m_CurrentDirectory /= path.FileName();
                     } else {
-                        if (Project::GetAssetManager().ContainsAsset(file.Path())) {
-                            Asset& asset = Project::GetAssetManager().GetAssetFromPath(file.Path());
+                        // Handle specific behavior about an asset
+                        if (Project::GetAssetManager().ContainsAsset(relative)) {
+                            Asset& asset = Project::GetAssetManager().GetAssetFromPath(relative);
                             if (asset.Type == AssetType::Material) {
-                                m_MaterialEditorPanel.SetContext(Project::GetAssetManager().GetHandleFromPath(file.Path()));
+                                m_MaterialEditorPanel.SetContext(asset.Handle);
                             }
                         }
                     }
@@ -651,51 +691,57 @@ namespace BlackberryEditor {
 
                 if (ImGui::BeginPopupContextItem()) {
                     if (ImGui::MenuItem("Create Asset Out Of Item")) {
-                        createAssetPopup = true;
+                        s_CreateAssetPopup = true;
                         assetFile = file.Path();
                     }
                     ImGui::EndPopup();
                 }
     
                 ImGui::TextWrapped(name.c_str());
-    
-                // ImGui::NextColumn();
             }
             
             ImGui::EndTable();
         }
 
-        if (createAssetPopup) {
-            ImGui::OpenPopup("CreateAssetPopup");
+        if (s_CreateAssetPopup) {
+            ImGui::OpenPopup("Create Asset?");
+            s_CreateAssetPopup = false;
         }
 
-        if (ImGui::BeginPopup("CreateAssetPopup")) {
-                static const char* assetTypeNames[] = { "Texture", "Font", "Model", "Material", "Enviroment Map" };
-                static int currentAssetType = 0;
+        static bool s_CreateAssetPopupOpen = true;
 
-                ImGui::Combo("##AssetType", &currentAssetType, assetTypeNames, IM_ARRAYSIZE(assetTypeNames));
+        if (ImGui::BeginPopupModal("Create Asset?")) {
+            static const char* assetTypeNames[] = { "Texture", "Font", "Model", "Material", "Enviroment Map" };
+            static int currentAssetType = 0;
 
-                if (ImGui::Button("Create")) {
-                    if (currentAssetType == 0) { // texture
-                        Project::GetAssetManager().AddTextureFromPath(FS::Relative(assetFile, m_BaseDirectory));
-                    } else if (currentAssetType == 1) { // font
-                        Project::GetAssetManager().AddFontFromPath(FS::Relative(assetFile, m_BaseDirectory));
-                    } else if (currentAssetType == 2) { // model
-                        Project::GetAssetManager().AddModelFromPath(FS::Relative(assetFile, m_BaseDirectory));
-                    } else if (currentAssetType == 3) { // material
-                        Project::GetAssetManager().AddMaterialFromPath(FS::Relative(assetFile, m_BaseDirectory));
-                    } else if (currentAssetType == 4) { // env map
-                        Project::GetAssetManager().AddEnviromentMapFromPath(FS::Relative(assetFile, m_BaseDirectory));
-                    }
+            ImGui::Combo("##AssetType", &currentAssetType, assetTypeNames, IM_ARRAYSIZE(assetTypeNames));
 
-                    ImGui::CloseCurrentPopup();
-                    createAssetPopup = false;
+            ImGui::SetCursorPosY(ImGui::GetContentRegionMax().y - 25.0f);
+
+            if (ImGui::Button("Create")) {
+                if (currentAssetType == 0) { // texture
+                    Project::GetAssetManager().AddTextureFromPath(FS::Relative(assetFile, m_BaseDirectory));
+                } else if (currentAssetType == 1) { // font
+                    Project::GetAssetManager().AddFontFromPath(FS::Relative(assetFile, m_BaseDirectory));
+                } else if (currentAssetType == 2) { // model
+                    Project::GetAssetManager().AddModelFromPath(FS::Relative(assetFile, m_BaseDirectory));
+                } else if (currentAssetType == 3) { // material
+                    Project::GetAssetManager().AddMaterialFromPath(FS::Relative(assetFile, m_BaseDirectory));
+                } else if (currentAssetType == 4) { // env map
+                    Project::GetAssetManager().AddEnviromentMapFromPath(FS::Relative(assetFile, m_BaseDirectory));
                 }
 
-                ImGui::EndPopup();
+                ImGui::CloseCurrentPopup();
             }
 
-        // ImGui::Columns(1);
+            ImGui::SameLine();
+
+            if (ImGui::Button("Cancel")) {
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::EndPopup();
+        }
     
         ImGui::End();
     }

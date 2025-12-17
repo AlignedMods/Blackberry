@@ -158,6 +158,14 @@ namespace Blackberry {
                     {"Intensity", light.Intensity}
                 };
             }
+
+            if (entity.HasComponent<EnviromentComponent>()) {
+                EnviromentComponent& env = entity.GetComponent<EnviromentComponent>();
+
+                j["Entities"][name]["EnviromentComponent"] = {
+                    {"EnviromentMap", env.EnviromentMap}
+                };
+            }
         }
 
         std::ofstream stream(path);
@@ -280,6 +288,14 @@ namespace Blackberry {
                 f32 intensity = jsonLight.at("Intensity");
 
                 entity.AddComponent<PointLightComponent>({BlVec3(color[0], color[1], color[2]), radius, intensity});
+            }
+
+            if (jsonEntity.contains("EnviromentComponent")) {
+                auto& jsonEnv = jsonEntity.at("EnviromentComponent");
+
+                u64 envMapHandle = jsonEnv.at("EnviromentMap");
+
+                entity.AddComponent<EnviromentComponent>({envMapHandle});
             }
         }
     }
