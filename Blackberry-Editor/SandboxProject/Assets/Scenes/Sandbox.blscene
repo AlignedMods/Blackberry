@@ -1,14 +1,20 @@
 Entities:
   - TagComponent:
-      UUID: 12809064635662274665
-      Name: DirectionalLight
+      UUID: 1801923993421270264
+      Name: Enviroment
+    EnviromentComponent:
+      EnviromentMap: 16970579584870424807
+  - TagComponent:
+      UUID: 15682815334010866945
+      Name: Cube
     TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [640.999, 79, 144.966]
-      Scale: [0.9999876, 0.9999912, 1]
-    DirectionalLightComponent:
-      Color: [1, 1, 1]
-      Intensity: 5.5
+      Position: [4, 6, 0]
+      Rotation: [17.000042, -0, 0]
+      Scale: [1, 1, 1]
+    MeshComponent:
+      MeshHandle: 12120187917695872185
+      MaterialHandles:
+        0: 581071103399731738
   - TagComponent:
       UUID: 11239897786458320513
       Name: Camera
@@ -21,16 +27,12 @@ Entities:
       Near: 0.1
       Far: 10
   - TagComponent:
-      UUID: 15682815334010866945
-      Name: Cube
+      UUID: 12809064635662274665
+      Name: DirectionalLight
     TransformComponent:
-      Position: [4, 6, 0]
-      Rotation: [17.000042, -0, 0]
-      Scale: [1, 1, 1]
-    MeshComponent:
-      MeshHandle: 12120187917695872185
-  - TagComponent:
-      UUID: 1801923993421270264
-      Name: Enviroment
-    EnviromentComponent:
-      EnviromentMap: 16970579584870424807
+      Position: [0, 0, 0]
+      Rotation: [640.999, 79, 144.966]
+      Scale: [0.9999876, 0.9999912, 1]
+    DirectionalLightComponent:
+      Color: [1, 1, 1]
+      Intensity: 5.5

@@ -1031,21 +1031,21 @@ namespace BlackberryEditor {
 
                 ImGui::Text("Materials: ");
                 ImGui::Indent();
-
+                
                 if (Project::GetAssetManager().ContainsAsset(mesh.MeshHandle)) {
                     Model& model = std::get<Model>(Project::GetAssetManager().GetAsset(mesh.MeshHandle).Data);
-
+                
                     for (u32 i = 0; i < model.MeshCount; i++) {
                         f32 remainingSpace = ImGui::GetContentRegionAvail().x;
                         ImGui::Text("[%u]: ", i); ImGui::SameLine();
-
+                
                         std::string matName;
-                        if (Project::GetAssetManager().ContainsAsset(model.Meshes[i].MaterialHandle)) {
-                            matName = Project::GetAssetManager().GetAsset(model.Meshes[i].MaterialHandle).FilePath.Stem().String();
+                        if (Project::GetAssetManager().ContainsAsset(mesh.MaterialHandles[i])) {
+                            matName = Project::GetAssetManager().GetAsset(mesh.MaterialHandles[i]).FilePath.Stem().String();
                         } else {
                             matName = "NULL";
                         }
-
+                
                         ImGui::PushID(i);
                         size = ImGui::GetContentRegionAvail().x;
                         if (matName == "NULL") {
@@ -1055,31 +1055,31 @@ namespace BlackberryEditor {
                         } else {
                             ImGui::Button(matName.c_str(), ImVec2(size, 0.0f));
                         }
-
+                
                         if (ImGui::BeginDragDropTarget()) {
                             const ImGuiPayload* assetManagerPayload = ImGui::AcceptDragDropPayload("ASSET_MANAGER_HANDLE_DRAG_DROP");
                             const ImGuiPayload* fileBrowserPayload = ImGui::AcceptDragDropPayload("FILE_BROWSER_FILE_DRAG_DROP");
-
+                
                             if (assetManagerPayload) {
-                                model.Meshes[i].MaterialHandle = *reinterpret_cast<u64*>(assetManagerPayload->Data);
+                                mesh.MaterialHandles[i] = *reinterpret_cast<u64*>(assetManagerPayload->Data);
                             } else if (fileBrowserPayload) {
                                 FS::Path p = reinterpret_cast<char*>(fileBrowserPayload->Data);
-
+                
                                 if (Project::GetAssetManager().ContainsAsset(p)) {
                                     auto& asset = Project::GetAssetManager().GetAssetFromPath(p);
                                     if (asset.Type == AssetType::Material) {
-                                        model.Meshes[i].MaterialHandle = asset.Handle;
+                                        mesh.MaterialHandles[i] = asset.Handle;
                                     }
                                 }
                             }
-
+                
                             ImGui::EndDragDropTarget();
                         }
-
+                
                         ImGui::PopID();
                     }
                 }
-
+                
                 ImGui::Unindent();
             });
             DrawComponent<TextComponent>("Text", entity, [this](TextComponent& text) {

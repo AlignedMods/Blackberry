@@ -115,6 +115,7 @@ namespace Blackberry {
             out << YAML::BeginMap; // MeshComponent
 
             out << YAML::Key << "MeshHandle" << YAML::Value << mesh.MeshHandle;
+            out << YAML::Key << "MaterialHandles" << YAML::Value << mesh.MaterialHandles;
 
             out << YAML::EndMap; // MeshComponent
         }
@@ -230,6 +231,7 @@ namespace Blackberry {
 
                 MeshComponent mesh;
                 mesh.MeshHandle = yamlMesh["MeshHandle"].as<u64>();
+                mesh.MaterialHandles = yamlMesh["MaterialHandles"].as<std::map<u32, u64>>();
 
                 e.AddComponent<MeshComponent>(mesh);
             }

@@ -2,6 +2,7 @@
 
 #include "blackberry/core/types.hpp"
 #include "blackberry/renderer/texture.hpp"
+#include "blackberry/model/material.hpp"
 
 namespace Blackberry {
 
@@ -14,7 +15,7 @@ namespace Blackberry {
         std::vector<BlVec2<f32>> TexCoords;
         std::vector<u32> Indices;
 
-        u64 MaterialHandle = 0;
+        Material MeshMaterial;
     };
 
 } // namespace Blackberry

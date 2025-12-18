@@ -134,11 +134,7 @@ namespace Blackberry {
         auto meshView = scene->m_ECS->GetEntitiesWithComponents<TransformComponent, MeshComponent>();
 
         meshView.each([&](TransformComponent& transform, MeshComponent& mesh) {
-            if (Project::GetAssetManager().ContainsAsset(mesh.MeshHandle)) {
-                Model& model = std::get<Model>(Project::GetAssetManager().GetAsset(mesh.MeshHandle).Data);
-
-                AddModel(transform.GetMatrix(), model, BlColor(255, 255, 255, 255));
-            }
+            AddModel(transform, mesh, BlColor(255, 255, 255, 255));
         });
 
         auto envView = scene->m_ECS->GetEntitiesWithComponents<EnviromentComponent>();
@@ -154,11 +150,7 @@ namespace Blackberry {
         m_Camera = camera;
     }
 
-    void SceneRenderer::AddMesh(const glm::mat4& transform, const Mesh& mesh, BlColor color) {
-        if (!Project::GetAssetManager().ContainsAsset(mesh.MaterialHandle)) return;
-
-        Material& mat = std::get<Material>(Project::GetAssetManager().GetAsset(mesh.MaterialHandle).Data);
-
+    void SceneRenderer::AddMesh(const TransformComponent& transform, const Mesh& mesh, const Material& mat, BlColor color) {
         BlVec4<f32> normColor = NormalizeColor(color);
 
         // vertices
@@ -174,24 +166,27 @@ namespace Blackberry {
         }
 
         // Add transform which will be sent to shader
-        m_State.Transforms.push_back(transform);
+        m_State.Transforms.push_back(transform.GetMatrix());
 
         GPUMaterial gpuMat;
-        gpuMat.UseAlbedoTexture = mat.UseAlbedoTexture;
-        gpuMat.AlbedoTexture = mat.AlbedoTexture->BindlessHandle;
-        gpuMat.AlbedoColor = mat.AlbedoColor;
 
-        gpuMat.UseMetallicTexture = mat.UseMetallicTexture;
-        gpuMat.MetallicTexture = mat.MetallicTexture->BindlessHandle;
-        gpuMat.MetallicFactor = mat.MetallicFactor;
-
-        gpuMat.UseRoughnessTexture = mat.UseRoughnessTexture;
-        gpuMat.RoughnessTexture = mat.RoughnessTexture->BindlessHandle;
-        gpuMat.RoughnessFactor = mat.RoughnessFactor;
-
-        gpuMat.UseAOTexture = mat.UseAOTexture;
-        gpuMat.AOTexture = mat.AOTexture->BindlessHandle;
-        gpuMat.AOFactor = mat.AOFactor;
+        if (mat.ID != 0) {
+            gpuMat.UseAlbedoTexture = mat.UseAlbedoTexture;
+            gpuMat.AlbedoTexture = mat.AlbedoTexture->BindlessHandle;
+            gpuMat.AlbedoColor = mat.AlbedoColor;
+            
+            gpuMat.UseMetallicTexture = mat.UseMetallicTexture;
+            gpuMat.MetallicTexture = mat.MetallicTexture->BindlessHandle;
+            gpuMat.MetallicFactor = mat.MetallicFactor;
+            
+            gpuMat.UseRoughnessTexture = mat.UseRoughnessTexture;
+            gpuMat.RoughnessTexture = mat.RoughnessTexture->BindlessHandle;
+            gpuMat.RoughnessFactor = mat.RoughnessFactor;
+            
+            gpuMat.UseAOTexture = mat.UseAOTexture;
+            gpuMat.AOTexture = mat.AOTexture->BindlessHandle;
+            gpuMat.AOFactor = mat.AOFactor;
+        }
 
         m_State.Materials.push_back(gpuMat);
 
@@ -202,9 +197,20 @@ namespace Blackberry {
         m_State.MaterialIndex++;
     }
 
-    void SceneRenderer::AddModel(const glm::mat4& transform, const Model& model, BlColor color) {
-        for (u32 i = 0; i < model.MeshCount; ++i) {
-            AddMesh(transform, model.Meshes[i], color);
+    void SceneRenderer::AddModel(const TransformComponent& transform, const MeshComponent& model, BlColor color) {
+        if (Project::GetAssetManager().ContainsAsset(model.MeshHandle)) {
+            auto& trueModel = std::get<Model>(Project::GetAssetManager().GetAsset(model.MeshHandle).Data);
+
+            for (u32 i = 0; i < trueModel.MeshCount; ++i) {
+                if (model.MaterialHandles.contains(i)) {
+                    if (Project::GetAssetManager().ContainsAsset(model.MaterialHandles.at(i))) {
+                       auto& material = std::get<Material>(Project::GetAssetManager().GetAsset(model.MaterialHandles.at(i)).Data);
+
+                        AddMesh(transform, trueModel.Meshes[i], material, color); 
+                    }
+                    
+                }
+            }
         }
     }
 

@@ -10,6 +10,7 @@
 #include <glm/gtx/quaternion.hpp>
 
 #include <string>
+#include <map>
 
 namespace Blackberry {
 
@@ -51,6 +52,7 @@ namespace Blackberry {
 
     struct MeshComponent {
         u64 MeshHandle = 0;
+        std::map<u32, u64> MaterialHandles;
     };
 
     struct CameraComponent {

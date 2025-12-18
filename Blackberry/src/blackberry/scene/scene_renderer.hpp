@@ -149,8 +149,8 @@ namespace Blackberry {
         SceneRendererState& GetState();
 
     private:
-        void AddMesh(const glm::mat4& transform, const Mesh& mesh, BlColor color);
-        void AddModel(const glm::mat4& transform, const Model& model, BlColor color);
+        void AddMesh(const TransformComponent& transform, const Mesh& mesh, const Material& mat, BlColor color);
+        void AddModel(const TransformComponent& transform, const MeshComponent& model, BlColor color);
 
         void AddDirectionalLight(const TransformComponent& transform, const DirectionalLightComponent& light);
         void AddPointLight(const TransformComponent& transform, const PointLightComponent& light);

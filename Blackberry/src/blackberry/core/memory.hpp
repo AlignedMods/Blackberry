@@ -89,7 +89,17 @@ namespace Blackberry {
             return *m_Ptr;
         }
 
+        const T& operator*() const {
+            BL_ASSERT(m_Ptr, "Ref use after free!");
+            return *m_Ptr;
+        }
+
         T* operator->() {
+            BL_ASSERT(m_Ptr, "Ref use after free!");
+            return m_Ptr;
+        }
+
+        const T* operator->() const {
             BL_ASSERT(m_Ptr, "Ref use after free!");
             return m_Ptr;
         }
@@ -121,7 +131,7 @@ namespace Blackberry {
             if (m_Counter) m_Counter++;
         }
 
-    private:
+    public:
         T* m_Ptr = nullptr;
         u32* m_Counter = nullptr;
     };
