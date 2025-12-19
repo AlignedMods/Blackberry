@@ -332,16 +332,16 @@ namespace BlackberryEditor {
                     m_EditorCamera.Transform.Rotation.y = glm::clamp(m_EditorCamera.Transform.Rotation.y, -89.0f, 89.0f);
 
                     if (Input::IsKeyDown(KeyCode::W)) {
-                        m_EditorCamera.Transform.Position += m_EditorCamera.GetForwardVector() * ts;
+                        m_EditorCamera.Transform.Position += m_EditorCamera.GetForwardVector() * m_EditorCameraSpeed * ts;
                     }
                     if (Input::IsKeyDown(KeyCode::S)) {
-                        m_EditorCamera.Transform.Position -= m_EditorCamera.GetForwardVector() * ts;
+                        m_EditorCamera.Transform.Position -= m_EditorCamera.GetForwardVector() * m_EditorCameraSpeed * ts;
                     }
                     if (Input::IsKeyDown(KeyCode::A)) {
-                        m_EditorCamera.Transform.Position -= m_EditorCamera.GetRightVector() * ts;
+                        m_EditorCamera.Transform.Position -= m_EditorCamera.GetRightVector() * m_EditorCameraSpeed * ts;
                     }
                     if (Input::IsKeyDown(KeyCode::D)) {
-                        m_EditorCamera.Transform.Position += m_EditorCamera.GetRightVector() * ts;
+                        m_EditorCamera.Transform.Position += m_EditorCamera.GetRightVector() * m_EditorCameraSpeed * ts;
                     }
                 }
             }
@@ -1420,6 +1420,11 @@ namespace BlackberryEditor {
 
         json j;
         j["LastProjectPath"] = Project::GetProjectPath();
+        j["CameraTransform"] = {
+            {"Position", { m_EditorCamera.Transform.Position.x, m_EditorCamera.Transform.Position.y, m_EditorCamera.Transform.Position.z }},
+            {"Rotation", { m_EditorCamera.Transform.Rotation.x, m_EditorCamera.Transform.Rotation.y, m_EditorCamera.Transform.Rotation.z }},
+            {"Scale", { m_EditorCamera.Transform.Scale.x, m_EditorCamera.Transform.Scale.y, m_EditorCamera.Transform.Scale.z }},
+        };
 
         std::ofstream file(m_AppDataDirectory / "Blackberry-Editor" / "editor_state.blsettings");
         file << j.dump(4);
@@ -1436,6 +1441,12 @@ namespace BlackberryEditor {
         json j = json::parse(contents);
 
         std::string lastProjectPath = j.at("LastProjectPath");
+        auto camTransform = j.at("CameraTransform");
+
+        m_EditorCamera.Transform.Position = BlVec3(camTransform.at("Position")[0], camTransform.at("Position")[1], camTransform.at("Position")[2]);
+        m_EditorCamera.Transform.Rotation = BlVec3(camTransform.at("Rotation")[0], camTransform.at("Rotation")[1], camTransform.at("Rotation")[2]);
+        m_EditorCamera.Transform.Scale = BlVec3(camTransform.at("Scale")[0], camTransform.at("Scale")[1], camTransform.at("Scale")[2]);
+
         Project::Load(lastProjectPath);
     }
 

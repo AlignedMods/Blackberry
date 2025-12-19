@@ -1,36 +1,53 @@
 Entities:
   - TagComponent:
-      UUID: 8468297384558199562
-      Name: Cylinder
+      UUID: 2762024544479589025
+      Name: Point Light
     TransformComponent:
-      Position: [4.65, 10.15, 0]
+      Position: [0.8999992, 7.7999997, -0.9000001]
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
-    MeshComponent:
-      MeshHandle: 6020665715492184391
-      MaterialHandles:
-        0: 581071103399731738
+    PointLightComponent:
+      Color: [0.22779924, 0.52594614, 1]
+      Radius: 3
+      Intensity: 86
   - TagComponent:
-      UUID: 12809064635662274665
-      Name: DirectionalLight
+      UUID: 17300041299342347692
+      Name: Point Light
     TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [640.999, 79, 144.966]
-      Scale: [0.9999876, 0.9999912, 1]
-    DirectionalLightComponent:
-      Color: [1, 1, 1]
-      Intensity: 5.5
+      Position: [2.0499992, 7.7999997, -0.9000001]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    PointLightComponent:
+      Color: [1, 0.22779924, 0.22779924]
+      Radius: 3
+      Intensity: 86
   - TagComponent:
-      UUID: 11239897786458320513
+      UUID: 12398312201110905085
       Name: Camera
     TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0]
+      Position: [-3.8806658, 9.776629, -4.843456]
+      Rotation: [38, -19, 0]
       Scale: [1920, 1080, 1]
     CameraComponent:
       FOV: 60
       Near: 0.1
-      Far: 10
+      Far: 10000
+  - TagComponent:
+      UUID: 16423968000220851085
+      Name: Point Light
+    TransformComponent:
+      Position: [1.5499992, 8.549999, -0.9000001]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    PointLightComponent:
+      Color: [0.2695399, 1, 0.22779924]
+      Radius: 3
+      Intensity: 252
+  - TagComponent:
+      UUID: 1801923993421270264
+      Name: Enviroment
+    EnviromentComponent:
+      EnviromentMap: 16970579584870424807
   - TagComponent:
       UUID: 15682815334010866945
       Name: Cube
@@ -43,29 +60,34 @@ Entities:
       MaterialHandles:
         0: 581071103399731738
   - TagComponent:
-      UUID: 1801923993421270264
-      Name: Enviroment
-    EnviromentComponent:
-      EnviromentMap: 16970579584870424807
-  - TagComponent:
-      UUID: 16423968000220851085
-      Name: Point Light
-    TransformComponent:
-      Position: [6.999999, 6.9500003, 1.3]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    PointLightComponent:
-      Color: [1, 1, 1]
-      Radius: 15.9
-      Intensity: 75
-  - TagComponent:
       UUID: 3840629294537868975
       Name: Sphere
     TransformComponent:
-      Position: [1.35, 6.4500003, 1]
+      Position: [1.0499997, 6.4500003, 1]
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
     MeshComponent:
       MeshHandle: 16676790944532672824
+      MaterialHandles:
+        0: 581071103399731738
+  - TagComponent:
+      UUID: 12809064635662274665
+      Name: DirectionalLight
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [-154.95757, 53.060772, 105.69771]
+      Scale: [0.99999976, 1, 0.9999995]
+    DirectionalLightComponent:
+      Color: [0.95366794, 0.9511942, 0.31297982]
+      Intensity: 47.5
+  - TagComponent:
+      UUID: 8468297384558199562
+      Name: Cylinder
+    TransformComponent:
+      Position: [4.65, 10.15, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshComponent:
+      MeshHandle: 6020665715492184391
       MaterialHandles:
         0: 581071103399731738

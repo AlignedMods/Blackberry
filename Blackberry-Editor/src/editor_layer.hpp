@@ -68,6 +68,7 @@ namespace BlackberryEditor {
     
         Blackberry::Font m_EditorFont;
         Blackberry::SceneCamera m_EditorCamera;
+        f32 m_EditorCameraSpeed = 2.0f;
         Blackberry::SceneCamera m_RuntimeCamera;
         Blackberry::SceneCamera* m_CurrentCamera = nullptr;
     

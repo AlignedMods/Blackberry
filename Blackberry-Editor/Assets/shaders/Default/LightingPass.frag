@@ -66,9 +66,11 @@ void main() {
     float metallic =  texture(sampler2D(GMat), a_TexCoord).r;
     float roughness = texture(sampler2D(GMat), a_TexCoord).g;
     float ao =        texture(sampler2D(GMat), a_TexCoord).b;
+
+    vec3 viewPos = u_ViewPos;
     
     vec3 N = normal;
-    vec3 V = normalize(u_ViewPos - worldPos);
+    vec3 V = normalize(viewPos - worldPos);
     
     vec3 F0 = vec3(0.04);
     F0 = mix(F0, albedo, metallic);

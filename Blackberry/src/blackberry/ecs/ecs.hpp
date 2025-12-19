@@ -47,7 +47,7 @@ namespace Blackberry {
         }
 
         // safer version on duplicate entity (generates new UUIDs)
-        static void CopyEntity(entt::entity target, entt::registry* srcReg, entt::registry* destReg) {
+        static EntityID CopyEntity(entt::entity target, entt::registry* srcReg, entt::registry* destReg) {
             BL_CORE_INFO("COPYING entity {}", static_cast<u32>(target));
 
             entt::registry* src = srcReg;
@@ -70,6 +70,8 @@ namespace Blackberry {
             CopyComponent<DirectionalLightComponent>(src, dest, target, newEntity);
             CopyComponent<PointLightComponent>(src, dest, target, newEntity);
             CopyComponent<EnviromentComponent>(src, dest, target, newEntity);
+
+            return newEntity;
         }
 
         static ECS* Copy(ECS* current) {

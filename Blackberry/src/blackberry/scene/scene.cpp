@@ -183,7 +183,10 @@ namespace Blackberry {
     }
 
     void Scene::CopyEntity(EntityID entity) {
-        ECS::CopyEntity(entity, &m_ECS->m_Registry, &m_ECS->m_Registry);
+        auto newEntity = ECS::CopyEntity(entity, &m_ECS->m_Registry, &m_ECS->m_Registry);
+
+        u64 uuid = m_ECS->GetComponent<TagComponent>(newEntity).UUID;
+        m_EntityMap[uuid] = newEntity;
     }
 
     void Scene::DestroyEntity(u64 uuid) {

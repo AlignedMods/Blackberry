@@ -18,10 +18,12 @@ layout (location = 2) out vec3 o_FragPos;
 layout (location = 3) out flat int o_MaterialIndex;
 
 void main() {
-    gl_Position = u_ViewProjection * Transforms[a_ObjectIndex] * vec4(a_Pos, 1.0);
+    vec4 worldPos = Transforms[a_ObjectIndex] * vec4(a_Pos, 1.0);
+
+    gl_Position = u_ViewProjection * worldPos;
 
     o_Normal = mat3(transpose(inverse(Transforms[a_ObjectIndex]))) * a_Normal;
     o_TexCoord = a_TexCoord;
-    o_FragPos = a_Pos;
+    o_FragPos = worldPos.xyz;
     o_MaterialIndex = a_MaterialIndex;
 }
