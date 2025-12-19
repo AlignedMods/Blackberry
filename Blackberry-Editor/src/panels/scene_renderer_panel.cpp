@@ -10,6 +10,9 @@ namespace BlackberryEditor {
         if (!open) return;
 
         ImGui::Begin("Scene Renderer View", &open);
+
+        ImGui::Text("FPS: %f", 1.0f / BL_APP.GetDeltaTime());
+        ImGui::Text("Rendering time: %fms", BL_APP.GetDeltaTime() * 1000.0f);
         
         auto* renderer = m_Context->GetSceneRenderer();
         auto& state = renderer->GetState();

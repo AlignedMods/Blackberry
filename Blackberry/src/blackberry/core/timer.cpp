@@ -31,7 +31,7 @@ namespace Blackberry {
     }
 
     ScopedTimer::~ScopedTimer() {
-        BL_CORE_INFO("Timer {} took {}ms", m_Name, m_Timer.ElapsedMilliseconds());
+        // BL_CORE_INFO("Timer {} took {}ms", m_Name, m_Timer.ElapsedMilliseconds());
     }
 
 } // namespace Blackberry

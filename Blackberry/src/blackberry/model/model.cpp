@@ -174,9 +174,22 @@ namespace Blackberry {
 
                     if (material) {
                         if (material->has_pbr_metallic_roughness) {
+                            Material mat;
+
                             auto pbr = material->pbr_metallic_roughness;
 
-                            Ref<Texture2D> albedo = GLTF_GetTexture(pbr.base_color_texture);
+                            if (pbr.base_color_texture.texture) { // Contains albedo texture
+                                mat.AlbedoTexture = GLTF_GetTexture(pbr.base_color_texture);
+                                mat.UseAlbedoTexture = true;
+                            } else {
+                                mat.AlbedoColor = BlVec4<f32>(pbr.base_color_factor[0], pbr.base_color_factor[1], pbr.base_color_factor[2], 1.0f);
+                            }
+
+                            if (pbr.metallic_roughness_texture.texture) { // Contains metallic/roughness texture
+                            } else {
+                                mat.MetallicFactor = pbr.metallic_factor;
+                                mat.RoughnessFactor = pbr.roughness_factor;
+                            }
                         }
                     }
                 }

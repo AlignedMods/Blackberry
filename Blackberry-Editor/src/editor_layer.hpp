@@ -34,7 +34,6 @@ namespace BlackberryEditor {
     private:
         void UI_Toolbar();
         void UI_FileBrowser();
-        void UI_AssetManager();
         void UI_Explorer();
         void UI_Properties();
         void UI_Viewport();

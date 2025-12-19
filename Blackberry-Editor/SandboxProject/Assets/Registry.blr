@@ -10,6 +10,11 @@
             "Path": "Meshes/Default/Cube.glb",
             "Type": "Model"
         },
+        "Handle - 14272617839896958237": {
+            "Handle": 14272617839896958237,
+            "Path": "EnviromentMaps/Airport.hdr",
+            "Type": "Enviroment Map"
+        },
         "Handle - 14564222973131806585": {
             "Handle": 14564222973131806585,
             "Path": "Meshes/Default/Plane.glb",

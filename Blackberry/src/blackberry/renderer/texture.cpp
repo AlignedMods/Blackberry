@@ -80,7 +80,7 @@ namespace Blackberry {
         tex->Format = pixelFormat;
     
         GLuint id = 0;
-        glCreateTextures(GL_TEXTURE_2D, 1, &id); // FIX! : seems to always return one!
+        glCreateTextures(GL_TEXTURE_2D, 1, &id);
 
         BL_CORE_INFO("OpenGL context: {}, Texture ID: {}", reinterpret_cast<void*>(glfwGetCurrentContext()), id);
 

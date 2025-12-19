@@ -746,58 +746,6 @@ namespace BlackberryEditor {
         ImGui::End();
     }
 
-    void EditorLayer::UI_AssetManager() {
-        ImGui::Begin("AssetManager");
-
-        static f32 padding = 16.0f;
-        static f32 thumbnailSize = 128.0f;
-        f32 cellSize = thumbnailSize + padding;
-    
-        f32 panelWidth = ImGui::GetContentRegionAvail().x;
-        u32 columnCount = static_cast<u32>(panelWidth / cellSize);
-        if (columnCount < 1) {
-            columnCount = 1;
-        }
-    
-        if (ImGui::BeginTable("##FunnyTable", columnCount)) {
-            for (const auto&[handle, asset] : Project::GetAssetManager().GetAllAssets()) {
-                ImGui::TableNextColumn();
-
-                std::string strPath = asset.FilePath;
-                ImGui::PushID(strPath.c_str());
-
-                // ImGui::ImageButton(asset.FilePath.string().c_str(), std::get<BlTexture>(asset.Data).ID, ImVec2(128.0f, 128.0f));
-                ImGui::Button(strPath.c_str(), ImVec2(128.0f, 128.0f));
-
-                if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-                    m_MaterialEditorPanel.SetContext(handle);
-                }
-
-                if (ImGui::BeginDragDropSource()) {
-                    ImGui::SetDragDropPayload("ASSET_MANAGER_DRAG_DROP", &handle, sizeof(handle));
-                    ImGui::Text(strPath.c_str()); // text that appears while dragging
-                    ImGui::EndDragDropSource();
-                }
-
-                if (ImGui::BeginPopupContextItem("AssetManagerItemPopup")) {
-                    if (ImGui::MenuItem("Copy asset handle")) {
-                        std::string strHandle = std::to_string(handle);
-
-                        ImGui::SetClipboardText(strHandle.c_str());
-                    }
-
-                    ImGui::EndPopup();
-                }
-
-                ImGui::PopID();
-            }
-
-            ImGui::EndTable();
-        }
-
-        ImGui::End();
-    }
-    
     void EditorLayer::UI_Explorer() {
         ImGui::Begin("Explorer");
 
@@ -1037,7 +985,7 @@ namespace BlackberryEditor {
                 
                     for (u32 i = 0; i < model.MeshCount; i++) {
                         f32 remainingSpace = ImGui::GetContentRegionAvail().x;
-                        ImGui::Text("[%u]: ", i); ImGui::SameLine();
+                        ImGui::Text("Material [%u]: ", i); ImGui::SameLine();
                 
                         std::string matName;
                         if (Project::GetAssetManager().ContainsAsset(mesh.MaterialHandles[i])) {
@@ -1340,7 +1288,7 @@ namespace BlackberryEditor {
                 f32 snapValue = 0.05f;
 
                 if (m_GizmoState == GizmoState::Rotate) {
-                    snapValue = 45.0f;
+                    snapValue = 0.5f;
                 }
 
                 f32 snapValues[3] = { snapValue, snapValue, snapValue };
