@@ -91,3 +91,10 @@ Entities:
       MeshHandle: 6020665715492184391
       MaterialHandles:
         0: 581071103399731738
+  - TagComponent:
+      UUID: 7127625243918280503
+      Name: Spot Light
+    TransformComponent:
+      Position: [0.06108308, 11.384059, 0.4744936]
+      Rotation: [13.341974, -44.31129, -14.983407]
+      Scale: [0.99999994, 1, 0.99999994]

@@ -96,7 +96,8 @@ namespace Blackberry {
         m_State.TransformBuffer = ShaderStorageBuffer::Create(0);
         m_State.MaterialBuffer = ShaderStorageBuffer::Create(1);
         m_State.ShaderGBuffer = ShaderStorageBuffer::Create(2);
-        m_State.LightBuffer = ShaderStorageBuffer::Create(3);
+        m_State.PointLightBuffer = ShaderStorageBuffer::Create(3);
+        m_State.SpotLightBuffer = ShaderStorageBuffer::Create(4);
 
         {
             RenderTextureSpecification spec;
@@ -129,6 +130,12 @@ namespace Blackberry {
 
         lightView.each([&](TransformComponent& transform, PointLightComponent& light) {
             AddPointLight(transform, light);
+        });
+
+        auto spotLightView = scene->m_ECS->GetEntitiesWithComponents<TransformComponent, SpotLightComponent>();
+
+        spotLightView.each([&](TransformComponent& transform, SpotLightComponent& light) {
+            AddSpotLight(transform, light);
         });
 
         auto meshView = scene->m_ECS->GetEntitiesWithComponents<TransformComponent, MeshComponent>();
@@ -230,6 +237,15 @@ namespace Blackberry {
         l.Params = BlVec4(light.Radius, light.Intensity, 0.0f, 0.0f);
 
         m_State.PointLights.push_back(l);
+    }
+
+    void SceneRenderer::AddSpotLight(const TransformComponent& transform, const SpotLightComponent& light) {
+        GPUSpotLight l;
+        l.Position = BlVec4(transform.Position.x, transform.Position.y, transform.Position.z, 0.0f);
+        l.Direction = BlVec4(transform.Rotation.x, transform.Rotation.y, transform.Rotation.z, glm::cos(glm::radians(light.Cutoff)));
+        l.Color = BlVec4(light.Color.x, light.Color.y, light.Color.z, light.Intensity);
+
+        m_State.SpotLights.push_back(l);
     }
 
     void SceneRenderer::AddEnviroment(const EnviromentComponent& env) {
@@ -368,8 +384,10 @@ namespace Blackberry {
                 m_State.MeshLightingShader.SetVec4("u_DirectionalLight.Color", m_State.DirectionalLight.Color);
                 m_State.MeshLightingShader.SetVec4("u_DirectionalLight.Params", m_State.DirectionalLight.Params);
 
-                m_State.LightBuffer.ReserveMemory(sizeof(GPUPointLight) * m_State.PointLights.size(), m_State.PointLights.data());
+                m_State.PointLightBuffer.ReserveMemory(sizeof(GPUPointLight) * m_State.PointLights.size(), m_State.PointLights.data());
+                m_State.SpotLightBuffer.ReserveMemory(sizeof(GPUSpotLight) * m_State.SpotLights.size(), m_State.SpotLights.data());
                 m_State.MeshLightingShader.SetInt("u_PointLightCount", m_State.PointLights.size());
+                m_State.MeshLightingShader.SetInt("u_SpotLightCount", m_State.SpotLights.size());
 
                 if (m_State.CurrentEnviromentMap)
                     renderer.BindCubemap(m_State.CurrentEnviromentMap->Irradiance, 0);
@@ -395,6 +413,7 @@ namespace Blackberry {
         m_State.Transforms.clear();
         m_State.Materials.clear();
         m_State.PointLights.clear();
+        m_State.SpotLights.clear();
 
         m_State.CurrentEnviromentMap = m_State.DefaultEnviromentMap;
     }

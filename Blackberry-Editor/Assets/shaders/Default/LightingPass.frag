@@ -22,11 +22,22 @@ struct PointLight {
     vec4 Params; // w is unused
 };
 
+struct SpotLight {
+    vec4 Position; // w is unused
+    vec4 Direction; // w is used for cutoff
+    vec4 Color; // w is used for intensity
+};
+
 layout (std430, binding = 3) buffer PointLightBuffer {
     PointLight PointLights[];
 };
 
+layout (std430, binding = 4) buffer SpotLightBuffer {
+    SpotLight SpotLights[];
+};
+
 uniform int u_PointLightCount;
+uniform int u_SpotLightCount;
 uniform DirectionalLight u_DirectionalLight;
 uniform vec3 u_ViewPos;
 uniform samplerCube u_IrradianceMap;
@@ -108,6 +119,26 @@ void main() {
         vec3 radiance = color * attenuation * intensity;
 
         Lo += AddLight(N, H, V, L, F0, roughness, metallic, albedo, radiance);
+    }
+
+    // Spot Lights
+    for (int i = 0; i < u_SpotLightCount; i++) {
+        vec3 position = SpotLights[i].Position.xyz;
+        vec3 direction = SpotLights[i].Direction.xyz;
+        vec3 color = SpotLights[i].Color.rgb;
+
+        float cutoff = SpotLights[i].Direction.a;
+        float intensity = SpotLights[i].Color.a;
+
+        vec3 L = normalize(position - worldPos);
+        vec3 H = normalize(V + L);
+
+        float theta = dot(L, normalize(-direction));
+
+        if (theta > cutoff) {
+            vec3 radiance = color * intensity;
+            Lo += AddLight(N, H, V, L, F0, roughness, metallic, albedo, radiance);
+        }
     }
     
     // vec3 ambient = vec3(0.03) * albedo * ao;

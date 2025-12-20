@@ -911,6 +911,7 @@ namespace BlackberryEditor {
                     AddComponentListOption<ColliderComponent>("Collider", entity);
                     AddComponentListOption<DirectionalLightComponent>("Directional Light", entity);
                     AddComponentListOption<PointLightComponent>("Point Light", entity);
+                    AddComponentListOption<SpotLightComponent>("Spot Light", entity);
                     AddComponentListOption<EnviromentComponent>("Enviroment", entity);
                     
                     ImGui::EndMenu();
@@ -1145,6 +1146,12 @@ namespace BlackberryEditor {
                 ImGui::ColorEdit3("Color", &light.Color.x);
 
                 ImGui::DragFloat("Radius", &light.Radius, 0.1f);
+                ImGui::DragFloat("Intensity", &light.Intensity, 0.5f);
+            });
+            DrawComponent<SpotLightComponent>("Point Light", entity, [](SpotLightComponent& light) {
+                ImGui::ColorEdit3("Color", &light.Color.x);
+
+                ImGui::DragFloat("Cutoff", &light.Cutoff, 0.1f);
                 ImGui::DragFloat("Intensity", &light.Intensity, 0.5f);
             });
             DrawComponent<EnviromentComponent>("Enviroment", entity, [](EnviromentComponent& env) {

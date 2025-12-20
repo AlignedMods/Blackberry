@@ -31,6 +31,12 @@ namespace Blackberry {
         BlVec4<f32> Params; // w is unused
     };
 
+    struct alignas(16) GPUSpotLight {
+        BlVec4<f32> Position; // w is unused
+        BlVec4<f32> Direction; // w is used for cutoff
+        BlVec4<f32> Color; // w is used for intensity
+    };
+
     struct alignas(16) GPUMaterial {
         int UseAlbedoTexture = false;
         u64 AlbedoTexture = 0;
@@ -60,11 +66,13 @@ namespace Blackberry {
         ShaderStorageBuffer TransformBuffer;
         ShaderStorageBuffer MaterialBuffer;
         ShaderStorageBuffer ShaderGBuffer;
-        ShaderStorageBuffer LightBuffer;
+        ShaderStorageBuffer PointLightBuffer;
+        ShaderStorageBuffer SpotLightBuffer;
 
         std::vector<glm::mat4> Transforms;
         std::vector<GPUMaterial> Materials;
         std::vector<GPUPointLight> PointLights;
+        std::vector<GPUSpotLight> SpotLights;
         GPUDirectionalLight DirectionalLight;
 
         std::vector<SceneMeshVertex> MeshVertices;
@@ -154,6 +162,7 @@ namespace Blackberry {
 
         void AddDirectionalLight(const TransformComponent& transform, const DirectionalLightComponent& light);
         void AddPointLight(const TransformComponent& transform, const PointLightComponent& light);
+        void AddSpotLight(const TransformComponent& transform, const SpotLightComponent& light);
 
         void AddEnviroment(const EnviromentComponent& env);
 

@@ -120,6 +120,12 @@ namespace Blackberry {
         f32 Intensity = 1.0f;
     };
 
+    struct SpotLightComponent {
+        BlVec3<f32> Color;
+        f32 Cutoff = 25.0f;
+        f32 Intensity;
+    };
+
     struct EnviromentComponent {
         u64 EnviromentMap = 0;
     };
