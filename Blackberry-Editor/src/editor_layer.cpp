@@ -1193,6 +1193,11 @@ namespace BlackberryEditor {
                 }
 
                 ImGui::Unindent();
+
+                ImGui::SliderFloat("Level Of Detail", &env.LevelOfDetail, 0.0f, 4.0f);
+
+                ImGui::ColorEdit3("Fog Color", &env.FogColor.x);
+                ImGui::DragFloat("Fog Distance", &env.FogDistance);
             });
         }
     

@@ -145,6 +145,9 @@ namespace Blackberry {
 
         Ref<EnviromentMap> CurrentEnviromentMap;
         Ref<EnviromentMap> DefaultEnviromentMap;
+        f32 EnviromentMapLOD = 0.0f;
+        BlVec3<f32> EnviromentFogColor;
+        f32 EnviromentFogDistance = 0.0f;
     };
 
     class SceneRenderer {

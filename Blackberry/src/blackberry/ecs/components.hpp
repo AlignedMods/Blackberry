@@ -128,6 +128,9 @@ namespace Blackberry {
 
     struct EnviromentComponent {
         u64 EnviromentMap = 0;
+        f32 LevelOfDetail = 0.0f;
+        BlVec3<f32> FogColor;
+        f32 FogDistance = 100000.0f;
     };
 
 } // namespace Blackberry

@@ -69,6 +69,9 @@ namespace Blackberry {
         // backface-culling
         // glEnable(GL_CULL_FACE);
 
+        // seamless cubemaps
+        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
         BL_CORE_INFO("Using OpenGL backend");
         BL_CORE_INFO("    Vendor: {}", reinterpret_cast<const char*>(glGetString(GL_VENDOR)));
         BL_CORE_INFO("    Renderer: {}", reinterpret_cast<const char*>(glGetString(GL_RENDERER)));

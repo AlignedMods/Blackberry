@@ -165,15 +165,32 @@ namespace Blackberry {
     Ref<RenderTexture> RenderTexture::Create(const RenderTextureSpecification& spec) {
         Ref<RenderTexture> tex = CreateRef<RenderTexture>();
         tex->Specification = spec;
+        tex->Invalidate();
 
-        if (spec.Size.x == 0 || spec.Size.y == 0) return {};
-
-        glGenFramebuffers(1, &tex->ID);
-        glBindFramebuffer(GL_FRAMEBUFFER, tex->ID);
+        return tex;
+    }
     
-        for (auto& attachment : spec.Attachments) {
+    void RenderTexture::Delete() {
+        glDeleteFramebuffers(1, &ID);
+        Attachments.clear();
+        ID = 0;
+    }
+
+    void RenderTexture::Resize(BlVec2<u32> size) {
+        Delete();
+        Specification.Size = size;
+        Invalidate();
+    }
+
+    void RenderTexture::Invalidate() {
+        if (Specification.Size.x == 0 || Specification.Size.y == 0) return;
+
+        glGenFramebuffers(1, &ID);
+        glBindFramebuffer(GL_FRAMEBUFFER, ID);
+    
+        for (auto& attachment : Specification.Attachments) {
             Ref<Texture2D> texAttachment = CreateRef<Texture2D>();
-            texAttachment->Size = spec.Size;
+            texAttachment->Size = Specification.Size;
             bool createBindlessHandle = true;
 
             if (attachment.Type == RenderTextureAttachmentType::ColorRGBA8) {
@@ -181,8 +198,8 @@ namespace Blackberry {
 
                 glCreateTextures(GL_TEXTURE_2D, 1, &id);
 
-                glTextureStorage2D(id, 1, GL_RGBA8, spec.Size.x, spec.Size.y);
-                glTextureSubImage2D(id, 0, 0, 0, spec.Size.x, spec.Size.y, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+                glTextureStorage2D(id, 1, GL_RGBA8, Specification.Size.x, Specification.Size.y);
+                glTextureSubImage2D(id, 0, 0, 0, Specification.Size.x, Specification.Size.y, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 
                 glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
                 glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -200,8 +217,8 @@ namespace Blackberry {
 
                 glCreateTextures(GL_TEXTURE_2D, 1, &id);
 
-                glTextureStorage2D(id, 1, GL_RGBA16F, spec.Size.x, spec.Size.y);
-                glTextureSubImage2D(id, 0, 0, 0, spec.Size.x, spec.Size.y, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+                glTextureStorage2D(id, 1, GL_RGBA16F, Specification.Size.x, Specification.Size.y);
+                glTextureSubImage2D(id, 0, 0, 0, Specification.Size.x, Specification.Size.y, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 
                 glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
                 glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -219,7 +236,7 @@ namespace Blackberry {
 
                 glGenRenderbuffers(1, &id);
                 glBindRenderbuffer(GL_RENDERBUFFER, id);
-                glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, spec.Size.x, spec.Size.y);
+                glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, Specification.Size.x, Specification.Size.y);
                 glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, id);
 
                 texAttachment->Format = TextureFormat::RGBA8;
@@ -231,7 +248,7 @@ namespace Blackberry {
 
                 glGenRenderbuffers(1, &id);
                 glBindRenderbuffer(GL_RENDERBUFFER, id);
-                glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, spec.Size.x, spec.Size.y);
+                glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, Specification.Size.x, Specification.Size.y);
                 glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, id);
 
                 texAttachment->Format = TextureFormat::RGBA8;
@@ -249,13 +266,13 @@ namespace Blackberry {
                 glMakeTextureHandleResidentARB(texAttachment->BindlessHandle);
             }
 
-            tex->Attachments.push_back(texAttachment);
+            Attachments.push_back(texAttachment);
         }
 
         // Tell OpenGL which attachments we are using for rendering
         std::vector<u32> activeAttachments;
 
-        for (auto& attachment : spec.ActiveAttachments) {
+        for (auto& attachment : Specification.ActiveAttachments) {
             activeAttachments.push_back(GL_COLOR_ATTACHMENT0 + attachment);
         }
         glDrawBuffers(activeAttachments.size(), activeAttachments.data());
@@ -263,21 +280,6 @@ namespace Blackberry {
         BL_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Render Texture not complete!");
     
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-        return tex;
-    }
-    
-    void RenderTexture::Delete() {
-        glDeleteFramebuffers(1, &ID);
-    }
-
-    void RenderTexture::Resize(BlVec2<u32> size) {
-        // Delete();
-        // Specification.Size = size;
-        // Ref<RenderTexture> newTex = Create(Specification);
-        // 
-        // Attachments = newTex->Attachments;
-        // ID = newTex->ID;
     }
 
 } // namespace Blackberry

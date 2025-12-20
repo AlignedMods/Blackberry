@@ -89,8 +89,9 @@ namespace Blackberry {
 
         // m_State.EnviromentMap = EnviromentMap::Create("Assets/Textures/Skybox.hdr");
         m_State.DefaultEnviromentMap = CreateRef<EnviromentMap>();
-        m_State.DefaultEnviromentMap->Skybox = CreateRef<Texture2D>();
+        m_State.DefaultEnviromentMap->Prefilter = CreateRef<Texture2D>();
         m_State.DefaultEnviromentMap->Irradiance = CreateRef<Texture2D>();
+        m_State.DefaultEnviromentMap->BrdfLUT = CreateRef<Texture2D>();
         m_State.CurrentEnviromentMap = m_State.DefaultEnviromentMap;
 
         m_State.TransformBuffer = ShaderStorageBuffer::Create(0);
@@ -254,6 +255,9 @@ namespace Blackberry {
         Asset& a = Project::GetAssetManager().GetAsset(env.EnviromentMap);
 
         m_State.CurrentEnviromentMap = std::get<Ref<EnviromentMap>>(Project::GetAssetManager().GetAsset(env.EnviromentMap).Data);
+        m_State.EnviromentMapLOD = env.LevelOfDetail;
+        m_State.EnviromentFogColor = env.FogColor;
+        m_State.EnviromentFogDistance = env.FogDistance;
     }
 
     void SceneRenderer::Flush() {
@@ -338,22 +342,14 @@ namespace Blackberry {
                 m_State.SkyboxShader.SetMatrix("u_Projection", glm::value_ptr(projection));
                 m_State.SkyboxShader.SetMatrix("u_View", glm::value_ptr(view));
 
-                if (m_State.CurrentEnviromentMap)
-                    renderer.BindCubemap(m_State.CurrentEnviromentMap->Skybox, 0);
+                if (m_State.CurrentEnviromentMap) {
+                    renderer.BindCubemap(m_State.CurrentEnviromentMap->Prefilter, 0);
+                    m_State.SkyboxShader.SetFloat("u_LOD", m_State.EnviromentMapLOD);
+                }
 
                 renderer.DrawIndexed(36);
 
                 glDepthMask(GL_TRUE);
-
-                if (m_Target) {
-                    renderer.UnBindRenderTexture();
-                }
-
-                // Lighting pass
-                if (m_Target) {
-                    renderer.BindRenderTexture(m_Target);
-                    // renderer.Clear(BlColor(69, 69, 69, 255));
-                }
 
                 DrawBuffer lightingBuffer;
                 lightingBuffer.Vertices = m_State.QuadVertices.data();
@@ -389,8 +385,18 @@ namespace Blackberry {
                 m_State.MeshLightingShader.SetInt("u_PointLightCount", m_State.PointLights.size());
                 m_State.MeshLightingShader.SetInt("u_SpotLightCount", m_State.SpotLights.size());
 
-                if (m_State.CurrentEnviromentMap)
+                m_State.MeshLightingShader.SetInt("u_IrradianceMap", 0);
+                m_State.MeshLightingShader.SetInt("u_PrefilterMap", 1);
+                m_State.MeshLightingShader.SetInt("u_BrdfLUT", 2);
+
+                if (m_State.CurrentEnviromentMap) {
                     renderer.BindCubemap(m_State.CurrentEnviromentMap->Irradiance, 0);
+                    renderer.BindCubemap(m_State.CurrentEnviromentMap->Prefilter, 1);
+                    renderer.BindTexture(m_State.CurrentEnviromentMap->BrdfLUT, 2);
+
+                    m_State.MeshLightingShader.SetVec3("u_FogColor", m_State.EnviromentFogColor);
+                    m_State.MeshLightingShader.SetFloat("u_FogDistance", m_State.EnviromentFogDistance);
+                }
 
                 renderer.DrawIndexed(6);
 

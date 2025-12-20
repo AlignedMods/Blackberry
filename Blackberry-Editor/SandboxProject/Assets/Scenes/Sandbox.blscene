@@ -47,7 +47,8 @@ Entities:
       UUID: 1801923993421270264
       Name: Enviroment
     EnviromentComponent:
-      EnviromentMap: 16970579584870424807
+      EnviromentMap: 14272617839896958237
+      LevelOfDetail: 0
   - TagComponent:
       UUID: 15682815334010866945
       Name: Cube
@@ -78,8 +79,8 @@ Entities:
       Rotation: [-154.95757, 53.060772, 105.69771]
       Scale: [0.99999976, 1, 0.9999995]
     DirectionalLightComponent:
-      Color: [0.95366794, 0.9511942, 0.31297982]
-      Intensity: 47.5
+      Color: [1, 0.99645203, 0.08108109]
+      Intensity: 189
   - TagComponent:
       UUID: 8468297384558199562
       Name: Cylinder

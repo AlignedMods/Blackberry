@@ -65,6 +65,9 @@ namespace Blackberry {
         u32 ID = 0;
         RenderTextureSpecification Specification;
         std::vector<Ref<Texture2D>> Attachments;
+
+    private:
+        void Invalidate();
     };
 
 } // namespace Blackberry
