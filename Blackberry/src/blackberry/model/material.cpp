@@ -2,8 +2,34 @@
 #include "blackberry/core/util.hpp"
 #include "blackberry/project/project.hpp"
 
-#include "json.hpp"
-using json = nlohmann::json;
+#include "yaml-cpp/yaml.h"
+
+namespace YAML {
+    
+    template <>
+    struct convert<BlVec3<f32>> {
+        static Node encode(const BlVec3<f32>& rhs) {
+            Node node;
+            node.push_back(rhs.x);
+            node.push_back(rhs.y);
+            node.push_back(rhs.z);
+            return node;
+        }
+
+        static bool decode(const Node& node, BlVec3<f32>& rhs) {
+            if (!node.IsSequence() || node.size() != 3) {
+                return false;
+            }
+
+            rhs.x = node[0].as<f32>();
+            rhs.y = node[1].as<f32>();
+            rhs.z = node[2].as<f32>();
+
+            return true;
+        }
+    };
+
+} // namespace YAML
 
 namespace Blackberry {
 
@@ -13,45 +39,45 @@ namespace Blackberry {
         Material mat;
 
         std::string contents = Util::ReadEntireFile(path);
-        json j = json::parse(contents);
+        YAML::Node node = YAML::Load(contents.c_str());
 
         // albedo
-        if (j.contains("Albedo-Texture")) {
-            std::string albedoPath = j.at("Albedo-Texture");
+        if (node["Albedo-Texture"]) {
+            std::string albedoPath = node["Albedo-Texture"].as<std::string>();
             mat.AlbedoTexture = Texture2D::Create(Project::GetAssetPath(albedoPath));
             mat.UseAlbedoTexture = true;
-        } else if (j.contains("Albedo-Color")) {
-            std::array<f32, 3> albedoColor = j.at("Albedo-Color");
-            mat.AlbedoColor = BlVec4(albedoColor[0], albedoColor[1], albedoColor[2], 1.0f);
+        } else if (node["Albedo-Color"]) {
+            BlVec3<f32> albedoColor = node["Albedo-Color"].as<BlVec3<f32>>();
+            mat.AlbedoColor = BlVec4(albedoColor.x, albedoColor.y, albedoColor.z, 1.0f);
         }
 
         // metallic
-        if (j.contains("Metallic-Texture")) {
-            std::string metallicPath = j.at("Metallic-Texture");
+        if (node["Metallic-Texture"]) {
+            std::string metallicPath = node["Metallic-Texture"].as<std::string>();
             mat.MetallicTexture = Texture2D::Create(Project::GetAssetPath(metallicPath));
             mat.UseMetallicTexture = true;
-        } else if (j.contains("Metallic-Factor")) {
-            f32 metallicFactor = j.at("Metallic-Factor");
+        } else if (node["Metallic-Factor"]) {
+            f32 metallicFactor = node["Metallic-Factor"].as<f32>();
             mat.MetallicFactor = metallicFactor;
         }
 
         // roughness
-        if (j.contains("Roughness-Texture")) {
-            std::string roughnessPath = j.at("Roughness-Texture");
+        if (node["Roughness-Texture"]) {
+            std::string roughnessPath = node["Roughness-Texture"].as<std::string>();
             mat.RoughnessTexture = Texture2D::Create(Project::GetAssetPath(roughnessPath));
             mat.UseRoughnessTexture = true;
-        } else if (j.contains("Roughness-Factor")) {
-            f32 roughnessFactor = j.at("Roughness-Factor");
+        } else if (node["Roughness-Factor"]) {
+            f32 roughnessFactor = node["Roughness-Factor"].as<f32>();
             mat.RoughnessFactor = roughnessFactor;
         }
 
         // AO
-        if (j.contains("AO-Texture")) {
-            std::string aoPath = j.at("AO-Texture");
+        if (node["AO-Texture"]) {
+            std::string aoPath = node["AO-Texture"].as<std::string>();
             mat.AOTexture = Texture2D::Create(Project::GetAssetPath(aoPath));
             mat.UseAOTexture = true;
-        } else if (j.contains("AO-Factor")) {
-            f32 aoFactor = j.at("AO-Factor");
+        } else if (node["AO-Factor"]) {
+            f32 aoFactor = node["AO-Factor"].as<f32>();
             mat.AOFactor = aoFactor;
         }
 
@@ -62,15 +88,12 @@ namespace Blackberry {
     }
 
     void Material::Save(Material& mat, const FS::Path& path) {
-        json j;
-
         // j["Albedo"] = { mat.Albedo.x, mat.Albedo.y, mat.Albedo.z };
         // j["Metallic"] = mat.Metallic;
         // j["Roughness"] = mat.Roughness;
         // j["AO"] = mat.AO;
 
         std::ofstream file(path);
-        file << j.dump(4);
     }
 
 } // namespace Blackberry

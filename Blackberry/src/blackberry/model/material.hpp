@@ -2,8 +2,7 @@
 
 #include "blackberry/core/types.hpp"
 #include "blackberry/renderer/texture.hpp"
-
-#include <filesystem>
+#include "blackberry/core/path.hpp"
 
 namespace Blackberry {
 
