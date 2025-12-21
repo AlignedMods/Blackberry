@@ -2,10 +2,13 @@
 
 #include "blackberry/core/types.hpp"
 #include "blackberry/core/memory.hpp"
+#include "blackberry/renderer/image.hpp"
 
 namespace Blackberry {
 
     enum class TextureFormat {
+        U8,
+
         RGB8,
         RGBA8,
 
@@ -42,6 +45,7 @@ namespace Blackberry {
 
         static Ref<Texture2D> Create(u32 width, u32 height);
         static Ref<Texture2D> Create(const FS::Path& path, TextureFormat desiredFormat = TextureFormat::RGBA8);
+        static Ref<Texture2D> Create(Ref<Image> image);
         static Ref<Texture2D> Create(void* pixels, u32 width, u32 height, TextureFormat pixelFormat, TextureFiltering filter = TextureFiltering::Linear);
 
         void Delete();

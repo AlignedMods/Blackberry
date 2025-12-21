@@ -1,6 +1,7 @@
 #include "blackberry/model/model.hpp"
 #include "blackberry/core/log.hpp"
 #include "blackberry/renderer/texture.hpp"
+#include "blackberry/renderer/image.hpp"
 
 #define CGLTF_IMPLEMENTATION
 #include "cgltf.h"
@@ -20,9 +21,31 @@ namespace Blackberry {
     static Ref<Texture2D> GLTF_GetTexture(cgltf_texture_view& tex) {
         if (!tex.texture) return CreateRef<Texture2D>();
 
-        BL_CORE_INFO("Texture name: {}", tex.texture->name);
+        cgltf_buffer_view* view = tex.texture->image->buffer_view;
+        u8* data = reinterpret_cast<u8*>(view->buffer->data) + view->offset;
+        u32 size = view->size;
 
-        return CreateRef<Texture2D>();
+        int width, height;
+        void* pixels = stbi_load_from_memory(data, size, &width, &height, nullptr, 4);
+
+        Ref<Texture2D> texture = Texture2D::Create(pixels, width, height, TextureFormat::RGBA8);
+
+        return texture;
+    }
+
+    static Ref<Image> GLTF_GetImage(cgltf_image* image) {
+        cgltf_buffer_view* view = image->buffer_view;
+        u8* data = reinterpret_cast<u8*>(view->buffer->data) + view->offset;
+        u32 size = view->size;
+
+        int width, height;
+        void* pixels = stbi_load_from_memory(data, size, &width, &height, nullptr, 4);
+
+        Ref<Image> im = Image::Create(pixels, width, height, ImageFormat::RGBA8);
+
+        stbi_image_free(pixels);
+
+        return im;
     }
 
     Model Model::Create(const FS::Path& path) {
@@ -186,6 +209,42 @@ namespace Blackberry {
                             }
 
                             if (pbr.metallic_roughness_texture.texture) { // Contains metallic/roughness texture
+                                Ref<Image> imMetallicRoughness = GLTF_GetImage(pbr.metallic_roughness_texture.texture->image);
+
+                                // Extract roughness and metallic values from the combined image
+                                Ref<Image> imMetallic = CreateRef<Image>();
+                                Ref<Image> imRoughness = CreateRef<Image>();
+                                
+                                imMetallic->Pixels = malloc(imMetallicRoughness->Width * imMetallicRoughness->Height);
+                                imRoughness->Pixels = malloc(imMetallicRoughness->Width * imMetallicRoughness->Height);
+
+                                imMetallic->Format = ImageFormat::U8;
+                                imRoughness->Format = ImageFormat::U8;
+
+                                imMetallic->Width = imMetallicRoughness->Width;
+                                imRoughness->Width = imMetallicRoughness->Width;
+
+                                imMetallic->Height = imMetallicRoughness->Height;
+                                imRoughness->Height = imMetallicRoughness->Height;
+
+                                for (u32 x = 0; x < imRoughness->Width; x++) {
+                                    for (u32 y = 0; y < imRoughness->Height; y++) {
+                                        BlColor color;
+                                        color.r = reinterpret_cast<u8*>(imMetallicRoughness->Pixels)[(y * imMetallicRoughness->Height + x) * 4 + 0];
+                                        color.g = reinterpret_cast<u8*>(imMetallicRoughness->Pixels)[(y * imMetallicRoughness->Height + x) * 4 + 1];
+                                        color.b = reinterpret_cast<u8*>(imMetallicRoughness->Pixels)[(y * imMetallicRoughness->Height + x) * 4 + 2];
+                                        color.a = reinterpret_cast<u8*>(imMetallicRoughness->Pixels)[(y * imMetallicRoughness->Height + x) * 4 + 3];
+
+                                        reinterpret_cast<u8*>(imMetallic->Pixels)[y * imMetallic->Height + x] = color.g;
+                                        reinterpret_cast<u8*>(imRoughness->Pixels)[y * imRoughness->Height + x] = color.b;
+                                    }
+                                }
+
+                                mat.MetallicTexture = Texture2D::Create(imMetallic);
+                                mat.RoughnessTexture = Texture2D::Create(imRoughness);
+
+                                mat.UseMetallicTexture = true;
+                                mat.UseRoughnessTexture = true;
                             } else {
                                 mat.MetallicFactor = pbr.metallic_factor;
                                 mat.RoughnessFactor = pbr.roughness_factor;

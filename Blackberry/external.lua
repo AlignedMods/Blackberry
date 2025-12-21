@@ -86,6 +86,19 @@ project "imgui"
 
     includedirs { "vendor/imgui/", "vendor/glfw/include/" }
 
+project "spdlog"
+    language "C++"
+    cppdialect "C++20"
+    kind "StaticLib"
+    staticruntime "On"
+
+    targetdir("../build/bin/" .. OutputDir .. "/%{prj.name}")
+    objdir("../build/obj/" .. OutputDir .. "/%{prj.name}")
+
+    files { "vendor/spdlog/**.h" }
+
+    includedirs { "vendor/spdlog/include/" }
+
 project "freetype"
 	language "C"
 	kind "StaticLib"

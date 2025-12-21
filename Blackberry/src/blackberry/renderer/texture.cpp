@@ -71,6 +71,23 @@ namespace Blackberry {
 
         return texture;
     }
+
+    Ref<Texture2D> Texture2D::Create(Ref<Image> image) {
+        TextureFormat format = TextureFormat::RGB8;
+
+        switch (image->Format) {
+            case ImageFormat::U8: format = TextureFormat::U8; break;
+            case ImageFormat::RGB8: format = TextureFormat::RGB8; break;
+            case ImageFormat::RGBA8: format = TextureFormat::RGBA8; break;
+            case ImageFormat::RGB32F: format = TextureFormat::RGB16F; break;
+            case ImageFormat::RGBA32F: format = TextureFormat::RGBA16F; break;
+            default: BL_CORE_WARN("Unknown ImageFormat!"); break;
+        }
+
+        Ref<Texture2D> tex = Create(image->Pixels, image->Width, image->Height, format);
+
+        return tex;
+    }
     
     Ref<Texture2D> Texture2D::Create(void* pixels, u32 width, u32 height, TextureFormat pixelFormat, TextureFiltering filter) {
         Ref<Texture2D> tex = CreateRef<Texture2D>();
@@ -100,6 +117,10 @@ namespace Blackberry {
         GLuint type = GL_UNSIGNED_BYTE;
     
         switch (pixelFormat) {
+            case TextureFormat::U8:
+                format = GL_RED;
+                glFormat = GL_R8;
+                break;
             case TextureFormat::RGB8:
                 format = GL_RGB;
                 glFormat = GL_RGB8;
