@@ -15,7 +15,7 @@ namespace Blackberry {
         std::vector<BlVec2<f32>> TexCoords;
         std::vector<u32> Indices;
 
-        Material MeshMaterial;
+        Material MeshMaterial; // Default material for a mesh
     };
 
 } // namespace Blackberry

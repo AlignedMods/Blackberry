@@ -210,13 +210,22 @@ namespace Blackberry {
             auto& trueModel = std::get<Model>(Project::GetAssetManager().GetAsset(model.MeshHandle).Data);
 
             for (u32 i = 0; i < trueModel.MeshCount; ++i) {
+                bool useDefaultMaterial = true;
+
                 if (model.MaterialHandles.contains(i)) {
                     if (Project::GetAssetManager().ContainsAsset(model.MaterialHandles.at(i))) {
-                       auto& material = std::get<Material>(Project::GetAssetManager().GetAsset(model.MaterialHandles.at(i)).Data);
+                        auto& asset = Project::GetAssetManager().GetAsset(model.MaterialHandles.at(i));
+                        auto& material = std::get<Material>(Project::GetAssetManager().GetAsset(model.MaterialHandles.at(i)).Data);
 
-                        AddMesh(transform, trueModel.Meshes[i], material, color); 
+                        AddMesh(transform, trueModel.Meshes[i], material, color);
+
+                        useDefaultMaterial = false;
                     }
-                    
+                }
+
+                if (useDefaultMaterial) {
+                    auto& material = trueModel.Meshes[i].MeshMaterial;
+                    AddMesh(transform, trueModel.Meshes[i], material, color); 
                 }
             }
         }

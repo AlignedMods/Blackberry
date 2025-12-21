@@ -174,7 +174,7 @@ namespace Blackberry {
 
                     if (material) {
                         if (material->has_pbr_metallic_roughness) {
-                            Material mat;
+                            Material mat = Material::Create();
 
                             auto pbr = material->pbr_metallic_roughness;
 
@@ -190,6 +190,10 @@ namespace Blackberry {
                                 mat.MetallicFactor = pbr.metallic_factor;
                                 mat.RoughnessFactor = pbr.roughness_factor;
                             }
+
+                            mat.AOFactor = 1.0f;
+
+                            mesh.MeshMaterial = mat;
                         }
                     }
                 }

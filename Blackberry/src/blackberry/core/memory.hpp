@@ -48,7 +48,7 @@ namespace Blackberry {
     class Ref {
     public:
         Ref()
-            : m_Ptr(nullptr), m_Counter(nullptr) {}
+            : m_Ptr(nullptr), m_Counter(new u32{0}) {}
 
         Ref(T* ptr)
             : m_Ptr(ptr), m_Counter(new u32{1}) {}
@@ -79,6 +79,20 @@ namespace Blackberry {
                 m_Counter = other.m_Counter;
                 
                 IncrementCounter();
+            }
+
+            return *this;
+        }
+
+        Ref& operator=(Ref&& other) noexcept {
+            if (this != &other) {
+                Release();
+
+                m_Ptr = other.m_Ptr;
+                m_Counter = other.m_Counter;
+
+                other.m_Ptr = nullptr;
+                other.m_Counter = nullptr;
             }
 
             return *this;
@@ -128,7 +142,7 @@ namespace Blackberry {
 
     private:
         void IncrementCounter() {
-            if (m_Counter) m_Counter++;
+            if (m_Counter) (*m_Counter)++;
         }
 
     public:

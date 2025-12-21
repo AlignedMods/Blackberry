@@ -35,6 +35,15 @@ namespace Blackberry {
 
     static u32 s_CurrentID = 1;
 
+    Material Material::Create() {
+        Material mat;
+
+        mat.ID = s_CurrentID;
+        s_CurrentID++;
+
+        return mat;
+    }
+
     Material Material::Create(const FS::Path& path) {
         Material mat;
 

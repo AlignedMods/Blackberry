@@ -50,6 +50,11 @@
             "Path": "Textures/ContainerSpecular.png",
             "Type": "Texture"
         },
+        "Handle - 3506026168109084076": {
+            "Handle": 3506026168109084076,
+            "Path": "Meshes/House.glb",
+            "Type": "Model"
+        },
         "Handle - 5555962722629784639": {
             "Handle": 5555962722629784639,
             "Path": "Fonts/creato_display/CreatoDisplay-Medium.otf",

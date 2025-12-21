@@ -8,6 +8,7 @@ namespace Blackberry {
 
     // A PBR material which holds a unique id
     struct Material {
+        static Material Create();
         static Material Create(const FS::Path& path);
         static void Save(Material& mat, const FS::Path& path);
 
