@@ -162,6 +162,7 @@ namespace Blackberry {
         Ref<RenderTexture> BloomCombinePass3;
         Ref<RenderTexture> BloomCombinePass4;
         Ref<RenderTexture> BloomCombinePass5;
+        Ref<RenderTexture> BloomCombinePass6;
 
         f32 BloomThreshold = 3.0f;
 

@@ -134,7 +134,7 @@ namespace Blackberry {
 
         {
             RenderTextureSpecification spec;
-            spec.Size = BlVec2<u32>(1920, 1080);
+            spec.Size = BlVec2<u32>(960, 540);
             spec.Attachments = {
                 {0, RenderTextureAttachmentType::ColorRGBA16F}
             };
@@ -146,7 +146,7 @@ namespace Blackberry {
         // Create all the render targets (NOTE: We could use mips for this exact purpose)
         {
             RenderTextureSpecification spec;
-            spec.Size = BlVec2<u32>(960, 540); // we want to down scale the image for that extra bluriness
+            spec.Size = BlVec2<u32>(480, 270); // we want to down scale the image for that extra bluriness
             spec.Attachments = {
                 {0, RenderTextureAttachmentType::ColorRGBA16F}
             };
@@ -156,22 +156,22 @@ namespace Blackberry {
                 m_State.BloomBlurPass1[i] = RenderTexture::Create(spec);
             }
 
-            spec.Size = BlVec2<u32>(480, 270);
+            spec.Size = BlVec2<u32>(240, 135);
             for (u32 i = 0; i < 2; i++) {
                 m_State.BloomBlurPass2[i] = RenderTexture::Create(spec);
             }
 
-            spec.Size = BlVec2<u32>(240, 135);
+            spec.Size = BlVec2<u32>(120, 68);
             for (u32 i = 0; i < 2; i++) {
                 m_State.BloomBlurPass3[i] = RenderTexture::Create(spec);
             }
 
-            spec.Size = BlVec2<u32>(120, 68);
+            spec.Size = BlVec2<u32>(60, 34);
             for (u32 i = 0; i < 2; i++) {
                 m_State.BloomBlurPass4[i] = RenderTexture::Create(spec);
             }
 
-            spec.Size = BlVec2<u32>(60, 34);
+            spec.Size = BlVec2<u32>(30, 17);
             for (u32 i = 0; i < 2; i++) {
                 m_State.BloomBlurPass5[i] = RenderTexture::Create(spec);
             }
@@ -180,7 +180,7 @@ namespace Blackberry {
         // Create all the upscale render targets
         {
             RenderTextureSpecification spec;
-            spec.Size = BlVec2<u32>(120, 68);
+            spec.Size = BlVec2<u32>(60, 34);
             spec.Attachments = {
                 {0, RenderTextureAttachmentType::ColorRGBA16F}
             };
@@ -188,17 +188,20 @@ namespace Blackberry {
 
             m_State.BloomCombinePass1 = RenderTexture::Create(spec);
 
-            spec.Size = BlVec2<u32>(240, 135);
+            spec.Size = BlVec2<u32>(120, 68);
             m_State.BloomCombinePass2 = RenderTexture::Create(spec);
 
-            spec.Size = BlVec2<u32>(480, 270);
+            spec.Size = BlVec2<u32>(240, 135);
             m_State.BloomCombinePass3 = RenderTexture::Create(spec);
 
-            spec.Size = BlVec2<u32>(960, 540);
+            spec.Size = BlVec2<u32>(480, 270);
             m_State.BloomCombinePass4 = RenderTexture::Create(spec);
 
-            spec.Size = BlVec2<u32>(1920, 1080);
+            spec.Size = BlVec2<u32>(920, 540);
             m_State.BloomCombinePass5 = RenderTexture::Create(spec);
+
+            spec.Size = BlVec2<u32>(1920, 1080);
+            m_State.BloomCombinePass6 = RenderTexture::Create(spec);
         }
     }
 
@@ -700,7 +703,7 @@ namespace Blackberry {
             m_State.BloomCombineShader.SetInt("u_Blurred", 1);
 
             renderer.BindTexture(m_State.BloomBlurPass3[1]->Attachments[0], 0);
-            renderer.BindTexture(m_State.BloomBlurPass4[1]->Attachments[0], 1);
+            renderer.BindTexture(m_State.BloomCombinePass1->Attachments[0], 1);
 
             renderer.BindRenderTexture(m_State.BloomCombinePass2);
             renderer.Clear(BlColor(0, 0, 0, 255));
@@ -716,7 +719,7 @@ namespace Blackberry {
             m_State.BloomCombineShader.SetInt("u_Blurred", 1);
 
             renderer.BindTexture(m_State.BloomBlurPass2[1]->Attachments[0], 0);
-            renderer.BindTexture(m_State.BloomBlurPass3[1]->Attachments[0], 1);
+            renderer.BindTexture(m_State.BloomCombinePass2->Attachments[0], 1);
 
             renderer.BindRenderTexture(m_State.BloomCombinePass3);
             renderer.Clear(BlColor(0, 0, 0, 255));
@@ -732,7 +735,7 @@ namespace Blackberry {
             m_State.BloomCombineShader.SetInt("u_Blurred", 1);
 
             renderer.BindTexture(m_State.BloomBlurPass1[1]->Attachments[0], 0);
-            renderer.BindTexture(m_State.BloomBlurPass2[1]->Attachments[0], 1);
+            renderer.BindTexture(m_State.BloomCombinePass3->Attachments[0], 1);
 
             renderer.BindRenderTexture(m_State.BloomCombinePass4);
             renderer.Clear(BlColor(0, 0, 0, 255));
@@ -747,10 +750,26 @@ namespace Blackberry {
             m_State.BloomCombineShader.SetInt("u_Original", 0);
             m_State.BloomCombineShader.SetInt("u_Blurred", 1);
 
-            renderer.BindTexture(m_State.PBROutput->Attachments[0], 0);
-            renderer.BindTexture(m_State.BloomBlurPass1[1]->Attachments[0], 1);
+            renderer.BindTexture(m_State.BloomBrightAreas->Attachments[0], 0);
+            renderer.BindTexture(m_State.BloomCombinePass4->Attachments[0], 1);
 
             renderer.BindRenderTexture(m_State.BloomCombinePass5);
+            renderer.Clear(BlColor(0, 0, 0, 255));
+
+            renderer.DrawIndexed(6);
+
+            renderer.UnBindRenderTexture();
+
+            // Pass number 6
+            renderer.BindShader(m_State.BloomCombineShader);
+
+            m_State.BloomCombineShader.SetInt("u_Original", 0);
+            m_State.BloomCombineShader.SetInt("u_Blurred", 1);
+
+            renderer.BindTexture(m_State.PBROutput->Attachments[0], 0);
+            renderer.BindTexture(m_State.BloomCombinePass5->Attachments[0], 1);
+
+            renderer.BindRenderTexture(m_State.BloomCombinePass6);
             renderer.Clear(BlColor(0, 0, 0, 255));
 
             renderer.DrawIndexed(6);
@@ -760,7 +779,7 @@ namespace Blackberry {
             // Tonemap
             renderer.BindShader(m_State.ToneMapShader);
 
-            renderer.BindTexture(m_State.BloomCombinePass5->Attachments[0], 0);
+            renderer.BindTexture(m_State.BloomCombinePass6->Attachments[0], 0);
 
             renderer.BindRenderTexture(m_Target);
             renderer.Clear(BlColor(0, 0, 0, 255));
