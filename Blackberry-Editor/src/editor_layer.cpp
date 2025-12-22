@@ -354,6 +354,8 @@ namespace BlackberryEditor {
     }
 
     void EditorLayer::OnUIRender() {
+        BL_PROFILE_SCOPE("EditorLayer::OnUIRender");
+
         // set up dockspace
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
     
@@ -649,23 +651,23 @@ namespace BlackberryEditor {
         }
 
         if (ImGui::BeginTable("##FunnyTable", columnCount)) {
-            for (const auto& file : FS::DirectoryIterator(m_CurrentDirectory)) {
+            for (const auto& file : FS::DirectoryIterator(m_CurrentDirectory)) { // NOTE: slow
                 ImGui::TableNextColumn();
-
+            
                 const auto& path = file.Path();
                 const auto relative = FS::Relative(path, m_BaseDirectory);
                 std::string name = path.FileName().String();
-    
+            
                 ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
-    
+            
                 if (file.IsDirectory()) {
                     ImGui::ImageButton(name.c_str(), m_DirectoryIcon->ID, ImVec2(thumbnailSize, thumbnailSize));
                 } else {
                     ImGui::ImageButton(name.c_str(), m_FileIcon->ID, ImVec2(thumbnailSize, thumbnailSize));
                 }
-    
+            
                 ImGui::PopStyleVar();
-    
+            
                 if (file.IsFile()) {
                     if (ImGui::BeginDragDropSource()) {
                         std::string filePath = relative.String();
@@ -674,7 +676,7 @@ namespace BlackberryEditor {
                         ImGui::EndDragDropSource();
                     }
                 }
-    
+            
                 if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
                     if (file.IsDirectory()) {
                         m_CurrentDirectory /= path.FileName();
@@ -688,7 +690,7 @@ namespace BlackberryEditor {
                         }
                     }
                 }
-
+            
                 if (ImGui::BeginPopupContextItem()) {
                     if (ImGui::MenuItem("Create Asset Out Of Item")) {
                         s_CreateAssetPopup = true;
@@ -696,7 +698,7 @@ namespace BlackberryEditor {
                     }
                     ImGui::EndPopup();
                 }
-    
+            
                 ImGui::TextWrapped(name.c_str());
             }
             

@@ -28,6 +28,9 @@ namespace BlackberryEditor {
 
         // ImGui::Image(state.CurrentEnviromentMap->BrdfLUT->ID, ImVec2(sizeX, sizeY));
 
+        ImGui::Text("SceneRenderer::Render: %fms", Instrumentor::GetTimePoint("SceneRenderer::Render").Milliseconds());
+        ImGui::Text("SceneRenderer::Flush: %fms", Instrumentor::GetTimePoint("SceneRenderer::Flush").Milliseconds());
+
         ImGui::End();
     }
 

@@ -119,37 +119,41 @@ namespace Blackberry {
     // SceneRenderer::~SceneRenderer() {}
 
     void SceneRenderer::Render(Scene* scene, RenderTexture* target) {
-        m_Target = target;
+        {
+            BL_PROFILE_SCOPE("SceneRenderer::Render");
 
-        auto dirLightView = scene->m_ECS->GetEntitiesWithComponents<TransformComponent, DirectionalLightComponent>();
+            m_Target = target;
 
-        dirLightView.each([&](TransformComponent& transform, DirectionalLightComponent& light) {
-            AddDirectionalLight(transform, light);    
-        });
-
-        auto lightView = scene->m_ECS->GetEntitiesWithComponents<TransformComponent, PointLightComponent>();
-
-        lightView.each([&](TransformComponent& transform, PointLightComponent& light) {
-            AddPointLight(transform, light);
-        });
-
-        auto spotLightView = scene->m_ECS->GetEntitiesWithComponents<TransformComponent, SpotLightComponent>();
-
-        spotLightView.each([&](TransformComponent& transform, SpotLightComponent& light) {
-            AddSpotLight(transform, light);
-        });
-
-        auto meshView = scene->m_ECS->GetEntitiesWithComponents<TransformComponent, MeshComponent>();
-
-        meshView.each([&](TransformComponent& transform, MeshComponent& mesh) {
-            AddModel(transform, mesh, BlColor(255, 255, 255, 255));
-        });
-
-        auto envView = scene->m_ECS->GetEntitiesWithComponents<EnviromentComponent>();
-
-        envView.each([&](EnviromentComponent& env) {
-            AddEnviroment(env);
-        });
+            auto dirLightView = scene->m_ECS->GetEntitiesWithComponents<TransformComponent, DirectionalLightComponent>();
+            
+            dirLightView.each([&](TransformComponent& transform, DirectionalLightComponent& light) {
+                AddDirectionalLight(transform, light);    
+            });
+            
+            auto lightView = scene->m_ECS->GetEntitiesWithComponents<TransformComponent, PointLightComponent>();
+            
+            lightView.each([&](TransformComponent& transform, PointLightComponent& light) {
+                AddPointLight(transform, light);
+            });
+            
+            auto spotLightView = scene->m_ECS->GetEntitiesWithComponents<TransformComponent, SpotLightComponent>();
+            
+            spotLightView.each([&](TransformComponent& transform, SpotLightComponent& light) {
+                AddSpotLight(transform, light);
+            });
+            
+            auto meshView = scene->m_ECS->GetEntitiesWithComponents<TransformComponent, MeshComponent>();
+            
+            meshView.each([&](TransformComponent& transform, MeshComponent& mesh) {
+                AddModel(transform, mesh, BlColor(255, 255, 255, 255));
+            });
+            
+            auto envView = scene->m_ECS->GetEntitiesWithComponents<EnviromentComponent>();
+            
+            envView.each([&](EnviromentComponent& env) {
+                AddEnviroment(env);
+            });
+        }
 
         Flush();
     }
@@ -270,13 +274,13 @@ namespace Blackberry {
     }
 
     void SceneRenderer::Flush() {
-        ScopedTimer timer("SceneRenderer::Flush");
+        BL_PROFILE_SCOPE("SceneRenderer::Flush");
 
         auto& renderer = BL_APP.GetRenderer();
 
         if (m_State.MeshIndices.size() > 0) {
             {
-                ScopedTimer geometryPassTimer("SceneRenderer::Flush/Geometry Pass");
+                BL_PROFILE_SCOPE("SceneRenderer::Flush/Geometry Pass");
 
                 // Geometry pass
                 DrawBuffer geometryBuffer;
@@ -301,12 +305,12 @@ namespace Blackberry {
                 m_State.MeshGeometryShader.SetMatrix("u_ViewProjection", m_Camera.GetCameraMatrixFloat());
 
                 {
-                    ScopedTimer transformSettingTimer("SceneRenderer::Flush/Passing transforms");
+                    BL_PROFILE_SCOPE("SceneRenderer::Flush/Passing transforms");
                     m_State.TransformBuffer.ReserveMemory(sizeof(glm::mat4) * m_State.Transforms.size(), m_State.Transforms.data());
                 }
 
                 {
-                    ScopedTimer materialSettingTimer("SceneRenderer::Flush/Passing materials");
+                    BL_PROFILE_SCOPE("SceneRenderer::Flush/Passing materials");
                     m_State.MaterialBuffer.ReserveMemory(sizeof(GPUMaterial) * m_State.Materials.size(), m_State.Materials.data());
                 }
 
@@ -320,7 +324,7 @@ namespace Blackberry {
             }
 
             {
-                ScopedTimer lightingPassTimer("SceneRenderer::Flush/Lighting Pass");
+                BL_PROFILE_SCOPE("SceneRenderer::Flush/Lighting Pass");
 
                 if (m_Target) {
                     renderer.BindRenderTexture(m_Target);

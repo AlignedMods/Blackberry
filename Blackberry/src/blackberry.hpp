@@ -35,6 +35,7 @@
 #include "blackberry/core/util.hpp"
 #include "blackberry/core/memory.hpp"
 #include "blackberry/core/path.hpp"
+#include "blackberry/core/timer.hpp"
 
 // rendering abstractions
 #include "blackberry/renderer/renderer3d.hpp"
