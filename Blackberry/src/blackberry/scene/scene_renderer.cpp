@@ -87,6 +87,10 @@ namespace Blackberry {
         m_State.MeshGeometryShader = Shader::Create(FS::Path("Assets/Shaders/Default/GeometryPass.vert"), FS::Path("Assets/Shaders/Default/GeometryPass.frag"));
         m_State.MeshLightingShader = Shader::Create(FS::Path("Assets/Shaders/Default/LightingPass.vert"), FS::Path("Assets/Shaders/Default/LightingPass.frag"));
         m_State.SkyboxShader = Shader::Create(FS::Path("Assets/Shaders/Default/Skybox.vert"), FS::Path("Assets/Shaders/Default/Skybox.frag"));
+        m_State.BloomExtractBrightAreasShader = Shader::Create(FS::Path("Assets/Shaders/Default/Core/Quad.vert"), FS::Path("Assets/Shaders/Default/Bloom/ExtractBrightAreas.frag"));
+        m_State.BloomGaussianBlurShader = Shader::Create(FS::Path("Assets/Shaders/Default/Core/Quad.vert"), FS::Path("Assets/Shaders/Default/Bloom/GaussianBlur.frag"));
+        m_State.BloomCombineShader = Shader::Create(FS::Path("Assets/Shaders/Default/Core/Quad.vert"), FS::Path("Assets/Shaders/Default/Bloom/Combine.frag"));
+        m_State.ToneMapShader = Shader::Create(FS::Path("Assets/Shaders/Default/Core/Quad.vert"), FS::Path("Assets/Shaders/Default/Core/ToneMap.frag"));
         // m_State.FontShader = Shader::Create(s_VertexShaderFontSource, s_FragmentShaderFontSource);
 
         // m_State.EnviromentMap = EnviromentMap::Create("Assets/Textures/Skybox.hdr");
@@ -115,6 +119,86 @@ namespace Blackberry {
             spec.ActiveAttachments = {0, 1, 2, 3}; // which attachments we want to use for rendering
 
             m_State.GBuffer = RenderTexture::Create(spec);
+        }
+        
+        {
+            RenderTextureSpecification spec;
+            spec.Size = BlVec2<u32>(1920, 1080);
+            spec.Attachments = {
+                {0, RenderTextureAttachmentType::ColorRGBA16F}
+            };
+            spec.ActiveAttachments = {0};
+
+            m_State.PBROutput = RenderTexture::Create(spec);
+        }
+
+        {
+            RenderTextureSpecification spec;
+            spec.Size = BlVec2<u32>(1920, 1080);
+            spec.Attachments = {
+                {0, RenderTextureAttachmentType::ColorRGBA16F}
+            };
+            spec.ActiveAttachments = {0};
+
+            m_State.BloomBrightAreas = RenderTexture::Create(spec);
+        }
+
+        // Create all the render targets (NOTE: We could use mips for this exact purpose)
+        {
+            RenderTextureSpecification spec;
+            spec.Size = BlVec2<u32>(960, 540); // we want to down scale the image for that extra bluriness
+            spec.Attachments = {
+                {0, RenderTextureAttachmentType::ColorRGBA16F}
+            };
+            spec.ActiveAttachments = {0};
+
+            for (u32 i = 0; i < 2; i++) {
+                m_State.BloomBlurPass1[i] = RenderTexture::Create(spec);
+            }
+
+            spec.Size = BlVec2<u32>(480, 270);
+            for (u32 i = 0; i < 2; i++) {
+                m_State.BloomBlurPass2[i] = RenderTexture::Create(spec);
+            }
+
+            spec.Size = BlVec2<u32>(240, 135);
+            for (u32 i = 0; i < 2; i++) {
+                m_State.BloomBlurPass3[i] = RenderTexture::Create(spec);
+            }
+
+            spec.Size = BlVec2<u32>(120, 68);
+            for (u32 i = 0; i < 2; i++) {
+                m_State.BloomBlurPass4[i] = RenderTexture::Create(spec);
+            }
+
+            spec.Size = BlVec2<u32>(60, 34);
+            for (u32 i = 0; i < 2; i++) {
+                m_State.BloomBlurPass5[i] = RenderTexture::Create(spec);
+            }
+        }
+
+        // Create all the upscale render targets
+        {
+            RenderTextureSpecification spec;
+            spec.Size = BlVec2<u32>(120, 68);
+            spec.Attachments = {
+                {0, RenderTextureAttachmentType::ColorRGBA16F}
+            };
+            spec.ActiveAttachments = {0};
+
+            m_State.BloomCombinePass1 = RenderTexture::Create(spec);
+
+            spec.Size = BlVec2<u32>(240, 135);
+            m_State.BloomCombinePass2 = RenderTexture::Create(spec);
+
+            spec.Size = BlVec2<u32>(480, 270);
+            m_State.BloomCombinePass3 = RenderTexture::Create(spec);
+
+            spec.Size = BlVec2<u32>(960, 540);
+            m_State.BloomCombinePass4 = RenderTexture::Create(spec);
+
+            spec.Size = BlVec2<u32>(1920, 1080);
+            m_State.BloomCombinePass5 = RenderTexture::Create(spec);
         }
     }
 
@@ -331,11 +415,9 @@ namespace Blackberry {
             {
                 BL_PROFILE_SCOPE("SceneRenderer::Flush/Lighting Pass");
 
-                if (m_Target) {
-                    renderer.BindRenderTexture(m_Target);
-                    renderer.Clear(BlColor(0, 0, 0, 255));
-                }
-
+                renderer.BindRenderTexture(m_State.PBROutput);
+                renderer.Clear(BlColor(0, 0, 0, 255));
+                
                 DrawBuffer skyboxBuffer;
                 skyboxBuffer.Vertices = m_State.CubeVertices.data();
                 skyboxBuffer.VertexSize = sizeof(f32) * 3;
@@ -420,10 +502,10 @@ namespace Blackberry {
 
                 renderer.UnBindCubemap();
 
-                if (m_Target) {
-                    renderer.UnBindRenderTexture();
-                }
+                renderer.UnBindRenderTexture();
             }
+
+            BloomPipeline();
 
             m_State.MeshVertices.clear();
             m_State.MeshIndices.clear();
@@ -440,6 +522,253 @@ namespace Blackberry {
         m_State.SpotLights.clear();
 
         m_State.CurrentEnviromentMap = m_State.DefaultEnviromentMap;
+    }
+
+    void SceneRenderer::BloomPipeline() {
+        auto& renderer = BL_APP.GetRenderer();
+
+        {
+            BL_PROFILE_SCOPE("SceneRenderer::Flush/Bloom.BrightAreas");
+
+            renderer.BindRenderTexture(m_State.BloomBrightAreas);
+            renderer.Clear(BlColor(0, 0, 0, 255));
+
+            renderer.BindShader(m_State.BloomExtractBrightAreasShader);
+
+            m_State.BloomExtractBrightAreasShader.SetFloat("u_Threshold", m_State.BloomThreshold);
+            renderer.BindTexture(m_State.PBROutput->Attachments.at(0), 0);
+
+            // we can simply reuse the previous buffer (from the lighting pass)
+            renderer.DrawIndexed(6);
+
+            renderer.UnBindTexture();
+
+            renderer.UnBindRenderTexture();
+        }
+
+        {
+            BL_PROFILE_SCOPE("SceneRenderer::BloomPipeline/DownScaleAndBlur");
+
+            // Pass number 1
+            for (u32 i = 0; i < 2; i++) {
+                Ref<Texture2D> tex;
+
+                if (i == 0) {
+                    tex = m_State.BloomBrightAreas->Attachments[0];
+                    renderer.BindRenderTexture(m_State.BloomBlurPass1[0]);
+                    renderer.Clear(BlColor(0, 0, 0, 255));
+                } else {
+                    tex = m_State.BloomBlurPass1[0]->Attachments[0];
+                    renderer.BindRenderTexture(m_State.BloomBlurPass1[1]);
+                    // renderer.BindRenderTexture(m_Target);
+                    renderer.Clear(BlColor(0, 0, 0, 255));
+                }
+
+                renderer.BindShader(m_State.BloomGaussianBlurShader);
+
+                renderer.BindTexture(tex, 0);
+                m_State.BloomGaussianBlurShader.SetInt("u_Horizontal", i);
+                
+                renderer.DrawIndexed(6);
+
+                renderer.UnBindRenderTexture();
+            }
+
+            // Pass number 2
+            for (u32 i = 0; i < 2; i++) {
+                Ref<Texture2D> tex;
+
+                if (i == 0) {
+                    tex = m_State.BloomBlurPass1[1]->Attachments[0];
+                    renderer.BindRenderTexture(m_State.BloomBlurPass2[0]);
+                    renderer.Clear(BlColor(0, 0, 0, 255));
+                } else {
+                    tex = m_State.BloomBlurPass2[0]->Attachments[0];
+                    renderer.BindRenderTexture(m_State.BloomBlurPass2[1]);
+                    renderer.Clear(BlColor(0, 0, 0, 255));
+                }
+
+                renderer.BindShader(m_State.BloomGaussianBlurShader);
+
+                renderer.BindTexture(tex, 0);
+                m_State.BloomGaussianBlurShader.SetInt("u_Horizontal", i);
+                
+                renderer.DrawIndexed(6);
+
+                renderer.UnBindRenderTexture();
+            }
+
+            // Pass number 3
+            for (u32 i = 0; i < 2; i++) {
+                Ref<Texture2D> tex;
+            
+                if (i == 0) {
+                    tex = m_State.BloomBlurPass2[1]->Attachments[0];
+                    renderer.BindRenderTexture(m_State.BloomBlurPass3[0]);
+                    renderer.Clear(BlColor(0, 0, 0, 255));
+                } else {
+                    tex = m_State.BloomBlurPass3[0]->Attachments[0];
+                    renderer.BindRenderTexture(m_State.BloomBlurPass3[1]);
+                    // renderer.BindRenderTexture(m_Target);
+                    renderer.Clear(BlColor(0, 0, 0, 255));
+                }
+            
+                renderer.BindShader(m_State.BloomGaussianBlurShader);
+            
+                renderer.BindTexture(tex, 0);
+                m_State.BloomGaussianBlurShader.SetInt("u_Horizontal", i);
+                
+                renderer.DrawIndexed(6);
+            
+                renderer.UnBindRenderTexture();
+            }
+
+            // Pass number 4
+            for (u32 i = 0; i < 2; i++) {
+                Ref<Texture2D> tex;
+            
+                if (i == 0) {
+                    tex = m_State.BloomBlurPass3[1]->Attachments[0];
+                    renderer.BindRenderTexture(m_State.BloomBlurPass4[0]);
+                    renderer.Clear(BlColor(0, 0, 0, 255));
+                } else {
+                    tex = m_State.BloomBlurPass4[0]->Attachments[0];
+                    renderer.BindRenderTexture(m_State.BloomBlurPass4[1]);
+                    // renderer.BindRenderTexture(m_Target);
+                    renderer.Clear(BlColor(0, 0, 0, 255));
+                }
+            
+                renderer.BindShader(m_State.BloomGaussianBlurShader);
+            
+                renderer.BindTexture(tex, 0);
+                m_State.BloomGaussianBlurShader.SetInt("u_Horizontal", i);
+                
+                renderer.DrawIndexed(6);
+            
+                renderer.UnBindRenderTexture();
+            }
+
+            // Pass number 5
+            for (u32 i = 0; i < 2; i++) {
+                Ref<Texture2D> tex;
+            
+                if (i == 0) {
+                    tex = m_State.BloomBlurPass4[1]->Attachments[0];
+                    renderer.BindRenderTexture(m_State.BloomBlurPass5[0]);
+                    renderer.Clear(BlColor(0, 0, 0, 255));
+                } else {
+                    tex = m_State.BloomBlurPass5[0]->Attachments[0];
+                    renderer.BindRenderTexture(m_State.BloomBlurPass5[1]);
+                    // renderer.BindRenderTexture(m_Target);
+                    renderer.Clear(BlColor(0, 0, 0, 255));
+                }
+            
+                renderer.BindShader(m_State.BloomGaussianBlurShader);
+            
+                renderer.BindTexture(tex, 0);
+                m_State.BloomGaussianBlurShader.SetInt("u_Horizontal", i);
+                
+                renderer.DrawIndexed(6);
+            
+                renderer.UnBindRenderTexture();
+            }
+        }
+
+        {
+            BL_PROFILE_SCOPE("SceneRenderer::BloomPipeline/UpScaleAndCombine");
+
+            // Pass number 1
+            renderer.BindShader(m_State.BloomCombineShader);
+
+            m_State.BloomCombineShader.SetInt("u_Original", 0);
+            m_State.BloomCombineShader.SetInt("u_Blurred", 1);
+
+            renderer.BindTexture(m_State.BloomBlurPass4[1]->Attachments[0], 0);
+            renderer.BindTexture(m_State.BloomBlurPass5[1]->Attachments[0], 1);
+
+            renderer.BindRenderTexture(m_State.BloomCombinePass1);
+            renderer.Clear(BlColor(0, 0, 0, 255));
+
+            renderer.DrawIndexed(6);
+
+            renderer.UnBindRenderTexture();
+
+            // Pass number 2
+            renderer.BindShader(m_State.BloomCombineShader);
+
+            m_State.BloomCombineShader.SetInt("u_Original", 0);
+            m_State.BloomCombineShader.SetInt("u_Blurred", 1);
+
+            renderer.BindTexture(m_State.BloomBlurPass3[1]->Attachments[0], 0);
+            renderer.BindTexture(m_State.BloomBlurPass4[1]->Attachments[0], 1);
+
+            renderer.BindRenderTexture(m_State.BloomCombinePass2);
+            renderer.Clear(BlColor(0, 0, 0, 255));
+
+            renderer.DrawIndexed(6);
+
+            renderer.UnBindRenderTexture();
+
+            // Pass number 3
+            renderer.BindShader(m_State.BloomCombineShader);
+
+            m_State.BloomCombineShader.SetInt("u_Original", 0);
+            m_State.BloomCombineShader.SetInt("u_Blurred", 1);
+
+            renderer.BindTexture(m_State.BloomBlurPass2[1]->Attachments[0], 0);
+            renderer.BindTexture(m_State.BloomBlurPass3[1]->Attachments[0], 1);
+
+            renderer.BindRenderTexture(m_State.BloomCombinePass3);
+            renderer.Clear(BlColor(0, 0, 0, 255));
+
+            renderer.DrawIndexed(6);
+
+            renderer.UnBindRenderTexture();
+
+            // Pass number 4
+            renderer.BindShader(m_State.BloomCombineShader);
+
+            m_State.BloomCombineShader.SetInt("u_Original", 0);
+            m_State.BloomCombineShader.SetInt("u_Blurred", 1);
+
+            renderer.BindTexture(m_State.BloomBlurPass1[1]->Attachments[0], 0);
+            renderer.BindTexture(m_State.BloomBlurPass2[1]->Attachments[0], 1);
+
+            renderer.BindRenderTexture(m_State.BloomCombinePass4);
+            renderer.Clear(BlColor(0, 0, 0, 255));
+
+            renderer.DrawIndexed(6);
+
+            renderer.UnBindRenderTexture();
+
+            // Pass number 5
+            renderer.BindShader(m_State.BloomCombineShader);
+
+            m_State.BloomCombineShader.SetInt("u_Original", 0);
+            m_State.BloomCombineShader.SetInt("u_Blurred", 1);
+
+            renderer.BindTexture(m_State.PBROutput->Attachments[0], 0);
+            renderer.BindTexture(m_State.BloomBlurPass1[1]->Attachments[0], 1);
+
+            renderer.BindRenderTexture(m_State.BloomCombinePass5);
+            renderer.Clear(BlColor(0, 0, 0, 255));
+
+            renderer.DrawIndexed(6);
+
+            renderer.UnBindRenderTexture();
+
+            // Tonemap
+            renderer.BindShader(m_State.ToneMapShader);
+
+            renderer.BindTexture(m_State.BloomCombinePass5->Attachments[0], 0);
+
+            renderer.BindRenderTexture(m_Target);
+            renderer.Clear(BlColor(0, 0, 0, 255));
+
+            renderer.DrawIndexed(6);
+
+            renderer.UnBindRenderTexture();
+        }
     }
 
     u32 SceneRenderer::GetMaterialIndex(const Material& mat) {

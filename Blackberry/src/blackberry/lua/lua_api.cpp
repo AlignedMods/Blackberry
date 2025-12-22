@@ -7,14 +7,14 @@ namespace Blackberry::Lua {
 
 #pragma region LogModule
 
-    static int WLogInfo(lua_State* L) {
+    static int WLogTrace(lua_State* L) {
         const char* msg = luaL_checkstring(L, 1);
 
         BL_INFO("[Lua] {}", msg);
         return 0;
     }
 
-    static int WLogDebug(lua_State* L) {
+    static int WLogInfo(lua_State* L) {
         const char* msg = luaL_checkstring(L, 1);
         
         BL_TRACE("[Lua] {}", msg);
@@ -22,8 +22,8 @@ namespace Blackberry::Lua {
     }
 
     static luaL_Reg LogModule[] = {
+        { "Trace", WLogTrace },
         { "Info", WLogInfo },
-        { "Debug", WLogDebug },
         { nullptr, nullptr }
     };
 
@@ -84,6 +84,10 @@ namespace Blackberry::Lua {
                     
                     lua_getfield(L, -1, "y");
                     transform.Position.y = static_cast<f32>(lua_tonumber(L, -1));
+                    lua_pop(L, 1);
+
+                    lua_getfield(L, -1, "z");
+                    transform.Position.z = static_cast<f32>(lua_tonumber(L, -1));
                     lua_pop(L, 1);
                 }
                 lua_pop(L, 1); // pop Position table

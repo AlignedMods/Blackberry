@@ -183,11 +183,10 @@ void main() {
         discard;
     
     // HDR tonemapping
-    color = TonemapACES(color);
+    // color = TonemapACES(color);
     // Gamma correct
-    color = pow(color, vec3(1.0 / 2.2));
-    
-    // Apply fog
+    // color = pow(color, vec3(1.0 / 2.2));
+
     o_FragColor = vec4(color, 1.0);
 }
 

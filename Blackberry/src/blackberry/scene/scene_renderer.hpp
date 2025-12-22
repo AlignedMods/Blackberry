@@ -60,6 +60,12 @@ namespace Blackberry {
         Shader MeshGeometryShader;
         Shader MeshLightingShader;
         Shader SkyboxShader;
+
+        Shader BloomExtractBrightAreasShader;
+        Shader BloomGaussianBlurShader;
+        Shader BloomCombineShader;
+        Shader ToneMapShader;
+
         Shader FontShader;
 
         // shader buffers
@@ -143,6 +149,22 @@ namespace Blackberry {
 
         Ref<RenderTexture> GBuffer; // For deffered rendering
 
+        Ref<RenderTexture> PBROutput; // The rendered image after passing through the PBR shader
+        Ref<RenderTexture> BloomBrightAreas; // The areas above the bloom threshold
+        Ref<RenderTexture> BloomBlurPass1[2]; // 1st bloom blur pass (two of them because horizontal and vertical pass)
+        Ref<RenderTexture> BloomBlurPass2[2]; // 2nd boom blur pass
+        Ref<RenderTexture> BloomBlurPass3[2]; // you get the god dam point
+        Ref<RenderTexture> BloomBlurPass4[2];
+        Ref<RenderTexture> BloomBlurPass5[2];
+
+        Ref<RenderTexture> BloomCombinePass1;
+        Ref<RenderTexture> BloomCombinePass2;
+        Ref<RenderTexture> BloomCombinePass3;
+        Ref<RenderTexture> BloomCombinePass4;
+        Ref<RenderTexture> BloomCombinePass5;
+
+        f32 BloomThreshold = 3.0f;
+
         Ref<EnviromentMap> CurrentEnviromentMap;
         Ref<EnviromentMap> DefaultEnviromentMap;
         f32 EnviromentMapLOD = 0.0f;
@@ -170,6 +192,8 @@ namespace Blackberry {
         void AddEnviroment(const EnviromentComponent& env);
 
         void Flush();
+
+        void BloomPipeline();
 
         u32 GetMaterialIndex(const Material& mat);
 

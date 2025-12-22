@@ -28,8 +28,27 @@ namespace BlackberryEditor {
 
         // ImGui::Image(state.CurrentEnviromentMap->BrdfLUT->ID, ImVec2(sizeX, sizeY));
 
+        ImGui::DragFloat("Bloom Threshold", &state.BloomThreshold, 0.1f);
+
         ImGui::Text("SceneRenderer::Render: %fms", Instrumentor::GetTimePoint("SceneRenderer::Render").Milliseconds());
         ImGui::Text("SceneRenderer::Flush: %fms", Instrumentor::GetTimePoint("SceneRenderer::Flush").Milliseconds());
+
+        if (ImGui::CollapsingHeader("Bloom Stage")) {
+            ImGui::SliderInt("Current Stage", &m_CurrentBloomStageImage, 1, 5);
+
+            Ref<RenderTexture> tex;
+
+            switch (m_CurrentBloomStageImage) {
+                case 1: tex = state.BloomBlurPass1[1]; break;
+                case 2: tex = state.BloomBlurPass2[1]; break;
+                case 3: tex = state.BloomBlurPass3[1]; break;
+                case 4: tex = state.BloomBlurPass4[1]; break;
+                case 5: tex = state.BloomBlurPass5[1]; break;
+                default: tex = state.BloomBlurPass1[1]; break;
+            }
+
+            ImGui::Image(tex->Attachments[0]->ID, ImVec2(sizeX, sizeY), ImVec2(0, 1), ImVec2(1, 0));
+        }
 
         ImGui::End();
     }
