@@ -39,7 +39,7 @@ namespace Blackberry {
     struct TransformComponent {
         BlVec3<f32> Position;
         BlVec3<f32> Rotation; // in degrees
-        BlVec3<f32> Scale;
+        BlVec3<f32> Scale = BlVec3(1.0f);
 
         inline glm::mat4 GetMatrix() const {
             glm::mat4 pos = glm::translate(glm::mat4(1.0f), glm::vec3(Position.x, Position.y, Position.z));
@@ -110,20 +110,20 @@ namespace Blackberry {
     };
 
     struct DirectionalLightComponent {
-        BlVec3<f32> Color;
+        BlVec3<f32> Color = BlVec3(1.0f);
         f32 Intensity = 1.0f;
     };
 
     struct PointLightComponent {
-        BlVec3<f32> Color;
+        BlVec3<f32> Color = BlVec3(1.0f);
         f32 Radius = 10.0f;
         f32 Intensity = 1.0f;
     };
 
     struct SpotLightComponent {
-        BlVec3<f32> Color;
+        BlVec3<f32> Color = BlVec3(1.0f);
         f32 Cutoff = 25.0f;
-        f32 Intensity;
+        f32 Intensity = 1.0f;
     };
 
     struct EnviromentComponent {

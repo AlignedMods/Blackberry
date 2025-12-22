@@ -16,6 +16,7 @@ namespace Blackberry {
         std::vector<u32> Indices;
 
         Material MeshMaterial; // Default material for a mesh
+        bool HasMeshMaterial = false; // There could be no material stored in the mesh
     };
 
 } // namespace Blackberry

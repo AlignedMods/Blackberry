@@ -640,9 +640,12 @@ namespace BlackberryEditor {
             if (ImGui::Button("Create")) {
                 FS::Path p = m_CurrentDirectory / s_FileName;
 
-                std::ofstream stream(p.String());
-                stream << "{\n";
-                stream << "}";
+                Material mat = Material::Create();
+                Material::Save(mat, p);
+
+                u64 handle = Project::GetAssetManager().AddAsset({FS::Relative(p, m_BaseDirectory), AssetType::Material, mat});
+
+                m_MaterialEditorPanel.SetContext(handle);
 
                 ImGui::CloseCurrentPopup();
             }
@@ -837,8 +840,39 @@ namespace BlackberryEditor {
                     entity.AddComponent<CameraComponent>(m_EditorCamera.Camera);
                 }
 
-                if (ImGui::MenuItem("Default camera")) {
-                
+                ImGui::EndMenu();
+            }
+
+            if (ImGui::BeginMenu("Light")) {
+                if (ImGui::MenuItem("Directional Light")) {
+                    Entity entity(m_CurrentScene->CreateEntity("Directional Light"), m_CurrentScene);
+
+                    entity.AddComponent<DirectionalLightComponent>();
+                    entity.AddComponent<TransformComponent>({BlVec3(0.0f), BlVec3(0.0f), BlVec3(1.0f)});
+                }
+
+                if (ImGui::MenuItem("Point Light")) {
+                    Entity entity(m_CurrentScene->CreateEntity("Point Light"), m_CurrentScene);
+
+                    entity.AddComponent<PointLightComponent>();
+                    entity.AddComponent<TransformComponent>({BlVec3(0.0f), BlVec3(0.0f), BlVec3(1.0f)});
+                }
+
+                if (ImGui::MenuItem("Spot Light")) {
+                    Entity entity(m_CurrentScene->CreateEntity("Spot Light"), m_CurrentScene);
+
+                    entity.AddComponent<SpotLightComponent>();
+                    entity.AddComponent<TransformComponent>({BlVec3(0.0f), BlVec3(0.0f), BlVec3(1.0f)});
+                }
+
+                ImGui::EndMenu();
+            }
+
+            if (ImGui::BeginMenu("Enviroment")) {
+                if (ImGui::MenuItem("Enviroment")) {
+                    Entity entity(m_CurrentScene->CreateEntity("Enviroment"), m_CurrentScene);
+
+                    entity.AddComponent<EnviromentComponent>();
                 }
 
                 ImGui::EndMenu();

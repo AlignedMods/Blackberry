@@ -8,7 +8,17 @@ namespace BlackberryEditor {
         if (!open) return;
 
         if (ImGui::Begin("Material Editor", &open)) {
-            ImGui::Button(fmt::to_string(m_Context).c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0.0f));
+            std::string matName;
+
+            if (Project::GetAssetManager().ContainsAsset(m_Context)) {
+                auto& asset = Project::GetAssetManager().GetAsset(m_Context);
+
+                matName = asset.FilePath.Stem();
+            } else {
+                matName = "NULL";
+            }
+
+            ImGui::Button(matName.c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0.0f));
 
             if (ImGui::BeginDragDropTarget()) {
                 const ImGuiPayload* assetManagerPayload = ImGui::AcceptDragDropPayload("ASSET_MANAGER_HANDLE_DRAG_DROP");

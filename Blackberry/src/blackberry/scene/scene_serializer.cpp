@@ -2,35 +2,7 @@
 #include "blackberry/scene/entity.hpp"
 #include "blackberry/core/util.hpp"
 #include "blackberry/project/project.hpp"
-
-#include "yaml-cpp/yaml.h"
-
-namespace YAML {
-    
-    template <>
-    struct convert<BlVec3<f32>> {
-        static Node encode(const BlVec3<f32>& rhs) {
-            Node node;
-            node.push_back(rhs.x);
-            node.push_back(rhs.y);
-            node.push_back(rhs.z);
-            return node;
-        }
-
-        static bool decode(const Node& node, BlVec3<f32>& rhs) {
-            if (!node.IsSequence() || node.size() != 3) {
-                return false;
-            }
-
-            rhs.x = node[0].as<f32>();
-            rhs.y = node[1].as<f32>();
-            rhs.z = node[2].as<f32>();
-
-            return true;
-        }
-    };
-
-} // namespace YAML
+#include "blackberry/core/yaml_utils.hpp"
 
 namespace Blackberry {
 
@@ -68,14 +40,6 @@ namespace Blackberry {
 
         BL_ASSERT(false, "Unreachable");
         return ColliderType::Cube;
-    }
-
-    YAML::Emitter& operator<<(YAML::Emitter& out, BlVec3<f32> vec) {
-        out << YAML::Flow << YAML::BeginSeq;
-        out << vec.x << vec.y << vec.z;
-        out << YAML::EndSeq;
-
-        return out;
     }
 
     static void SerializeEntity(YAML::Emitter& out, Entity e) {

@@ -72,6 +72,8 @@ namespace Blackberry {
     constexpr u32 MAX_OBJECTS = 2048;
     constexpr u32 MAX_MATERIALS = 2048;
 
+    static const Material DEFAULT_MATERIAL = Material::Create();
+
     static BlVec4<f32> NormalizeColor(BlColor color) {
         return BlVec4<f32>(
             static_cast<f32>(color.r) / 255.0f,
@@ -227,8 +229,11 @@ namespace Blackberry {
                     }
                 }
 
-                if (useDefaultMaterial) {
+                if (useDefaultMaterial && trueModel.Meshes[i].HasMeshMaterial) {
                     auto& material = trueModel.Meshes[i].MeshMaterial;
+                    AddMesh(transform, trueModel.Meshes[i], material, color); 
+                } else if (useDefaultMaterial && !trueModel.Meshes[i].HasMeshMaterial) {
+                    auto& material = DEFAULT_MATERIAL;
                     AddMesh(transform, trueModel.Meshes[i], material, color); 
                 }
             }

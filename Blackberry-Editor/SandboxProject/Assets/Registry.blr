@@ -5,6 +5,11 @@
             "Path": "Textures/rabbit.jpg",
             "Type": "Texture"
         },
+        "Handle - 11093653209194568053": {
+            "Handle": 11093653209194568053,
+            "Path": "Meshes/Default/Torus.glb",
+            "Type": "Model"
+        },
         "Handle - 12120187917695872185": {
             "Handle": 12120187917695872185,
             "Path": "Meshes/Default/Cube.glb",
@@ -44,6 +49,11 @@
             "Handle": 21128899974857072,
             "Path": "Textures/Container.png",
             "Type": "Texture"
+        },
+        "Handle - 2870631290784515890": {
+            "Handle": 2870631290784515890,
+            "Path": "Materials/Red-Plastic.blmat",
+            "Type": "Material"
         },
         "Handle - 3152177466728395767": {
             "Handle": 3152177466728395767,

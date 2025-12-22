@@ -253,6 +253,7 @@ namespace Blackberry {
                             mat.AOFactor = 1.0f;
 
                             mesh.MeshMaterial = mat;
+                            mesh.HasMeshMaterial = true;
                         }
                     }
                 }

@@ -14,19 +14,23 @@ namespace Blackberry {
 
         bool UseAlbedoTexture = false;
         Ref<Texture2D> AlbedoTexture = CreateRef<Texture2D>();
-        BlVec4<f32> AlbedoColor;
+        FS::Path AlbedoTexturePath;
+        BlVec4<f32> AlbedoColor = BlVec4(0.5f, 0.5f, 0.5f, 1.0f);
 
         bool UseMetallicTexture = false;
         Ref<Texture2D> MetallicTexture = CreateRef<Texture2D>();
+        FS::Path MetallicTexturePath;
         f32 MetallicFactor = 0.0f;
 
         bool UseRoughnessTexture = false;
         Ref<Texture2D> RoughnessTexture = CreateRef<Texture2D>();
-        f32 RoughnessFactor = 0.0f;
+        FS::Path RoughnessTexturePath;
+        f32 RoughnessFactor = 1.0f;
 
         bool UseAOTexture = false;
         Ref<Texture2D> AOTexture = CreateRef<Texture2D>();
-        f32 AOFactor = 0.0f;
+        FS::Path AOTexturePath;
+        f32 AOFactor = 1.0f;
 
         u32 ID = 0;
     };

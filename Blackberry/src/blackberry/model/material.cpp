@@ -1,35 +1,7 @@
 #include "blackberry/model/material.hpp"
 #include "blackberry/core/util.hpp"
 #include "blackberry/project/project.hpp"
-
-#include "yaml-cpp/yaml.h"
-
-namespace YAML {
-    
-    template <>
-    struct convert<BlVec3<f32>> {
-        static Node encode(const BlVec3<f32>& rhs) {
-            Node node;
-            node.push_back(rhs.x);
-            node.push_back(rhs.y);
-            node.push_back(rhs.z);
-            return node;
-        }
-
-        static bool decode(const Node& node, BlVec3<f32>& rhs) {
-            if (!node.IsSequence() || node.size() != 3) {
-                return false;
-            }
-
-            rhs.x = node[0].as<f32>();
-            rhs.y = node[1].as<f32>();
-            rhs.z = node[2].as<f32>();
-
-            return true;
-        }
-    };
-
-} // namespace YAML
+#include "blackberry/core/yaml_utils.hpp"
 
 namespace Blackberry {
 
@@ -54,16 +26,18 @@ namespace Blackberry {
         if (node["Albedo-Texture"]) {
             std::string albedoPath = node["Albedo-Texture"].as<std::string>();
             mat.AlbedoTexture = Texture2D::Create(Project::GetAssetPath(albedoPath));
+            mat.AlbedoTexturePath = albedoPath;
             mat.UseAlbedoTexture = true;
         } else if (node["Albedo-Color"]) {
-            BlVec3<f32> albedoColor = node["Albedo-Color"].as<BlVec3<f32>>();
-            mat.AlbedoColor = BlVec4(albedoColor.x, albedoColor.y, albedoColor.z, 1.0f);
+            BlVec4<f32> albedoColor = node["Albedo-Color"].as<BlVec4<f32>>();
+            mat.AlbedoColor = albedoColor;
         }
 
         // metallic
         if (node["Metallic-Texture"]) {
             std::string metallicPath = node["Metallic-Texture"].as<std::string>();
             mat.MetallicTexture = Texture2D::Create(Project::GetAssetPath(metallicPath));
+            mat.MetallicTexturePath = metallicPath;
             mat.UseMetallicTexture = true;
         } else if (node["Metallic-Factor"]) {
             f32 metallicFactor = node["Metallic-Factor"].as<f32>();
@@ -74,6 +48,7 @@ namespace Blackberry {
         if (node["Roughness-Texture"]) {
             std::string roughnessPath = node["Roughness-Texture"].as<std::string>();
             mat.RoughnessTexture = Texture2D::Create(Project::GetAssetPath(roughnessPath));
+            mat.RoughnessTexturePath = roughnessPath;
             mat.UseRoughnessTexture = true;
         } else if (node["Roughness-Factor"]) {
             f32 roughnessFactor = node["Roughness-Factor"].as<f32>();
@@ -84,6 +59,7 @@ namespace Blackberry {
         if (node["AO-Texture"]) {
             std::string aoPath = node["AO-Texture"].as<std::string>();
             mat.AOTexture = Texture2D::Create(Project::GetAssetPath(aoPath));
+            mat.AOTexturePath = aoPath;
             mat.UseAOTexture = true;
         } else if (node["AO-Factor"]) {
             f32 aoFactor = node["AO-Factor"].as<f32>();
@@ -97,12 +73,38 @@ namespace Blackberry {
     }
 
     void Material::Save(Material& mat, const FS::Path& path) {
-        // j["Albedo"] = { mat.Albedo.x, mat.Albedo.y, mat.Albedo.z };
-        // j["Metallic"] = mat.Metallic;
-        // j["Roughness"] = mat.Roughness;
-        // j["AO"] = mat.AO;
+        YAML::Emitter out;
+
+        out << YAML::BeginMap;
+        
+        if (mat.UseAlbedoTexture) {
+            out << YAML::Key << "Albedo-Texture" << YAML::Value << mat.AlbedoTexturePath.String();
+        } else {
+            out << YAML::Key << "Albedo-Color" << YAML::Value << mat.AlbedoColor;
+        }
+
+        if (mat.UseMetallicTexture) {
+            out << YAML::Key << "Metallic-Texture" << YAML::Value << mat.MetallicTexturePath.String();
+        } else {
+            out << YAML::Key << "Metallic-Factor" << YAML::Value << mat.MetallicFactor;
+        }
+
+        if (mat.UseRoughnessTexture) {
+            out << YAML::Key << "Roughness-Texture" << YAML::Value << mat.RoughnessTexturePath.String();
+        } else {
+            out << YAML::Key << "Roughness-Factor" << YAML::Value << mat.RoughnessFactor;
+        }
+
+        if (mat.UseAOTexture) {
+            out << YAML::Key << "AO-Texture" << YAML::Value << mat.AOTexturePath.String();
+        } else {
+            out << YAML::Key << "AO-Factor" << YAML::Value << mat.AOFactor;
+        }
+
+        out << YAML::EndMap;
 
         std::ofstream file(path);
+        file << out.c_str();
     }
 
 } // namespace Blackberry
