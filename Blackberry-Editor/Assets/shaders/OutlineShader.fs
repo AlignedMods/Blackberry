@@ -11,6 +11,8 @@ uniform vec3 u_OutlineColor;   // e.g. vec3(1.0, 1.0, 0.0)
 
 void main()
 {
+    int code = int(texture(u_Mask, a_TexCoord).g * 255.0);
+
     // Sobel kernels
     float gx[9] = float[9](-1,0,1, -2,0,2, -1,0,1);
     float gy[9] = float[9](-1,-2,-1, 0,0,0, 1,2,1);
@@ -34,5 +36,6 @@ void main()
     float edge = sqrt(gxSum*gxSum + gySum*gySum);
     edge = smoothstep(0.05, 0.2, edge); // tweak thresholds
     
-    o_FragColor = vec4(u_OutlineColor, edge);
+    if (code == 1)
+        o_FragColor = vec4(u_OutlineColor, edge);
 }

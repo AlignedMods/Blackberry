@@ -311,26 +311,26 @@ namespace BlackberryEditor {
                 BL_APP.GetWindow().SetCursorMode(CursorMode::Disabled);
                 acceptInput = true;
             }
-
+            
             if (!Input::IsMouseDown(MouseButton::Right) && acceptInput) {
                 BL_APP.GetWindow().SetCursorMode(CursorMode::Normal);
                 acceptInput = false;
             }
-
+            
             if (acceptInput || m_ViewportHovered) {
                 // camera controller
                 if (Input::GetScrollLevel() != 0.0f) {
                     f32 scale = 0.1f * Input::GetScrollLevel();
                     m_EditorCamera.Camera.Zoom = std::clamp(std::exp(std::log(m_EditorCamera.Camera.Zoom)+scale), 0.125f, 64.0f);
                 }
-
+            
                 if (Input::IsMouseDown(MouseButton::Right)) { 
                     BlVec2 delta = Input::GetMouseDelta();
                     delta.y *= -1.0f; // invert y axis
                     
                     m_EditorCamera.Transform.Rotation += BlVec3(delta);
                     m_EditorCamera.Transform.Rotation.y = glm::clamp(m_EditorCamera.Transform.Rotation.y, -89.0f, 89.0f);
-
+            
                     if (Input::IsKeyDown(KeyCode::W)) {
                         m_EditorCamera.Transform.Position += m_EditorCamera.GetForwardVector() * m_EditorCameraSpeed * ts;
                     }
@@ -344,12 +344,38 @@ namespace BlackberryEditor {
                         m_EditorCamera.Transform.Position += m_EditorCamera.GetRightVector() * m_EditorCameraSpeed * ts;
                     }
                 }
+
+                if (Input::IsMousePressed(MouseButton::Left)) {
+                    BlVec2<f32> pos = Input::GetMousePosition();
+                    
+                    pos.x -= m_ViewportBounds.x;
+                    pos.y -= m_ViewportBounds.y;
+
+                    f32 u = pos.x / m_ViewportBounds.w;
+                    f32 v = 1.0 - pos.y / m_ViewportBounds.h; // NOTE: The ImGui image is technically being rendered "upside down" so we need to flip the y axis
+
+                    u32 fbX = static_cast<u32>(u * 1920);
+                    u32 fbY = static_cast<u32>(v * 1080);
+
+                    int id = m_CurrentScene->GetSceneRenderer()->GetState().GBuffer->ReadPixel(4, fbX, fbY);
+                    
+                    if (id != -1) {
+                        m_SelectedEntity = static_cast<EntityID>(id);
+                        m_IsEntitySelected = true;
+                    } else {
+                        m_SelectedEntity = entt::null;
+                        m_IsEntitySelected = false;
+                    }
+
+                    BL_CORE_INFO("press, pos: {}, {}, id {}", fbX, fbY, id);
+                }
             }
         }
     }
     
     void EditorLayer::OnRender() {
         m_CurrentScene->SetCamera(m_CurrentCamera);
+        m_CurrentScene->SetSelectedEntity(m_SelectedEntity);
         m_CurrentScene->OnRender(m_RenderTexture.Data());
     }
 
@@ -433,73 +459,40 @@ namespace BlackberryEditor {
     }
 
     void EditorLayer::OnOverlayRender() {
-        return;
-        if (!m_IsEntitySelected) { return; }
-
-        Entity entity = Entity(m_SelectedEntity, m_CurrentScene);
-
-        // mask
-        Renderer3D::BindRenderTexture(*m_MaskTexture);
-        Renderer3D::Clear(BlColor(0, 0, 0, 255));
-
-        Renderer3D::SetProjection(*m_CurrentCamera);
-
-        if (entity.HasComponent<TransformComponent>()) {
-            TransformComponent& transform = entity.GetComponent<TransformComponent>();
-        }
-
-        Renderer3D::Render();
-
-        Renderer3D::ResetProjection();
-        Renderer3D::UnBindRenderTexture();
-
-        Renderer3D::BindRenderTexture(*m_OutlineTexture);
-        Renderer3D::Clear(BlColor(0, 0, 0, 0));
-
-        // outline effect
-        static f32 quadVertices[] = {
-            // pos      // texCoord
-            -1.0f,  1.0f,  0.0f, 1.0f,   // top-left
-            -1.0f, -1.0f,  0.0f, 0.0f,   // bottom-left
-             1.0f, -1.0f,  1.0f, 0.0f,   // bottom-right
-        
-            -1.0f,  1.0f,  0.0f, 1.0f,   // top-left
-             1.0f, -1.0f,  1.0f, 0.0f,   // bottom-right
-             1.0f,  1.0f,  1.0f, 1.0f    // top-right
-        };
-
-        static u32 quadIndicies[] = { 0, 1, 2, 3, 4, 5 };
-
-        DrawBuffer buffer;
-        buffer.Vertices = quadVertices;
-        buffer.VertexCount = 6;
-        buffer.VertexSize = 4 * sizeof(f32);
-
-        buffer.Indices = quadIndicies;
-        buffer.IndexCount = 6;
-        buffer.IndexSize = sizeof(u32);
-
         auto& renderer = BL_APP.GetRenderer();
 
-        renderer.SubmitDrawBuffer(buffer);
+        Ref<Texture2D> mask = m_CurrentScene->GetSceneRenderer()->GetState().PBROutput->Attachments[1];
 
+        DrawBuffer quad;
+        quad.Vertices = m_CurrentScene->GetSceneRenderer()->GetState().QuadVertices.data();
+        quad.VertexCount = 6;
+        quad.VertexSize = sizeof(f32) * 4;
+
+        quad.Indices = m_CurrentScene->GetSceneRenderer()->GetState().QuadIndices.data();
+        quad.IndexCount = 6;
+        quad.IndexSize = sizeof(u32);
+
+        renderer.SubmitDrawBuffer(quad);
         renderer.SetBufferLayout({
-            { 0, ShaderDataType::Float2, "Position" },
-            { 1, ShaderDataType::Float2, "TexCoord" }
+            {0, ShaderDataType::Float2, "Position"},
+            {1, ShaderDataType::Float2, "TexCoord"},
         });
 
-        renderer.BindShader(m_OutlineShader);
-        // renderer.BindTexture(m_MaskTexture.Attachments[0]);
+        renderer.BindRenderTexture(m_OutlineTexture.Data());
+        renderer.Clear(BlColor(0, 0, 0, 255));
 
-        m_OutlineShader.SetVec2("u_TexelSize", BlVec2(1.0f / m_OutlineTexture->Specification.Size.x, 1.0f / m_OutlineTexture->Specification.Size.y));
-        m_OutlineShader.SetFloat("u_Thickness", 2.0f);
-        m_OutlineShader.SetVec3("u_OutlineColor", BlVec3(1.0f, 0.7f, 0.2f));
+        renderer.BindShader(m_OutlineShader);
+        m_OutlineShader.SetVec2("u_TexelSize", BlVec2<f32>(1.0f / m_RenderTexture->Specification.Size.x, 1.0f / m_RenderTexture->Specification.Size.y));
+        m_OutlineShader.SetFloat("u_Thickness", 4.0f);
+        m_OutlineShader.SetVec3("u_OutlineColor", BlVec3<f32>(1.0f, 0.5f, 0.1f));
+
+        renderer.BindTexture(mask, 0);
 
         renderer.DrawIndexed(6);
 
-        // renderer.UnBindTexture();
+        renderer.UnBindRenderTexture();
 
-        Renderer3D::UnBindRenderTexture();
+        renderer.UnBindTexture();
     }
     
     void EditorLayer::OnEvent(const Event& event) {
@@ -531,6 +524,41 @@ namespace BlackberryEditor {
             }
             if (kp.GetKeyCode() == KeyCode::Num3) {
                 m_GizmoState = GizmoState::Scale;
+            }
+
+            if (kp.GetKeyCode() == KeyCode::Del) {
+                if (m_IsEntitySelected) {
+                    Entity e(m_SelectedEntity, m_CurrentScene);
+
+                    u64 uuid = e.GetComponent<TagComponent>().UUID;
+                    m_CurrentScene->DestroyEntity(uuid);
+
+                    m_IsEntitySelected = false;
+                    m_SelectedEntity = entt::null;
+                }
+            }
+
+            if (kp.GetKeyCode() == KeyCode::D && Input::IsKeyDown(KeyCode::Ctrl)) {
+                if (m_IsEntitySelected) {
+                    Entity e(m_SelectedEntity, m_CurrentScene);
+
+                    m_CurrentScene->CopyEntity(m_SelectedEntity);
+                }
+            }
+
+            if (kp.GetKeyCode() == KeyCode::F) {
+                if (m_IsEntitySelected) {
+                    Entity e(m_SelectedEntity, m_CurrentScene);
+
+                    if (e.HasComponent<TransformComponent>()) {
+                        auto& transform = e.GetComponent<TransformComponent>();
+
+                        f32 size = glm::max(transform.Scale.x, glm::max(transform.Scale.y, transform.Scale.z));
+                        f32 distance = size * 3.0f;
+
+                        m_EditorCamera.Transform.Position = transform.Position - m_EditorCamera.GetForwardVector() * distance;
+                    }
+                }
             }
         }
     }
@@ -1232,8 +1260,8 @@ namespace BlackberryEditor {
 
                 ImGui::SliderFloat("Level Of Detail", &env.LevelOfDetail, 0.0f, 4.0f);
 
-                ImGui::ColorEdit3("Fog Color", &env.FogColor.x);
-                ImGui::DragFloat("Fog Distance", &env.FogDistance);
+                ImGui::Checkbox("Enable Bloom", &env.EnableBloom);
+                ImGui::DragFloat("Bloom Threshold", &env.BloomThreshold);
             });
         }
     
@@ -1268,7 +1296,7 @@ namespace BlackberryEditor {
 
         ImGui::SetCursorPosX(cursorX);
         ImGui::SetCursorPosY(cursorY);
-        // ImGui::Image(m_OutlineTexture.Attachments[0].ID, ImVec2(size.x, size.y), ImVec2(0, 1), ImVec2(1, 0));
+        ImGui::Image(m_OutlineTexture->Attachments[0]->ID, ImVec2(size.x, size.y), ImVec2(0, 1), ImVec2(1, 0));
 
         if (ImGui::IsItemHovered()) {
             m_ViewportHovered = true;

@@ -5,6 +5,7 @@ layout (location = 0) in vec3 a_Normal;
 layout (location = 1) in vec2 a_TexCoord;
 layout (location = 2) in vec3 a_FragPos;
 layout (location = 3) in flat int a_MaterialIndex;
+layout (location = 4) in flat int a_EntityID;
 
 struct Material {
     int UseAlbedoTexture;
@@ -32,6 +33,7 @@ layout (location = 0) out vec4 o_GPosition;
 layout (location = 1) out vec4 o_GNormal;
 layout (location = 2) out vec4 o_GAlbedo;
 layout (location = 3) out vec4 o_GMat;
+layout (location = 4) out int o_GEntityID;
  
 void main() {
     // Store the position in the first buffer
@@ -63,9 +65,13 @@ void main() {
         o_GMat.b = Materials[a_MaterialIndex].AOFactor;
     }
 
+    o_GMat.a = float(a_EntityID);
+
     // For visualizations (normally the alpha would just get set to 0.0)
     o_GPosition.a = 1.0;
     o_GNormal.a = 1.0;
     o_GAlbedo.a = 1.0;
-    o_GMat.a = 1.0;
+    // o_GMat.a = 1.0;
+    // Mouse picking
+    o_GEntityID = a_EntityID;
 }

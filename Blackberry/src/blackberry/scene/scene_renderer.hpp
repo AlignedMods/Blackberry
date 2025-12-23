@@ -17,6 +17,7 @@ namespace Blackberry {
         BlVec2<f32> TexCoord;
         u32 MaterialIndex = 0;
         u32 ObjectIndex = 0;
+        u32 EntityID = 0;
     };
 
     struct GPUDirectionalLight {
@@ -164,13 +165,16 @@ namespace Blackberry {
         Ref<RenderTexture> BloomCombinePass5;
         Ref<RenderTexture> BloomCombinePass6;
 
-        f32 BloomThreshold = 3.0f;
-
         Ref<EnviromentMap> CurrentEnviromentMap;
         Ref<EnviromentMap> DefaultEnviromentMap;
         f32 EnviromentMapLOD = 0.0f;
         BlVec3<f32> EnviromentFogColor;
         f32 EnviromentFogDistance = 0.0f;
+
+        bool BloomEnabled = true;
+        f32 BloomThreshold = 3.0f;
+
+        int SelectedEntity = 0;
     };
 
     class SceneRenderer {
@@ -183,14 +187,16 @@ namespace Blackberry {
         SceneRendererState& GetState();
 
     private:
-        void AddMesh(const TransformComponent& transform, const Mesh& mesh, const Material& mat, BlColor color);
-        void AddModel(const TransformComponent& transform, const MeshComponent& model, BlColor color);
+        void AddMesh(const TransformComponent& transform, const Mesh& mesh, const Material& mat, BlColor color, u32 entityID);
+        void AddModel(const TransformComponent& transform, const MeshComponent& model, BlColor color, u32 entityID);
 
         void AddDirectionalLight(const TransformComponent& transform, const DirectionalLightComponent& light);
         void AddPointLight(const TransformComponent& transform, const PointLightComponent& light);
         void AddSpotLight(const TransformComponent& transform, const SpotLightComponent& light);
 
         void AddEnviroment(const EnviromentComponent& env);
+
+        void SetSelectedEntity(int entityID);
 
         void Flush();
 

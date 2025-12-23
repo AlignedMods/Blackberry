@@ -130,6 +130,8 @@ namespace Blackberry {
 
             out << YAML::Key << "EnviromentMap" << YAML::Value << env.EnviromentMap;
             out << YAML::Key << "LevelOfDetail" << YAML::Value << env.LevelOfDetail;
+            out << YAML::Key << "EnableBloom" << YAML::Value << env.EnableBloom;
+            out << YAML::Key << "BloomThreshold" << YAML::Value << env.BloomThreshold;
 
             out << YAML::EndMap; // EnviromentComponent
         }
@@ -239,6 +241,8 @@ namespace Blackberry {
                 EnviromentComponent env;
                 env.EnviromentMap = yamlEnv["EnviromentMap"].as<u64>();
                 env.LevelOfDetail = yamlEnv["LevelOfDetail"].as<f32>();
+                // env.EnableBloom = yamlEnv["EnableBloom"].as<bool>();
+                // env.BloomThreshold = yamlEnv["BloomThreshold"].as<f32>();
 
                 e.AddComponent<EnviromentComponent>(env);
             }

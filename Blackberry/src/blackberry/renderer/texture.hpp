@@ -20,8 +20,11 @@ namespace Blackberry {
 
     enum class RenderTextureAttachmentType {
         // Color attachments
+        ColorR8,
         ColorRGBA8,
         ColorRGBA16F,
+        ColorR32I,
+        ColorR32F,
 
         // Depth attachments
         Depth,
@@ -65,6 +68,9 @@ namespace Blackberry {
         static Ref<RenderTexture> Create(const RenderTextureSpecification& spec);
         void Delete();
         void Resize(BlVec2<u32> size);
+
+        void ClearAttachment(u32 attachment, int value);
+        int ReadPixel(u32 attachment, u32 x, u32 y);
     
         u32 ID = 0;
         RenderTextureSpecification Specification;

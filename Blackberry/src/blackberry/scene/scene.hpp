@@ -25,6 +25,7 @@ namespace Blackberry {
 
         SceneCamera GetSceneCamera();
         void SetCamera(SceneCamera* camera);
+        void SetSelectedEntity(EntityID entity);
 
         void OnUpdate();
         void OnRuntimeUpdate();

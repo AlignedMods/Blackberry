@@ -98,6 +98,10 @@ namespace Blackberry {
         m_Renderer->SetCamera(*camera);
     }
 
+    void Scene::SetSelectedEntity(EntityID entity) {
+        m_Renderer->GetState().SelectedEntity = static_cast<int>(entity);
+    }
+
     void Scene::OnUpdate() {
         
     }
@@ -128,7 +132,7 @@ namespace Blackberry {
 
     void Scene::OnRender(RenderTexture* target) {
         BL_ASSERT(m_Camera, "No camera set for current scene!");
-
+        
         m_Renderer->Render(this, target);
     }
 

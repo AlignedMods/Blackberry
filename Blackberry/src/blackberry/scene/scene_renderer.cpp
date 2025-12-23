@@ -114,9 +114,10 @@ namespace Blackberry {
                 {1, RenderTextureAttachmentType::ColorRGBA16F}, // normal buffer
                 {2, RenderTextureAttachmentType::ColorRGBA8}, // color buffer
                 {3, RenderTextureAttachmentType::ColorRGBA16F}, // material buffer
-                {4, RenderTextureAttachmentType::Depth} // depth
+                {4, RenderTextureAttachmentType::ColorR32I}, // EntityID buffer
+                {5, RenderTextureAttachmentType::Depth} // depth
             };
-            spec.ActiveAttachments = {0, 1, 2, 3}; // which attachments we want to use for rendering
+            spec.ActiveAttachments = {0, 1, 2, 3, 4}; // which attachments we want to use for rendering
 
             m_State.GBuffer = RenderTexture::Create(spec);
         }
@@ -125,9 +126,10 @@ namespace Blackberry {
             RenderTextureSpecification spec;
             spec.Size = BlVec2<u32>(1920, 1080);
             spec.Attachments = {
-                {0, RenderTextureAttachmentType::ColorRGBA16F}
+                {0, RenderTextureAttachmentType::ColorRGBA16F},
+                {1, RenderTextureAttachmentType::ColorRGBA8}
             };
-            spec.ActiveAttachments = {0};
+            spec.ActiveAttachments = {0, 1};
 
             m_State.PBROutput = RenderTexture::Create(spec);
         }
@@ -233,8 +235,8 @@ namespace Blackberry {
             
             auto meshView = scene->m_ECS->GetEntitiesWithComponents<TransformComponent, MeshComponent>();
             
-            meshView.each([&](TransformComponent& transform, MeshComponent& mesh) {
-                AddModel(transform, mesh, BlColor(255, 255, 255, 255));
+            meshView.each([&](entt::entity id, TransformComponent& transform, MeshComponent& mesh) {
+                AddModel(transform, mesh, BlColor(255, 255, 255, 255), static_cast<u32>(id));
             });
             
             auto envView = scene->m_ECS->GetEntitiesWithComponents<EnviromentComponent>();
@@ -251,12 +253,12 @@ namespace Blackberry {
         m_Camera = camera;
     }
 
-    void SceneRenderer::AddMesh(const TransformComponent& transform, const Mesh& mesh, const Material& mat, BlColor color) {
+    void SceneRenderer::AddMesh(const TransformComponent& transform, const Mesh& mesh, const Material& mat, BlColor color, u32 entityID) {
         BlVec4<f32> normColor = NormalizeColor(color);
 
         // vertices
         for (u32 i = 0; i < mesh.Positions.size(); i++) {
-            SceneMeshVertex vert = SceneMeshVertex(mesh.Positions[i], mesh.Normals[i], mesh.TexCoords[i], m_State.MaterialIndex, m_State.ObjectIndex);
+            SceneMeshVertex vert = SceneMeshVertex(mesh.Positions[i], mesh.Normals[i], mesh.TexCoords[i], m_State.MaterialIndex, m_State.ObjectIndex, entityID);
             m_State.MeshVertices.push_back(vert);
         }
 
@@ -298,7 +300,7 @@ namespace Blackberry {
         m_State.MaterialIndex++;
     }
 
-    void SceneRenderer::AddModel(const TransformComponent& transform, const MeshComponent& model, BlColor color) {
+    void SceneRenderer::AddModel(const TransformComponent& transform, const MeshComponent& model, BlColor color, u32 entityID) {
         if (Project::GetAssetManager().ContainsAsset(model.MeshHandle)) {
             auto& trueModel = std::get<Model>(Project::GetAssetManager().GetAsset(model.MeshHandle).Data);
 
@@ -310,7 +312,7 @@ namespace Blackberry {
                         auto& asset = Project::GetAssetManager().GetAsset(model.MaterialHandles.at(i));
                         auto& material = std::get<Material>(Project::GetAssetManager().GetAsset(model.MaterialHandles.at(i)).Data);
 
-                        AddMesh(transform, trueModel.Meshes[i], material, color);
+                        AddMesh(transform, trueModel.Meshes[i], material, color, entityID);
 
                         useDefaultMaterial = false;
                     }
@@ -318,10 +320,10 @@ namespace Blackberry {
 
                 if (useDefaultMaterial && trueModel.Meshes[i].HasMeshMaterial) {
                     auto& material = trueModel.Meshes[i].MeshMaterial;
-                    AddMesh(transform, trueModel.Meshes[i], material, color); 
+                    AddMesh(transform, trueModel.Meshes[i], material, color, entityID); 
                 } else if (useDefaultMaterial && !trueModel.Meshes[i].HasMeshMaterial) {
                     auto& material = DEFAULT_MATERIAL;
-                    AddMesh(transform, trueModel.Meshes[i], material, color); 
+                    AddMesh(transform, trueModel.Meshes[i], material, color, entityID); 
                 }
             }
         }
@@ -361,8 +363,12 @@ namespace Blackberry {
 
         m_State.CurrentEnviromentMap = std::get<Ref<EnviromentMap>>(Project::GetAssetManager().GetAsset(env.EnviromentMap).Data);
         m_State.EnviromentMapLOD = env.LevelOfDetail;
-        m_State.EnviromentFogColor = env.FogColor;
-        m_State.EnviromentFogDistance = env.FogDistance;
+        m_State.BloomEnabled = env.EnableBloom;
+        m_State.BloomThreshold = env.BloomThreshold;
+    }
+
+    void SceneRenderer::SetSelectedEntity(int entityID) {
+        m_State.SelectedEntity = entityID;
     }
 
     void SceneRenderer::Flush() {
@@ -390,11 +396,13 @@ namespace Blackberry {
                     {1, ShaderDataType::Float3, "Normal"},
                     {2, ShaderDataType::Float2, "TexCoord"},
                     {3, ShaderDataType::Int, "MaterialIndex"},
-                    {4, ShaderDataType::Int, "ObjectIndex"}
+                    {4, ShaderDataType::Int, "ObjectIndex"},
+                    {5, ShaderDataType::Int, "EntityID"}
                 });
 
                 renderer.BindShader(m_State.MeshGeometryShader);
                 m_State.MeshGeometryShader.SetMatrix("u_ViewProjection", m_Camera.GetCameraMatrixFloat());
+                m_State.MeshGeometryShader.SetInt("u_SelectedEntity", m_State.SelectedEntity);
 
                 {
                     BL_PROFILE_SCOPE("SceneRenderer::Flush/Passing transforms");
@@ -409,6 +417,8 @@ namespace Blackberry {
 
                 renderer.BindRenderTexture(m_State.GBuffer);
                 renderer.Clear(BlColor(0, 0, 0, 255));
+
+                m_State.GBuffer->ClearAttachment(4, -1);
 
                 renderer.DrawIndexed(m_State.MeshIndexCount);
 
@@ -472,11 +482,11 @@ namespace Blackberry {
                 renderer.BindShader(m_State.MeshLightingShader);
                 m_State.MeshLightingShader.SetVec3("u_ViewPos", m_Camera.Transform.Position);
 
-                u64 handles[4]{};
-                for (u32 i = 0; i < 4; i++) {
+                u64 handles[5]{};
+                for (u32 i = 0; i < 5; i++) {
                     handles[i] = m_State.GBuffer->Attachments[i]->BindlessHandle;
                 }
-                m_State.ShaderGBuffer.ReserveMemory(sizeof(u64) * 4, handles);
+                m_State.ShaderGBuffer.ReserveMemory(sizeof(u64) * 5, handles);
 
                 // set lights
                 m_State.MeshLightingShader.SetVec4("u_DirectionalLight.Direction", m_State.DirectionalLight.Direction);
@@ -491,6 +501,8 @@ namespace Blackberry {
                 m_State.MeshLightingShader.SetInt("u_IrradianceMap", 0);
                 m_State.MeshLightingShader.SetInt("u_PrefilterMap", 1);
                 m_State.MeshLightingShader.SetInt("u_BrdfLUT", 2);
+
+                m_State.MeshLightingShader.SetInt("u_SelectedEntity", m_State.SelectedEntity);
 
                 if (m_State.CurrentEnviromentMap) {
                     renderer.BindCubemap(m_State.CurrentEnviromentMap->Irradiance, 0);
@@ -779,7 +791,11 @@ namespace Blackberry {
             // Tonemap
             renderer.BindShader(m_State.ToneMapShader);
 
-            renderer.BindTexture(m_State.BloomCombinePass6->Attachments[0], 0);
+            if (m_State.BloomEnabled) {
+                renderer.BindTexture(m_State.BloomCombinePass6->Attachments[0], 0);
+            } else {
+                renderer.BindTexture(m_State.PBROutput->Attachments[0], 0);
+            }
 
             renderer.BindRenderTexture(m_Target);
             renderer.Clear(BlColor(0, 0, 0, 255));
