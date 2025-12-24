@@ -365,7 +365,7 @@ namespace BlackberryEditor {
                     }
                 }
 
-                if (Input::IsMousePressed(MouseButton::Left)) {
+                if (Input::IsMousePressed(MouseButton::Left) && !ImGuizmo::IsUsing() && !ImGuizmo::IsOver()) {
                     BlVec2 pos = Input::GetMousePosition();
                     
                     pos.x -= m_ViewportBounds.x;

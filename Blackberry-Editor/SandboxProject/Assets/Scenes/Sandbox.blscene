@@ -52,9 +52,9 @@ Entities:
       UUID: 13661550090672485915
       Name: House
     TransformComponent:
-      Position: [-7.2000003, 1.4, 0]
-      Rotation: [0, 0, 0, 1]
-      Scale: [1, 1, 1]
+      Position: [-3.3000004, 0.19999993, 2.95]
+      Rotation: [0, 0.57371575, 0, 0.8190545]
+      Scale: [6.3000007, 6.3, 6.3000007]
     MeshComponent:
       MeshHandle: 3506026168109084076
       MaterialHandles:
