@@ -25,13 +25,10 @@ namespace Blackberry {
 
         SceneCamera GetSceneCamera();
         void SetCamera(SceneCamera* camera);
-        void SetSelectedEntity(EntityID entity);
 
         void OnUpdate();
         void OnRuntimeUpdate();
         void OnRender(RenderTexture* target = nullptr); // NOTE: you can use a custom framebuffer here!
-
-        void RenderEntity(EntityID entity);
 
         EntityID CreateEntity(const std::string& name);
         EntityID CreateEntityWithUUID(u64 uuid);

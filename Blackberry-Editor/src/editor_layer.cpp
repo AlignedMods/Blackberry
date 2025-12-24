@@ -255,10 +255,7 @@ namespace BlackberryEditor {
         spec.ActiveAttachments = { 0 };
 
         m_RenderTexture = RenderTexture::Create(spec);
-        m_MaskTexture = RenderTexture::Create(spec);
         m_OutlineTexture = RenderTexture::Create(spec);
-
-        m_OutlineShader = Shader::Create(FS::Path("Assets/Shaders/OutlineShader.vs"), FS::Path("Assets/Shaders/OutlineShader.fs"));
 
         LoadEditorState();
     
@@ -377,7 +374,8 @@ namespace BlackberryEditor {
                     u32 fbX = static_cast<u32>(u * 1920);
                     u32 fbY = static_cast<u32>(v * 1080);
 
-                    int id = m_CurrentScene->GetSceneRenderer()->GetState().GBuffer->ReadPixel(4, fbX, fbY);
+                    float pixel = m_SavedGBuffer->ReadPixelFloat(4, fbX, fbY);
+                    int id = static_cast<int>(pixel);
                     
                     if (id != -1) {
                         m_SelectedEntity = static_cast<EntityID>(id);
@@ -395,8 +393,9 @@ namespace BlackberryEditor {
     
     void EditorLayer::OnRender() {
         m_CurrentScene->SetCamera(m_CurrentCamera);
-        m_CurrentScene->SetSelectedEntity(m_SelectedEntity);
         m_CurrentScene->OnRender(m_RenderTexture.Data());
+
+        m_SavedGBuffer = m_CurrentScene->GetSceneRenderer()->GetState().GBuffer;
     }
 
     void EditorLayer::OnUIRender() {
@@ -481,38 +480,11 @@ namespace BlackberryEditor {
     void EditorLayer::OnOverlayRender() {
         auto& renderer = BL_APP.GetRenderer();
 
-        Ref<Texture2D> mask = m_CurrentScene->GetSceneRenderer()->GetState().PBROutput->Attachments[1];
+        DebugRenderer::SetRenderTexture(m_OutlineTexture);
 
-        DrawBuffer quad;
-        quad.Vertices = m_CurrentScene->GetSceneRenderer()->GetState().QuadVertices.data();
-        quad.VertexCount = 6;
-        quad.VertexSize = sizeof(f32) * 4;
+        DebugRenderer::DrawEntityOutline(Entity(m_SelectedEntity, m_CurrentScene));
 
-        quad.Indices = m_CurrentScene->GetSceneRenderer()->GetState().QuadIndices.data();
-        quad.IndexCount = 6;
-        quad.IndexSize = sizeof(u32);
-
-        renderer.SubmitDrawBuffer(quad);
-        renderer.SetBufferLayout({
-            {0, ShaderDataType::Float2, "Position"},
-            {1, ShaderDataType::Float2, "TexCoord"},
-        });
-
-        renderer.BindRenderTexture(m_OutlineTexture.Data());
-        renderer.Clear(BlColor(0, 0, 0, 255));
-
-        renderer.BindShader(m_OutlineShader);
-        m_OutlineShader.SetVec2("u_TexelSize", BlVec2(1.0f / m_RenderTexture->Specification.Width, 1.0f / m_RenderTexture->Specification.Height));
-        m_OutlineShader.SetFloat("u_Thickness", 4.0f);
-        m_OutlineShader.SetVec3("u_OutlineColor", BlVec3(1.0f, 0.5f, 0.1f));
-
-        renderer.BindTexture(mask, 0);
-
-        renderer.DrawIndexed(6);
-
-        renderer.UnBindRenderTexture();
-
-        renderer.UnBindTexture();
+        DebugRenderer::ResetRenderTexture();
     }
     
     void EditorLayer::OnEvent(const Event& event) {

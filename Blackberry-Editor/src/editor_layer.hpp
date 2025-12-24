@@ -79,11 +79,7 @@ namespace BlackberryEditor {
         Blackberry::Ref<Blackberry::RenderTexture> m_RenderTexture;
         BlRec m_ViewportBounds;
         f32 m_ViewportScale = 1.0f;
-        bool m_ViewportHovered = false;
-
-        Blackberry::Ref<Blackberry::RenderTexture> m_MaskTexture;
-
-        Blackberry::Shader m_OutlineShader;
+        bool m_ViewportHovered = false;;
 
         Blackberry::Ref<Blackberry::RenderTexture> m_OutlineTexture;
     
@@ -104,6 +100,8 @@ namespace BlackberryEditor {
         Blackberry::Ref<Blackberry::Texture2D> m_StopIcon;
         Blackberry::Ref<Blackberry::Texture2D> m_PauseIcon;
         Blackberry::Ref<Blackberry::Texture2D> m_ResumeIcon;
+
+        Blackberry::Ref<Blackberry::RenderTexture> m_SavedGBuffer;
     
         bool m_ShowDemoWindow = false;
 

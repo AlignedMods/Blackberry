@@ -2,15 +2,17 @@
 
 #include "blackberry/core/types.hpp"
 #include "blackberry/core/path.hpp"
+#include "blackberry/core/memory.hpp"
 
 #include <string>
 
 namespace Blackberry {
 
     struct Shader {
-        static Shader Create(const std::string& vert, const std::string& frag);
-        static Shader Create(const FS::Path& vert, const FS::Path& frag);
-        void Delete();
+        static Ref<Shader> Create(const std::string& vert, const std::string& frag);
+        static Ref<Shader> Create(const FS::Path& vert, const FS::Path& frag);
+
+        ~Shader();
     
         void SetFloat(const std::string& uniform, f32 val);
         void SetInt(const std::string& uniform, int val);

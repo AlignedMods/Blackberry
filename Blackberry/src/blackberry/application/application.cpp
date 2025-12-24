@@ -8,9 +8,9 @@
 #include "blackberry/ecs/ecs.hpp"
 #include "platform/glfw/glfw_window.hpp"
 #include "platform/opengl/opengl3_renderer.hpp"
-#include "blackberry/renderer/renderer3d.hpp"
 #include "blackberry/lua/lua.hpp"
 #include "blackberry/core/timer.hpp"
+#include "blackberry/renderer/debug_renderer.hpp"
 
 #include "imgui.h"
 #include "glad/gl.h"
@@ -36,6 +36,8 @@ namespace Blackberry {
 
         BlVec2 viewport = BlVec2(static_cast<f32>(data.Width), static_cast<f32>(data.Height));
         m_Renderer = new Renderer_OpenGL3(viewport);
+
+        DebugRenderer::Initialize();
 
         m_TargetFPS = spec.FPS;
         m_LastTime = m_Window->GetTime();
@@ -65,12 +67,12 @@ namespace Blackberry {
 
             m_Running = m_Running && !m_Window->ShouldClose();
 
+            m_Window->OnRenderStart();
+            OnRender();
+
             m_Window->OnUpdate();
             OnUpdate();
 
-            m_Window->OnRenderStart();
-
-            OnRender();
             OnUIRender();
 
             OnOverlayRender();

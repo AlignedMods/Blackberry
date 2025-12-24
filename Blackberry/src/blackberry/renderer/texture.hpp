@@ -71,8 +71,10 @@ namespace Blackberry {
         void Delete();
         void Resize(u32 width, u32 height);
 
-        void ClearAttachment(u32 attachment, int value);
-        int ReadPixel(u32 attachment, u32 x, u32 y);
+        void ClearAttachmentInt(u32 attachment, int value);
+        void ClearAttachmentFloat(u32 attachment, f32 value);
+
+        f32 ReadPixelFloat(u32 attachment, u32 x, u32 y);
     
         u32 ID = 0;
         RenderTextureSpecification Specification;

@@ -38,7 +38,7 @@
 #include "blackberry/core/timer.hpp"
 
 // rendering abstractions
-#include "blackberry/renderer/renderer3d.hpp"
+#include "blackberry/renderer/debug_renderer.hpp"
 #include "blackberry/renderer/texture.hpp"
 #include "blackberry/renderer/shader.hpp"
 

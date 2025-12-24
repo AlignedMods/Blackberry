@@ -6,8 +6,8 @@
 
 namespace Blackberry {
 
-    Shader Shader::Create(const std::string& vert, const std::string& frag) {
-        Shader shader;
+    Ref<Shader> Shader::Create(const std::string& vert, const std::string& frag) {
+        Ref<Shader> shader = CreateRef<Shader>();
 
         int errorCode = 0;
         char buf[512]{};
@@ -37,15 +37,15 @@ namespace Blackberry {
             BL_CORE_ERROR("Failed to compile fragment shader! Error: {}", buf);
         }
     
-        shader.ID = glCreateProgram();
-        glAttachShader(shader.ID, vertexShader);
-        glAttachShader(shader.ID, fragmentShader);
-        glLinkProgram(shader.ID);
+        shader->ID = glCreateProgram();
+        glAttachShader(shader->ID, vertexShader);
+        glAttachShader(shader->ID, fragmentShader);
+        glLinkProgram(shader->ID);
     
-        glGetProgramiv(shader.ID, GL_LINK_STATUS, &errorCode);
+        glGetProgramiv(shader->ID, GL_LINK_STATUS, &errorCode);
     
         if (!errorCode) {
-            glGetProgramInfoLog(shader.ID, 512, nullptr, buf);
+            glGetProgramInfoLog(shader->ID, 512, nullptr, buf);
             BL_CORE_ERROR("Failed to link shader program! Error: {}", buf);
         }
         glDeleteShader(fragmentShader);
@@ -54,14 +54,14 @@ namespace Blackberry {
         return shader;
     }
 
-    Shader Shader::Create(const FS::Path& vert, const FS::Path& frag) {
+    Ref<Shader> Shader::Create(const FS::Path& vert, const FS::Path& frag) {
         std::string vertSrc = Util::ReadEntireFile(vert);
         std::string fragSrc = Util::ReadEntireFile(frag);
 
         return Create(vertSrc, fragSrc);
     }
-    
-    void Shader::Delete() {
+
+    Shader::~Shader() {
         glDeleteProgram(ID);
     }
     

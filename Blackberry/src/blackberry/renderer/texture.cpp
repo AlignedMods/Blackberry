@@ -204,22 +204,30 @@ namespace Blackberry {
         Invalidate();
     }
 
-    void RenderTexture::ClearAttachment(u32 attachment, int value) {
+    void RenderTexture::ClearAttachmentInt(u32 attachment, int value) {
         BL_ASSERT(Specification.Attachments.at(attachment).Type == RenderTextureAttachmentType::ColorR32I, "Not an integer attachment!");
 
         glClearTexImage(Attachments.at(attachment)->ID, 0, GL_RED_INTEGER, GL_INT, &value);
     }
 
-    int RenderTexture::ReadPixel(u32 attachment, u32 x, u32 y) {
-        BL_ASSERT(Specification.Attachments.at(attachment).Type == RenderTextureAttachmentType::ColorR32I, "Not an integer attachment!");
+    void RenderTexture::ClearAttachmentFloat(u32 attachment, f32 value) {
+        BL_ASSERT(Specification.Attachments.at(attachment).Type == RenderTextureAttachmentType::ColorR32F, "Not a floating point attachment!");
+
+        glClearTexImage(Attachments.at(attachment)->ID, 0, GL_RED, GL_FLOAT, &value);
+    }
+
+    f32 RenderTexture::ReadPixelFloat(u32 attachment, u32 x, u32 y) {
+        BL_ASSERT(Specification.Attachments.at(attachment).Type == RenderTextureAttachmentType::ColorR32F, "Not a floating point attachment!");
 
         glBindFramebuffer(GL_FRAMEBUFFER, ID);
         glReadBuffer(GL_COLOR_ATTACHMENT0 + attachment);
-        int pixelData;
-        glReadPixels(x, y, 1, 1, GL_RED_INTEGER, GL_INT, &pixelData);
+
+        float pixel = 0.0f;
+        glReadPixels(x, y, 1, 1, GL_RED, GL_FLOAT, &pixel);
+
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        return pixelData;
+        return pixel;
     }
 
     void RenderTexture::Invalidate() {

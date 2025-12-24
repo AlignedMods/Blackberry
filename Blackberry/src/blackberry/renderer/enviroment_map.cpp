@@ -112,10 +112,10 @@ namespace Blackberry {
     // Literally not my code, thanks LearnOpenGL
     Ref<EnviromentMap> EnviromentMap::Create(const FS::Path& hdr) {
         // pbr: compile shaders
-        Shader equirectangularToCubemapShader = Shader::Create(FS::Path("Assets/Shaders/Default/GenerateSkybox.vert"), FS::Path("Assets/Shaders/Default/GenerateSkybox.frag"));
-        Shader irradianceShader = Shader::Create(FS::Path("Assets/Shaders/Default/GenerateSkybox.vert"), FS::Path("Assets/Shaders/Default/GenerateIrradiance.frag"));
-        Shader prefilterShader = Shader::Create(FS::Path("Assets/Shaders/Default/GenerateSkybox.vert"), FS::Path("Assets/Shaders/Default/GeneratePrefilter.frag"));
-        Shader brdfShader = Shader::Create(FS::Path("Assets/Shaders/Default/GenerateBrdf.vert"), FS::Path("Assets/Shaders/Default/GenerateBrdf.frag"));
+        Ref<Shader> equirectangularToCubemapShader = Shader::Create(FS::Path("Assets/Shaders/Default/GenerateSkybox.vert"), FS::Path("Assets/Shaders/Default/GenerateSkybox.frag"));
+        Ref<Shader> irradianceShader = Shader::Create(FS::Path("Assets/Shaders/Default/GenerateSkybox.vert"), FS::Path("Assets/Shaders/Default/GenerateIrradiance.frag"));
+        Ref<Shader> prefilterShader = Shader::Create(FS::Path("Assets/Shaders/Default/GenerateSkybox.vert"), FS::Path("Assets/Shaders/Default/GeneratePrefilter.frag"));
+        Ref<Shader> brdfShader = Shader::Create(FS::Path("Assets/Shaders/Default/GenerateBrdf.vert"), FS::Path("Assets/Shaders/Default/GenerateBrdf.frag"));
 
         // pbr: setup framebuffer
         // ----------------------
@@ -182,9 +182,9 @@ namespace Blackberry {
 
         // pbr: convert HDR equirectangular environment map to cubemap equivalent
         // ----------------------------------------------------------------------
-        glUseProgram(equirectangularToCubemapShader.ID);
-        equirectangularToCubemapShader.SetInt("u_EquirectangularMap", 0);
-        equirectangularToCubemapShader.SetMatrix("u_Projection", glm::value_ptr(captureProjection));
+        glUseProgram(equirectangularToCubemapShader->ID);
+        equirectangularToCubemapShader->SetInt("u_EquirectangularMap", 0);
+        equirectangularToCubemapShader->SetMatrix("u_Projection", glm::value_ptr(captureProjection));
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, hdrTexture);
 
@@ -192,7 +192,7 @@ namespace Blackberry {
         glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
         for (unsigned int i = 0; i < 6; ++i)
         {
-            equirectangularToCubemapShader.SetMatrix("u_View", glm::value_ptr(captureViews[i]));
+            equirectangularToCubemapShader->SetMatrix("u_View", glm::value_ptr(captureViews[i]));
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemap, 0);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -225,9 +225,9 @@ namespace Blackberry {
 
         // pbr: solve diffuse integral by convolution to create an irradiance (cube)map.
         // -----------------------------------------------------------------------------
-        glUseProgram(irradianceShader.ID);
-        irradianceShader.SetInt("u_EnvironmentMap", 0);
-        irradianceShader.SetMatrix("u_Projection", glm::value_ptr(captureProjection));
+        glUseProgram(irradianceShader->ID);
+        irradianceShader->SetInt("u_EnvironmentMap", 0);
+        irradianceShader->SetMatrix("u_Projection", glm::value_ptr(captureProjection));
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
 
@@ -235,7 +235,7 @@ namespace Blackberry {
         glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
         for (unsigned int i = 0; i < 6; ++i)
         {
-            irradianceShader.SetMatrix("u_View", glm::value_ptr(captureViews[i]));
+            irradianceShader->SetMatrix("u_View", glm::value_ptr(captureViews[i]));
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, irradianceMap, 0);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -262,9 +262,9 @@ namespace Blackberry {
 
         // pbr: run a quasi monte-carlo simulation on the environment lighting to create a prefilter (cube)map.
         // ----------------------------------------------------------------------------------------------------
-        glUseProgram(prefilterShader.ID);
-        prefilterShader.SetInt("u_EnvironmentMap", 0);
-        prefilterShader.SetMatrix("u_Projection", glm::value_ptr(captureProjection));
+        glUseProgram(prefilterShader->ID);
+        prefilterShader->SetInt("u_EnvironmentMap", 0);
+        prefilterShader->SetMatrix("u_Projection", glm::value_ptr(captureProjection));
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
 
@@ -280,10 +280,10 @@ namespace Blackberry {
             glViewport(0, 0, mipWidth, mipHeight);
 
             float roughness = (float)mip / (float)(maxMipLevels - 1);
-            prefilterShader.SetFloat("u_Roughness", roughness);
+            prefilterShader->SetFloat("u_Roughness", roughness);
             for (unsigned int i = 0; i < 6; ++i)
             {
-                prefilterShader.SetMatrix("u_View", glm::value_ptr(captureViews[i]));
+                prefilterShader->SetMatrix("u_View", glm::value_ptr(captureViews[i]));
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, prefilterMap, mip);
 
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -313,7 +313,7 @@ namespace Blackberry {
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, brdfLUTTexture, 0);
 
         glViewport(0, 0, 512, 512);
-        glUseProgram(brdfShader.ID);
+        glUseProgram(brdfShader->ID);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         RenderQuad();
 

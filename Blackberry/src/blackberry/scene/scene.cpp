@@ -1,7 +1,6 @@
 #include "blackberry/scene/scene.hpp"
 #include "blackberry/ecs/ecs.hpp"
 #include "blackberry/core/log.hpp"
-#include "blackberry/renderer/renderer3d.hpp"
 #include "blackberry/core/util.hpp"
 #include "blackberry/lua/lua.hpp"
 #include "blackberry/scene/entity.hpp"
@@ -108,10 +107,6 @@ namespace Blackberry {
         m_Renderer->SetCamera(*camera);
     }
 
-    void Scene::SetSelectedEntity(EntityID entity) {
-        m_Renderer->GetState().SelectedEntity = static_cast<int>(entity);
-    }
-
     void Scene::OnUpdate() {
         
     }
@@ -144,33 +139,6 @@ namespace Blackberry {
         BL_ASSERT(m_Camera, "No camera set for current scene!");
         
         m_Renderer->Render(this, target);
-    }
-
-    void Scene::RenderEntity(EntityID entity) {
-        TransformComponent& transform = m_ECS->GetComponent<TransformComponent>(entity);
-        AssetManager& assetManager = Project::GetAssetManager();
-
-        if (m_ECS->HasComponent<MeshComponent>(entity)) {
-            MeshComponent& mesh = m_ECS->GetComponent<MeshComponent>(entity);
-
-            if (assetManager.ContainsAsset(mesh.MeshHandle)) {
-                Asset asset = assetManager.GetAsset(mesh.MeshHandle);
-                Model& model = std::get<Model>(asset.Data);
-
-                Renderer3D::DrawModel(transform.GetMatrix(), model, BlColor(155, 255, 100, 255));
-            }
-        }
-
-        if (m_ECS->HasComponent<TextComponent>(entity)) {
-            TextComponent& text = m_ECS->GetComponent<TextComponent>(entity);
-
-            if (assetManager.ContainsAsset(text.FontHandle)) {
-                Asset asset = assetManager.GetAsset(text.FontHandle);
-                Font& font = std::get<Font>(asset.Data);
-
-                Renderer3D::DrawText(transform.GetMatrix(), text.Contents, font, {text.Kerning, text.LineSpacing});
-            }
-        }
     }
 
     EntityID Scene::CreateEntity(const std::string& name) {

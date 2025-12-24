@@ -14,6 +14,7 @@ namespace Blackberry {
     inline void ShutdownCore() {
         Lua::Shutdown();
         PhysicsEngine::Shutdown();
+        DebugRenderer::Shutdown();
     }
 
     extern Application* CreateApplication(u32 argc, char** argv);

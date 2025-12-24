@@ -28,7 +28,7 @@ namespace Blackberry {
         virtual void SubmitDrawBuffer(const DrawBuffer& buffer) override;
         virtual void DrawIndexed(u32 count) override;
         
-        virtual void BindShader(Shader shader) override;
+        virtual void BindShader(Ref<Shader> shader) override;
 
         virtual void BindTexture(Ref<Texture2D> texture, u32 unit) override;
         virtual void UnBindTexture() override;
@@ -43,12 +43,6 @@ namespace Blackberry {
         u32 m_VAO;
         u32 m_VBO;
         u32 m_EBO;
-    
-        // shaders
-        Shader m_ShapeShader;
-        Shader m_TextureShader;
-
-        Shader m_CurrentShader;
 
         BlVec2 m_CurrentViewportSize;
         BlVec2 m_PrevViewportSize;

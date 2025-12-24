@@ -36,6 +36,5 @@ void main()
     float edge = sqrt(gxSum*gxSum + gySum*gySum);
     edge = smoothstep(0.05, 0.2, edge); // tweak thresholds
     
-    if (code == 1)
-        o_FragColor = vec4(u_OutlineColor, edge);
+    o_FragColor = vec4(u_OutlineColor, edge);
 }

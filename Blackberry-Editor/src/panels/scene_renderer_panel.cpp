@@ -33,10 +33,6 @@ namespace BlackberryEditor {
         ImGui::Text("SceneRenderer::Render: %fms", Instrumentor::GetTimePoint("SceneRenderer::Render").Milliseconds());
         ImGui::Text("SceneRenderer::Flush: %fms", Instrumentor::GetTimePoint("SceneRenderer::Flush").Milliseconds());
 
-        if (ImGui::CollapsingHeader("Entities")) {
-            ImGui::Image(state.PBROutput->Attachments[1]->ID, ImVec2(sizeX, sizeY), ImVec2(0, 1), ImVec2(1, 0)); 
-        }
-
         if (ImGui::CollapsingHeader("Bloom Stage")) {
             ImGui::SliderInt("Current Down sampling Stage", &m_CurrentBloomDownsampleStage, 1, 5);
 

@@ -8,7 +8,6 @@ layout (std430, binding = 2) buffer GBuffer {
     uvec2 GNormal;
     uvec2 GAlbedo;
     uvec2 GMat;
-    uvec2 GEntities;
 };
 
 struct DirectionalLight {
@@ -43,8 +42,6 @@ uniform DirectionalLight u_DirectionalLight;
 
 uniform vec3 u_ViewPos;
 
-uniform int u_SelectedEntity;
-
 uniform samplerCube u_IrradianceMap;
 uniform samplerCube u_PrefilterMap;
 uniform sampler2D u_BrdfLUT;
@@ -52,8 +49,7 @@ uniform sampler2D u_BrdfLUT;
 uniform vec3 u_FogColor;
 uniform float u_FogDistance;
 
-layout (location = 0) out vec4 o_FragColor;
-layout (location = 1) out vec4 o_Metadata;
+out vec4 o_FragColor;
 
 const float PI = 3.14159265359;
 
@@ -99,7 +95,6 @@ void main() {
     float metallic =  texture(sampler2D(GMat), a_TexCoord).r;
     float roughness = texture(sampler2D(GMat), a_TexCoord).g;
     float ao =        texture(sampler2D(GMat), a_TexCoord).b;
-    int entity =      int(texture(sampler2D(GMat), a_TexCoord).a);
 
     vec3 viewPos = u_ViewPos;
     
@@ -187,19 +182,7 @@ void main() {
     if (color == vec3(0.0)) // mainly here for skybox support
         discard;
     
-    // HDR tonemapping
-    // color = TonemapACES(color);
-    // Gamma correct
-    // color = pow(color, vec3(1.0 / 2.2));
-
     o_FragColor = vec4(color, 1.0);
-
-    if (u_SelectedEntity == entity) {
-        o_Metadata.r = 1.0;
-        o_Metadata.g = 1.0 / 255.0;
-    }
-
-    o_Metadata.a = 1.0;
 }
 
 float DistributionGGX(vec3 N, vec3 H, float roughness) {

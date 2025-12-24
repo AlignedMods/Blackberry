@@ -6,6 +6,7 @@
 #include "blackberry/model/material.hpp"
 #include "blackberry/renderer/shader_storage_buffer.hpp"
 #include "blackberry/renderer/enviroment_map.hpp"
+#include "blackberry/scene/entity.hpp"
 
 namespace Blackberry {
 
@@ -58,16 +59,16 @@ namespace Blackberry {
 
     struct SceneRendererState {
         // shaders
-        Shader MeshGeometryShader;
-        Shader MeshLightingShader;
-        Shader SkyboxShader;
+        Ref<Shader> MeshGeometryShader;
+        Ref<Shader> MeshLightingShader;
+        Ref<Shader> SkyboxShader;
 
-        Shader BloomExtractBrightAreasShader;
-        Shader BloomGaussianBlurShader;
-        Shader BloomCombineShader;
-        Shader ToneMapShader;
+        Ref<Shader> BloomExtractBrightAreasShader;
+        Ref<Shader> BloomGaussianBlurShader;
+        Ref<Shader> BloomCombineShader;
+        Ref<Shader> ToneMapShader;
 
-        Shader FontShader;
+        Ref<Shader> FontShader;
 
         // shader buffers
         ShaderStorageBuffer TransformBuffer;
@@ -173,8 +174,6 @@ namespace Blackberry {
 
         bool BloomEnabled = true;
         f32 BloomThreshold = 3.0f;
-
-        int SelectedEntity = 0;
     };
 
     class SceneRenderer {
@@ -182,7 +181,25 @@ namespace Blackberry {
         SceneRenderer();
 
         void Render(Scene* scene, RenderTexture* target);
+
         void SetCamera(const SceneCamera& camera);
+        void SetRenderTexture(RenderTexture* texture);
+
+        // NOTE: this function will not call flush!
+        // You must call it yourself afterward
+        void RenderEntity(Entity entity);
+
+        void Flush();
+
+        // NOTE: The result from the geometry pass is in m_State.GBuffer
+        void GeometryPass();
+        // NOTE: The result from the lighting pass in in m_State.PBROutput
+        void LightingPass();
+        // NOTE: The result from the bloom pass is in m_Target
+        void BloomPass();
+
+        // NOTE: The following function MUST be called if you call *.Pass manually!
+        void ResetState();
 
         SceneRendererState& GetState();
 
@@ -195,12 +212,6 @@ namespace Blackberry {
         void AddSpotLight(const TransformComponent& transform, const SpotLightComponent& light);
 
         void AddEnviroment(const EnviromentComponent& env);
-
-        void SetSelectedEntity(int entityID);
-
-        void Flush();
-
-        void BloomPipeline();
 
         u32 GetMaterialIndex(const Material& mat);
 
