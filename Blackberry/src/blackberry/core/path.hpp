@@ -52,7 +52,7 @@ namespace Blackberry::FS {
         DirectoryFile(FileType type, const FS::Path& path)
             : m_Type(type), m_Path(path) {}
 
-        FS::Path Path() const { return m_Path; };
+        const FS::Path& Path() const { return m_Path; };
 
         bool IsFile() const { return m_Type == FileType::File; }
         bool IsDirectory() const { return m_Type == FileType::Directory; }

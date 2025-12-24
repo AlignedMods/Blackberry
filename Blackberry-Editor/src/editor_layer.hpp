@@ -90,6 +90,9 @@ namespace BlackberryEditor {
     
         Blackberry::FS::Path m_CurrentDirectory;
         Blackberry::FS::Path m_BaseDirectory;
+
+        Blackberry::FS::DirectoryIterator m_CurrentDirectoryIterator;
+        bool m_DirtyCurrentDirectoryIterator = true;
     
         // icons
         Blackberry::Ref<Blackberry::Texture2D> m_DirectoryIcon;

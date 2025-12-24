@@ -269,6 +269,7 @@ namespace BlackberryEditor {
     
         m_CurrentDirectory = Project::GetAssetDirecory();
         m_BaseDirectory = Project::GetAssetDirecory();
+        m_CurrentDirectoryIterator = m_CurrentDirectory;
 
         m_EditorCamera.Transform.Scale = BlVec3(m_RenderTexture->Specification.Width, m_RenderTexture->Specification.Height, 1u);
         m_CurrentCamera = &m_EditorCamera;
@@ -286,11 +287,6 @@ namespace BlackberryEditor {
 
         m_EditingScene = &Project::GetStartScene().Scene;
         m_CurrentScene = m_EditingScene;
-
-        FS::Path p("SandboxProject/");
-        for (auto& file : FS::DirectoryIterator(p)) {
-            BL_CORE_INFO("File name: {}", file.Path().String());
-        }
 
         // ImGui::GetIO().IniFilename = std::filesystem::path(m_AppDataDirectory / "Blackberry-Editor" / "editor_layout.ini").string().c_str();
     }
@@ -608,11 +604,17 @@ namespace BlackberryEditor {
     }
 
     void EditorLayer::UI_FileBrowser() {
+        if (m_DirtyCurrentDirectoryIterator) {
+            m_CurrentDirectoryIterator = FS::DirectoryIterator(m_CurrentDirectory);
+            m_DirtyCurrentDirectoryIterator = false;
+        }
+
         ImGui::Begin("File Browser");
     
         if (m_CurrentDirectory != m_BaseDirectory) {
             if (ImGui::ImageButton("##BackDirectory", m_BackDirectoryIcon->ID, ImVec2(32.0f, 32.0f))) {
                 m_CurrentDirectory = m_CurrentDirectory.ParentPath();
+                m_DirtyCurrentDirectoryIterator = true;
             }
         }
     
@@ -674,7 +676,7 @@ namespace BlackberryEditor {
         }
 
         if (ImGui::BeginTable("##FunnyTable", columnCount)) {
-            for (const auto& file : FS::DirectoryIterator(m_CurrentDirectory)) { // NOTE: slow
+            for (const auto& file : m_CurrentDirectoryIterator) { // NOTE: slow
                 ImGui::TableNextColumn();
             
                 const auto& path = file.Path();
@@ -703,6 +705,7 @@ namespace BlackberryEditor {
                 if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
                     if (file.IsDirectory()) {
                         m_CurrentDirectory /= path.FileName();
+                        m_DirtyCurrentDirectoryIterator = true;
                     } else {
                         // Handle specific behavior about an asset
                         if (Project::GetAssetManager().ContainsAsset(relative)) {
