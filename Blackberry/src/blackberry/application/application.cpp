@@ -40,9 +40,6 @@ namespace Blackberry {
         m_TargetFPS = spec.FPS;
         m_LastTime = m_Window->GetTime();
 
-        Lua::Init();
-        Renderer3D::Init();
-
         m_LayerStack = new LayerStack;
 
         for (auto& layer : m_LayerStack->GetAllLayers()) {
@@ -55,9 +52,6 @@ namespace Blackberry {
 
     Application::~Application() {
         delete m_LayerStack; // we want on detach to be called right here
-
-        Lua::Shutdown();
-        Renderer3D::Shutdown();
 
         delete m_Window;
         delete m_Renderer;
@@ -144,14 +138,9 @@ namespace Blackberry {
     }
 
     void Application::OnRender() {
-        Renderer3D::NewFrame();
-        Renderer3D::Clear(Colors::Black);
-
         for (auto layer : m_LayerStack->GetAllLayers()) {
             layer->OnRender();
         }
-
-        Renderer3D::Render();
     }
 
     void Application::OnUIRender() {
@@ -171,8 +160,6 @@ namespace Blackberry {
         for (auto layer : m_LayerStack->GetAllLayers()) {
             layer->OnOverlayRender();
         }
-
-        Renderer3D::Render();
     }
 
     void Application::OnEvent(const Event& event) {

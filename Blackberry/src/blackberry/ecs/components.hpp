@@ -27,24 +27,20 @@ namespace Blackberry {
         Angular
     };
 
-    enum class ColliderType : u16 {
-        Cube
-    };
-
     struct TagComponent {
         std::string Name;
         u64 UUID = 0;
     };
 
     struct TransformComponent {
-        BlVec3<f32> Position;
-        BlVec3<f32> Rotation; // in degrees
-        BlVec3<f32> Scale = BlVec3(1.0f);
+        BlVec3 Position;
+        BlQuat Rotation = BlQuat(1.0f, 0.0f, 0.0f, 0.0f);
+        BlVec3 Scale = BlVec3(1.0f);
 
         inline glm::mat4 GetMatrix() const {
-            glm::mat4 pos = glm::translate(glm::mat4(1.0f), glm::vec3(Position.x, Position.y, Position.z));
-            glm::mat4 rot = glm::toMat4(glm::quat(glm::vec3(glm::radians(Rotation.x), glm::radians(Rotation.y), glm::radians(Rotation.z))));
-            glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(Scale.x, Scale.y, Scale.z));
+            glm::mat4 pos = glm::translate(glm::mat4(1.0f), Position);
+            glm::mat4 rot = glm::toMat4(Rotation);
+            glm::mat4 scale = glm::scale(glm::mat4(1.0f), Scale);
 
             return pos * rot * scale;
         }
@@ -66,33 +62,16 @@ namespace Blackberry {
 
     struct RigidBodyComponent {
         RigidBodyType Type = RigidBodyType::Static;
-
-        // NOTE: Do NOT serialize/allow editing of these fields directly
-        // they are only here so they can be accessed through the physics system/displayed as read only values in debug menus
-        // also i won't make them private since then i would have to add getters or add "friend class" which is stupid
-        BlVec3<f32> LinearVelocity;
-        BlVec3<f32> AngularVelocity;
-
-        // Forces
-        BlVec3<f32> ForceAccumulator;
-        BlVec3<f32> ImpulseAccumulator;
-
-        f32 Mass = 10.0f;
-        bool EnableGravity = true;
-
-        inline void AddForce(BlVec3<f32> force) {
-            ForceAccumulator += force;
-        }
-
-        inline void AddImpulse(BlVec3<f32> impulse) {
-            ImpulseAccumulator += impulse;
-        }
+        f32 Resitution = 1.0f;
+        f32 Friction = 1.0f;
     };
 
-    struct ColliderComponent {
-        ColliderType Type = ColliderType::Cube;
+    struct BoxColliderComponent {
+        BlVec3 Scale = BlVec3(1.0f);
+    };
 
-        BlVec3<f32> Scale = BlVec3(1.0f);
+    struct SphereColliderComponent {
+        f32 Radius = 1.0f;
     };
 
     struct TextComponent {
@@ -110,18 +89,18 @@ namespace Blackberry {
     };
 
     struct DirectionalLightComponent {
-        BlVec3<f32> Color = BlVec3(1.0f);
+        BlVec3 Color = BlVec3(1.0f);
         f32 Intensity = 1.0f;
     };
 
     struct PointLightComponent {
-        BlVec3<f32> Color = BlVec3(1.0f);
+        BlVec3 Color = BlVec3(1.0f);
         f32 Radius = 10.0f;
         f32 Intensity = 1.0f;
     };
 
     struct SpotLightComponent {
-        BlVec3<f32> Color = BlVec3(1.0f);
+        BlVec3 Color = BlVec3(1.0f);
         f32 Cutoff = 25.0f;
         f32 Intensity = 1.0f;
     };

@@ -11,6 +11,7 @@ BlackberryIncludes["freetype"] = "%{wks.location}/Blackberry/vendor/freetype/inc
 BlackberryIncludes["msdfgen"] = "%{wks.location}/Blackberry/vendor/msdfgen/"
 BlackberryIncludes["msdf_atlas_gen"] = "%{wks.location}/Blackberry/vendor/msdf-atlas-gen/"
 BlackberryIncludes["yaml"] = "%{wks.location}/Blackberry/vendor/yaml-cpp/include/"
+BlackberryIncludes["jolt"] = "%{wks.location}/Blackberry/vendor/jolt/"
 
 project "glfw"
     language "C"
@@ -234,3 +235,17 @@ project "yaml-cpp"
     includedirs { "vendor/yaml-cpp/include/", "vendor/yaml-cpp/src/" }
 
     defines { "YAML_CPP_STATIC_DEFINE" }
+
+project "jolt"
+    language "C++"
+    cppdialect "C++20"
+    kind "StaticLib"
+    staticruntime "On"
+
+    targetdir("../build/bin/" .. OutputDir .. "/%{prj.name}")
+    objdir("../build/obj/" .. OutputDir .. "/%{prj.name}")
+
+    files { "vendor/jolt/Jolt/**.cpp",
+            "vendor/jolt/Jolt/**.h" }
+
+    includedirs { "vendor/jolt/" }

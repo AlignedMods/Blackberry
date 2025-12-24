@@ -25,23 +25,6 @@ namespace Blackberry {
         BL_ASSERT(false, "Unreachable");
         return RigidBodyType::Static;
     }
-
-    static const char* ColliderTypeToString(ColliderType type) {
-        switch (type) {
-            case ColliderType::Cube: return "Cube"; break;
-        }
-
-        BL_ASSERT(false, "Unreachable");
-        return "";
-    }
-
-    static ColliderType StringToColliderType(const std::string& str) {
-        if (str == "Cube") return ColliderType::Cube;
-
-        BL_ASSERT(false, "Unreachable");
-        return ColliderType::Cube;
-    }
-
     static void SerializeEntity(YAML::Emitter& out, Entity e) {
         BL_ASSERT(e.HasComponent<TagComponent>(), "All entities must have a TagComponent!");
 
@@ -95,6 +78,41 @@ namespace Blackberry {
             out << YAML::Key << "Far" << YAML::Value << camera.Far;
 
             out << YAML::EndMap; // CameraComponent
+        }
+
+        if (e.HasComponent<RigidBodyComponent>()) {
+            auto& rigidBody = e.GetComponent<RigidBodyComponent>();
+
+            out << YAML::Key << "RigidBodyComponent";
+            out << YAML::BeginMap; // RigidBodyComponent
+
+            out << YAML::Key << "Type" << YAML::Value << RigidBodyTypeToString(rigidBody.Type);
+            out << YAML::Key << "Resitution" << YAML::Value << rigidBody.Resitution;
+            out << YAML::Key << "Friction" << YAML::Value << rigidBody.Friction;
+
+            out << YAML::EndMap; // RigidBodyComponent
+        }
+
+        if (e.HasComponent<BoxColliderComponent>()) {
+            auto& collider = e.GetComponent<BoxColliderComponent>();
+
+            out << YAML::Key << "BoxColliderComponent";
+            out << YAML::BeginMap; // BoxColliderComponent
+
+            out << YAML::Key << "Scale" << YAML::Value << collider.Scale;
+
+            out << YAML::EndMap; // BoxColliderComponent
+        }
+
+        if (e.HasComponent<SphereColliderComponent>()) {
+            auto& collider = e.GetComponent<SphereColliderComponent>();
+
+            out << YAML::Key << "SphereColliderComponent";
+            out << YAML::BeginMap; // SphereColliderComponent
+
+            out << YAML::Key << "Radius" << YAML::Value << collider.Radius;
+
+            out << YAML::EndMap; // SphereColliderComponent
         }
 
         if (e.HasComponent<DirectionalLightComponent>()) {
@@ -186,9 +204,9 @@ namespace Blackberry {
                 auto yamlTransform = entity["TransformComponent"];
 
                 TransformComponent transform;
-                transform.Position = yamlTransform["Position"].as<BlVec3<f32>>();
-                transform.Rotation = yamlTransform["Rotation"].as<BlVec3<f32>>();
-                transform.Scale = yamlTransform["Scale"].as<BlVec3<f32>>();
+                transform.Position = yamlTransform["Position"].as<BlVec3>();
+                transform.Rotation = yamlTransform["Rotation"].as<BlQuat>();
+                transform.Scale = yamlTransform["Scale"].as<BlVec3>();
 
                 e.AddComponent<TransformComponent>(transform);
             }
@@ -214,11 +232,41 @@ namespace Blackberry {
                 e.AddComponent<CameraComponent>(camera);
             }
 
+            if (entity["RigidBodyComponent"]) {
+                auto yamlRigidBody = entity["RigidBodyComponent"];
+
+                RigidBodyComponent rigidBody;
+                rigidBody.Type = StringToRigidBodyType(yamlRigidBody["Type"].as<std::string>());
+                rigidBody.Resitution = yamlRigidBody["Resitution"].as<f32>();
+                rigidBody.Friction = yamlRigidBody["Friction"].as<f32>();
+
+                e.AddComponent<RigidBodyComponent>(rigidBody);
+            }
+
+            if (entity["BoxColliderComponent"]) {
+                auto yamlCollider = entity["BoxColliderComponent"];
+
+                BoxColliderComponent collider;
+                collider.Scale = yamlCollider["Scale"].as<BlVec3>();
+
+                e.AddComponent<BoxColliderComponent>(collider);
+            }
+
+            if (entity["SphereColliderComponent"]) {
+                auto yamlCollider = entity["SphereColliderComponent"];
+
+                SphereColliderComponent collider;
+                collider.Radius = yamlCollider["Radius"].as<f32>();
+
+                e.AddComponent<SphereColliderComponent>(collider);
+            }
+
+
             if (entity["DirectionalLightComponent"]) {
                 auto yamlLight = entity["DirectionalLightComponent"];
 
                 DirectionalLightComponent light;
-                light.Color = yamlLight["Color"].as<BlVec3<f32>>();
+                light.Color = yamlLight["Color"].as<BlVec3>();
                 light.Intensity = yamlLight["Intensity"].as<f32>();
 
                 e.AddComponent<DirectionalLightComponent>(light);
@@ -228,7 +276,7 @@ namespace Blackberry {
                 auto yamlLight = entity["PointLightComponent"];
 
                 PointLightComponent light;
-                light.Color = yamlLight["Color"].as<BlVec3<f32>>();
+                light.Color = yamlLight["Color"].as<BlVec3>();
                 light.Radius = yamlLight["Radius"].as<f32>();
                 light.Intensity = yamlLight["Intensity"].as<f32>();
 

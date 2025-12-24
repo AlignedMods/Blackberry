@@ -74,8 +74,8 @@ namespace Blackberry {
 
     static const Material DEFAULT_MATERIAL = Material::Create();
 
-    static BlVec4<f32> NormalizeColor(BlColor color) {
-        return BlVec4<f32>(
+    static BlVec4 NormalizeColor(BlColor color) {
+        return BlVec4(
             static_cast<f32>(color.r) / 255.0f,
             static_cast<f32>(color.g) / 255.0f,
             static_cast<f32>(color.b) / 255.0f,
@@ -108,7 +108,8 @@ namespace Blackberry {
 
         {
             RenderTextureSpecification spec;
-            spec.Size = BlVec2<u32>(1920, 1080);
+            spec.Width = 1920;
+            spec.Height = 1080;
             spec.Attachments = {
                 {0, RenderTextureAttachmentType::ColorRGBA16F}, // position color buffer
                 {1, RenderTextureAttachmentType::ColorRGBA16F}, // normal buffer
@@ -124,7 +125,8 @@ namespace Blackberry {
         
         {
             RenderTextureSpecification spec;
-            spec.Size = BlVec2<u32>(1920, 1080);
+            spec.Width = 1920;
+            spec.Height = 1080;
             spec.Attachments = {
                 {0, RenderTextureAttachmentType::ColorRGBA16F},
                 {1, RenderTextureAttachmentType::ColorRGBA8}
@@ -136,7 +138,8 @@ namespace Blackberry {
 
         {
             RenderTextureSpecification spec;
-            spec.Size = BlVec2<u32>(960, 540);
+            spec.Width = 960;
+            spec.Height = 540;
             spec.Attachments = {
                 {0, RenderTextureAttachmentType::ColorRGBA16F}
             };
@@ -148,7 +151,8 @@ namespace Blackberry {
         // Create all the render targets (NOTE: We could use mips for this exact purpose)
         {
             RenderTextureSpecification spec;
-            spec.Size = BlVec2<u32>(480, 270); // we want to down scale the image for that extra bluriness
+            spec.Width = 480;
+            spec.Height = 270;
             spec.Attachments = {
                 {0, RenderTextureAttachmentType::ColorRGBA16F}
             };
@@ -158,22 +162,26 @@ namespace Blackberry {
                 m_State.BloomBlurPass1[i] = RenderTexture::Create(spec);
             }
 
-            spec.Size = BlVec2<u32>(240, 135);
+            spec.Width = 240;
+            spec.Height = 135;
             for (u32 i = 0; i < 2; i++) {
                 m_State.BloomBlurPass2[i] = RenderTexture::Create(spec);
             }
 
-            spec.Size = BlVec2<u32>(120, 68);
+            spec.Width = 120;
+            spec.Height = 68;
             for (u32 i = 0; i < 2; i++) {
                 m_State.BloomBlurPass3[i] = RenderTexture::Create(spec);
             }
 
-            spec.Size = BlVec2<u32>(60, 34);
+            spec.Width = 60;
+            spec.Height = 34;
             for (u32 i = 0; i < 2; i++) {
                 m_State.BloomBlurPass4[i] = RenderTexture::Create(spec);
             }
 
-            spec.Size = BlVec2<u32>(30, 17);
+            spec.Width = 30;
+            spec.Height = 17;
             for (u32 i = 0; i < 2; i++) {
                 m_State.BloomBlurPass5[i] = RenderTexture::Create(spec);
             }
@@ -182,7 +190,8 @@ namespace Blackberry {
         // Create all the upscale render targets
         {
             RenderTextureSpecification spec;
-            spec.Size = BlVec2<u32>(60, 34);
+            spec.Width = 60;
+            spec.Height = 34;
             spec.Attachments = {
                 {0, RenderTextureAttachmentType::ColorRGBA16F}
             };
@@ -190,19 +199,24 @@ namespace Blackberry {
 
             m_State.BloomCombinePass1 = RenderTexture::Create(spec);
 
-            spec.Size = BlVec2<u32>(120, 68);
+            spec.Width = 120;
+            spec.Height = 68;
             m_State.BloomCombinePass2 = RenderTexture::Create(spec);
 
-            spec.Size = BlVec2<u32>(240, 135);
+            spec.Width = 240;
+            spec.Height = 135;
             m_State.BloomCombinePass3 = RenderTexture::Create(spec);
 
-            spec.Size = BlVec2<u32>(480, 270);
+            spec.Width = 480;
+            spec.Height = 270;
             m_State.BloomCombinePass4 = RenderTexture::Create(spec);
 
-            spec.Size = BlVec2<u32>(920, 540);
+            spec.Width = 960;
+            spec.Height = 540;
             m_State.BloomCombinePass5 = RenderTexture::Create(spec);
 
-            spec.Size = BlVec2<u32>(1920, 1080);
+            spec.Width = 1920;
+            spec.Height = 1080;
             m_State.BloomCombinePass6 = RenderTexture::Create(spec);
         }
     }
@@ -254,7 +268,7 @@ namespace Blackberry {
     }
 
     void SceneRenderer::AddMesh(const TransformComponent& transform, const Mesh& mesh, const Material& mat, BlColor color, u32 entityID) {
-        BlVec4<f32> normColor = NormalizeColor(color);
+        BlVec4 normColor = NormalizeColor(color);
 
         // vertices
         for (u32 i = 0; i < mesh.Positions.size(); i++) {

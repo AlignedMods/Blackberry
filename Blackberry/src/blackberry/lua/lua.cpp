@@ -17,7 +17,7 @@ namespace Blackberry::Lua {
 
     static lua_State* s_LState = nullptr;
 
-    void Init() {
+    void Initialize() {
         s_LState = luaL_newstate();
         luaL_openlibs(s_LState);
 
@@ -90,7 +90,7 @@ namespace Blackberry::Lua {
         lua_pushvalue(s_LState, value);
     }
 
-    void PushVec2(BlVec2<f32> vec) {
+    void PushVec2(BlVec2 vec) {
         lua_newtable(s_LState);
         lua_pushstring(s_LState, "x");
         lua_pushnumber(s_LState, vec.x);
@@ -101,7 +101,7 @@ namespace Blackberry::Lua {
         lua_settable(s_LState, -3);
     }
 
-    void PushVec3(BlVec3<f32> vec) {
+    void PushVec3(BlVec3 vec) {
         lua_newtable(s_LState);
         lua_pushstring(s_LState, "x");
         lua_pushnumber(s_LState, vec.x);

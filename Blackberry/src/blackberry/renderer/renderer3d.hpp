@@ -25,7 +25,7 @@ namespace Blackberry {
     };
 
     struct DirectionalLight {
-        BlVec3<f32> Direction;
+        BlVec3 Direction;
 
         BlColor Ambient;
         BlColor Diffuse;
@@ -53,7 +53,7 @@ namespace Blackberry {
         static void DrawMesh(const glm::mat4& transform, Mesh& mesh, BlColor color = Colors::White);
         static void DrawModel(const glm::mat4& transform, Model& model, BlColor color = Colors::White);
 
-        static void DrawText(BlVec3<f32> pos, f32 fontSize, const std::string& text, Font& font, TextParams params = TextParams{}, BlColor color = Colors::White);
+        static void DrawText(BlVec3 pos, f32 fontSize, const std::string& text, Font& font, TextParams params = TextParams{}, BlColor color = Colors::White);
         static void DrawText(const glm::mat4& transform, const std::string& text, Font& font, TextParams params = TextParams{}, BlColor color = Colors::White);
 
         static void BindRenderTexture(RenderTexture texture);
@@ -66,7 +66,7 @@ namespace Blackberry {
 
         static void Render();
 
-        static BlVec2<f32> MeasureText(const std::string& text, Font& font, TextParams parameters);
+        static BlVec2 MeasureText(const std::string& text, Font& font, TextParams parameters);
         static Renderer3DStats GetRendererStats();
     };
 

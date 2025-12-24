@@ -169,17 +169,9 @@ namespace Blackberry {
         return CreateScope<T>(T{});
     }
 
-    template <typename T, typename... Args>
+    template <std::_Not_builtin_array T, typename... Args>
     Ref<T> CreateRef(const Args&&... args) {
         T* data = new T{args...};
-        Ref<T> ref(data);
-
-        return ref;
-    }
-
-    template <typename T>
-    Ref<T> CreateRef(const T& s) {
-        T* data = new T{s};
         Ref<T> ref(data);
 
         return ref;

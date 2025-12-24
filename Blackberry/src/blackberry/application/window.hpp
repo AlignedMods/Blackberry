@@ -32,7 +32,7 @@ namespace Blackberry {
             : m_WindowData(data), m_ImGuiEnabled(imguiEnabled) {}
         virtual ~Window() = default;
 
-        virtual BlVec2<f32> GetWindowDims() const = 0;
+        virtual BlVec2 GetWindowDims() const = 0;
 
         virtual bool ShouldClose() const = 0;
         virtual void OnUpdate() = 0;

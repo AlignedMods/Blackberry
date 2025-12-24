@@ -38,14 +38,14 @@ namespace Blackberry {
     public:
         virtual ~Renderer() = default;
 
-        virtual void UpdateViewport(BlVec2<f32> viewport) = 0;
+        virtual void UpdateViewport(BlVec2 viewport) = 0;
 
         virtual void NewFrame() = 0;
         virtual void EndFrame() = 0;
 
         virtual void Clear(BlColor color) const = 0;
 
-        virtual BlVec2<f32> GetViewportSize() const = 0;
+        virtual BlVec2 GetViewportSize() const = 0;
 
         virtual void SetBufferLayout(const std::initializer_list<DrawBufferLayout>& layout) = 0;
 

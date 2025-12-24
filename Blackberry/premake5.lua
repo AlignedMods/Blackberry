@@ -2,7 +2,7 @@ group "dependencies"
     include "external.lua"
 group ""
 
-BlackberryLinks = { "Blackberry", "glfw", "glad", "imgui", "imguizmo", "freetype", "lua", "msdfgen", "msdf-atlas-gen", "yaml-cpp"}
+BlackberryLinks = { "Blackberry", "glfw", "glad", "imgui", "imguizmo", "freetype", "lua", "msdfgen", "msdf-atlas-gen", "yaml-cpp", "jolt" }
 
 project "Blackberry" -- The game engine
     language "C++"
@@ -28,6 +28,7 @@ project "Blackberry" -- The game engine
                   "%{BlackberryIncludes.msdfgen}/static/",
                   "%{BlackberryIncludes.msdf_atlas_gen}",
                   "%{BlackberryIncludes.yaml}",
+                  "%{BlackberryIncludes.jolt}",
                   "vendor/stb/",
                   "vendor/cgltf/",
                   "vendor/lua/src/" }

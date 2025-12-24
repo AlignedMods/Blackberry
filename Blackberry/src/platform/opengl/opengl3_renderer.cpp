@@ -48,7 +48,7 @@ namespace Blackberry {
         std::cerr << "\n\n";
     }
 
-    Renderer_OpenGL3::Renderer_OpenGL3(BlVec2<f32> viewport) {
+    Renderer_OpenGL3::Renderer_OpenGL3(BlVec2 viewport) {
         UpdateViewport(viewport);
 
         int flags;
@@ -105,7 +105,7 @@ namespace Blackberry {
         glBindVertexArray(0);
     }
 
-    void Renderer_OpenGL3::UpdateViewport(BlVec2<f32> viewport) {
+    void Renderer_OpenGL3::UpdateViewport(BlVec2 viewport) {
         m_PrevViewportSize = m_CurrentViewportSize;
         m_CurrentViewportSize = viewport;
         glViewport(0, 0, static_cast<GLsizei>(viewport.x), static_cast<GLsizei>(viewport.y));
@@ -143,7 +143,7 @@ namespace Blackberry {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
-    BlVec2<f32> Renderer_OpenGL3::GetViewportSize() const {
+    BlVec2 Renderer_OpenGL3::GetViewportSize() const {
         return m_CurrentViewportSize;
     }
 
@@ -245,7 +245,7 @@ namespace Blackberry {
 
     void Renderer_OpenGL3::BindRenderTexture(Ref<RenderTexture> texture) {
         glBindFramebuffer(GL_FRAMEBUFFER, texture->ID);
-        UpdateViewport(BlVec2<f32>(texture->Specification.Size.x, texture->Specification.Size.y));
+        UpdateViewport(BlVec2(texture->Specification.Width, texture->Specification.Height));
     }
 
     void Renderer_OpenGL3::UnBindRenderTexture() {

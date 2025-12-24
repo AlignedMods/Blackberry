@@ -26,3 +26,6 @@
 [submodule "Blackberry/vendor/yaml-cpp"]
 	path = Blackberry/vendor/yaml-cpp
 	url = https://github.com/jbeder/yaml-cpp.git
+[submodule "Blackberry/vendor/jolt"]
+	path = Blackberry/vendor/jolt
+	url = https://github.com/jrouwe/JoltPhysics.git

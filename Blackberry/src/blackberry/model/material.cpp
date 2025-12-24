@@ -29,7 +29,7 @@ namespace Blackberry {
             mat.AlbedoTexturePath = albedoPath;
             mat.UseAlbedoTexture = true;
         } else if (node["Albedo-Color"]) {
-            BlVec4<f32> albedoColor = node["Albedo-Color"].as<BlVec4<f32>>();
+            BlVec4 albedoColor = node["Albedo-Color"].as<BlVec4>();
             mat.AlbedoColor = albedoColor;
         }
 

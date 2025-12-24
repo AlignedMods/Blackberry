@@ -1,48 +1,108 @@
 Entities:
   - TagComponent:
-      UUID: 2762024544479589025
-      Name: Point Light
+      UUID: 9874634667927051217
+      Name: Cube
     TransformComponent:
-      Position: [0.8999992, 7.7999997, -0.9000001]
-      Rotation: [0, -0, 0]
+      Position: [2.1142483, 6.0438347, 1.1288803]
+      Rotation: [-0.630882, 0.21987802, -0.7345543, -0.1186233]
+      Scale: [0.5000002, 0.49999353, 0.5]
+    MeshComponent:
+      MeshHandle: 12120187917695872185
+      MaterialHandles:
+        0: 0
+    RigidBodyComponent:
+      Type: Dynamic
+      Resitution: 1
+      Friction: 1
+    BoxColliderComponent:
       Scale: [1, 1, 1]
-    PointLightComponent:
-      Color: [0.22779924, 0.52594614, 1]
-      Radius: 3
-      Intensity: 9.5
   - TagComponent:
-      UUID: 17300041299342347692
-      Name: Point Light
-    TransformComponent:
-      Position: [2.0499992, 7.7999997, -0.9000001]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    PointLightComponent:
-      Color: [1, 0.22779924, 0.22779924]
-      Radius: 3
-      Intensity: 5
-  - TagComponent:
-      UUID: 12398312201110905085
+      UUID: 5756251294068819120
       Name: Camera
     TransformComponent:
-      Position: [-3.8806658, 9.776629, -4.843456]
-      Rotation: [38, -19, 0]
+      Position: [-9.147458, 9.430544, 18.967615]
+      Rotation: [-0.24968901, -0.13742605, -0.03582318, 0.957855]
       Scale: [1920, 1080, 1]
     CameraComponent:
       FOV: 60
       Near: 0.1
       Far: 10000
   - TagComponent:
-      UUID: 16423968000220851085
+      UUID: 17300041299342347692
       Name: Point Light
-    TransformComponent:
-      Position: [1.5499992, 8.549999, -0.9000001]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
     PointLightComponent:
-      Color: [0.2695399, 1, 0.22779924]
+      Color: [1, 0.22779924, 0.22779924]
       Radius: 3
-      Intensity: 7.5
+      Intensity: 5
+  - TagComponent:
+      UUID: 14642358536752236352
+      Name: Point Light
+    PointLightComponent:
+      Color: [0.1930502, 0.8411024, 1]
+      Radius: 110.3
+      Intensity: 3
+  - TagComponent:
+      UUID: 4222715408903924542
+      Name: Duck
+    MeshComponent:
+      MeshHandle: 5537097041247948532
+      MaterialHandles:
+        0: 0
+  - TagComponent:
+      UUID: 13661550090672485915
+      Name: House
+    TransformComponent:
+      Position: [-7.2000003, 1.4, 0]
+      Rotation: [0, 0, 0, 1]
+      Scale: [1, 1, 1]
+    MeshComponent:
+      MeshHandle: 3506026168109084076
+      MaterialHandles:
+        0: 0
+  - TagComponent:
+      UUID: 7127625243918280503
+      Name: Spot Light
+  - TagComponent:
+      UUID: 8468297384558199562
+      Name: Cylinder
+    MeshComponent:
+      MeshHandle: 6020665715492184391
+      MaterialHandles:
+        0: 581071103399731738
+  - TagComponent:
+      UUID: 12809064635662274665
+      Name: DirectionalLight
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0, 1]
+      Scale: [1, 1, 1]
+    DirectionalLightComponent:
+      Color: [1, 0.99645203, 0.08108109]
+      Intensity: 1
+  - TagComponent:
+      UUID: 10617710232344007432
+      Name: Cube
+    TransformComponent:
+      Position: [3.2122788, 8.565563, 0.9817772]
+      Rotation: [0.7981966, 0.022365108, 0.54104257, 0.26392215]
+      Scale: [0.49999988, 0.49999163, 0.49999997]
+    MeshComponent:
+      MeshHandle: 12120187917695872185
+      MaterialHandles:
+        0: 0
+    RigidBodyComponent:
+      Type: Dynamic
+      Resitution: 1
+      Friction: 1
+    BoxColliderComponent:
+      Scale: [1, 1, 1]
+  - TagComponent:
+      UUID: 15682815334010866945
+      Name: Cube
+    MeshComponent:
+      MeshHandle: 12120187917695872185
+      MaterialHandles:
+        0: 581071103399731738
   - TagComponent:
       UUID: 1801923993421270264
       Name: Enviroment
@@ -52,85 +112,50 @@ Entities:
       EnableBloom: true
       BloomThreshold: 3
   - TagComponent:
-      UUID: 15682815334010866945
-      Name: Cube
-    TransformComponent:
-      Position: [4, 6, 0]
-      Rotation: [-126.77844, 64.96454, 162.27875]
-      Scale: [1.0000023, 0.9999999, 1]
-    MeshComponent:
-      MeshHandle: 12120187917695872185
-      MaterialHandles:
-        0: 581071103399731738
+      UUID: 16423968000220851085
+      Name: Point Light
+    PointLightComponent:
+      Color: [0.2695399, 1, 0.22779924]
+      Radius: 3
+      Intensity: 7.5
   - TagComponent:
-      UUID: 13800759856196065948
+      UUID: 2762024544479589025
+      Name: Point Light
+    PointLightComponent:
+      Color: [0.22779924, 0.52594614, 1]
+      Radius: 3
+      Intensity: 9.5
+  - TagComponent:
+      UUID: 6766181932625300945
+      Name: Plane
+    TransformComponent:
+      Position: [4.1829594e-08, 0.19999981, -1.1171221e-07]
+      Rotation: [-2.934448e-07, -0.17818359, -5.3137466e-08, 0.9839973]
+      Scale: [24.884987, 24.884855, 24.884956]
+    MeshComponent:
+      MeshHandle: 14564222973131806585
+      MaterialHandles:
+        0: 0
+    RigidBodyComponent:
+      Type: Static
+      Resitution: 1
+      Friction: 1
+    BoxColliderComponent:
+      Scale: [1, 0, 1]
+  - TagComponent:
+      UUID: 9984804443101149441
       Name: Sphere
     TransformComponent:
-      Position: [1.0499997, 6.4500003, 1]
-      Rotation: [0, -0, 0]
+      Position: [1, 4, 0]
+      Rotation: [0, 0, 0, 1]
       Scale: [1, 1, 1]
     MeshComponent:
       MeshHandle: 16676790944532672824
       MaterialHandles:
-        0: 581071103399731738
-  - TagComponent:
-      UUID: 12809064635662274665
-      Name: DirectionalLight
-    TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [-154.95757, 53.060772, 105.69771]
-      Scale: [0.99999976, 1, 0.9999995]
-    DirectionalLightComponent:
-      Color: [1, 0.99645203, 0.08108109]
-      Intensity: 1
-  - TagComponent:
-      UUID: 8468297384558199562
-      Name: Cylinder
-    TransformComponent:
-      Position: [4.65, 10.15, 0]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    MeshComponent:
-      MeshHandle: 6020665715492184391
-      MaterialHandles:
-        0: 581071103399731738
-  - TagComponent:
-      UUID: 7127625243918280503
-      Name: Spot Light
-    TransformComponent:
-      Position: [0.06108308, 11.384059, 0.4744936]
-      Rotation: [13.341974, -44.31129, -14.983407]
-      Scale: [0.99999994, 1, 0.99999994]
-  - TagComponent:
-      UUID: 13661550090672485915
-      Name: House
-    TransformComponent:
-      Position: [2.3, 7.45, -0.3]
-      Rotation: [-7.2338185e-07, 4.0196657, 5.5788594e-05]
-      Scale: [1, 1, 1]
-    MeshComponent:
-      MeshHandle: 3506026168109084076
-      MaterialHandles:
-        0: 0
-  - TagComponent:
-      UUID: 4222715408903924542
-      Name: Duck
-    TransformComponent:
-      Position: [1.8499999, 7.8, 1.2]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    MeshComponent:
-      MeshHandle: 5537097041247948532
-      MaterialHandles:
-        0: 0
-  - TagComponent:
-      UUID: 14642358536752236352
-      Name: Point Light
-    TransformComponent:
-      Position: [0, 7.9, 1.55]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    PointLightComponent:
-      Color: [0.1930502, 0.8411024, 1]
-      Radius: 110.3
-      Intensity: 3
+        0: 2870631290784515890
+    RigidBodyComponent:
+      Type: Dynamic
+      Resitution: 1
+      Friction: 1
+    SphereColliderComponent:
+      Radius: 1.4

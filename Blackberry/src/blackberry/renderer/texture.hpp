@@ -37,7 +37,8 @@ namespace Blackberry {
     };
 
     struct RenderTextureSpecification {
-        BlVec2<u32> Size;
+        u32 Width = 0;
+        u32 Height = 0;
         std::vector<RenderTextureAttachment> Attachments;
         std::vector<u32> ActiveAttachments;
     };
@@ -57,7 +58,8 @@ namespace Blackberry {
     
         u32 ID = 0;
         u64 BindlessHandle = 0; // for bindless textures
-        BlVec2<u32> Size;
+        u32 Width = 0;
+        u32 Height = 0;
         TextureFormat Format = TextureFormat::RGBA8;
     };
     
@@ -67,7 +69,7 @@ namespace Blackberry {
 
         static Ref<RenderTexture> Create(const RenderTextureSpecification& spec);
         void Delete();
-        void Resize(BlVec2<u32> size);
+        void Resize(u32 width, u32 height);
 
         void ClearAttachment(u32 attachment, int value);
         int ReadPixel(u32 attachment, u32 x, u32 y);

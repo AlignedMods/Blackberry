@@ -5,7 +5,7 @@
 
 namespace Blackberry::Lua {
 
-    void Init();
+    void Initialize();
     void Shutdown();
 
     void RunFile(const FS::Path& path, const std::string& moduleName);
@@ -24,8 +24,8 @@ namespace Blackberry::Lua {
     void PushNumber(f64 value);
     void PushLightUserData(void* data);
     void PushValue(i32 value);
-    void PushVec2(BlVec2<f32> vec);
-    void PushVec3(BlVec3<f32> vec);
+    void PushVec2(BlVec2 vec);
+    void PushVec3(BlVec3 vec);
 
     i32 ToInteger(i32 index);
     f64 ToNumber(i32 index);

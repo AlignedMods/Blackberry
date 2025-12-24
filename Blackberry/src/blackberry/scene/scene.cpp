@@ -17,7 +17,7 @@ extern "C" {
 namespace Blackberry {
 
     Scene::Scene()
-        : m_ECS(new ECS), m_PhysicsWorld(new PhysicsWorld), m_Renderer(new SceneRenderer) {
+        : m_ECS(new ECS), m_PhysicsWorld(new PhysicsEngine), m_Renderer(new SceneRenderer) {
         BL_CORE_TRACE("New scene created ({})", reinterpret_cast<void*>(this));
     }
 
@@ -52,8 +52,18 @@ namespace Blackberry {
             script.IsLoaded = true;
         });
 
-        // set context for physics
-        m_PhysicsWorld->SetContext(*m_ECS);
+        m_PhysicsWorld->SetContext(this);
+
+        auto boxBodyView = m_ECS->GetEntitiesWithComponents<TransformComponent, RigidBodyComponent, BoxColliderComponent>();
+        auto sphereBodyView = m_ECS->GetEntitiesWithComponents<TransformComponent, RigidBodyComponent, SphereColliderComponent>();
+
+        boxBodyView.each([&](entt::entity entity, TransformComponent& transform, RigidBodyComponent& rigidbody, BoxColliderComponent& boxCollider) {
+            m_PhysicsWorld->AddActor(static_cast<u32>(entity), transform, rigidbody, boxCollider);    
+        });
+
+        sphereBodyView.each([&](entt::entity entity, TransformComponent& transform, RigidBodyComponent& rigidbody, SphereColliderComponent& sphereCollider) {
+            m_PhysicsWorld->AddActor(static_cast<u32>(entity), transform, rigidbody, sphereCollider);    
+        });
     }
 
     void Scene::OnStop() {
@@ -127,7 +137,7 @@ namespace Blackberry {
             Lua::Pop(1);
         });
 
-        m_PhysicsWorld->Step(BL_APP.GetDeltaTime());
+        m_PhysicsWorld->Step();
     }
 
     void Scene::OnRender(RenderTexture* target) {

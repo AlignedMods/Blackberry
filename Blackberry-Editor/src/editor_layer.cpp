@@ -54,7 +54,7 @@ namespace BlackberryEditor {
         }
     }
     
-    static void DrawVec2Control(const std::string& label, BlVec2<f32>* vec, const char* fmtX = "X", const char* fmtY = "Y") {
+    static void DrawVec2Control(const std::string& label, BlVec2* vec, const char* fmtX = "X", const char* fmtY = "Y") {
         ImGuiIO& io = ImGui::GetIO();
     
         ImGui::PushID(label.c_str());
@@ -92,7 +92,62 @@ namespace BlackberryEditor {
         ImGui::PopID();
     }
 
-    static void DrawVec3Control(const std::string& label, BlVec3<f32>* vec, const char* fmtX = "X", const char* fmtY = "Y", const char* fmtZ = "Z") {
+    static bool DrawVec3Control(const std::string& label, BlVec3* vec, const char* fmtX = "X", const char* fmtY = "Y", const char* fmtZ = "Z") {
+        ImGuiIO& io = ImGui::GetIO();
+
+        bool used = false;
+    
+        ImGui::PushID(label.c_str());
+    
+        // label
+        ImGui::Text("%s", label.c_str());
+
+        ImGui::Indent();
+    
+        // x axis control
+        ImGui::PushFont(io.Fonts->Fonts[1], 16);
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.0f, 0.0f, 0.7f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 0.0f, 0.0f, 0.4f));
+        ImGui::Button(fmtX);
+        ImGui::PopStyleColor(3);
+        ImGui::PopFont();
+    
+        ImGui::SameLine();
+        used = (used || ImGui::DragFloat("##DragX", &vec->x, 1.0f));
+    
+        // y axis control
+        ImGui::PushFont(io.Fonts->Fonts[1], 16);
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 1.0f, 0.0f, 0.7f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 1.0f, 0.0f, 0.4f));
+        ImGui::Button(fmtY);
+        ImGui::PopStyleColor(3);
+        ImGui::PopFont();
+    
+        ImGui::SameLine();
+        used = (used || ImGui::DragFloat("##DragY", &vec->y));
+
+        // z axis control
+        ImGui::PushFont(io.Fonts->Fonts[1], 16);
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 1.0f, 0.7f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 0.0f, 1.0f, 0.4f));
+        ImGui::Button(fmtZ);
+        ImGui::PopStyleColor(3);
+        ImGui::PopFont();
+    
+        ImGui::SameLine();
+        used = (used || ImGui::DragFloat("##DragZ", &vec->z));
+
+        ImGui::Unindent();
+    
+        ImGui::PopID();
+
+        return used;
+    }
+
+    static void DrawVec4Control(const std::string& label, BlVec4* vec, const char* fmtX = "X", const char* fmtY = "Y", const char* fmtZ = "Z", const char* fmtW = "W") {
         ImGuiIO& io = ImGui::GetIO();
     
         ImGui::PushID(label.c_str());
@@ -138,98 +193,47 @@ namespace BlackberryEditor {
         ImGui::SameLine();
         ImGui::DragFloat("##DragZ", &vec->z);
 
-        ImGui::Unindent();
-    
-        ImGui::PopID();
-    }
-    
-    static void DrawRecControl(const std::string& label, BlRec* rec) {
-        ImGuiIO& io = ImGui::GetIO();
-    
-        ImGui::PushID(label.c_str());
-    
-        // label
-        ImGui::Text("%s", label.c_str());
-
-        ImGui::Indent();
-
-        ImGui::SeparatorText("Position: ");
-    
-        // x axis control
+         // w axis control
         ImGui::PushFont(io.Fonts->Fonts[1], 16);
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.0f, 0.0f, 0.7f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 0.0f, 0.0f, 0.4f));
-        ImGui::Button("X", ImVec2(32.0f, 0.0f));
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 1.0f, 0.7f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 0.0f, 1.0f, 0.4f));
+        ImGui::Button(fmtW);
         ImGui::PopStyleColor(3);
         ImGui::PopFont();
     
         ImGui::SameLine();
-        ImGui::DragFloat("##DragX", &rec->x, 1.0f);
-    
-        // y axis control
-        ImGui::PushFont(io.Fonts->Fonts[1], 16);
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 1.0f, 0.0f, 0.7f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 1.0f, 0.0f, 0.4f));
-        ImGui::Button("Y", ImVec2(32.0f, 0.0f));
-        ImGui::PopStyleColor(3);
-        ImGui::PopFont();
-    
-        ImGui::SameLine();
-        ImGui::DragFloat("##DragY", &rec->y);
-
-        ImGui::SeparatorText("Dimensions: ");
-
-        // w axis control
-        ImGui::PushFont(io.Fonts->Fonts[1], 16);
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.0f, 0.0f, 0.7f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 0.0f, 0.0f, 0.4f));
-        ImGui::Button("W", ImVec2(32.0f, 0.0f));
-        ImGui::PopStyleColor(3);
-        ImGui::PopFont();
-    
-        ImGui::SameLine();
-        ImGui::DragFloat("##DragW", &rec->w);
-        
-        // h axis control
-        ImGui::PushFont(io.Fonts->Fonts[1], 16);
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 1.0f, 0.0f, 0.7f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 1.0f, 0.0f, 0.4f));
-        ImGui::Button("H", ImVec2(32.0f, 0.0f));
-        ImGui::PopStyleColor(3);
-        ImGui::PopFont();
-    
-        ImGui::SameLine();
-        ImGui::DragFloat("##DragH", &rec->h);
+        ImGui::DragFloat("##DragW", &vec->w);
 
         ImGui::Unindent();
     
         ImGui::PopID();
     }
-    
-    static void DrawColorControl(const std::string& label, BlColor* color) {
-        ImGuiIO& io = ImGui::GetIO();
-    
-        ImVec4 imGuiColor = ImVec4(color->r / 255.0f, color->g / 255.0f, color->b / 255.0f, color->a / 255.0f);
-    
-        ImGui::PushID(label.c_str());
 
-        ImGui::Text("%s", label.c_str());
-        ImGui::Indent();
+    static void DrawQuatControl(const std::string& label, BlQuat* quat) {
+        BlVec4 vec = BlVec4(quat->x, quat->y, quat->z, quat->w);
 
-        ImGui::ColorEdit4("##ColorEdit", &imGuiColor.x);
-    
-        ImGui::Unindent();
-        ImGui::PopID();
-    
-        // return value from ImVec4
-        color->r = static_cast<u8>(imGuiColor.x * 255.0f);
-        color->g = static_cast<u8>(imGuiColor.y * 255.0f);
-        color->b = static_cast<u8>(imGuiColor.z * 255.0f);
-        color->a = static_cast<u8>(imGuiColor.w * 255.0f);
+        DrawVec4Control(label, &vec);
+
+        quat->x = vec.x;
+        quat->y = vec.y;
+        quat->z = vec.z;
+        quat->w = vec.w;
+    }
+
+    static void DrawEulerFromQuatControl(const std::string& label, BlQuat* quat) {
+        BlVec3 euler = glm::degrees(glm::eulerAngles(*quat));
+
+        bool used = DrawVec3Control(label, &euler);
+
+        if (used) {
+            BlQuat outQuat = BlQuat(glm::radians(euler));
+
+            // quat->x = outQuat.x;
+            // quat->y = outQuat.y;
+            // quat->z = outQuat.z;
+            // quat->w = outQuat.w;
+        }
     }
 
 #pragma endregion
@@ -244,7 +248,8 @@ namespace BlackberryEditor {
         io.Fonts->AddFontFromFileTTF("Assets/creato_display/CreatoDisplay-Bold.otf", 18);
     
         RenderTextureSpecification spec;
-        spec.Size = BlVec2<u32>(1920, 1080);
+        spec.Width = 1920;
+        spec.Height = 1080;
         spec.Attachments = { {0, RenderTextureAttachmentType::ColorRGBA8},
                              {1, RenderTextureAttachmentType::Depth} };
         spec.ActiveAttachments = { 0 };
@@ -268,7 +273,7 @@ namespace BlackberryEditor {
         m_CurrentDirectory = Project::GetAssetDirecory();
         m_BaseDirectory = Project::GetAssetDirecory();
 
-        m_EditorCamera.Transform.Scale = BlVec3(m_RenderTexture->Specification.Size.x, m_RenderTexture->Specification.Size.y, 1u);
+        m_EditorCamera.Transform.Scale = BlVec3(m_RenderTexture->Specification.Width, m_RenderTexture->Specification.Height, 1u);
         m_CurrentCamera = &m_EditorCamera;
 
         // gizmo styles
@@ -326,10 +331,25 @@ namespace BlackberryEditor {
             
                 if (Input::IsMouseDown(MouseButton::Right)) { 
                     BlVec2 delta = Input::GetMouseDelta();
-                    delta.y *= -1.0f; // invert y axis
+
+                    f32 sensitivity = 0.015f;
                     
-                    m_EditorCamera.Transform.Rotation += BlVec3(delta);
-                    m_EditorCamera.Transform.Rotation.y = glm::clamp(m_EditorCamera.Transform.Rotation.y, -89.0f, 89.0f);
+                    f32 yawDelta = -delta.x * sensitivity;
+                    f32 pitchDelta = -delta.y * sensitivity;
+
+                    BlQuat yawRot = glm::angleAxis(yawDelta, BlVec3(0, 1, 0));
+
+                    BlVec3 right = m_EditorCamera.Transform.Rotation * BlVec3(1, 0, 0);
+                    BlQuat pitchRot = glm::angleAxis(pitchDelta, right);
+
+                    BlQuat newRot = glm::normalize(yawRot * pitchRot * m_EditorCamera.Transform.Rotation);
+                    BlVec3 forward = newRot * BlVec3(0, 0, -1);
+
+                    if (glm::abs(forward.y) < 0.99f) {
+                        m_EditorCamera.Transform.Rotation = newRot;
+                    } else {
+                        m_EditorCamera.Transform.Rotation = glm::normalize(yawRot * m_EditorCamera.Transform.Rotation);
+                    }
             
                     if (Input::IsKeyDown(KeyCode::W)) {
                         m_EditorCamera.Transform.Position += m_EditorCamera.GetForwardVector() * m_EditorCameraSpeed * ts;
@@ -346,7 +366,7 @@ namespace BlackberryEditor {
                 }
 
                 if (Input::IsMousePressed(MouseButton::Left)) {
-                    BlVec2<f32> pos = Input::GetMousePosition();
+                    BlVec2 pos = Input::GetMousePosition();
                     
                     pos.x -= m_ViewportBounds.x;
                     pos.y -= m_ViewportBounds.y;
@@ -482,9 +502,9 @@ namespace BlackberryEditor {
         renderer.Clear(BlColor(0, 0, 0, 255));
 
         renderer.BindShader(m_OutlineShader);
-        m_OutlineShader.SetVec2("u_TexelSize", BlVec2<f32>(1.0f / m_RenderTexture->Specification.Size.x, 1.0f / m_RenderTexture->Specification.Size.y));
+        m_OutlineShader.SetVec2("u_TexelSize", BlVec2(1.0f / m_RenderTexture->Specification.Width, 1.0f / m_RenderTexture->Specification.Height));
         m_OutlineShader.SetFloat("u_Thickness", 4.0f);
-        m_OutlineShader.SetVec3("u_OutlineColor", BlVec3<f32>(1.0f, 0.5f, 0.1f));
+        m_OutlineShader.SetVec3("u_OutlineColor", BlVec3(1.0f, 0.5f, 0.1f));
 
         renderer.BindTexture(mask, 0);
 
@@ -802,7 +822,9 @@ namespace BlackberryEditor {
                     }
 
                     entity.AddComponent<MeshComponent>({Project::GetAssetManager().GetAssetFromPath("Meshes/Default/Plane.glb").Handle});
-                    entity.AddComponent<TransformComponent>({BlVec3(0.0f), BlVec3(0.0f), BlVec3(1.0f)});
+                    entity.AddComponent<TransformComponent>({BlVec3(0.0f), BlQuat(), BlVec3(1.0f, 1.0f, 1.0f)});
+                    entity.AddComponent<RigidBodyComponent>({RigidBodyType::Static});
+                    entity.AddComponent<BoxColliderComponent>({BlVec3(1.0f, 0.0f, 1.0f)});
                 };
 
                 if (ImGui::MenuItem("Cube")) {
@@ -815,7 +837,9 @@ namespace BlackberryEditor {
                     }
 
                     entity.AddComponent<MeshComponent>({Project::GetAssetManager().GetAssetFromPath("Meshes/Default/Cube.glb").Handle});
-                    entity.AddComponent<TransformComponent>({BlVec3(0.0f), BlVec3(0.0f), BlVec3(1.0f)});
+                    entity.AddComponent<TransformComponent>({BlVec3(0.0f), BlQuat(), BlVec3(1.0f)});
+                    entity.AddComponent<RigidBodyComponent>({RigidBodyType::Static});
+                    entity.AddComponent<BoxColliderComponent>({BlVec3(1.0f, 1.0f, 1.0f)});
                 };
 
                 if (ImGui::MenuItem("Sphere")) {
@@ -828,7 +852,9 @@ namespace BlackberryEditor {
                     }
 
                     entity.AddComponent<MeshComponent>({Project::GetAssetManager().GetAssetFromPath("Meshes/Default/Sphere.glb").Handle});
-                    entity.AddComponent<TransformComponent>({BlVec3(0.0f), BlVec3(0.0f), BlVec3(1.0f)});
+                    entity.AddComponent<TransformComponent>({BlVec3(0.0f), BlQuat(), BlVec3(1.0f)});
+                    entity.AddComponent<RigidBodyComponent>({RigidBodyType::Static});
+                    entity.AddComponent<SphereColliderComponent>();
                 }
 
                 if (ImGui::MenuItem("Cylinder")) {
@@ -841,7 +867,7 @@ namespace BlackberryEditor {
                     }
 
                     entity.AddComponent<MeshComponent>({Project::GetAssetManager().GetAssetFromPath("Meshes/Default/Cylinder.glb").Handle});
-                    entity.AddComponent<TransformComponent>({BlVec3(0.0f), BlVec3(0.0f), BlVec3(1.0f)});
+                    entity.AddComponent<TransformComponent>({BlVec3(0.0f), BlQuat(), BlVec3(1.0f)});
                 }
 
                 if (ImGui::MenuItem("Torus")) {
@@ -854,7 +880,7 @@ namespace BlackberryEditor {
                     }
 
                     entity.AddComponent<MeshComponent>({Project::GetAssetManager().GetAssetFromPath("Meshes/Default/Torus.glb").Handle});
-                    entity.AddComponent<TransformComponent>({BlVec3(0.0f), BlVec3(0.0f), BlVec3(1.0f)});
+                    entity.AddComponent<TransformComponent>({BlVec3(0.0f), BlQuat(), BlVec3(1.0f)});
                 }
                 
                 ImGui::EndMenu();
@@ -876,21 +902,21 @@ namespace BlackberryEditor {
                     Entity entity(m_CurrentScene->CreateEntity("Directional Light"), m_CurrentScene);
 
                     entity.AddComponent<DirectionalLightComponent>();
-                    entity.AddComponent<TransformComponent>({BlVec3(0.0f), BlVec3(0.0f), BlVec3(1.0f)});
+                    entity.AddComponent<TransformComponent>({BlVec3(0.0f), BlQuat(), BlVec3(1.0f)});
                 }
 
                 if (ImGui::MenuItem("Point Light")) {
                     Entity entity(m_CurrentScene->CreateEntity("Point Light"), m_CurrentScene);
 
                     entity.AddComponent<PointLightComponent>();
-                    entity.AddComponent<TransformComponent>({BlVec3(0.0f), BlVec3(0.0f), BlVec3(1.0f)});
+                    entity.AddComponent<TransformComponent>({BlVec3(0.0f), BlQuat(), BlVec3(1.0f)});
                 }
 
                 if (ImGui::MenuItem("Spot Light")) {
                     Entity entity(m_CurrentScene->CreateEntity("Spot Light"), m_CurrentScene);
 
                     entity.AddComponent<SpotLightComponent>();
-                    entity.AddComponent<TransformComponent>({BlVec3(0.0f), BlVec3(0.0f), BlVec3(1.0f)});
+                    entity.AddComponent<TransformComponent>({BlVec3(0.0f), BlQuat(), BlVec3(1.0f)});
                 }
 
                 ImGui::EndMenu();
@@ -972,7 +998,8 @@ namespace BlackberryEditor {
                     AddComponentListOption<CameraComponent>("Camera", entity);
                     AddComponentListOption<ScriptComponent>("Script", entity);
                     AddComponentListOption<RigidBodyComponent>("Rigid Body", entity);
-                    AddComponentListOption<ColliderComponent>("Collider", entity);
+                    AddComponentListOption<BoxColliderComponent>("Box Collider", entity);
+                    AddComponentListOption<SphereColliderComponent>("Sphere Collider", entity);
                     AddComponentListOption<DirectionalLightComponent>("Directional Light", entity);
                     AddComponentListOption<PointLightComponent>("Point Light", entity);
                     AddComponentListOption<SpotLightComponent>("Spot Light", entity);
@@ -996,7 +1023,7 @@ namespace BlackberryEditor {
                 DrawVec3Control("Position: ", &transform.Position);
                 ImGui::Separator();
 
-                DrawVec3Control("Rotation: ", &transform.Rotation);
+                DrawEulerFromQuatControl("Rotation: ", &transform.Rotation);
                 ImGui::Separator();
 
                 DrawVec3Control("Scale: ", &transform.Scale);
@@ -1189,18 +1216,14 @@ namespace BlackberryEditor {
                 }
                 ImGui::Unindent();
 
-                ImGui::Text("Mass: ");
-                ImGui::Indent();
-                ImGui::DragFloat("##Mass", &rigidBody.Mass);
-                ImGui::Unindent();
-
-                ImGui::Text("Enable Gravity: ");
-                ImGui::Indent();
-                ImGui::Checkbox("##EnableGravity", &rigidBody.EnableGravity);
-                ImGui::Unindent();
+                ImGui::DragFloat("Restitution", &rigidBody.Resitution, 0.05f);
+                ImGui::DragFloat("Friction", &rigidBody.Friction, 0.05f);
             });
-            DrawComponent<ColliderComponent>("Collider", entity, [](ColliderComponent& collider) {
-                
+            DrawComponent<BoxColliderComponent>("Box Collider", entity, [](BoxColliderComponent& collider) {
+                DrawVec3Control("Scale", &collider.Scale);
+            });
+            DrawComponent<SphereColliderComponent>("Sphere Collider", entity, [](SphereColliderComponent& collider) {
+                ImGui::DragFloat("Radius", &collider.Radius, 0.05f);
             });
             DrawComponent<DirectionalLightComponent>("Directional Light", entity, [](DirectionalLightComponent& light) {
                 ImGui::ColorEdit3("Color", &light.Color.x);
@@ -1276,15 +1299,15 @@ namespace BlackberryEditor {
         ImGui::PopStyleVar();
 
         ImVec2 windowArea = ImGui::GetContentRegionAvail();
-        f32 scale = windowArea.x / static_cast<f32>(m_RenderTexture->Specification.Size.x);
-        f32 y = m_RenderTexture->Specification.Size.x * scale;
+        f32 scale = windowArea.x / static_cast<f32>(m_RenderTexture->Specification.Width);
+        f32 y = m_RenderTexture->Specification.Height * scale;
 
         // we want to make the viewport the smallest axis
         if (y > windowArea.y) {
-            scale = windowArea.y / static_cast<f32>(m_RenderTexture->Specification.Size.y);
+            scale = windowArea.y / static_cast<f32>(m_RenderTexture->Specification.Height);
         }
         
-        BlVec2 size = BlVec2(m_RenderTexture->Specification.Size.x * scale, m_RenderTexture->Specification.Size.y * scale);
+        BlVec2 size = BlVec2(m_RenderTexture->Specification.Width * scale, m_RenderTexture->Specification.Height * scale);
 
         f32 cursorX = ImGui::GetCursorPosX() + windowArea.x / 2.0f - size.x / 2.0f;
         f32 cursorY = ImGui::GetCursorPosY() + (windowArea.y / 2.0f - size.y / 2.0f);
@@ -1379,7 +1402,7 @@ namespace BlackberryEditor {
                     ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(transformMatrix), pos, rot, scale);
 
                     transform.Position = BlVec3(pos[0], pos[1], pos[2]);
-                    transform.Rotation = BlVec3(rot[0], rot[1], rot[2]);
+                    transform.Rotation = BlQuat(BlVec3(glm::radians(rot[0]), glm::radians(rot[1]), glm::radians(rot[2])));
                     transform.Scale    = BlVec3(scale[0], scale[1], scale[2]);
                 }
             }
@@ -1520,7 +1543,7 @@ namespace BlackberryEditor {
         auto camTransform = j.at("CameraTransform");
 
         m_EditorCamera.Transform.Position = BlVec3(camTransform.at("Position")[0], camTransform.at("Position")[1], camTransform.at("Position")[2]);
-        m_EditorCamera.Transform.Rotation = BlVec3(camTransform.at("Rotation")[0], camTransform.at("Rotation")[1], camTransform.at("Rotation")[2]);
+        // m_EditorCamera.Transform.Rotation = BlVec3(camTransform.at("Rotation")[0], camTransform.at("Rotation")[1], camTransform.at("Rotation")[2]);
         m_EditorCamera.Transform.Scale = BlVec3(camTransform.at("Scale")[0], camTransform.at("Scale")[1], camTransform.at("Scale")[2]);
 
         Project::Load(lastProjectPath);

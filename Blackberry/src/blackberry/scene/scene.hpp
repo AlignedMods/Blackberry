@@ -2,7 +2,7 @@
 
 #include "blackberry/scene/uuid.hpp"
 #include "blackberry/ecs/ecs.hpp"
-#include "blackberry/scene/physics_world.hpp"
+#include "blackberry/physics/physics_engine.hpp"
 #include "blackberry/scene/camera.hpp"
 
 #include <unordered_map>
@@ -51,7 +51,7 @@ namespace Blackberry {
 
     private:
         ECS* m_ECS = nullptr;
-        PhysicsWorld* m_PhysicsWorld = nullptr;
+        PhysicsEngine* m_PhysicsWorld = nullptr;
         SceneCamera* m_Camera = nullptr; // gets set in OnRuntimeUpdate
         SceneRenderer* m_Renderer = nullptr;
         std::unordered_map<u64, EntityID> m_EntityMap;

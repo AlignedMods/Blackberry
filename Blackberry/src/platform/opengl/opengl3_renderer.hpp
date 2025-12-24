@@ -12,16 +12,16 @@ namespace Blackberry {
 
     class Renderer_OpenGL3 : public Renderer {
     public:
-        explicit Renderer_OpenGL3(BlVec2<f32> viewport);
+        explicit Renderer_OpenGL3(BlVec2 viewport);
 
-        virtual void UpdateViewport(BlVec2<f32> viewport) override;
+        virtual void UpdateViewport(BlVec2 viewport) override;
 
         virtual void NewFrame() override;
         virtual void EndFrame() override;
 
         virtual void Clear(BlColor color) const override;
 
-        virtual BlVec2<f32> GetViewportSize() const override;
+        virtual BlVec2 GetViewportSize() const override;
 
         virtual void SetBufferLayout(const std::initializer_list<DrawBufferLayout>& layout) override;
 
@@ -50,8 +50,8 @@ namespace Blackberry {
 
         Shader m_CurrentShader;
 
-        BlVec2<f32> m_CurrentViewportSize;
-        BlVec2<f32> m_PrevViewportSize;
+        BlVec2 m_CurrentViewportSize;
+        BlVec2 m_PrevViewportSize;
 
         glm::mat4 m_Projection;
         glm::mat4 m_DefaultProjection;

@@ -3,6 +3,8 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "glm/glm.hpp"
+
 // rust style types (no i still don't like rust, although type names is something they got right)
 
 // integer types
@@ -19,176 +21,11 @@ using i64 = int64_t;
 using f32 = float;
 using f64 = double;
 
-#pragma region TemplateHell
-
-template <typename T = f32>
-struct BlVec2 {
-    constexpr inline BlVec2() 
-        : x{}, y{} {}
-
-    template <typename B = T>
-    constexpr inline explicit BlVec2(B scalar)
-        : x(static_cast<T>(scalar)), y(static_cast<T>(scalar)) {}
-
-    template <typename B = T>
-    constexpr inline explicit BlVec2(B x, B y) 
-        : x(static_cast<T>(x)), y(static_cast<T>(y)) {}
-
-    constexpr inline BlVec2<T> operator+(BlVec2<T> rhs) {
-        return BlVec2<T>(x + rhs.x, y + rhs.y);
-    }
-
-    constexpr inline BlVec2<T> operator-(BlVec2<T> rhs) {
-        return BlVec2<T>(x - rhs.x, y - rhs.y);
-    }
-
-    constexpr inline BlVec2<T> operator*(BlVec2<T> rhs) {  
-        return BlVec2<T>(x * rhs.x, y * rhs.y);
-    }
-
-    constexpr inline BlVec2<T> operator/(BlVec2<T> rhs) {  
-        return BlVec2<T>(x / rhs.x, y / rhs.y);
-    }
-
-    constexpr inline void operator+=(BlVec2<T> rhs) {
-        x += rhs.x;
-        y += rhs.y;
-    }
-
-    constexpr inline void operator-=(BlVec2<T> rhs) {
-        x -= rhs.x;
-        y -= rhs.y;
-    }
-
-    constexpr inline void operator*=(BlVec2<T> rhs) {
-        x *= rhs.x;
-        y *= rhs.y;
-    }
-
-    constexpr inline void operator/=(BlVec2<T> rhs) {
-        x /= rhs.x;
-        y /= rhs.y;
-    }
-
-    constexpr inline bool operator==(BlVec2<T> rhs) {
-        return x == rhs.x && y == rhs.y;
-    }
-
-    constexpr inline bool operator==(T scalar) {
-        return x == scalar && y == scalar;
-    }
-
-    constexpr inline bool operator!=(BlVec2<T> rhs) {
-        return x != rhs.x && y != rhs.y;
-    }
-
-    constexpr inline bool operator!=(T scalar) {
-        return x != scalar && y != scalar;
-    }
-
-    T x, y;
-};
-
-template <typename T = f32>
-struct BlVec3 {
-    constexpr inline BlVec3()
-        : x{}, y{}, z{} {}
-
-    template <typename B = T>
-    constexpr inline explicit BlVec3(B scalar)
-        : x(static_cast<T>(scalar)), y(static_cast<T>(scalar)), z(static_cast<T>(scalar)) {}
-
-    constexpr inline explicit BlVec3(BlVec2<T> vec)
-        : x(vec.x), y(vec.y), z{} {}
-
-    template <typename B = T>
-    constexpr inline explicit BlVec3(B x, B y, B z)
-        : x(static_cast<T>(x)), y(static_cast<T>(y)), z(static_cast<T>(z)) {}
-
-    constexpr inline BlVec3<T> operator+(BlVec3<T> rhs) {
-        return BlVec3<T>(x + rhs.x, y + rhs.y, z + rhs.z);
-    }
-
-    constexpr inline BlVec3<T> operator-(BlVec3<T> rhs) {
-        return BlVec3<T>(x - rhs.x, y - rhs.y, z - rhs.z);
-    }
-
-    constexpr inline BlVec3<T> operator*(BlVec3<T> rhs) {
-        return BlVec3<T>(x * rhs.x, y * rhs.y, z * rhs.z);
-    }
-
-    constexpr inline BlVec3<T> operator*(T scalar) {
-        return BlVec3<T>(x * scalar, y * scalar, z * scalar);
-    }
-
-    constexpr inline BlVec3<T> operator/(BlVec3<T> rhs) {
-        return BlVec3<T>(x / rhs.x, y / rhs.y, z / rhs.z);
-    }
-
-    constexpr inline void operator+=(BlVec3<T> rhs) {
-        x += rhs.x;
-        y += rhs.y;
-        z += rhs.z;
-    }
-
-    constexpr inline void operator-=(BlVec3<T> rhs) {
-        x -= rhs.x;
-        y -= rhs.y;
-        z -= rhs.z;
-    }
-
-    constexpr inline void operator*=(BlVec3<T> rhs) {
-        x *= rhs.x;
-        y *= rhs.y;
-        z *= rhs.z;
-    }
-
-    constexpr inline void operator*=(T scalar) {
-        x *= scalar;
-        y *= scalar;
-        z *= scalar;
-    }
-
-    constexpr inline void operator/=(BlVec3<T> rhs) {
-        x /= rhs.x;
-        y /= rhs.y;
-        z /= rhs.z;
-    }
-
-    constexpr inline bool operator==(BlVec3<T> rhs) {
-        return x == rhs.x && y == rhs.y && z == rhs.z;
-    }
-
-    constexpr inline bool operator==(T scalar) {
-        return x == scalar && y == scalar && z == scalar;
-    }
-
-    constexpr inline bool operator!=(BlVec3<T> rhs) {
-        return x != rhs.x && y != rhs.y && z != rhs.z;
-    }
-
-    constexpr inline bool operator!=(T scalar) {
-        return x != scalar && y != scalar && z != scalar;
-    }
-
-    T x, y, z;
-};
-
-template <typename T = f32>
-struct BlVec4 {
-    constexpr inline BlVec4()
-        : x(0.0f), y(0.0f), z(0.0f), w(0.0f) {}
-
-    constexpr inline explicit BlVec4(T scalar)
-        : x(scalar), y(scalar), z(scalar), w(scalar) {}
-
-    constexpr inline explicit BlVec4(T x, T y, T z, T w)
-        : x(x), y(y), z(z), w(w) {}
-
-    T x, y, z, w;
-};
-
-#pragma endregion
+using BlVec2 = glm::vec2;
+using BlVec3 = glm::vec3;
+using BlVec4 = glm::vec4;
+using BlQuat = glm::quat;
+using BlMat4 = glm::mat4;
 
 struct BlColor {
     constexpr inline BlColor()

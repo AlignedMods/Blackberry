@@ -51,7 +51,7 @@ namespace Blackberry::Lua {
                 lua_settable(L, -3);
 
                 lua_pushstring(L, "Rotation");
-                Lua::PushVec3(transform.Rotation);
+                // Lua::PushVec3(transform.Rotation);
                 lua_settable(L, -3);
                 
                 lua_pushstring(L, "Scale");

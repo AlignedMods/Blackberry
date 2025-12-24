@@ -100,7 +100,7 @@ namespace Blackberry {
                         for (u32 i = 0; i < count; ++i) {
                             f32* p = reinterpret_cast<f32*>(reinterpret_cast<u8*>(rawPositions) + i * stride);
                             
-                            mesh.Positions[i] = BlVec3<f32>(p[0], p[1], p[2]);
+                            mesh.Positions[i] = BlVec3(p[0], p[1], p[2]);
                         }
                     }
 
@@ -162,7 +162,7 @@ namespace Blackberry {
                         for (u32 i = 0; i < count; ++i) {
                             f32* p = reinterpret_cast<f32*>(reinterpret_cast<u8*>(rawNormals) + i * stride);
                             
-                            mesh.Normals[i] = BlVec3<f32>(p[0], p[1], p[2]);
+                            mesh.Normals[i] = BlVec3(p[0], p[1], p[2]);
                         }
                     }
 
@@ -188,7 +188,7 @@ namespace Blackberry {
                         for (u32 i = 0; i < count; ++i) {
                             f32* p = reinterpret_cast<f32*>(reinterpret_cast<u8*>(rawTexCoords) + i * stride);
                             
-                            mesh.TexCoords[i] = BlVec2<f32>(p[0], p[1]);
+                            mesh.TexCoords[i] = BlVec2(p[0], p[1]);
                         }
                     }
 
@@ -205,7 +205,7 @@ namespace Blackberry {
                                 mat.AlbedoTexture = GLTF_GetTexture(pbr.base_color_texture);
                                 mat.UseAlbedoTexture = true;
                             } else {
-                                mat.AlbedoColor = BlVec4<f32>(pbr.base_color_factor[0], pbr.base_color_factor[1], pbr.base_color_factor[2], 1.0f);
+                                mat.AlbedoColor = BlVec4(pbr.base_color_factor[0], pbr.base_color_factor[1], pbr.base_color_factor[2], 1.0f);
                             }
 
                             if (pbr.metallic_roughness_texture.texture) { // Contains metallic/roughness texture

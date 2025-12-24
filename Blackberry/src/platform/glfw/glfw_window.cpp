@@ -260,7 +260,7 @@ namespace Blackberry {
         glfwTerminate();
     }
 
-    BlVec2<f32> Window_GLFW::GetWindowDims() const {
+    BlVec2 Window_GLFW::GetWindowDims() const {
         int width, height;
         glfwGetWindowSize(m_Handle, &width, &height);
 

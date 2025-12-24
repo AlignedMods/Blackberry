@@ -2,8 +2,8 @@
 #include "blackberry.hpp"
 
 struct Rabbit {
-    BlVec2<f32> Pos;
-    BlVec2<f32> Speed;
+    BlVec2 Pos;
+    BlVec2 Speed;
     BlColor Color;
 };
 
@@ -53,7 +53,7 @@ public:
         Blackberry::Renderer2D::Clear();
 
         for (auto& rabbit : m_Rabbits) {
-            Blackberry::Renderer2D::DrawTexture(BlVec3<f32>(rabbit.Pos.x, rabbit.Pos.y, 0.0f), m_RabbitTexture, 0.0f, rabbit.Color);
+            Blackberry::Renderer2D::DrawTexture(BlVec3(rabbit.Pos.x, rabbit.Pos.y, 0.0f), m_RabbitTexture, 0.0f, rabbit.Color);
         }
     }
 

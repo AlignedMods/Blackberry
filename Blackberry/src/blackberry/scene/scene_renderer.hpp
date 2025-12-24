@@ -12,36 +12,36 @@ namespace Blackberry {
     class Scene; // forward declaration since SceneRenderer will need scene but scene will also need scene renderer
 
     struct SceneMeshVertex {
-        BlVec3<f32> Position;
-        BlVec3<f32> Normal;
-        BlVec2<f32> TexCoord;
+        BlVec3 Position;
+        BlVec3 Normal;
+        BlVec2 TexCoord;
         u32 MaterialIndex = 0;
         u32 ObjectIndex = 0;
         u32 EntityID = 0;
     };
 
     struct GPUDirectionalLight {
-        BlVec4<f32> Direction; // w is unused
-        BlVec4<f32> Color; // w is unused
-        BlVec4<f32> Params; // g, b, w is unused
+        BlVec4 Direction; // w is unused
+        BlVec4 Color; // w is unused
+        BlVec4 Params; // g, b, w is unused
     };
 
     struct alignas(16) GPUPointLight {
-        BlVec4<f32> Position; // w is unused
-        BlVec4<f32> Color; // w is unused
-        BlVec4<f32> Params; // w is unused
+        BlVec4 Position; // w is unused
+        BlVec4 Color; // w is unused
+        BlVec4 Params; // w is unused
     };
 
     struct alignas(16) GPUSpotLight {
-        BlVec4<f32> Position; // w is unused
-        BlVec4<f32> Direction; // w is used for cutoff
-        BlVec4<f32> Color; // w is used for intensity
+        BlVec4 Position; // w is unused
+        BlVec4 Direction; // w is used for cutoff
+        BlVec4 Color; // w is used for intensity
     };
 
     struct alignas(16) GPUMaterial {
         int UseAlbedoTexture = false;
         u64 AlbedoTexture = 0;
-        BlVec4<f32> AlbedoColor;
+        BlVec4 AlbedoColor;
 
         int UseMetallicTexture = false;
         u64 MetallicTexture = 0;
@@ -168,7 +168,7 @@ namespace Blackberry {
         Ref<EnviromentMap> CurrentEnviromentMap;
         Ref<EnviromentMap> DefaultEnviromentMap;
         f32 EnviromentMapLOD = 0.0f;
-        BlVec3<f32> EnviromentFogColor;
+        BlVec3 EnviromentFogColor;
         f32 EnviromentFogDistance = 0.0f;
 
         bool BloomEnabled = true;

@@ -15,7 +15,7 @@ namespace Blackberry {
         bool UseAlbedoTexture = false;
         Ref<Texture2D> AlbedoTexture = CreateRef<Texture2D>();
         FS::Path AlbedoTexturePath;
-        BlVec4<f32> AlbedoColor = BlVec4(0.5f, 0.5f, 0.5f, 1.0f);
+        BlVec4 AlbedoColor = BlVec4(0.5f, 0.5f, 0.5f, 1.0f);
 
         bool UseMetallicTexture = false;
         Ref<Texture2D> MetallicTexture = CreateRef<Texture2D>();

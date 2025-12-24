@@ -15,8 +15,8 @@ namespace Blackberry {
     Ref<Texture2D> Texture2D::Create(u32 width, u32 height) {
         Ref<Texture2D> tex = CreateRef<Texture2D>();
 
-        tex->Size.x = width;
-        tex->Size.y = height;
+        tex->Width= width;
+        tex->Height = height;
         tex->Format = Blackberry::TextureFormat::RGBA8;
     
         glGenTextures(1, &tex->ID);
@@ -92,8 +92,8 @@ namespace Blackberry {
     Ref<Texture2D> Texture2D::Create(void* pixels, u32 width, u32 height, TextureFormat pixelFormat, TextureFiltering filter) {
         Ref<Texture2D> tex = CreateRef<Texture2D>();
 
-        tex->Size.x = width;
-        tex->Size.y = height;
+        tex->Width = width;
+        tex->Height = height;
         tex->Format = pixelFormat;
     
         GLuint id = 0;
@@ -163,12 +163,12 @@ namespace Blackberry {
         glMakeTextureHandleNonResidentARB(BindlessHandle);
         ID = 0;
         BindlessHandle = 0;
-        Size.x = 0;
-        Size.y = 0;
+        Width = 0;
+        Height = 0;
     }
     
     void* Texture2D::ReadPixels() {
-        u8* pixels = new u8[Size.x * Size.y * 4];
+        u8* pixels = new u8[Width * Height * 4];
     
         glBindTexture(GL_TEXTURE_2D, ID);
     
@@ -197,9 +197,10 @@ namespace Blackberry {
         ID = 0;
     }
 
-    void RenderTexture::Resize(BlVec2<u32> size) {
+    void RenderTexture::Resize(u32 width, u32 height) {
         Delete();
-        Specification.Size = size;
+        Specification.Width = width;
+        Specification.Height = height;
         Invalidate();
     }
 
@@ -222,14 +223,15 @@ namespace Blackberry {
     }
 
     void RenderTexture::Invalidate() {
-        if (Specification.Size.x == 0 || Specification.Size.y == 0) return;
+        if (Specification.Width == 0 || Specification.Height == 0) return;
 
         glGenFramebuffers(1, &ID);
         glBindFramebuffer(GL_FRAMEBUFFER, ID);
     
         for (auto& attachment : Specification.Attachments) {
             Ref<Texture2D> texAttachment = CreateRef<Texture2D>();
-            texAttachment->Size = Specification.Size;
+            texAttachment->Width = Specification.Width;
+            texAttachment->Height = Specification.Height;
             bool createBindlessHandle = true;
 
             if (attachment.Type == RenderTextureAttachmentType::ColorR8) {
@@ -237,8 +239,8 @@ namespace Blackberry {
 
                 glCreateTextures(GL_TEXTURE_2D, 1, &id);
 
-                glTextureStorage2D(id, 1, GL_R8, Specification.Size.x, Specification.Size.y);
-                glTextureSubImage2D(id, 0, 0, 0, Specification.Size.x, Specification.Size.y, GL_RED, GL_UNSIGNED_BYTE, nullptr);
+                glTextureStorage2D(id, 1, GL_R8, Specification.Width, Specification.Height);
+                glTextureSubImage2D(id, 0, 0, 0, Specification.Width, Specification.Height, GL_RED, GL_UNSIGNED_BYTE, nullptr);
 
                 glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
                 glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -256,8 +258,8 @@ namespace Blackberry {
 
                 glCreateTextures(GL_TEXTURE_2D, 1, &id);
 
-                glTextureStorage2D(id, 1, GL_RGBA8, Specification.Size.x, Specification.Size.y);
-                glTextureSubImage2D(id, 0, 0, 0, Specification.Size.x, Specification.Size.y, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+                glTextureStorage2D(id, 1, GL_RGBA8, Specification.Width, Specification.Height);
+                glTextureSubImage2D(id, 0, 0, 0, Specification.Width, Specification.Height, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 
                 glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
                 glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -275,8 +277,8 @@ namespace Blackberry {
 
                 glCreateTextures(GL_TEXTURE_2D, 1, &id);
 
-                glTextureStorage2D(id, 1, GL_RGBA16F, Specification.Size.x, Specification.Size.y);
-                glTextureSubImage2D(id, 0, 0, 0, Specification.Size.x, Specification.Size.y, GL_RGBA, GL_FLOAT, nullptr);
+                glTextureStorage2D(id, 1, GL_RGBA16F, Specification.Width, Specification.Height);
+                glTextureSubImage2D(id, 0, 0, 0, Specification.Width, Specification.Height, GL_RGBA, GL_FLOAT, nullptr);
 
                 glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
                 glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -294,7 +296,7 @@ namespace Blackberry {
 
                 glGenRenderbuffers(1, &id);
                 glBindRenderbuffer(GL_RENDERBUFFER, id);
-                glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, Specification.Size.x, Specification.Size.y);
+                glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, Specification.Width, Specification.Height);
                 glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, id);
 
                 texAttachment->Format = TextureFormat::RGBA8;
@@ -306,7 +308,7 @@ namespace Blackberry {
 
                 glGenRenderbuffers(1, &id);
                 glBindRenderbuffer(GL_RENDERBUFFER, id);
-                glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, Specification.Size.x, Specification.Size.y);
+                glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, Specification.Width, Specification.Height);
                 glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, id);
 
                 texAttachment->Format = TextureFormat::RGBA8;
@@ -318,8 +320,8 @@ namespace Blackberry {
 
                 glCreateTextures(GL_TEXTURE_2D, 1, &id);
 
-                glTextureStorage2D(id, 1, GL_R32I, Specification.Size.x, Specification.Size.y);
-                glTextureSubImage2D(id, 0, 0, 0, Specification.Size.x, Specification.Size.y, GL_RED_INTEGER, GL_UNSIGNED_BYTE, nullptr);
+                glTextureStorage2D(id, 1, GL_R32I, Specification.Width, Specification.Height);
+                glTextureSubImage2D(id, 0, 0, 0, Specification.Width, Specification.Height, GL_RED_INTEGER, GL_UNSIGNED_BYTE, nullptr);
 
                 glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
                 glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -337,8 +339,8 @@ namespace Blackberry {
 
                 glCreateTextures(GL_TEXTURE_2D, 1, &id);
 
-                glTextureStorage2D(id, 1, GL_R32F, Specification.Size.x, Specification.Size.y);
-                glTextureSubImage2D(id, 0, 0, 0, Specification.Size.x, Specification.Size.y, GL_RED, GL_FLOAT, nullptr);
+                glTextureStorage2D(id, 1, GL_R32F, Specification.Width, Specification.Height);
+                glTextureSubImage2D(id, 0, 0, 0, Specification.Width, Specification.Height, GL_RED, GL_FLOAT, nullptr);
 
                 glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
                 glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

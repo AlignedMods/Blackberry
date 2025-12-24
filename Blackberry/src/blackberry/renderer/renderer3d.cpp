@@ -9,17 +9,17 @@
 namespace Blackberry {
 
     struct MeshVertex { // used for meshes (or just any 3d rendering)
-        BlVec3<f32> Pos;
-        BlVec3<f32> Normal;
-        BlVec4<f32> Color;
-        BlVec2<f32> TexCoord;
+        BlVec3 Pos;
+        BlVec3 Normal;
+        BlVec4 Color;
+        BlVec2 TexCoord;
         f32 TexIndex = 0.0f; // OpenGL is weird with passing integers to shaders (also 0 is a white texture)
     };
     
     struct FontVertex {
-        BlVec3<f32> Pos;
-        BlVec4<f32> Color;
-        BlVec2<f32> TexCoord;
+        BlVec3 Pos;
+        BlVec4 Color;
+        BlVec2 TexCoord;
     };
 
     static u8 s_WhiteTextureData[] = {0xff, 0xff, 0xff, 0xff}; // dead simple white texture (1x1 pixel)
@@ -253,8 +253,8 @@ namespace Blackberry {
         return texIndex;
     }
 
-    static BlVec4<f32> NormalizeColor(BlColor color) {
-        return BlVec4<f32>(
+    static BlVec4 NormalizeColor(BlColor color) {
+        return BlVec4(
             static_cast<f32>(color.r) / 255.0f,
             static_cast<f32>(color.g) / 255.0f,
             static_cast<f32>(color.b) / 255.0f,
@@ -269,7 +269,7 @@ namespace Blackberry {
 
         Renderer3DState.CurrentAttachedTextures[0] = Renderer3DState.WhiteTexture; // 0 is reserved for white
 
-        Renderer3DState.DefaultCamera.Transform = { BlVec3(0.0f), BlVec3(0.0f), BlVec3(1920, 1280, 0)};
+        // Renderer3DState.DefaultCamera.Transform = { BlVec3(0.0f), BlVec3(0.0f), BlVec3(1920, 1280, 0)};
         Renderer3DState.Camera = Renderer3DState.DefaultCamera;
     }
 
@@ -291,7 +291,7 @@ namespace Blackberry {
         Renderer3DState.Stats.ActiveTextures = 0;
     }
 
-    void Renderer3D::DrawText(BlVec3<f32> position, f32 fontSize, const std::string& text, Font& font, TextParams params, BlColor color) {
+    void Renderer3D::DrawText(BlVec3 position, f32 fontSize, const std::string& text, Font& font, TextParams params, BlColor color) {
         glm::mat4 pos = glm::translate(glm::mat4(1.0f), glm::vec3(position.x, position.y, position.z));
         glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(fontSize / font.LineHeight, fontSize / font.LineHeight, 1.0f));
 
@@ -306,7 +306,7 @@ namespace Blackberry {
         f32 currentX = 0.0f;
         f32 currentY = 0.0f;
 
-        BlVec2<f32> textSize = MeasureText(text, font, params);
+        BlVec2 textSize = MeasureText(text, font, params);
 
         // glm::mat4 finalTextTransform = glm::scale(transform, glm::vec3(1.0f / textSize.x, 1.0f / textSize.y, 1.0f));
         glm::mat4 finalTextTransform = glm::scale(transform, glm::vec3(2.0f, 2.0f, 1.0f));
@@ -327,43 +327,43 @@ namespace Blackberry {
                     Renderer3DState.CurrentFontAtlas = tex;
                 }
 
-                BlVec2<f32> texCoordMin(atlasBounds.x, atlasBounds.y);
-                BlVec2<f32> texCoordMax(atlasBounds.w, atlasBounds.h);
+                BlVec2 texCoordMin(atlasBounds.x, atlasBounds.y);
+                BlVec2 texCoordMax(atlasBounds.w, atlasBounds.h);
 
-                BlVec2<f32> quadMin = BlVec2<f32>(glyph.PlaneRect.x, glyph.PlaneRect.y);
-                BlVec2<f32> quadMax = BlVec2<f32>(glyph.PlaneRect.w, glyph.PlaneRect.h);
+                BlVec2 quadMin = BlVec2(glyph.PlaneRect.x, glyph.PlaneRect.y);
+                BlVec2 quadMax = BlVec2(glyph.PlaneRect.w, glyph.PlaneRect.h);
 
-                quadMin *= BlVec2<f32>(fsScale); quadMax *= BlVec2<f32>(fsScale);
-                quadMin += BlVec2<f32>(currentX, currentY); quadMax += BlVec2<f32>(currentX, currentY);
+                quadMin *= BlVec2(fsScale); quadMax *= BlVec2(fsScale);
+                quadMin += BlVec2(currentX, currentY); quadMax += BlVec2(currentX, currentY);
 
                 // make the text be perfectly centered (since the whole string must fit in a rectangle this is easy)
-                // quadMin -= textSize * BlVec2<f32>(0.5f); quadMax -= textSize * BlVec2<f32>(0.5f);
-                // quadMin -= BlVec2<f32>(0.5f); quadMax -= BlVec2<f32>(0.5f);
+                // quadMin -= textSize * BlVec2(0.5f); quadMax -= textSize * BlVec2(0.5f);
+                // quadMin -= BlVec2(0.5f); quadMax -= BlVec2(0.5f);
                 quadMin.x -= 0.25f; quadMax.x -= 0.25f;
                 quadMin.y -= 0.25f; quadMax.y -= 0.25f;
 
-                f32 texelWidth = 1.0f / tex->Size.x;
-                f32 texelHeight = 1.0f / tex->Size.y;
-                texCoordMin *= BlVec2<f32>(texelWidth, texelHeight);
-                texCoordMax *= BlVec2<f32>(texelWidth, texelHeight);
+                f32 texelWidth = 1.0f / tex->Width;
+                f32 texelHeight = 1.0f / tex->Height;
+                texCoordMin *= BlVec2(texelWidth, texelHeight);
+                texCoordMax *= BlVec2(texelWidth, texelHeight);
 
                 BlVec4 normalizedColor = NormalizeColor(color);
 
                 // vertices
                 glm::vec4 pos = finalTextTransform * glm::vec4(quadMin.x, quadMin.y, 0.0f, 1.0f);
-                FontVertex vert = FontVertex(BlVec3<f32>(pos.x, pos.y, pos.z), normalizedColor, BlVec2<f32>(texCoordMin.x, texCoordMax.y));
+                FontVertex vert = FontVertex(BlVec3(pos.x, pos.y, pos.z), normalizedColor, BlVec2(texCoordMin.x, texCoordMax.y));
                 Renderer3DState.FontVertices.push_back(vert);
                 
                 pos = finalTextTransform * glm::vec4(quadMax.x, quadMax.y, 0.0f, 1.0f);
-                vert = FontVertex(BlVec3<f32>(pos.x, pos.y, pos.z), normalizedColor, BlVec2<f32>(texCoordMax.x, texCoordMin.y));
+                vert = FontVertex(BlVec3(pos.x, pos.y, pos.z), normalizedColor, BlVec2(texCoordMax.x, texCoordMin.y));
                 Renderer3DState.FontVertices.push_back(vert);
 
                 pos = finalTextTransform * glm::vec4(quadMax.x, quadMin.y, 0.0f, 1.0f);
-                vert = FontVertex(BlVec3<f32>(pos.x, pos.y, pos.z), normalizedColor, BlVec2<f32>(texCoordMax.x, texCoordMax.y));
+                vert = FontVertex(BlVec3(pos.x, pos.y, pos.z), normalizedColor, BlVec2(texCoordMax.x, texCoordMax.y));
                 Renderer3DState.FontVertices.push_back(vert);
 
                 pos = finalTextTransform * glm::vec4(quadMin.x, quadMax.y, 0.0f, 1.0f);
-                vert = FontVertex(BlVec3<f32>(pos.x, pos.y, pos.z), normalizedColor, BlVec2<f32>(texCoordMin.x, texCoordMin.y));
+                vert = FontVertex(BlVec3(pos.x, pos.y, pos.z), normalizedColor, BlVec2(texCoordMin.x, texCoordMin.y));
                 Renderer3DState.FontVertices.push_back(vert);
 
                 // indices
@@ -390,7 +390,7 @@ namespace Blackberry {
         for (u32 i = 0; i < mesh.Positions.size(); i++) {
             glm::vec4 pos = transform * glm::vec4(mesh.Positions[i].x, mesh.Positions[i].y, mesh.Positions[i].z, 1.0f);
             glm::vec3 normal = glm::mat3(glm::transpose(glm::inverse(transform))) * glm::vec3(mesh.Normals[i].x, mesh.Normals[i].y, mesh.Normals[i].z);
-            MeshVertex vert = MeshVertex(BlVec3<f32>(pos.x, pos.y, pos.z), BlVec3<f32>(normal.x, normal.y, normal.z), normalizedColor, mesh.TexCoords[i], texIndex);
+            MeshVertex vert = MeshVertex(BlVec3(pos.x, pos.y, pos.z), BlVec3(normal.x, normal.y, normal.z), normalizedColor, mesh.TexCoords[i], texIndex);
             Renderer3DState.MeshVertices.push_back(vert);
         }
 
@@ -547,7 +547,7 @@ namespace Blackberry {
         }
     }
 
-    BlVec2<f32> Renderer3D::MeasureText(const std::string& text, Font& font, TextParams parameters) {
+    BlVec2 Renderer3D::MeasureText(const std::string& text, Font& font, TextParams parameters) {
         f32 fsScale = 1.0f / (font.Ascender - font.Descender);
         f32 currentX = 0.0f;
         f32 currentY = 0.0f;
@@ -560,7 +560,7 @@ namespace Blackberry {
             currentY = std::max(currentY, fsScale * (glyph.PlaneRect.y - glyph.PlaneRect.h));
         }
 
-        return BlVec2<f32>(currentX, currentY);
+        return BlVec2(currentX, currentY);
     }
 
     Renderer3DStats Renderer3D::GetRendererStats() {
