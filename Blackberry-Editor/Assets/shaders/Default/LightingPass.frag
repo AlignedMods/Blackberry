@@ -161,7 +161,7 @@ void main() {
         }
     }
 
-    Lo += emission;
+    Lo += vec3(emission);
 
     vec3 F = FresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
     

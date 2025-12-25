@@ -140,8 +140,8 @@ namespace Blackberry {
 
         {
             FramebufferSpecification spec;
-            spec.Width = 960;
-            spec.Height = 540;
+            spec.Width = 1920;
+            spec.Height = 1080;
             spec.Attachments = {
                 {0, FramebufferAttachmentType::ColorRGBA16F}
             };
@@ -153,8 +153,8 @@ namespace Blackberry {
         // Create all the render targets (NOTE: We could use mips for this exact purpose)
         {
             FramebufferSpecification spec;
-            spec.Width = 480;
-            spec.Height = 270;
+            spec.Width = 1920;
+            spec.Height = 1080;
             spec.Attachments = {
                 {0, FramebufferAttachmentType::ColorRGBA16F}
             };
@@ -178,8 +178,14 @@ namespace Blackberry {
             };
             spec.ActiveAttachments = {0};
 
-           m_State.BloomUpscalePass = Framebuffer::Create(spec);
-           m_State.BloomCombinePass = Framebuffer::Create(spec);
+            m_State.BloomCombinePass = Framebuffer::Create(spec);
+
+            for (u32 i = 0; i < m_State.BloomUpscalePasses.size(); i++) {
+                m_State.BloomUpscalePasses[i] = Framebuffer::Create(spec);
+
+                spec.Width *= 0.5f;
+                spec.Height *= 0.5f;
+            }
         }
     }
 
@@ -528,15 +534,13 @@ namespace Blackberry {
         renderer.UnBindCubemap();
 
         renderer.UnBindFramebuffer();
-
-        
     }
 
     void SceneRenderer::BloomPass() {
         auto& renderer = BL_APP.GetRenderer();
 
         {
-            BL_PROFILE_SCOPE("SceneRenderer::Flush/Bloom.BrightAreas");
+            BL_PROFILE_SCOPE("SceneRenderer::BloomPass/BrightAreas");
 
             renderer.BindFramebuffer(m_State.BloomBrightAreas);
             renderer.Clear(BlColor(0, 0, 0, 255));
@@ -555,180 +559,98 @@ namespace Blackberry {
         }
 
         {
-            BL_PROFILE_SCOPE("SceneRenderer::BloomPipeline/Downscale");
+            BL_PROFILE_SCOPE("SceneRenderer::BloomPass/Downscale");
+
+            renderer.BindShader(m_State.BloomDownscaleShader);
+            m_State.BloomDownscaleShader->SetVec2("u_TexResolution", BlVec2(1920, 1080));
+
+            renderer.BindTexture(m_State.BloomBrightAreas->Attachments[0], 0);
 
             for (u32 i = 0; i < m_State.BloomDownscalePasses.size(); i++) {
                 renderer.BindFramebuffer(m_State.BloomDownscalePasses[i]);
                 renderer.Clear(BlColor(0, 0, 0, 255));
 
-                Ref<Texture2D> tex;
-
-                if (i == 0) {
-                    tex = m_State.BloomBrightAreas->Attachments[0];
-                } else {
-                    tex = m_State.BloomDownscalePasses[i - 1]->Attachments[0];
-                }
-
-                renderer.BindTexture(tex, 0);
-
-                renderer.BindShader(m_State.BloomDownscaleShader);
-                m_State.BloomDownscaleShader->SetVec2("u_TexResolution", BlVec2(tex->Width, tex->Height));
-
                 renderer.DrawIndexed(6);
 
-                renderer.UnBindTexture();
-
-                renderer.UnBindFramebuffer();
+                renderer.BindTexture(m_State.BloomDownscalePasses[i]->Attachments[0], 0);
+                m_State.BloomDownscaleShader->SetVec2("u_TexResolution", BlVec2(m_State.BloomDownscalePasses[i]->Attachments[0]->Width, m_State.BloomDownscalePasses[i]->Attachments[0]->Height));
             }
         }
 
         {
-            BL_PROFILE_SCOPE("SceneRenderer::BloomPipeline/UpScaleAndCombine");
+            BL_PROFILE_SCOPE("SceneRenderer::BloomPass/Upscale");
 
-            renderer.BindFramebuffer(m_State.BloomUpscalePass);
-            renderer.Clear(BlColor(0, 0, 0, 255));
+            renderer.BindShader(m_State.BloomUpscaleShader);
+            m_State.BloomUpscaleShader->SetFloat("u_FilterRadius", 0.005f);
 
-            // Normally we would need a combine shader but we let opengl do all the work for us
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_ONE, GL_ONE);
-            glBlendEquation(GL_FUNC_ADD);
+            renderer.BindTexture(m_State.BloomDownscalePasses[5]->Attachments[0], 0);
 
-            for (u32 i = 0; i < m_State.BloomDownscalePasses.size(); i++) {
-                renderer.BindTexture(m_State.BloomDownscalePasses[i]->Attachments[0], 0);
-
-                renderer.BindShader(m_State.BloomUpscaleShader);
-                m_State.BloomUpscaleShader->SetFloat("u_FilterRadius", 0.005f);
+            for (u32 i = 0; i < m_State.BloomUpscalePasses.size(); i++) {
+                renderer.BindFramebuffer(m_State.BloomUpscalePasses[4 - i]);
+                renderer.Clear(BlColor(0, 0, 0, 255));
 
                 renderer.DrawIndexed(6);
 
-                renderer.UnBindTexture();
+                renderer.BindTexture(m_State.BloomUpscalePasses[4 - i]->Attachments[0], 0);
             }
 
-            glDisable(GL_BLEND);
+            renderer.UnBindFramebuffer();
+        }
 
-            renderer.BindFramebuffer(m_State.BloomCombinePass);
-            renderer.Clear(BlColor(0, 0, 0, 255));
-
-            renderer.BindTexture(m_State.PBROutput->Attachments[0], 0);
-            renderer.BindTexture(m_State.BloomUpscalePass->Attachments[0], 1);
+        {
+            BL_PROFILE_SCOPE("SceneRenderer::BloomPass/CombineUpscales");
 
             renderer.BindShader(m_State.BloomCombineShader);
             m_State.BloomCombineShader->SetInt("u_Original", 0);
             m_State.BloomCombineShader->SetInt("u_Blurred", 1);
-            
-            renderer.DrawIndexed(6);
-            
-            renderer.UnBindTexture();
-            
 
-            renderer.BindFramebuffer(m_RenderTarget);
+            renderer.BindTexture(m_State.BloomUpscalePasses[3]->Attachments[0], 0);
+            renderer.BindTexture(m_State.BloomUpscalePasses[4]->Attachments[0], 1);
+
+            renderer.BindFramebuffer(m_State.BloomCombinePass);
             renderer.Clear(BlColor(0, 0, 0, 255));
 
-            // Tonemap
+            for (u32 i = 0; i < m_State.BloomUpscalePasses.size() - 1; i++) {
+                renderer.DrawIndexed(6);
+
+                renderer.BindTexture(m_State.BloomUpscalePasses[2 - 1]->Attachments[0], 0);
+                renderer.BindTexture(m_State.BloomUpscalePasses[3 - 1]->Attachments[0], 1);
+            }
+
+            renderer.UnBindFramebuffer();
+        }
+
+        {
+            BL_PROFILE_SCOPE("SceneRenderer::BloomPass/CombinePBR");
+        
+            renderer.BindShader(m_State.BloomCombineShader);
+            m_State.BloomCombineShader->SetInt("u_Original", 0);
+            m_State.BloomCombineShader->SetInt("u_Blurred", 1);
+        
+            renderer.BindTexture(m_State.BloomCombinePass->Attachments[0], 1);
+            renderer.BindTexture(m_State.PBROutput->Attachments[0], 0);
+        
+            renderer.BindFramebuffer(m_State.BloomUpscalePasses[0]);
+            renderer.Clear(BlColor(0, 0, 0, 255));
+        
+            renderer.DrawIndexed(6);
+        
+            renderer.UnBindFramebuffer();
+        }
+
+        {
+            BL_PROFILE_SCOPE("SceneRenderer::BloomPass/Tonemapping");
+        
             renderer.BindShader(m_State.ToneMapShader);
             
-            renderer.BindTexture(m_State.BloomCombinePass->Attachments[0], 0);
+            renderer.BindTexture(m_State.BloomUpscalePasses[0]->Attachments[0], 0);
+            
+            renderer.BindFramebuffer(m_RenderTarget);
+            renderer.Clear(BlColor(0, 0, 0, 255));
             
             renderer.DrawIndexed(6);
             
             renderer.UnBindFramebuffer();
-
-            // Pass number 1
-            // renderer.BindShader(m_State.BloomCombineShader);
-            // 
-            // m_State.BloomCombineShader->SetInt("u_Original", 0);
-            // m_State.BloomCombineShader->SetInt("u_Blurred", 1);
-            // 
-            // renderer.BindTexture(m_State.BloomBlurPass4[1]->Attachments[0], 0);
-            // renderer.BindTexture(m_State.BloomBlurPass5[1]->Attachments[0], 1);
-            // 
-            // renderer.BindFramebuffer(m_State.BloomCombinePass1);
-            // renderer.Clear(BlColor(0, 0, 0, 255));
-            // 
-            // renderer.DrawIndexed(6);
-            // 
-            // renderer.UnBindFramebuffer();
-            // 
-            // // Pass number 2
-            // renderer.BindShader(m_State.BloomCombineShader);
-            // 
-            // m_State.BloomCombineShader->SetInt("u_Original", 0);
-            // m_State.BloomCombineShader->SetInt("u_Blurred", 1);
-            // 
-            // renderer.BindTexture(m_State.BloomBlurPass3[1]->Attachments[0], 0);
-            // renderer.BindTexture(m_State.BloomCombinePass1->Attachments[0], 1);
-            // 
-            // renderer.BindFramebuffer(m_State.BloomCombinePass2);
-            // renderer.Clear(BlColor(0, 0, 0, 255));
-            // 
-            // renderer.DrawIndexed(6);
-            // 
-            // renderer.UnBindFramebuffer();
-            // 
-            // // Pass number 3
-            // renderer.BindShader(m_State.BloomCombineShader);
-            // 
-            // m_State.BloomCombineShader->SetInt("u_Original", 0);
-            // m_State.BloomCombineShader->SetInt("u_Blurred", 1);
-            // 
-            // renderer.BindTexture(m_State.BloomBlurPass2[1]->Attachments[0], 0);
-            // renderer.BindTexture(m_State.BloomCombinePass2->Attachments[0], 1);
-            // 
-            // renderer.BindFramebuffer(m_State.BloomCombinePass3);
-            // renderer.Clear(BlColor(0, 0, 0, 255));
-            // 
-            // renderer.DrawIndexed(6);
-            // 
-            // renderer.UnBindFramebuffer();
-            // 
-            // // Pass number 4
-            // renderer.BindShader(m_State.BloomCombineShader);
-            // 
-            // m_State.BloomCombineShader->SetInt("u_Original", 0);
-            // m_State.BloomCombineShader->SetInt("u_Blurred", 1);
-            // 
-            // renderer.BindTexture(m_State.BloomBlurPass1[1]->Attachments[0], 0);
-            // renderer.BindTexture(m_State.BloomCombinePass3->Attachments[0], 1);
-            // 
-            // renderer.BindFramebuffer(m_State.BloomCombinePass4);
-            // renderer.Clear(BlColor(0, 0, 0, 255));
-            // 
-            // renderer.DrawIndexed(6);
-            // 
-            // renderer.UnBindFramebuffer();
-            // 
-            // // Pass number 5
-            // renderer.BindShader(m_State.BloomCombineShader);
-            // 
-            // m_State.BloomCombineShader->SetInt("u_Original", 0);
-            // m_State.BloomCombineShader->SetInt("u_Blurred", 1);
-            // 
-            // renderer.BindTexture(m_State.BloomBrightAreas->Attachments[0], 0);
-            // renderer.BindTexture(m_State.BloomCombinePass4->Attachments[0], 1);
-            // 
-            // renderer.BindFramebuffer(m_State.BloomCombinePass5);
-            // renderer.Clear(BlColor(0, 0, 0, 255));
-            // 
-            // renderer.DrawIndexed(6);
-            // 
-            // renderer.UnBindFramebuffer();
-            // 
-            // // Pass number 6
-            // renderer.BindShader(m_State.BloomCombineShader);
-            // 
-            // m_State.BloomCombineShader->SetInt("u_Original", 0);
-            // m_State.BloomCombineShader->SetInt("u_Blurred", 1);
-            // 
-            // renderer.BindTexture(m_State.PBROutput->Attachments[0], 0);
-            // renderer.BindTexture(m_State.BloomCombinePass5->Attachments[0], 1);
-            // 
-            // renderer.BindFramebuffer(m_State.BloomCombinePass6);
-            // renderer.Clear(BlColor(0, 0, 0, 255));
-            // 
-            // renderer.DrawIndexed(6);
-            // 
-            // renderer.UnBindFramebuffer();
-            // 
         }
     }
 

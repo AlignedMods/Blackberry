@@ -10,7 +10,8 @@ out vec4 o_FragColor;
 void main() {
     vec3 originalColor = texture(u_Original, a_TexCoord).rgb;
     vec3 blurredColor = texture(u_Blurred, a_TexCoord).rgb;
-    originalColor += blurredColor; // additive blending
+    vec3 color = mix(originalColor, blurredColor, 0.04);
+    // vec3 color = originalColor + blurredColor;
 
-    o_FragColor = vec4(originalColor, 1.0);
+    o_FragColor = vec4(color, 1.0);
 }
