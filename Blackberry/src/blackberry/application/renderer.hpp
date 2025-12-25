@@ -60,8 +60,8 @@ namespace Blackberry {
         virtual void BindCubemap(Ref<Texture2D> cubemap, u32 unit) = 0;
         virtual void UnBindCubemap() = 0;
 
-        virtual void BindRenderTexture(Ref<RenderTexture> texture) = 0;
-        virtual void UnBindRenderTexture() = 0;
+        virtual void BindFramebuffer(Ref<Framebuffer> texture) = 0;
+        virtual void UnBindFramebuffer() = 0;
     };
 
 } // namespace Blackberry

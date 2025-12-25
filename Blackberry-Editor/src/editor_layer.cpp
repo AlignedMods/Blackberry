@@ -247,22 +247,24 @@ namespace BlackberryEditor {
         io.Fonts->AddFontFromFileTTF("Assets/creato_display/CreatoDisplay-Medium.otf", 18);
         io.Fonts->AddFontFromFileTTF("Assets/creato_display/CreatoDisplay-Bold.otf", 18);
     
-        RenderTextureSpecification spec;
+        FramebufferSpecification spec;
         spec.Width = 1920;
         spec.Height = 1080;
-        spec.Attachments = { {0, RenderTextureAttachmentType::ColorRGBA8},
-                             {1, RenderTextureAttachmentType::Depth} };
+        spec.Attachments = { {0, FramebufferAttachmentType::ColorRGBA8},
+                             {1, FramebufferAttachmentType::Depth} };
         spec.ActiveAttachments = { 0 };
 
-        m_RenderTexture = RenderTexture::Create(spec);
-        m_OutlineTexture = RenderTexture::Create(spec);
+        m_RenderTexture = Framebuffer::Create(spec);
+        m_OutlineTexture = Framebuffer::Create(spec);
 
         LoadEditorState();
     
         m_DirectoryIcon     = Texture2D::Create("Assets/Icons/directory.png");
         m_FileIcon          = Texture2D::Create("Assets/Icons/file.png");
         m_BackDirectoryIcon = Texture2D::Create("Assets/Icons/back_directory.png");
+
         m_PlayIcon          = Texture2D::Create("Assets/Icons/play.png");
+        m_SimulateIcon      = Texture2D::Create("Assets/Icons/simulate.png");
         m_StopIcon          = Texture2D::Create("Assets/Icons/stop.png");
         m_PauseIcon         = Texture2D::Create("Assets/Icons/pause.png");
         m_ResumeIcon        = Texture2D::Create("Assets/Icons/resume.png");
@@ -272,7 +274,6 @@ namespace BlackberryEditor {
         m_CurrentDirectoryIterator = m_CurrentDirectory;
 
         m_EditorCamera.Transform.Scale = BlVec3(m_RenderTexture->Specification.Width, m_RenderTexture->Specification.Height, 1u);
-        m_CurrentCamera = &m_EditorCamera;
 
         // gizmo styles
         ImGuizmo::Style& guizmoStyle = ImGuizmo::GetStyle();
@@ -297,16 +298,24 @@ namespace BlackberryEditor {
     }
     
     void EditorLayer::OnUpdate() {
-        m_CurrentScene->SetCamera(m_CurrentCamera);
-        m_CurrentScene->OnRender(m_RenderTexture.Data());
-
         m_SavedGBuffer = m_CurrentScene->GetSceneRenderer()->GetState().GBuffer;
 
-        if (m_EditorState == EditorState::Play) {
-            m_CurrentScene->OnRuntimeUpdate();
-        } else {
-            m_CurrentScene->OnUpdate();
+        switch (m_EditorState) {
+            case EditorState::Edit:
+                m_CurrentScene->OnUpdateEditor();
+                m_CurrentScene->OnRenderEditor(m_RenderTexture, m_EditorCamera);
+                break;
+            case EditorState::Simulate:
+                m_CurrentScene->OnUpdateRuntime();
+                m_CurrentScene->OnRenderEditor(m_RenderTexture, m_EditorCamera);
+                break;
+            case EditorState::Play:
+                m_CurrentScene->OnUpdateRuntime();
+                m_CurrentScene->OnRenderRuntime(m_RenderTexture);
+                break;
+        }
 
+        if (m_EditorState == EditorState::Edit || m_EditorState == EditorState::Simulate) {
             static bool acceptInput = false;
 
             // viewport specific things
@@ -392,9 +401,8 @@ namespace BlackberryEditor {
 
         // Outlines
         if (m_IsEntitySelected) {
-            DebugRenderer::SetRenderTexture(m_OutlineTexture);
+            DebugRenderer::SetRenderTarget(m_OutlineTexture);
             DebugRenderer::DrawEntityOutline(Entity(m_SelectedEntity, m_CurrentScene));
-            DebugRenderer::ResetRenderTexture();
         }
     }
 
@@ -560,15 +568,13 @@ namespace BlackberryEditor {
         ImGui::Begin("##Toolbar", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar);
         ImGui::PopStyleColor();
 
-        auto playIcon = (m_EditorState == EditorState::Edit) ? m_PlayIcon : m_StopIcon;
+        auto playIcon = (m_EditorState == EditorState::Play) ? m_StopIcon : m_PlayIcon;
+        auto simulateIcon = (m_EditorState == EditorState::Simulate) ? m_StopIcon : m_SimulateIcon;
         auto pauseIcon = (m_CurrentScene->IsPaused()) ? m_ResumeIcon : m_PauseIcon;
 
         f32 size = ImGui::GetWindowHeight() - 4.0f;
-        f32 firstButtonPos = (ImGui::GetWindowContentRegionMax().x * 0.5f);
-
-        if (m_EditorState == EditorState::Play) {
-            firstButtonPos -= size * 0.5f;
-        }
+        f32 firstButtonPos = (ImGui::GetWindowContentRegionMax().x * 0.5f - size * 0.5f);
+        firstButtonPos -= size;
 
 		ImGui::SetCursorPosX(firstButtonPos);
     
@@ -577,17 +583,25 @@ namespace BlackberryEditor {
         if (ImGui::ImageButton("##PlayButton", playIcon->ID, ImVec2(size, size))) {
             if (m_EditorState == EditorState::Edit) {
                 OnScenePlay();
-            } else {
+            } else if (m_EditorState == EditorState::Play) {
                 OnSceneStop();
             }
         }
 
         ImGui::SameLine();
 
-        if (m_EditorState == EditorState::Play) {
-            if (ImGui::ImageButton("##PauseButton", pauseIcon->ID, ImVec2(size, size))) {
-                m_CurrentScene->SetPaused(!m_CurrentScene->IsPaused());
+        if (ImGui::ImageButton("##SimulateButton", simulateIcon->ID, ImVec2(size, size))) {
+            if (m_EditorState == EditorState::Edit) {
+                OnSceneSimulate();
+            } else if (m_EditorState == EditorState::Simulate) {
+                OnSceneStop();
             }
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::ImageButton("##PauseButton", pauseIcon->ID, ImVec2(size, size))) {
+            m_CurrentScene->SetPaused(!m_CurrentScene->IsPaused());
         }
 
         ImGui::PopStyleColor();
@@ -1376,8 +1390,10 @@ namespace BlackberryEditor {
                 TransformComponent& transform = e.GetComponent<TransformComponent>();
                 glm::mat4 transformMatrix = transform.GetMatrix();
 
-                glm::mat4 camProjection = m_CurrentCamera->GetCameraProjection();
-                glm::mat4 camView = m_CurrentCamera->GetCameraView(); // already inversed
+                SceneCamera currentCamera = m_CurrentScene->GetSceneRenderer()->GetCamera();
+
+                glm::mat4 camProjection = currentCamera.GetCameraProjection();
+                glm::mat4 camView = currentCamera.GetCameraView(); // already inversed
 
                 // prevent imgui from taxing inputs (you are not the irs buddy)
                 if (ImGuizmo::IsOver()) {
@@ -1499,22 +1515,28 @@ namespace BlackberryEditor {
         m_RuntimeScene = Scene::Copy(m_EditingScene);
         m_CurrentScene = m_RuntimeScene;
 
-        // create new camera
-        m_RuntimeCamera = m_RuntimeScene->GetSceneCamera();
-        m_CurrentCamera = &m_RuntimeCamera;
+        m_CurrentScene->OnRuntimeStart();
+    }
 
-        m_CurrentScene->OnPlay();
+    void EditorLayer::OnSceneSimulate() {
+        BL_INFO("Switched to simulating scene.");
+        m_EditorState = EditorState::Simulate;
+
+        // create new scene
+        m_RuntimeScene = Scene::Copy(m_EditingScene);
+        m_CurrentScene = m_RuntimeScene;
+
+        m_CurrentScene->OnRuntimeStart();
     }
 
     void EditorLayer::OnSceneStop() {
-        m_CurrentScene->OnStop();
+        m_CurrentScene->OnRuntimeStop();
 
         BL_INFO("Reverted to editing scene.");
         m_EditorState = EditorState::Edit;
         m_CurrentScene = m_EditingScene;
         delete m_RuntimeScene;
         m_RuntimeScene = nullptr;
-        m_CurrentCamera = &m_EditorCamera;
     }
 
     void EditorLayer::OnScenePause() {

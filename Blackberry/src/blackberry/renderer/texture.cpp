@@ -179,45 +179,45 @@ namespace Blackberry {
         return pixels;
     }
     
-    RenderTexture::~RenderTexture() {
+    Framebuffer::~Framebuffer() {
         Delete();
     }
 
-    Ref<RenderTexture> RenderTexture::Create(const RenderTextureSpecification& spec) {
-        Ref<RenderTexture> tex = CreateRef<RenderTexture>();
+    Ref<Framebuffer> Framebuffer::Create(const FramebufferSpecification& spec) {
+        Ref<Framebuffer> tex = CreateRef<Framebuffer>();
         tex->Specification = spec;
         tex->Invalidate();
 
         return tex;
     }
     
-    void RenderTexture::Delete() {
+    void Framebuffer::Delete() {
         glDeleteFramebuffers(1, &ID);
         Attachments.clear();
         ID = 0;
     }
 
-    void RenderTexture::Resize(u32 width, u32 height) {
+    void Framebuffer::Resize(u32 width, u32 height) {
         Delete();
         Specification.Width = width;
         Specification.Height = height;
         Invalidate();
     }
 
-    void RenderTexture::ClearAttachmentInt(u32 attachment, int value) {
-        BL_ASSERT(Specification.Attachments.at(attachment).Type == RenderTextureAttachmentType::ColorR32I, "Not an integer attachment!");
+    void Framebuffer::ClearAttachmentInt(u32 attachment, int value) {
+        BL_ASSERT(Specification.Attachments.at(attachment).Type == FramebufferAttachmentType::ColorR32I, "Not an integer attachment!");
 
         glClearTexImage(Attachments.at(attachment)->ID, 0, GL_RED_INTEGER, GL_INT, &value);
     }
 
-    void RenderTexture::ClearAttachmentFloat(u32 attachment, f32 value) {
-        BL_ASSERT(Specification.Attachments.at(attachment).Type == RenderTextureAttachmentType::ColorR32F, "Not a floating point attachment!");
+    void Framebuffer::ClearAttachmentFloat(u32 attachment, f32 value) {
+        BL_ASSERT(Specification.Attachments.at(attachment).Type == FramebufferAttachmentType::ColorR32F, "Not a floating point attachment!");
 
         glClearTexImage(Attachments.at(attachment)->ID, 0, GL_RED, GL_FLOAT, &value);
     }
 
-    f32 RenderTexture::ReadPixelFloat(u32 attachment, u32 x, u32 y) {
-        BL_ASSERT(Specification.Attachments.at(attachment).Type == RenderTextureAttachmentType::ColorR32F, "Not a floating point attachment!");
+    f32 Framebuffer::ReadPixelFloat(u32 attachment, u32 x, u32 y) {
+        BL_ASSERT(Specification.Attachments.at(attachment).Type == FramebufferAttachmentType::ColorR32F, "Not a floating point attachment!");
 
         glBindFramebuffer(GL_FRAMEBUFFER, ID);
         glReadBuffer(GL_COLOR_ATTACHMENT0 + attachment);
@@ -230,7 +230,7 @@ namespace Blackberry {
         return pixel;
     }
 
-    void RenderTexture::Invalidate() {
+    void Framebuffer::Invalidate() {
         if (Specification.Width == 0 || Specification.Height == 0) return;
 
         glGenFramebuffers(1, &ID);
@@ -242,7 +242,7 @@ namespace Blackberry {
             texAttachment->Height = Specification.Height;
             bool createBindlessHandle = true;
 
-            if (attachment.Type == RenderTextureAttachmentType::ColorR8) {
+            if (attachment.Type == FramebufferAttachmentType::ColorR8) {
                 u32 id = 0;
 
                 glCreateTextures(GL_TEXTURE_2D, 1, &id);
@@ -261,7 +261,7 @@ namespace Blackberry {
                 texAttachment->ID = id;
 
                 createBindlessHandle = true;
-            } else if (attachment.Type == RenderTextureAttachmentType::ColorRGBA8) {
+            } else if (attachment.Type == FramebufferAttachmentType::ColorRGBA8) {
                 u32 id = 0;
 
                 glCreateTextures(GL_TEXTURE_2D, 1, &id);
@@ -280,7 +280,7 @@ namespace Blackberry {
                 texAttachment->ID = id;
 
                 createBindlessHandle = true;
-            } else if (attachment.Type == RenderTextureAttachmentType::ColorRGBA16F) {
+            } else if (attachment.Type == FramebufferAttachmentType::ColorRGBA16F) {
                 u32 id = 0;
 
                 glCreateTextures(GL_TEXTURE_2D, 1, &id);
@@ -299,7 +299,7 @@ namespace Blackberry {
                 texAttachment->ID = id;
 
                 createBindlessHandle = true;
-            } else if (attachment.Type == RenderTextureAttachmentType::Depth) {
+            } else if (attachment.Type == FramebufferAttachmentType::Depth) {
                 u32 id = 0;
 
                 glGenRenderbuffers(1, &id);
@@ -311,7 +311,7 @@ namespace Blackberry {
                 texAttachment->ID = id;
 
                 createBindlessHandle = false;
-            } else if (attachment.Type == RenderTextureAttachmentType::Depth24) {
+            } else if (attachment.Type == FramebufferAttachmentType::Depth24) {
                 u32 id = 0;
 
                 glGenRenderbuffers(1, &id);
@@ -323,7 +323,7 @@ namespace Blackberry {
                 texAttachment->ID = id;
 
                 createBindlessHandle = false;
-            } else if (attachment.Type == RenderTextureAttachmentType::ColorR32I) {
+            } else if (attachment.Type == FramebufferAttachmentType::ColorR32I) {
                 u32 id = 0;
 
                 glCreateTextures(GL_TEXTURE_2D, 1, &id);
@@ -342,7 +342,7 @@ namespace Blackberry {
                 texAttachment->ID = id;
 
                 createBindlessHandle = true;
-            } else if (attachment.Type == RenderTextureAttachmentType::ColorR32F) {
+            } else if (attachment.Type == FramebufferAttachmentType::ColorR32F) {
                 u32 id = 0;
 
                 glCreateTextures(GL_TEXTURE_2D, 1, &id);

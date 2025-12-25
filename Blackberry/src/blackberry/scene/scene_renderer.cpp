@@ -107,126 +107,124 @@ namespace Blackberry {
         m_State.SpotLightBuffer = ShaderStorageBuffer::Create(4);
 
         {
-            RenderTextureSpecification spec;
+            FramebufferSpecification spec;
             spec.Width = 1920;
             spec.Height = 1080;
             spec.Attachments = {
-                {0, RenderTextureAttachmentType::ColorRGBA16F}, // position color buffer
-                {1, RenderTextureAttachmentType::ColorRGBA16F}, // normal buffer
-                {2, RenderTextureAttachmentType::ColorRGBA8}, // color buffer
-                {3, RenderTextureAttachmentType::ColorRGBA16F}, // material buffer
-                {4, RenderTextureAttachmentType::ColorR32F}, // EntityID buffer
-                {5, RenderTextureAttachmentType::Depth} // depth
+                {0, FramebufferAttachmentType::ColorRGBA16F}, // position color buffer
+                {1, FramebufferAttachmentType::ColorRGBA16F}, // normal buffer
+                {2, FramebufferAttachmentType::ColorRGBA8}, // color buffer
+                {3, FramebufferAttachmentType::ColorRGBA16F}, // material buffer
+                {4, FramebufferAttachmentType::ColorR32F}, // EntityID buffer
+                {5, FramebufferAttachmentType::Depth} // depth
             };
             spec.ActiveAttachments = {0, 1, 2, 3, 4}; // which attachments we want to use for rendering
 
-            m_State.GBuffer = RenderTexture::Create(spec);
+            m_State.GBuffer = Framebuffer::Create(spec);
         }
         
         {
-            RenderTextureSpecification spec;
+            FramebufferSpecification spec;
             spec.Width = 1920;
             spec.Height = 1080;
             spec.Attachments = {
-                {0, RenderTextureAttachmentType::ColorRGBA16F}
+                {0, FramebufferAttachmentType::ColorRGBA16F}
             };
             spec.ActiveAttachments = {0};
 
-            m_State.PBROutput = RenderTexture::Create(spec);
+            m_State.PBROutput = Framebuffer::Create(spec);
         }
 
         {
-            RenderTextureSpecification spec;
+            FramebufferSpecification spec;
             spec.Width = 960;
             spec.Height = 540;
             spec.Attachments = {
-                {0, RenderTextureAttachmentType::ColorRGBA16F}
+                {0, FramebufferAttachmentType::ColorRGBA16F}
             };
             spec.ActiveAttachments = {0};
 
-            m_State.BloomBrightAreas = RenderTexture::Create(spec);
+            m_State.BloomBrightAreas = Framebuffer::Create(spec);
         }
 
         // Create all the render targets (NOTE: We could use mips for this exact purpose)
         {
-            RenderTextureSpecification spec;
+            FramebufferSpecification spec;
             spec.Width = 480;
             spec.Height = 270;
             spec.Attachments = {
-                {0, RenderTextureAttachmentType::ColorRGBA16F}
+                {0, FramebufferAttachmentType::ColorRGBA16F}
             };
             spec.ActiveAttachments = {0};
 
             for (u32 i = 0; i < 2; i++) {
-                m_State.BloomBlurPass1[i] = RenderTexture::Create(spec);
+                m_State.BloomBlurPass1[i] = Framebuffer::Create(spec);
             }
 
             spec.Width = 240;
             spec.Height = 135;
             for (u32 i = 0; i < 2; i++) {
-                m_State.BloomBlurPass2[i] = RenderTexture::Create(spec);
+                m_State.BloomBlurPass2[i] = Framebuffer::Create(spec);
             }
 
             spec.Width = 120;
             spec.Height = 68;
             for (u32 i = 0; i < 2; i++) {
-                m_State.BloomBlurPass3[i] = RenderTexture::Create(spec);
+                m_State.BloomBlurPass3[i] = Framebuffer::Create(spec);
             }
 
             spec.Width = 60;
             spec.Height = 34;
             for (u32 i = 0; i < 2; i++) {
-                m_State.BloomBlurPass4[i] = RenderTexture::Create(spec);
+                m_State.BloomBlurPass4[i] = Framebuffer::Create(spec);
             }
 
             spec.Width = 30;
             spec.Height = 17;
             for (u32 i = 0; i < 2; i++) {
-                m_State.BloomBlurPass5[i] = RenderTexture::Create(spec);
+                m_State.BloomBlurPass5[i] = Framebuffer::Create(spec);
             }
         }
 
         // Create all the upscale render targets
         {
-            RenderTextureSpecification spec;
+            FramebufferSpecification spec;
             spec.Width = 60;
             spec.Height = 34;
             spec.Attachments = {
-                {0, RenderTextureAttachmentType::ColorRGBA16F}
+                {0, FramebufferAttachmentType::ColorRGBA16F}
             };
             spec.ActiveAttachments = {0};
 
-            m_State.BloomCombinePass1 = RenderTexture::Create(spec);
+            m_State.BloomCombinePass1 = Framebuffer::Create(spec);
 
             spec.Width = 120;
             spec.Height = 68;
-            m_State.BloomCombinePass2 = RenderTexture::Create(spec);
+            m_State.BloomCombinePass2 = Framebuffer::Create(spec);
 
             spec.Width = 240;
             spec.Height = 135;
-            m_State.BloomCombinePass3 = RenderTexture::Create(spec);
+            m_State.BloomCombinePass3 = Framebuffer::Create(spec);
 
             spec.Width = 480;
             spec.Height = 270;
-            m_State.BloomCombinePass4 = RenderTexture::Create(spec);
+            m_State.BloomCombinePass4 = Framebuffer::Create(spec);
 
             spec.Width = 960;
             spec.Height = 540;
-            m_State.BloomCombinePass5 = RenderTexture::Create(spec);
+            m_State.BloomCombinePass5 = Framebuffer::Create(spec);
 
             spec.Width = 1920;
             spec.Height = 1080;
-            m_State.BloomCombinePass6 = RenderTexture::Create(spec);
+            m_State.BloomCombinePass6 = Framebuffer::Create(spec);
         }
     }
 
     // SceneRenderer::~SceneRenderer() {}
 
-    void SceneRenderer::Render(Scene* scene, RenderTexture* target) {
+    void SceneRenderer::Render(Scene* scene) {
         {
             BL_PROFILE_SCOPE("SceneRenderer::Render");
-
-            m_Target = target;
 
             auto dirLightView = scene->m_ECS->GetEntitiesWithComponents<TransformComponent, DirectionalLightComponent>();
             
@@ -266,8 +264,12 @@ namespace Blackberry {
         m_Camera = camera;
     }
 
-    void SceneRenderer::SetRenderTexture(RenderTexture* texture) {
-        m_Target = texture;
+    SceneCamera Blackberry::SceneRenderer::GetCamera() {
+        return m_Camera;
+    }
+
+    void SceneRenderer::SetRenderTarget(Ref<Framebuffer> target) {
+        m_RenderTarget = target;
     }
 
     void SceneRenderer::RenderEntity(Entity entity) {
@@ -400,7 +402,7 @@ namespace Blackberry {
         LightingPass();
 
         if (m_State.BloomEnabled) {
-            BloomPass();
+            BloomPass(); // NOTE: By doing this we are not allowing rendering to happen to the desired rendering target
         }
 
         ResetState();
@@ -446,14 +448,14 @@ namespace Blackberry {
             }
 
 
-            renderer.BindRenderTexture(m_State.GBuffer);
+            renderer.BindFramebuffer(m_State.GBuffer);
             renderer.Clear(BlColor(0, 0, 0, 255));
 
             m_State.GBuffer->ClearAttachmentFloat(4, -1.0f);
 
             renderer.DrawIndexed(m_State.MeshIndexCount);
 
-            renderer.UnBindRenderTexture();
+            renderer.UnBindFramebuffer();
         }
     }
 
@@ -462,7 +464,7 @@ namespace Blackberry {
 
         auto& renderer = BL_APP.GetRenderer();
 
-        renderer.BindRenderTexture(m_State.PBROutput);
+        renderer.BindFramebuffer(m_State.PBROutput);
         renderer.Clear(BlColor(0, 0, 0, 255));
         
         DrawBuffer skyboxBuffer;
@@ -559,7 +561,7 @@ namespace Blackberry {
 
         renderer.UnBindCubemap();
 
-        renderer.UnBindRenderTexture();
+        renderer.UnBindFramebuffer();
 
         
     }
@@ -570,7 +572,7 @@ namespace Blackberry {
         {
             BL_PROFILE_SCOPE("SceneRenderer::Flush/Bloom.BrightAreas");
 
-            renderer.BindRenderTexture(m_State.BloomBrightAreas);
+            renderer.BindFramebuffer(m_State.BloomBrightAreas);
             renderer.Clear(BlColor(0, 0, 0, 255));
 
             renderer.BindShader(m_State.BloomExtractBrightAreasShader);
@@ -583,7 +585,7 @@ namespace Blackberry {
 
             renderer.UnBindTexture();
 
-            renderer.UnBindRenderTexture();
+            renderer.UnBindFramebuffer();
         }
 
         {
@@ -595,12 +597,12 @@ namespace Blackberry {
 
                 if (i == 0) {
                     tex = m_State.BloomBrightAreas->Attachments[0];
-                    renderer.BindRenderTexture(m_State.BloomBlurPass1[0]);
+                    renderer.BindFramebuffer(m_State.BloomBlurPass1[0]);
                     renderer.Clear(BlColor(0, 0, 0, 255));
                 } else {
                     tex = m_State.BloomBlurPass1[0]->Attachments[0];
-                    renderer.BindRenderTexture(m_State.BloomBlurPass1[1]);
-                    // renderer.BindRenderTexture(m_Target);
+                    renderer.BindFramebuffer(m_State.BloomBlurPass1[1]);
+                    // renderer.BindFramebuffer(m_Target);
                     renderer.Clear(BlColor(0, 0, 0, 255));
                 }
 
@@ -611,7 +613,7 @@ namespace Blackberry {
                 
                 renderer.DrawIndexed(6);
 
-                renderer.UnBindRenderTexture();
+                renderer.UnBindFramebuffer();
             }
 
             // Pass number 2
@@ -620,11 +622,11 @@ namespace Blackberry {
 
                 if (i == 0) {
                     tex = m_State.BloomBlurPass1[1]->Attachments[0];
-                    renderer.BindRenderTexture(m_State.BloomBlurPass2[0]);
+                    renderer.BindFramebuffer(m_State.BloomBlurPass2[0]);
                     renderer.Clear(BlColor(0, 0, 0, 255));
                 } else {
                     tex = m_State.BloomBlurPass2[0]->Attachments[0];
-                    renderer.BindRenderTexture(m_State.BloomBlurPass2[1]);
+                    renderer.BindFramebuffer(m_State.BloomBlurPass2[1]);
                     renderer.Clear(BlColor(0, 0, 0, 255));
                 }
 
@@ -635,7 +637,7 @@ namespace Blackberry {
                 
                 renderer.DrawIndexed(6);
 
-                renderer.UnBindRenderTexture();
+                renderer.UnBindFramebuffer();
             }
 
             // Pass number 3
@@ -644,12 +646,12 @@ namespace Blackberry {
             
                 if (i == 0) {
                     tex = m_State.BloomBlurPass2[1]->Attachments[0];
-                    renderer.BindRenderTexture(m_State.BloomBlurPass3[0]);
+                    renderer.BindFramebuffer(m_State.BloomBlurPass3[0]);
                     renderer.Clear(BlColor(0, 0, 0, 255));
                 } else {
                     tex = m_State.BloomBlurPass3[0]->Attachments[0];
-                    renderer.BindRenderTexture(m_State.BloomBlurPass3[1]);
-                    // renderer.BindRenderTexture(m_Target);
+                    renderer.BindFramebuffer(m_State.BloomBlurPass3[1]);
+                    // renderer.BindFramebuffer(m_Target);
                     renderer.Clear(BlColor(0, 0, 0, 255));
                 }
             
@@ -660,7 +662,7 @@ namespace Blackberry {
                 
                 renderer.DrawIndexed(6);
             
-                renderer.UnBindRenderTexture();
+                renderer.UnBindFramebuffer();
             }
 
             // Pass number 4
@@ -669,12 +671,12 @@ namespace Blackberry {
             
                 if (i == 0) {
                     tex = m_State.BloomBlurPass3[1]->Attachments[0];
-                    renderer.BindRenderTexture(m_State.BloomBlurPass4[0]);
+                    renderer.BindFramebuffer(m_State.BloomBlurPass4[0]);
                     renderer.Clear(BlColor(0, 0, 0, 255));
                 } else {
                     tex = m_State.BloomBlurPass4[0]->Attachments[0];
-                    renderer.BindRenderTexture(m_State.BloomBlurPass4[1]);
-                    // renderer.BindRenderTexture(m_Target);
+                    renderer.BindFramebuffer(m_State.BloomBlurPass4[1]);
+                    // renderer.BindFramebuffer(m_Target);
                     renderer.Clear(BlColor(0, 0, 0, 255));
                 }
             
@@ -685,7 +687,7 @@ namespace Blackberry {
                 
                 renderer.DrawIndexed(6);
             
-                renderer.UnBindRenderTexture();
+                renderer.UnBindFramebuffer();
             }
 
             // Pass number 5
@@ -694,12 +696,12 @@ namespace Blackberry {
             
                 if (i == 0) {
                     tex = m_State.BloomBlurPass4[1]->Attachments[0];
-                    renderer.BindRenderTexture(m_State.BloomBlurPass5[0]);
+                    renderer.BindFramebuffer(m_State.BloomBlurPass5[0]);
                     renderer.Clear(BlColor(0, 0, 0, 255));
                 } else {
                     tex = m_State.BloomBlurPass5[0]->Attachments[0];
-                    renderer.BindRenderTexture(m_State.BloomBlurPass5[1]);
-                    // renderer.BindRenderTexture(m_Target);
+                    renderer.BindFramebuffer(m_State.BloomBlurPass5[1]);
+                    // renderer.BindFramebuffer(m_Target);
                     renderer.Clear(BlColor(0, 0, 0, 255));
                 }
             
@@ -710,7 +712,7 @@ namespace Blackberry {
                 
                 renderer.DrawIndexed(6);
             
-                renderer.UnBindRenderTexture();
+                renderer.UnBindFramebuffer();
             }
         }
 
@@ -726,12 +728,12 @@ namespace Blackberry {
             renderer.BindTexture(m_State.BloomBlurPass4[1]->Attachments[0], 0);
             renderer.BindTexture(m_State.BloomBlurPass5[1]->Attachments[0], 1);
 
-            renderer.BindRenderTexture(m_State.BloomCombinePass1);
+            renderer.BindFramebuffer(m_State.BloomCombinePass1);
             renderer.Clear(BlColor(0, 0, 0, 255));
 
             renderer.DrawIndexed(6);
 
-            renderer.UnBindRenderTexture();
+            renderer.UnBindFramebuffer();
 
             // Pass number 2
             renderer.BindShader(m_State.BloomCombineShader);
@@ -742,12 +744,12 @@ namespace Blackberry {
             renderer.BindTexture(m_State.BloomBlurPass3[1]->Attachments[0], 0);
             renderer.BindTexture(m_State.BloomCombinePass1->Attachments[0], 1);
 
-            renderer.BindRenderTexture(m_State.BloomCombinePass2);
+            renderer.BindFramebuffer(m_State.BloomCombinePass2);
             renderer.Clear(BlColor(0, 0, 0, 255));
 
             renderer.DrawIndexed(6);
 
-            renderer.UnBindRenderTexture();
+            renderer.UnBindFramebuffer();
 
             // Pass number 3
             renderer.BindShader(m_State.BloomCombineShader);
@@ -758,12 +760,12 @@ namespace Blackberry {
             renderer.BindTexture(m_State.BloomBlurPass2[1]->Attachments[0], 0);
             renderer.BindTexture(m_State.BloomCombinePass2->Attachments[0], 1);
 
-            renderer.BindRenderTexture(m_State.BloomCombinePass3);
+            renderer.BindFramebuffer(m_State.BloomCombinePass3);
             renderer.Clear(BlColor(0, 0, 0, 255));
 
             renderer.DrawIndexed(6);
 
-            renderer.UnBindRenderTexture();
+            renderer.UnBindFramebuffer();
 
             // Pass number 4
             renderer.BindShader(m_State.BloomCombineShader);
@@ -774,12 +776,12 @@ namespace Blackberry {
             renderer.BindTexture(m_State.BloomBlurPass1[1]->Attachments[0], 0);
             renderer.BindTexture(m_State.BloomCombinePass3->Attachments[0], 1);
 
-            renderer.BindRenderTexture(m_State.BloomCombinePass4);
+            renderer.BindFramebuffer(m_State.BloomCombinePass4);
             renderer.Clear(BlColor(0, 0, 0, 255));
 
             renderer.DrawIndexed(6);
 
-            renderer.UnBindRenderTexture();
+            renderer.UnBindFramebuffer();
 
             // Pass number 5
             renderer.BindShader(m_State.BloomCombineShader);
@@ -790,12 +792,12 @@ namespace Blackberry {
             renderer.BindTexture(m_State.BloomBrightAreas->Attachments[0], 0);
             renderer.BindTexture(m_State.BloomCombinePass4->Attachments[0], 1);
 
-            renderer.BindRenderTexture(m_State.BloomCombinePass5);
+            renderer.BindFramebuffer(m_State.BloomCombinePass5);
             renderer.Clear(BlColor(0, 0, 0, 255));
 
             renderer.DrawIndexed(6);
 
-            renderer.UnBindRenderTexture();
+            renderer.UnBindFramebuffer();
 
             // Pass number 6
             renderer.BindShader(m_State.BloomCombineShader);
@@ -806,12 +808,12 @@ namespace Blackberry {
             renderer.BindTexture(m_State.PBROutput->Attachments[0], 0);
             renderer.BindTexture(m_State.BloomCombinePass5->Attachments[0], 1);
 
-            renderer.BindRenderTexture(m_State.BloomCombinePass6);
+            renderer.BindFramebuffer(m_State.BloomCombinePass6);
             renderer.Clear(BlColor(0, 0, 0, 255));
 
             renderer.DrawIndexed(6);
 
-            renderer.UnBindRenderTexture();
+            renderer.UnBindFramebuffer();
 
             // Tonemap
             renderer.BindShader(m_State.ToneMapShader);
@@ -822,12 +824,12 @@ namespace Blackberry {
                 renderer.BindTexture(m_State.PBROutput->Attachments[0], 0);
             }
 
-            renderer.BindRenderTexture(m_Target);
+            renderer.BindFramebuffer(m_RenderTarget);
             renderer.Clear(BlColor(0, 0, 0, 255));
 
             renderer.DrawIndexed(6);
 
-            renderer.UnBindRenderTexture();
+            renderer.UnBindFramebuffer();
         }
     }
 

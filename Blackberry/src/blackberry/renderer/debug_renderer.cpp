@@ -6,27 +6,27 @@
 namespace Blackberry {
 
     struct DebugRendererState {
-        Ref<RenderTexture> DummyRenderTexture; // Dummy framebuffer used to not render certian things
+        Ref<Framebuffer> DummyRenderTexture; // Dummy framebuffer used to not render certian things
 
         Ref<Shader> MaskShader;
         Ref<Shader> OutlineShader;
 
-        Ref<RenderTexture> TargetTexture;
+        Ref<Framebuffer> TargetTexture;
     };
 
     static DebugRendererState s_DebugRendererState;
 
     void DebugRenderer::Initialize() {
-        RenderTextureSpecification spec;
+        FramebufferSpecification spec;
         spec.Width = 1920;
         spec.Height = 1080;
         spec.Attachments = {
-            {0, RenderTextureAttachmentType::ColorRGBA8},
-            {1, RenderTextureAttachmentType::Depth}
+            {0, FramebufferAttachmentType::ColorRGBA8},
+            {1, FramebufferAttachmentType::Depth}
         };
         spec.ActiveAttachments = {0};
 
-        s_DebugRendererState.DummyRenderTexture = RenderTexture::Create(spec);
+        s_DebugRendererState.DummyRenderTexture = Framebuffer::Create(spec);
 
         s_DebugRendererState.OutlineShader = Shader::Create(FS::Path("Assets/Shaders/Default/Core/Quad.vert"), FS::Path("Assets/Shaders/Default/Debug/Outline.frag"));
         s_DebugRendererState.MaskShader = Shader::Create(FS::Path("Assets/Shaders/Default/Core/Quad.vert"), FS::Path("Assets/Shaders/Default/Core/FlatColor.frag"));
@@ -34,18 +34,16 @@ namespace Blackberry {
 
     void DebugRenderer::Shutdown() {}
 
-    void DebugRenderer::SetRenderTexture(Ref<RenderTexture> render) {
+    void DebugRenderer::SetRenderTarget(Ref<Framebuffer> target) {
         auto& renderer = BL_APP.GetRenderer();
 
-        s_DebugRendererState.TargetTexture = render;
+        s_DebugRendererState.TargetTexture = target;
 
-        renderer.BindRenderTexture(render);
+        renderer.BindFramebuffer(target);
         renderer.Clear(BlColor(0, 0, 0, 255));
 
-        renderer.UnBindRenderTexture();
+        renderer.UnBindFramebuffer();
     }
-
-    void DebugRenderer::ResetRenderTexture() {}
 
     void DebugRenderer::DrawEntityOutline(Entity e) {
         if (!e.HasComponent<TransformComponent>() || !e.HasComponent<MeshComponent>()) return;
@@ -77,7 +75,7 @@ namespace Blackberry {
 
         renderer.BindShader(s_DebugRendererState.MaskShader);
 
-        renderer.BindRenderTexture(s_DebugRendererState.DummyRenderTexture.Data());
+        renderer.BindFramebuffer(s_DebugRendererState.DummyRenderTexture);
         renderer.Clear(BlColor(0, 0, 0, 255));
 
         renderer.BindTexture(entities, 0);
@@ -90,13 +88,13 @@ namespace Blackberry {
         s_DebugRendererState.OutlineShader->SetFloat("u_Thickness", 4.0f);
         s_DebugRendererState.OutlineShader->SetVec3("u_OutlineColor", BlVec3(1.0f, 0.5f, 0.1f));
 
-        renderer.BindRenderTexture(s_DebugRendererState.TargetTexture.Data());
+        renderer.BindFramebuffer(s_DebugRendererState.TargetTexture);
 
         renderer.BindTexture(s_DebugRendererState.DummyRenderTexture->Attachments[0], 0);
         renderer.DrawIndexed(6);
         renderer.UnBindTexture();
 
-        renderer.UnBindRenderTexture();
+        renderer.UnBindFramebuffer();
     }
 
 } // namespace Blackberry

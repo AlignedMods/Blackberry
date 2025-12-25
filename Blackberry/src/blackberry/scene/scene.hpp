@@ -20,15 +20,16 @@ namespace Blackberry {
         static Scene* Copy(Scene* current);
         void Delete();
 
-        void OnPlay();
-        void OnStop();
+        void OnRuntimeStart();
+        void OnRuntimeStop();
 
         SceneCamera GetSceneCamera();
-        void SetCamera(SceneCamera* camera);
 
-        void OnUpdate();
-        void OnRuntimeUpdate();
-        void OnRender(RenderTexture* target = nullptr); // NOTE: you can use a custom framebuffer here!
+        void OnUpdateEditor();
+        void OnUpdateRuntime();
+
+        void OnRenderEditor(Ref<Framebuffer> target, SceneCamera& camera);
+        void OnRenderRuntime(Ref<Framebuffer> target);
 
         EntityID CreateEntity(const std::string& name);
         EntityID CreateEntityWithUUID(u64 uuid);
@@ -49,7 +50,6 @@ namespace Blackberry {
     private:
         ECS* m_ECS = nullptr;
         PhysicsEngine* m_PhysicsWorld = nullptr;
-        SceneCamera* m_Camera = nullptr; // gets set in OnRuntimeUpdate
         SceneRenderer* m_Renderer = nullptr;
         std::unordered_map<u64, EntityID> m_EntityMap;
         std::unordered_map<std::string, u64> m_NamedEntityMap;

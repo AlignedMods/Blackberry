@@ -36,7 +36,7 @@ namespace BlackberryEditor {
         if (ImGui::CollapsingHeader("Bloom Stage")) {
             ImGui::SliderInt("Current Down sampling Stage", &m_CurrentBloomDownsampleStage, 1, 5);
 
-            Ref<RenderTexture> dtex;
+            Ref<Framebuffer> dtex;
 
             switch (m_CurrentBloomDownsampleStage) {
                 case 1: dtex = state.BloomBlurPass1[1]; break;
@@ -51,7 +51,7 @@ namespace BlackberryEditor {
 
             ImGui::SliderInt("Current Up sampling Stage", &m_CurrentBloomUpsamlingStage, 1, 5);
 
-            Ref<RenderTexture> utex;
+            Ref<Framebuffer> utex;
 
             switch (m_CurrentBloomUpsamlingStage) {
                 case 1: utex = state.BloomCombinePass1; break;

@@ -35,7 +35,7 @@ namespace Blackberry {
 
     void Scene::Delete() {}
 
-    void Scene::OnPlay() {
+    void Scene::OnRuntimeStart() {
         auto view = m_ECS->GetEntitiesWithComponents<ScriptComponent>();
 
         view.each([&](auto entity, ScriptComponent& script) {
@@ -65,7 +65,7 @@ namespace Blackberry {
         });
     }
 
-    void Scene::OnStop() {
+    void Scene::OnRuntimeStop() {
         auto view = m_ECS->GetEntitiesWithComponents<ScriptComponent>();
 
         view.each([&](auto entity, ScriptComponent& script) {
@@ -102,16 +102,9 @@ namespace Blackberry {
         return cam;
     }
 
-    void Scene::SetCamera(SceneCamera* camera) {
-        m_Camera = camera;
-        m_Renderer->SetCamera(*camera);
-    }
+    void Scene::OnUpdateEditor() {}
 
-    void Scene::OnUpdate() {
-        
-    }
-
-    void Scene::OnRuntimeUpdate() {
+    void Scene::OnUpdateRuntime() {
         if (m_Paused) return;
 
         auto scriptView = m_ECS->GetEntitiesWithComponents<ScriptComponent>();
@@ -135,10 +128,18 @@ namespace Blackberry {
         m_PhysicsWorld->Step();
     }
 
-    void Scene::OnRender(RenderTexture* target) {
-        BL_ASSERT(m_Camera, "No camera set for current scene!");
-        
-        m_Renderer->Render(this, target);
+    void Scene::OnRenderEditor(Ref<Framebuffer> target, SceneCamera& camera) {
+        m_Renderer->SetCamera(camera);
+        m_Renderer->SetRenderTarget(target);
+        m_Renderer->Render(this);
+    }
+
+    void Scene::OnRenderRuntime(Ref<Framebuffer> target) {
+        SceneCamera cam = GetSceneCamera();
+
+        m_Renderer->SetCamera(cam);
+        m_Renderer->SetRenderTarget(target);
+        m_Renderer->Render(this);
     }
 
     EntityID Scene::CreateEntity(const std::string& name) {

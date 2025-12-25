@@ -149,22 +149,22 @@ namespace Blackberry {
         }};
         std::array<u32, 36> CubeIndices = {{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35 }};
 
-        Ref<RenderTexture> GBuffer; // For deffered rendering
+        Ref<Framebuffer> GBuffer; // For deffered rendering
 
-        Ref<RenderTexture> PBROutput; // The rendered image after passing through the PBR shader
-        Ref<RenderTexture> BloomBrightAreas; // The areas above the bloom threshold
-        Ref<RenderTexture> BloomBlurPass1[2]; // 1st bloom blur pass (two of them because horizontal and vertical pass)
-        Ref<RenderTexture> BloomBlurPass2[2]; // 2nd boom blur pass
-        Ref<RenderTexture> BloomBlurPass3[2]; // you get the god dam point
-        Ref<RenderTexture> BloomBlurPass4[2];
-        Ref<RenderTexture> BloomBlurPass5[2];
+        Ref<Framebuffer> PBROutput; // The rendered image after passing through the PBR shader
+        Ref<Framebuffer> BloomBrightAreas; // The areas above the bloom threshold
+        Ref<Framebuffer> BloomBlurPass1[2]; // 1st bloom blur pass (two of them because horizontal and vertical pass)
+        Ref<Framebuffer> BloomBlurPass2[2]; // 2nd boom blur pass
+        Ref<Framebuffer> BloomBlurPass3[2]; // you get the god dam point
+        Ref<Framebuffer> BloomBlurPass4[2];
+        Ref<Framebuffer> BloomBlurPass5[2];
 
-        Ref<RenderTexture> BloomCombinePass1;
-        Ref<RenderTexture> BloomCombinePass2;
-        Ref<RenderTexture> BloomCombinePass3;
-        Ref<RenderTexture> BloomCombinePass4;
-        Ref<RenderTexture> BloomCombinePass5;
-        Ref<RenderTexture> BloomCombinePass6;
+        Ref<Framebuffer> BloomCombinePass1;
+        Ref<Framebuffer> BloomCombinePass2;
+        Ref<Framebuffer> BloomCombinePass3;
+        Ref<Framebuffer> BloomCombinePass4;
+        Ref<Framebuffer> BloomCombinePass5;
+        Ref<Framebuffer> BloomCombinePass6;
 
         Ref<EnviromentMap> CurrentEnviromentMap;
         Ref<EnviromentMap> DefaultEnviromentMap;
@@ -180,10 +180,11 @@ namespace Blackberry {
     public:
         SceneRenderer();
 
-        void Render(Scene* scene, RenderTexture* target);
+        void Render(Scene* scene);
 
         void SetCamera(const SceneCamera& camera);
-        void SetRenderTexture(RenderTexture* texture);
+        SceneCamera GetCamera();
+        void SetRenderTarget(Ref<Framebuffer> texture);
 
         // NOTE: this function will not call flush!
         // You must call it yourself afterward
@@ -219,7 +220,7 @@ namespace Blackberry {
         SceneRendererState m_State;
 
         SceneCamera m_Camera;
-        RenderTexture* m_Target = nullptr;
+        Ref<Framebuffer> m_RenderTarget;
     };
 
 } // namespace Blackberry

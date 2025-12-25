@@ -18,7 +18,7 @@ namespace Blackberry {
 
     enum class TextureFiltering { Nearest, Linear };
 
-    enum class RenderTextureAttachmentType {
+    enum class FramebufferAttachmentType {
         // Color attachments
         ColorR8,
         ColorRGBA8,
@@ -33,10 +33,10 @@ namespace Blackberry {
 
     struct RenderTextureAttachment {
         u32 Attachment = 0;
-        RenderTextureAttachmentType Type;
+        FramebufferAttachmentType Type;
     };
 
-    struct RenderTextureSpecification {
+    struct FramebufferSpecification {
         u32 Width = 0;
         u32 Height = 0;
         std::vector<RenderTextureAttachment> Attachments;
@@ -63,11 +63,11 @@ namespace Blackberry {
         TextureFormat Format = TextureFormat::RGBA8;
     };
     
-    struct RenderTexture {
-        RenderTexture() = default;
-        ~RenderTexture();
+    struct Framebuffer {
+        Framebuffer() = default;
+        ~Framebuffer();
 
-        static Ref<RenderTexture> Create(const RenderTextureSpecification& spec);
+        static Ref<Framebuffer> Create(const FramebufferSpecification& spec);
         void Delete();
         void Resize(u32 width, u32 height);
 
@@ -77,7 +77,7 @@ namespace Blackberry {
         f32 ReadPixelFloat(u32 attachment, u32 x, u32 y);
     
         u32 ID = 0;
-        RenderTextureSpecification Specification;
+        FramebufferSpecification Specification;
         std::vector<Ref<Texture2D>> Attachments;
 
     private:

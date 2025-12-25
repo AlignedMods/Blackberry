@@ -10,8 +10,7 @@ namespace Blackberry {
         static void Initialize();
         static void Shutdown();
 
-        static void SetRenderTexture(Ref<RenderTexture> render);
-        static void ResetRenderTexture();
+        static void SetRenderTarget(Ref<Framebuffer> target);
 
         static void DrawEntityOutline(Entity e);
     };

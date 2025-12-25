@@ -244,7 +244,7 @@ namespace Blackberry {
             transform.Rotation = glm::normalize(BlQuat(rot.GetW(), rot.GetX(), rot.GetY(), rot.GetZ()));
         }
 
-        m_System->Update(DELTA_TIME, 1, s_TempAllocator, s_JobSystem);
+        m_System->Update(BL_APP.GetDeltaTime(), 1, s_TempAllocator, s_JobSystem);
     }
 
     void PhysicsEngine::SetContext(void* scene) {

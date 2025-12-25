@@ -36,8 +36,8 @@ namespace Blackberry {
         virtual void BindCubemap(Ref<Texture2D> cubemap, u32 unit) override;
         virtual void UnBindCubemap() override;
 
-        virtual void BindRenderTexture(Ref<RenderTexture> texture) override;
-        virtual void UnBindRenderTexture() override;
+        virtual void BindFramebuffer(Ref<Framebuffer> framebuffer) override;
+        virtual void UnBindFramebuffer() override;
 
     private:
         u32 m_VAO;

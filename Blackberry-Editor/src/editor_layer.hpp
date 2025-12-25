@@ -10,6 +10,7 @@ namespace BlackberryEditor {
 
     enum class EditorState {
         Edit,
+        Simulate,
         Play
     };
 
@@ -43,6 +44,7 @@ namespace BlackberryEditor {
         void NewScene();
 
         void OnScenePlay();
+        void OnSceneSimulate();
         void OnSceneStop();
         void OnScenePause();
 
@@ -67,19 +69,17 @@ namespace BlackberryEditor {
         Blackberry::Font m_EditorFont;
         Blackberry::SceneCamera m_EditorCamera;
         f32 m_EditorCameraSpeed = 2.0f;
-        Blackberry::SceneCamera m_RuntimeCamera;
-        Blackberry::SceneCamera* m_CurrentCamera = nullptr;
     
         Blackberry::EntityID m_SelectedEntity = entt::null;
         bool m_IsEntitySelected = false;
         GizmoState m_GizmoState = GizmoState::None;
     
-        Blackberry::Ref<Blackberry::RenderTexture> m_RenderTexture;
+        Blackberry::Ref<Blackberry::Framebuffer> m_RenderTexture;
         BlRec m_ViewportBounds;
         f32 m_ViewportScale = 1.0f;
         bool m_ViewportHovered = false;;
 
-        Blackberry::Ref<Blackberry::RenderTexture> m_OutlineTexture;
+        Blackberry::Ref<Blackberry::Framebuffer> m_OutlineTexture;
     
         Blackberry::Scene* m_EditingScene = nullptr;
         Blackberry::Scene* m_RuntimeScene = nullptr;
@@ -98,11 +98,12 @@ namespace BlackberryEditor {
         Blackberry::Ref<Blackberry::Texture2D> m_BackDirectoryIcon;
 
         Blackberry::Ref<Blackberry::Texture2D> m_PlayIcon;
+        Blackberry::Ref<Blackberry::Texture2D> m_SimulateIcon;
         Blackberry::Ref<Blackberry::Texture2D> m_StopIcon;
         Blackberry::Ref<Blackberry::Texture2D> m_PauseIcon;
         Blackberry::Ref<Blackberry::Texture2D> m_ResumeIcon;
 
-        Blackberry::Ref<Blackberry::RenderTexture> m_SavedGBuffer;
+        Blackberry::Ref<Blackberry::Framebuffer> m_SavedGBuffer;
     
         bool m_ShowDemoWindow = false;
 
