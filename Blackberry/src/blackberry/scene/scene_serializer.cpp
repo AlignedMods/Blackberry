@@ -157,7 +157,7 @@ namespace Blackberry {
         out << YAML::EndMap; // Entity
     }
 
-    SceneSerializer::SceneSerializer(Scene* scene)
+    SceneSerializer::SceneSerializer(Ref<Scene> scene)
         : m_Scene(scene) {}
 
     void SceneSerializer::Serialize(const FS::Path& path) {

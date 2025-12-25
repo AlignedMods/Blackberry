@@ -10,19 +10,12 @@
 
 namespace Blackberry {
 
-    struct ProjectScene {
-        FS::Path Path;
-        Scene Scene;
-    };
-
     struct ProjectSpecification {
         std::string Name;
 
         FS::Path AssetPath;
         FS::Path AssetRegistry;
         FS::Path StartScene;
-
-        std::vector<ProjectScene> Scenes;
     };
 
     class Project {
@@ -32,8 +25,7 @@ namespace Blackberry {
 
         static void Save();
 
-        static Scene& LoadScene(const FS::Path& path);
-        static void SaveScene(Scene& scene, const FS::Path& path);
+        static void SaveScene(Ref<Scene> scene, const FS::Path& path);
 
         static AssetManager& LoadAssetRegistry(const FS::Path& path);
         static void SaveAssetRegistry(const FS::Path& path);
@@ -43,8 +35,7 @@ namespace Blackberry {
         static FS::Path GetAssetDirecory();
         static FS::Path GetAssetPath(const FS::Path& path);
 
-        static ProjectScene& GetStartScene();
-        static std::vector<ProjectScene>& GetScenes();
+        static Ref<Scene> GetStartScene();
 
         static AssetManager& GetAssetManager();
 

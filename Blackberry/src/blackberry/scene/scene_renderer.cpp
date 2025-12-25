@@ -317,6 +317,8 @@ namespace Blackberry {
             gpuMat.UseAOTexture = mat.UseAOTexture;
             gpuMat.AOTexture = mat.AOTexture->BindlessHandle;
             gpuMat.AOFactor = mat.AOFactor;
+
+            gpuMat.Emission = mat.Emission;
         }
 
         m_State.Materials.push_back(gpuMat);
@@ -330,7 +332,8 @@ namespace Blackberry {
 
     void SceneRenderer::AddModel(const TransformComponent& transform, const MeshComponent& model, BlColor color, u32 entityID) {
         if (Project::GetAssetManager().ContainsAsset(model.MeshHandle)) {
-            auto& trueModel = std::get<Model>(Project::GetAssetManager().GetAsset(model.MeshHandle).Data);
+            const Asset& asset = Project::GetAssetManager().GetAsset(model.MeshHandle);
+            auto& trueModel = std::get<Model>(asset.Data);
 
             for (u32 i = 0; i < trueModel.MeshCount; ++i) {
                 bool useDefaultMaterial = true;

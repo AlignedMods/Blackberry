@@ -66,6 +66,12 @@ namespace Blackberry {
             mat.AOFactor = aoFactor;
         }
 
+        // Emission
+        if (node["Emission"]) {
+            f32 emission = node["Emission"].as<f32>();
+            mat.Emission = emission;
+        }
+
         mat.ID = s_CurrentID;
         s_CurrentID++;
 
@@ -100,6 +106,8 @@ namespace Blackberry {
         } else {
             out << YAML::Key << "AO-Factor" << YAML::Value << mat.AOFactor;
         }
+
+        out << YAML::Key << "Emission" << YAML::Value << mat.Emission;
 
         out << YAML::EndMap;
 

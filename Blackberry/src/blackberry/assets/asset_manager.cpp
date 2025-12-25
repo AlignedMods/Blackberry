@@ -89,6 +89,12 @@ namespace Blackberry {
         AddAsset({path, AssetType::EnviromentMap, env});
     }
 
+    void AssetManager::LoadSceneFromPath(const FS::Path& path) {
+        FS::Path full = Project::GetAssetPath(path);
+        Ref<Scene> scene = Scene::Create(full);
+        AddAsset({full, AssetType::Scene, scene});
+    }
+
     void AssetManager::LoadAssetFromPath(const FS::Path& path) {
         std::string ext = path.Extension();
         std::transform(ext.begin(), ext.end(), ext.begin(),
@@ -104,6 +110,8 @@ namespace Blackberry {
             LoadMaterialFromPath(path);
         } else if (ext == ".hdr" || ext == ".hdri") {
             LoadEnviromentMapFromPath(path);
+        } else if (ext == ".blscene") {
+            LoadSceneFromPath(path);
         }
     }
 

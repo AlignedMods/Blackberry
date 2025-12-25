@@ -94,6 +94,11 @@
             "Handle": 9023906316994206417,
             "Path": "Textures/MANGODIDDYBLUD.jpg",
             "Type": "Texture"
+        },
+        "Handle - 9223372036854775808": {
+            "Handle": 9223372036854775808,
+            "Path": "Scenes/Sandbox.blscene",
+            "Type": "Scene"
         }
     }
 }

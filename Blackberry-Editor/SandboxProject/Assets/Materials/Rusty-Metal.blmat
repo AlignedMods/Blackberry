@@ -2,3 +2,4 @@ AO-Texture: "Materials/Source/Rusty-Metal/AO.png"
 Albedo-Texture: "Materials/Source/Rusty-Metal/Albedo.png"
 Metallic-Texture: "Materials/Source/Rusty-Metal/Metallic.png"
 Roughness-Texture: "Materials/Source/Rusty-Metal/Roughness.png"
+Emission: 0.0

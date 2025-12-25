@@ -6,6 +6,7 @@
 #include "blackberry/scene/entity.hpp"
 #include "blackberry/project/project.hpp"
 #include "blackberry/scene/scene_renderer.hpp"
+#include "blackberry/scene/scene_serializer.hpp"
 
 extern "C" {
     #include "lua.h"
@@ -25,10 +26,22 @@ namespace Blackberry {
         // BL_CORE_TRACE("Scene destroyed ({})", reinterpret_cast<void*>(this));
     }
 
-    Scene* Scene::Copy(Scene* current) {
-        Scene* scene = new Scene();
+    Ref<Scene> Scene::Create(const FS::Path& path) {
+        Ref<Scene> scene = CreateRef<Scene>();
+        SceneSerializer serializer(scene);
+        serializer.Deserialize(path);
 
-        scene->m_ECS = ECS::Copy(current->m_ECS);
+        return scene;
+    }
+
+    void Scene::CopyTo(Ref<Scene> dest, Ref<Scene> source) {
+        dest->m_ECS = ECS::Copy(source->m_ECS);
+    }
+
+    Ref<Scene> Scene::Copy(Ref<Scene> source) {
+        Ref<Scene> scene = CreateRef<Scene>();
+
+        CopyTo(scene, source);
 
         return scene;
     }

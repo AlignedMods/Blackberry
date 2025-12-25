@@ -8,13 +8,13 @@ namespace Blackberry {
     class SceneSerializer {
     public:
         SceneSerializer() = default;
-        SceneSerializer(Scene* scene);
+        SceneSerializer(Ref<Scene> scene);
 
         void Serialize(const FS::Path& path);
         void Deserialize(const FS::Path& path);
 
     private:
-        Scene* m_Scene = nullptr;
+        Ref<Scene> m_Scene = nullptr;
     };
 
 } // namespace Blackberry

@@ -89,12 +89,13 @@ vec3 TonemapACES(vec3 color) {
 }
 
 void main() {
-    vec3 worldPos =   texture(sampler2D(GPosition), a_TexCoord).rgb;
-    vec3 normal =     texture(sampler2D(GNormal), a_TexCoord).rgb;
+    vec3 worldPos   = texture(sampler2D(GPosition), a_TexCoord).rgb;
+    vec3 normal     = texture(sampler2D(GNormal), a_TexCoord).rgb;
     vec3 albedo = pow(texture(sampler2D(GAlbedo), a_TexCoord).rgb, vec3(2.2));
-    float metallic =  texture(sampler2D(GMat), a_TexCoord).r;
+    float metallic  = texture(sampler2D(GMat), a_TexCoord).r;
     float roughness = texture(sampler2D(GMat), a_TexCoord).g;
-    float ao =        texture(sampler2D(GMat), a_TexCoord).b;
+    float ao        = texture(sampler2D(GMat), a_TexCoord).b;
+    float emission  = texture(sampler2D(GMat), a_TexCoord).a;
 
     vec3 viewPos = u_ViewPos;
     
@@ -159,6 +160,8 @@ void main() {
             Lo += AddLight(N, H, V, L, F0, roughness, metallic, albedo, radiance);
         }
     }
+
+    Lo += emission;
 
     vec3 F = FresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
     

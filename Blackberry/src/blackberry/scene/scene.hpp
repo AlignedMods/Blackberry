@@ -17,7 +17,10 @@ namespace Blackberry {
         Scene();
         ~Scene();
 
-        static Scene* Copy(Scene* current);
+        static Ref<Scene> Create(const FS::Path& path);
+
+        static void CopyTo(Ref<Scene> dest, Ref<Scene> source);
+        static Ref<Scene> Copy(Ref<Scene> source);
         void Delete();
 
         void OnRuntimeStart();

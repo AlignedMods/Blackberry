@@ -81,9 +81,9 @@ namespace BlackberryEditor {
 
         Blackberry::Ref<Blackberry::Framebuffer> m_OutlineTexture;
     
-        Blackberry::Scene* m_EditingScene = nullptr;
-        Blackberry::Scene* m_RuntimeScene = nullptr;
-        Blackberry::Scene* m_CurrentScene = nullptr;
+        Blackberry::Ref<Blackberry::Scene> m_EditingScene;
+        Blackberry::Ref<Blackberry::Scene> m_RuntimeScene;
+        Blackberry::Ref<Blackberry::Scene> m_CurrentScene;
         EditorState m_EditorState = EditorState::Edit;
     
         Blackberry::FS::Path m_CurrentDirectory;

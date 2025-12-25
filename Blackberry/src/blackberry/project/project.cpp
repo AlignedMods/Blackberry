@@ -26,8 +26,7 @@ namespace Blackberry {
         LoadAssetRegistry(s_ActiveProject->m_Specification.AssetPath / assetRegistry);
     
         std::string startScene = j.at("StartScene");
-        FS::Path scenePath = s_ActiveProject->m_Specification.AssetPath / startScene;
-        LoadScene(scenePath);
+        s_ActiveProject->m_Specification.StartScene = startScene;
 
         s_ActiveProject->m_ProjectPath = path;
     }
@@ -35,26 +34,15 @@ namespace Blackberry {
     void Project::Save() {
         BL_ASSERT(s_ActiveProject, "No active project!");
         
-        for (auto& scene : s_ActiveProject->m_Specification.Scenes) {
-            SaveScene(scene.Scene, scene.Path);
-        }
+        // for (auto& scene : s_ActiveProject->m_Specification.Scenes) {
+        //     SaveScene(scene.Scene, scene.Path);
+        // }
 
         SaveAssetRegistry(s_ActiveProject->m_Specification.AssetRegistry);
     }
 
-    Scene& Project::LoadScene(const FS::Path& path) {
-        BL_ASSERT(s_ActiveProject, "No active project!");
-        ProjectScene scene;
-        scene.Path = path;
-
-        SceneSerializer serializer(&scene.Scene);
-        serializer.Deserialize(path);
-
-        return s_ActiveProject->m_Specification.Scenes.emplace_back(scene).Scene;
-    }
-
-    void Project::SaveScene(Scene& scene, const FS::Path& path) {
-        SceneSerializer serializer(&scene);
+    void Project::SaveScene(Ref<Scene> scene, const FS::Path& path) {
+        SceneSerializer serializer(scene);
         serializer.Serialize(path);
     }
 
@@ -87,14 +75,13 @@ namespace Blackberry {
         return GetAssetDirecory() / path;
     }
 
-    ProjectScene& Project::GetStartScene() {
+    Ref<Scene> Project::GetStartScene() {
         BL_ASSERT(s_ActiveProject, "No active project!");
-        return s_ActiveProject->m_Specification.Scenes.front();
-    }
 
-    std::vector<ProjectScene>& Project::GetScenes() {
-        BL_ASSERT(s_ActiveProject, "No active project!");
-        return s_ActiveProject->m_Specification.Scenes;
+        BL_ASSERT(s_ActiveProject->m_AssetManager.ContainsAsset(s_ActiveProject->m_Specification.StartScene), "Project does not contain start scene!");
+
+        Ref<Scene> scene = std::get<Ref<Scene>>(s_ActiveProject->m_AssetManager.GetAssetFromPath(s_ActiveProject->m_Specification.StartScene).Data);
+        return scene;
     }
 
     AssetManager& Project::GetAssetManager() {

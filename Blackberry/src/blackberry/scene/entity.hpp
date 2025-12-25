@@ -8,7 +8,7 @@ namespace Blackberry {
     class Entity {
     public:
         Entity() = default;
-        explicit Entity(EntityID id, Scene* scene)
+        explicit Entity(EntityID id, Ref<Scene> scene)
             : ID(id), EntityScene(scene) {}
 
         template <typename T>
@@ -33,7 +33,7 @@ namespace Blackberry {
 
     public:
         EntityID ID = entt::null;
-        Scene* EntityScene = nullptr;
+        Ref<Scene> EntityScene;
     };
 
 } // namespace Blackberry

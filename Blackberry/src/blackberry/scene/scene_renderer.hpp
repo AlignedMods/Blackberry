@@ -55,6 +55,8 @@ namespace Blackberry {
         int UseAOTexture = false;
         u64 AOTexture = 0;
         f32 AOFactor = 0.0f;
+
+        f32 Emission = 0.0f;
     };
 
     struct SceneRendererState {

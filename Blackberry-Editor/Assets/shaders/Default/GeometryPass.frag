@@ -23,6 +23,8 @@ struct Material {
     int UseAOTexture;
     uvec2 AOTexture;
     float AOFactor;
+
+    float Emission;
 };
 
 layout (std430, binding = 1) buffer MaterialBuffer {
@@ -65,11 +67,12 @@ void main() {
         o_GMat.b = Materials[a_MaterialIndex].AOFactor;
     }
 
+    o_GMat.a = Materials[a_MaterialIndex].Emission;
+
     // For visualizations (normally the alpha would just get set to 0.0)
     o_GPosition.a = 1.0;
     o_GNormal.a = 1.0;
     o_GAlbedo.a = 1.0;
-    o_GMat.a = 1.0;
     // Mouse picking
     o_GEntityID = float(a_EntityID);
 }

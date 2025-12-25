@@ -68,7 +68,7 @@ namespace BlackberryEditor {
         ImGui::End();
     }
 
-    void SceneRendererPanel::SetContext(Scene* scene) {
+    void SceneRendererPanel::SetContext(Ref<Scene> scene) {
         m_Context = scene;
     }
 

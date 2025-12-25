@@ -8,10 +8,10 @@ namespace BlackberryEditor {
     public:
         void OnUIRender(bool& open);
 
-        void SetContext(Blackberry::Scene* scene);
+        void SetContext(Blackberry::Ref<Blackberry::Scene> scene);
 
     private:
-        Blackberry::Scene* m_Context = nullptr;
+        Blackberry::Ref<Blackberry::Scene> m_Context;
         int m_CurrentDeferredImage = 0;
         int m_CurrentBloomDownsampleStage = 1;
         int m_CurrentBloomUpsamlingStage = 1;

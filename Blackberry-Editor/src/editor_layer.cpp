@@ -286,7 +286,7 @@ namespace BlackberryEditor {
 
         guizmoColors[ImGuizmo::COLOR::SELECTION] = ImVec4(0.8f, 0.8f, 0.8f, 0.7f);
 
-        m_EditingScene = &Project::GetStartScene().Scene;
+        m_EditingScene = Project::GetStartScene();
         m_CurrentScene = m_EditingScene;
 
         // ImGui::GetIO().IniFilename = std::filesystem::path(m_AppDataDirectory / "Blackberry-Editor" / "editor_layout.ini").string().c_str();
@@ -1363,20 +1363,11 @@ namespace BlackberryEditor {
                 std::string strPath = reinterpret_cast<char*>(payload->Data);
                 FS::Path path(strPath);
 
-                if (path.Extension() == ".blscene") {
-                    path = m_BaseDirectory / path;
-                
-                    for (auto& scene : Project::GetScenes()) {
-                        if (scene.Path == path) {
-                            m_EditingScene = &scene.Scene;
-                            sceneExists = true;
-                        }
-                    }
-    
-                    if (!sceneExists) {
-                        m_EditingScene = &Project::LoadScene(path);
-                    }
+                const Asset& asset = Project::GetAssetManager().GetAssetFromPath(path);
 
+                if (asset.Type == AssetType::Scene) {
+                    Ref<Scene> scene = std::get<Ref<Scene>>(asset.Data);
+                    m_EditingScene = scene;
                     m_CurrentScene = m_EditingScene;
                 }
             }
@@ -1535,8 +1526,6 @@ namespace BlackberryEditor {
         BL_INFO("Reverted to editing scene.");
         m_EditorState = EditorState::Edit;
         m_CurrentScene = m_EditingScene;
-        delete m_RuntimeScene;
-        m_RuntimeScene = nullptr;
     }
 
     void EditorLayer::OnScenePause() {
