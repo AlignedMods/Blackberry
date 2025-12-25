@@ -66,7 +66,8 @@ namespace Blackberry {
         Ref<Shader> SkyboxShader;
 
         Ref<Shader> BloomExtractBrightAreasShader;
-        Ref<Shader> BloomGaussianBlurShader;
+        Ref<Shader> BloomDownscaleShader;
+        Ref<Shader> BloomUpscaleShader;
         Ref<Shader> BloomCombineShader;
         Ref<Shader> ToneMapShader;
 
@@ -155,18 +156,9 @@ namespace Blackberry {
 
         Ref<Framebuffer> PBROutput; // The rendered image after passing through the PBR shader
         Ref<Framebuffer> BloomBrightAreas; // The areas above the bloom threshold
-        Ref<Framebuffer> BloomBlurPass1[2]; // 1st bloom blur pass (two of them because horizontal and vertical pass)
-        Ref<Framebuffer> BloomBlurPass2[2]; // 2nd boom blur pass
-        Ref<Framebuffer> BloomBlurPass3[2]; // you get the god dam point
-        Ref<Framebuffer> BloomBlurPass4[2];
-        Ref<Framebuffer> BloomBlurPass5[2];
-
-        Ref<Framebuffer> BloomCombinePass1;
-        Ref<Framebuffer> BloomCombinePass2;
-        Ref<Framebuffer> BloomCombinePass3;
-        Ref<Framebuffer> BloomCombinePass4;
-        Ref<Framebuffer> BloomCombinePass5;
-        Ref<Framebuffer> BloomCombinePass6;
+        std::array<Ref<Framebuffer>, 5> BloomDownscalePasses; // Bloom downscale passes
+        Ref<Framebuffer> BloomUpscalePass; // Bloom upscale pass
+        Ref<Framebuffer> BloomCombinePass; // Bloom combine pass
 
         Ref<EnviromentMap> CurrentEnviromentMap;
         Ref<EnviromentMap> DefaultEnviromentMap;

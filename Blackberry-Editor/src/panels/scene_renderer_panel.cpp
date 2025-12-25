@@ -36,33 +36,9 @@ namespace BlackberryEditor {
         if (ImGui::CollapsingHeader("Bloom Stage")) {
             ImGui::SliderInt("Current Down sampling Stage", &m_CurrentBloomDownsampleStage, 1, 5);
 
-            Ref<Framebuffer> dtex;
+            ImGui::Image(state.BloomDownscalePasses[m_CurrentBloomDownsampleStage - 1]->Attachments[0]->ID, ImVec2(sizeX, sizeY), ImVec2(0, 1), ImVec2(1, 0));
 
-            switch (m_CurrentBloomDownsampleStage) {
-                case 1: dtex = state.BloomBlurPass1[1]; break;
-                case 2: dtex = state.BloomBlurPass2[1]; break;
-                case 3: dtex = state.BloomBlurPass3[1]; break;
-                case 4: dtex = state.BloomBlurPass4[1]; break;
-                case 5: dtex = state.BloomBlurPass5[1]; break;
-                default: dtex = state.BloomBlurPass1[1]; break;
-            }
-
-            ImGui::Image(dtex->Attachments[0]->ID, ImVec2(sizeX, sizeY), ImVec2(0, 1), ImVec2(1, 0));
-
-            ImGui::SliderInt("Current Up sampling Stage", &m_CurrentBloomUpsamlingStage, 1, 5);
-
-            Ref<Framebuffer> utex;
-
-            switch (m_CurrentBloomUpsamlingStage) {
-                case 1: utex = state.BloomCombinePass1; break;
-                case 2: utex = state.BloomCombinePass2; break;
-                case 3: utex = state.BloomCombinePass3; break;
-                case 4: utex = state.BloomCombinePass4; break;
-                case 5: utex = state.BloomCombinePass5; break;
-                default: utex = state.BloomCombinePass1; break;
-            }
-
-            ImGui::Image(utex->Attachments[0]->ID, ImVec2(sizeX, sizeY), ImVec2(0, 1), ImVec2(1, 0));
+            ImGui::Image(state.BloomUpscalePass->Attachments[0]->ID, ImVec2(sizeX, sizeY), ImVec2(0, 1), ImVec2(1, 0));
         }
 
         ImGui::End();
