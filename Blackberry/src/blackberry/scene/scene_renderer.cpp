@@ -88,7 +88,7 @@ namespace Blackberry {
         m_State.MeshLightingShader = Shader::Create(FS::Path("Assets/Shaders/Default/LightingPass.vert"), FS::Path("Assets/Shaders/Default/LightingPass.frag"));
         m_State.SkyboxShader = Shader::Create(FS::Path("Assets/Shaders/Default/Skybox.vert"), FS::Path("Assets/Shaders/Default/Skybox.frag"));
         m_State.BloomExtractBrightAreasShader = Shader::Create(FS::Path("Assets/Shaders/Default/Core/Quad.vert"), FS::Path("Assets/Shaders/Default/Bloom/ExtractBrightAreas.frag"));
-        m_State.BloomGaussianBlurShader = Shader::Create(FS::Path("Assets/Shaders/Default/Core/Quad.vert"), FS::Path("Assets/Shaders/Default/Bloom/GaussianBlur.frag"));
+        m_State.BloomGaussianBlurShader = Shader::Create(FS::Path("Assets/Shaders/Default/Core/Quad.vert"), FS::Path("Assets/Shaders/Default/Bloom/Downscale.frag"));
         m_State.BloomCombineShader = Shader::Create(FS::Path("Assets/Shaders/Default/Core/Quad.vert"), FS::Path("Assets/Shaders/Default/Bloom/Combine.frag"));
         m_State.ToneMapShader = Shader::Create(FS::Path("Assets/Shaders/Default/Core/Quad.vert"), FS::Path("Assets/Shaders/Default/Core/ToneMap.frag"));
         // m_State.FontShader = Shader::Create(s_VertexShaderFontSource, s_FragmentShaderFontSource);
@@ -392,7 +392,7 @@ namespace Blackberry {
 
         Asset& a = Project::GetAssetManager().GetAsset(env.EnviromentMap);
 
-        m_State.CurrentEnviromentMap = std::get<Ref<EnviromentMap>>(Project::GetAssetManager().GetAsset(env.EnviromentMap).Data);
+        m_State.CurrentEnviromentMap = std::get<Ref<EnviromentMap>>(a.Data);
         m_State.EnviromentMapLOD = env.LevelOfDetail;
         m_State.BloomEnabled = env.EnableBloom;
         m_State.BloomThreshold = env.BloomThreshold;
@@ -612,7 +612,8 @@ namespace Blackberry {
                 renderer.BindShader(m_State.BloomGaussianBlurShader);
 
                 renderer.BindTexture(tex, 0);
-                m_State.BloomGaussianBlurShader->SetInt("u_Horizontal", i);
+                // m_State.BloomGaussianBlurShader->SetInt("u_Horizontal", i);
+                m_State.BloomGaussianBlurShader->SetVec2("u_TexResolution", BlVec2(tex->Width, tex->Height));
                 
                 renderer.DrawIndexed(6);
 
@@ -636,7 +637,8 @@ namespace Blackberry {
                 renderer.BindShader(m_State.BloomGaussianBlurShader);
 
                 renderer.BindTexture(tex, 0);
-                m_State.BloomGaussianBlurShader->SetInt("u_Horizontal", i);
+
+                m_State.BloomGaussianBlurShader->SetVec2("u_TexResolution", BlVec2(tex->Width, tex->Height));
                 
                 renderer.DrawIndexed(6);
 
@@ -661,7 +663,7 @@ namespace Blackberry {
                 renderer.BindShader(m_State.BloomGaussianBlurShader);
             
                 renderer.BindTexture(tex, 0);
-                m_State.BloomGaussianBlurShader->SetInt("u_Horizontal", i);
+                m_State.BloomGaussianBlurShader->SetVec2("u_TexResolution", BlVec2(tex->Width, tex->Height));
                 
                 renderer.DrawIndexed(6);
             
@@ -686,7 +688,7 @@ namespace Blackberry {
                 renderer.BindShader(m_State.BloomGaussianBlurShader);
             
                 renderer.BindTexture(tex, 0);
-                m_State.BloomGaussianBlurShader->SetInt("u_Horizontal", i);
+                m_State.BloomGaussianBlurShader->SetVec2("u_TexResolution", BlVec2(tex->Width, tex->Height));
                 
                 renderer.DrawIndexed(6);
             
@@ -711,7 +713,7 @@ namespace Blackberry {
                 renderer.BindShader(m_State.BloomGaussianBlurShader);
             
                 renderer.BindTexture(tex, 0);
-                m_State.BloomGaussianBlurShader->SetInt("u_Horizontal", i);
+                m_State.BloomGaussianBlurShader->SetVec2("u_TexResolution", BlVec2(tex->Width, tex->Height));
                 
                 renderer.DrawIndexed(6);
             
