@@ -79,11 +79,13 @@ namespace Blackberry {
         const HandleMap& GetAllAssets() const;
 
         // helper functions (all you really need is AddAsset)
-        void AddTextureFromPath(const FS::Path& path);
-        void AddFontFromPath(const FS::Path& path);
-        void AddModelFromPath(const FS::Path& path);
-        void AddMaterialFromPath(const FS::Path& path);
-        void AddEnviromentMapFromPath(const FS::Path& path);
+        void LoadTextureFromPath(const FS::Path& path);
+        void LoadFontFromPath(const FS::Path& path);
+        void LoadModelFromPath(const FS::Path& path);
+        void LoadMaterialFromPath(const FS::Path& path);
+        void LoadEnviromentMapFromPath(const FS::Path& path);
+
+        void LoadAssetFromPath(const FS::Path& path);
 
     public:
         FS::Path AssetDirectory;

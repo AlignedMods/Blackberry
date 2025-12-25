@@ -229,10 +229,10 @@ namespace BlackberryEditor {
         if (used) {
             BlQuat outQuat = BlQuat(glm::radians(euler));
 
-            // quat->x = outQuat.x;
-            // quat->y = outQuat.y;
-            // quat->z = outQuat.z;
-            // quat->w = outQuat.w;
+            quat->x = outQuat.x;
+            quat->y = outQuat.y;
+            quat->z = outQuat.z;
+            quat->w = outQuat.w;
         }
     }
 
@@ -296,7 +296,12 @@ namespace BlackberryEditor {
         SaveEditorState();
     }
     
-    void EditorLayer::OnUpdate(f32 ts) {
+    void EditorLayer::OnUpdate() {
+        m_CurrentScene->SetCamera(m_CurrentCamera);
+        m_CurrentScene->OnRender(m_RenderTexture.Data());
+
+        m_SavedGBuffer = m_CurrentScene->GetSceneRenderer()->GetState().GBuffer;
+
         if (m_EditorState == EditorState::Play) {
             m_CurrentScene->OnRuntimeUpdate();
         } else {
@@ -345,16 +350,16 @@ namespace BlackberryEditor {
                     }
             
                     if (Input::IsKeyDown(KeyCode::W)) {
-                        m_EditorCamera.Transform.Position += m_EditorCamera.GetForwardVector() * m_EditorCameraSpeed * ts;
+                        m_EditorCamera.Transform.Position += m_EditorCamera.GetForwardVector() * m_EditorCameraSpeed * BL_APP.GetDeltaTime();
                     }
                     if (Input::IsKeyDown(KeyCode::S)) {
-                        m_EditorCamera.Transform.Position -= m_EditorCamera.GetForwardVector() * m_EditorCameraSpeed * ts;
+                        m_EditorCamera.Transform.Position -= m_EditorCamera.GetForwardVector() * m_EditorCameraSpeed * BL_APP.GetDeltaTime();
                     }
                     if (Input::IsKeyDown(KeyCode::A)) {
-                        m_EditorCamera.Transform.Position -= m_EditorCamera.GetRightVector() * m_EditorCameraSpeed * ts;
+                        m_EditorCamera.Transform.Position -= m_EditorCamera.GetRightVector() * m_EditorCameraSpeed * BL_APP.GetDeltaTime();
                     }
                     if (Input::IsKeyDown(KeyCode::D)) {
-                        m_EditorCamera.Transform.Position += m_EditorCamera.GetRightVector() * m_EditorCameraSpeed * ts;
+                        m_EditorCamera.Transform.Position += m_EditorCamera.GetRightVector() * m_EditorCameraSpeed * BL_APP.GetDeltaTime();
                     }
                 }
 
@@ -385,13 +390,13 @@ namespace BlackberryEditor {
                 }
             }
         }
-    }
-    
-    void EditorLayer::OnRender() {
-        m_CurrentScene->SetCamera(m_CurrentCamera);
-        m_CurrentScene->OnRender(m_RenderTexture.Data());
 
-        m_SavedGBuffer = m_CurrentScene->GetSceneRenderer()->GetState().GBuffer;
+        // Outlines
+        if (m_IsEntitySelected) {
+            DebugRenderer::SetRenderTexture(m_OutlineTexture);
+            DebugRenderer::DrawEntityOutline(Entity(m_SelectedEntity, m_CurrentScene));
+            DebugRenderer::ResetRenderTexture();
+        }
     }
 
     void EditorLayer::OnUIRender() {
@@ -471,16 +476,6 @@ namespace BlackberryEditor {
         if (m_ShowDemoWindow) {
             ImGui::ShowDemoWindow(&m_ShowDemoWindow);
         }
-    }
-
-    void EditorLayer::OnOverlayRender() {
-        auto& renderer = BL_APP.GetRenderer();
-
-        DebugRenderer::SetRenderTexture(m_OutlineTexture);
-
-        DebugRenderer::DrawEntityOutline(Entity(m_SelectedEntity, m_CurrentScene));
-
-        DebugRenderer::ResetRenderTexture();
     }
     
     void EditorLayer::OnEvent(const Event& event) {
@@ -635,12 +630,18 @@ namespace BlackberryEditor {
 
         static std::string s_FileName;
         static bool s_CreateMaterialPopup = false;
+        static bool s_CreateScenePopup = false;
 
         if (ImGui::BeginPopupContextWindow()) {
             if (ImGui::BeginMenu("Create")) {
                 if (ImGui::MenuItem("Material")) {
                     s_FileName.clear();
                     s_CreateMaterialPopup = true;
+                }
+
+                if (ImGui::MenuItem("Scene")) {
+                    s_FileName.clear();
+                    s_CreateScenePopup = true;
                 }
 
                 ImGui::EndMenu();
@@ -652,6 +653,11 @@ namespace BlackberryEditor {
         if (s_CreateMaterialPopup) {
             ImGui::OpenPopup("Create Material");
             s_CreateMaterialPopup = false;
+        }
+
+        if (s_CreateScenePopup) {
+            ImGui::OpenPopup("Create Scene");
+            s_CreateScenePopup = false;
         }
 
         bool _cmopen = true;
@@ -668,6 +674,23 @@ namespace BlackberryEditor {
                 u64 handle = Project::GetAssetManager().AddAsset({FS::Relative(p, m_BaseDirectory), AssetType::Material, mat});
 
                 m_MaterialEditorPanel.SetContext(handle);
+
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::EndPopup();
+        }
+
+        bool _csopen = true;
+        if (ImGui::BeginPopupModal("Create Scene", &_csopen)) {
+            ImGui::InputText("File Name", &s_FileName);
+
+            ImGui::SetCursorPosY(ImGui::GetContentRegionMax().y - 30.0f);
+            if (ImGui::Button("Create")) {
+                FS::Path p = m_CurrentDirectory / s_FileName;
+
+                std::ofstream file(p.String());
+                file.close();
 
                 ImGui::CloseCurrentPopup();
             }
@@ -742,23 +765,25 @@ namespace BlackberryEditor {
             static const char* assetTypeNames[] = { "Texture", "Font", "Model", "Material", "Enviroment Map" };
             static int currentAssetType = 0;
 
-            ImGui::Combo("##AssetType", &currentAssetType, assetTypeNames, IM_ARRAYSIZE(assetTypeNames));
+            // ImGui::Combo("##AssetType", &currentAssetType, assetTypeNames, IM_ARRAYSIZE(assetTypeNames));
 
             ImGui::SetCursorPosY(ImGui::GetContentRegionMax().y - 25.0f);
 
             if (ImGui::Button("Create")) {
-                if (currentAssetType == 0) { // texture
-                    Project::GetAssetManager().AddTextureFromPath(FS::Relative(assetFile, m_BaseDirectory));
-                } else if (currentAssetType == 1) { // font
-                    Project::GetAssetManager().AddFontFromPath(FS::Relative(assetFile, m_BaseDirectory));
-                } else if (currentAssetType == 2) { // model
-                    Project::GetAssetManager().AddModelFromPath(FS::Relative(assetFile, m_BaseDirectory));
-                } else if (currentAssetType == 3) { // material
-                    Project::GetAssetManager().AddMaterialFromPath(FS::Relative(assetFile, m_BaseDirectory));
-                } else if (currentAssetType == 4) { // env map
-                    Project::GetAssetManager().AddEnviromentMapFromPath(FS::Relative(assetFile, m_BaseDirectory));
-                }
+                // if (currentAssetType == 0) { // texture
+                //     Project::GetAssetManager().AddTextureFromPath(FS::Relative(assetFile, m_BaseDirectory));
+                // } else if (currentAssetType == 1) { // font
+                //     Project::GetAssetManager().AddFontFromPath(FS::Relative(assetFile, m_BaseDirectory));
+                // } else if (currentAssetType == 2) { // model
+                //     Project::GetAssetManager().AddModelFromPath(FS::Relative(assetFile, m_BaseDirectory));
+                // } else if (currentAssetType == 3) { // material
+                //     Project::GetAssetManager().AddMaterialFromPath(FS::Relative(assetFile, m_BaseDirectory));
+                // } else if (currentAssetType == 4) { // env map
+                //     Project::GetAssetManager().AddEnviromentMapFromPath(FS::Relative(assetFile, m_BaseDirectory));
+                // }
 
+                Project::GetAssetManager().LoadAssetFromPath(FS::Relative(assetFile, m_BaseDirectory));
+                
                 ImGui::CloseCurrentPopup();
             }
 
@@ -1292,9 +1317,11 @@ namespace BlackberryEditor {
         auto& rendererState = m_CurrentScene->GetSceneRenderer()->GetState();
         ImGui::Image(m_RenderTexture->Attachments[0]->ID, ImVec2(size.x, size.y), ImVec2(0, 1), ImVec2(1, 0));
 
-        ImGui::SetCursorPosX(cursorX);
-        ImGui::SetCursorPosY(cursorY);
-        ImGui::Image(m_OutlineTexture->Attachments[0]->ID, ImVec2(size.x, size.y), ImVec2(0, 1), ImVec2(1, 0));
+        if (m_IsEntitySelected) {
+            ImGui::SetCursorPosX(cursorX);
+            ImGui::SetCursorPosY(cursorY);
+            ImGui::Image(m_OutlineTexture->Attachments[0]->ID, ImVec2(size.x, size.y), ImVec2(0, 1), ImVec2(1, 0));
+        }
 
         if (ImGui::IsItemHovered()) {
             m_ViewportHovered = true;
@@ -1313,25 +1340,28 @@ namespace BlackberryEditor {
         ImVec2 max = ImGui::GetItemRectMax();  // absolute bottom-right
 
         if (ImGui::BeginDragDropTarget()) {
-            if (auto payload = ImGui::AcceptDragDropPayload("FILE_BROWSER_DRAG_DROP")) {
+            if (auto payload = ImGui::AcceptDragDropPayload("FILE_BROWSER_FILE_DRAG_DROP")) {
                 bool sceneExists = false;
     
                 std::string strPath = reinterpret_cast<char*>(payload->Data);
                 FS::Path path(strPath);
-                path = m_BaseDirectory / path;
-                
-                for (auto& scene : Project::GetScenes()) {
-                    if (scene.Path == path) {
-                        m_EditingScene = &scene.Scene;
-                        sceneExists = true;
-                    }
-                }
-    
-                if (!sceneExists) {
-                    m_EditingScene = &Project::LoadScene(path);
-                }
 
-                m_CurrentScene = m_EditingScene;
+                if (path.Extension() == ".blscene") {
+                    path = m_BaseDirectory / path;
+                
+                    for (auto& scene : Project::GetScenes()) {
+                        if (scene.Path == path) {
+                            m_EditingScene = &scene.Scene;
+                            sceneExists = true;
+                        }
+                    }
+    
+                    if (!sceneExists) {
+                        m_EditingScene = &Project::LoadScene(path);
+                    }
+
+                    m_CurrentScene = m_EditingScene;
+                }
             }
             ImGui::EndDragDropTarget();
         };

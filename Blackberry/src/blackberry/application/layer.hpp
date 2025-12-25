@@ -24,10 +24,9 @@ namespace Blackberry {
         virtual void OnAttach() {}                  // gets called when layer is first initialized (NOTE: you should prefer to use this instead of the constructor!)
         virtual void OnDetach() {}                  // gets called when layer is being removed
 
-        virtual void OnRender() {}                  // gets called each time the frame is rendered
+        virtual void OnUpdate() {}                  // gets called each time when the frame is being updated (you also should do rendering here)
         virtual void OnUIRender() {}                // gets called when the ImGui UI is being rendered
         virtual void OnOverlayRender() {}           // gets called LAST in the pipeline (after normal render and ImGui)
-        virtual void OnUpdate(f32 dt) {}            // gets called each time when the frame is being updated
         virtual void OnFixedUpdate() {}             // gets called exactly 60 times per second
         virtual void OnEvent(const Event& event) {} // gets called whenever an event occurs
 

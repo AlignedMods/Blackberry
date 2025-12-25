@@ -398,7 +398,10 @@ namespace Blackberry {
 
         GeometryPass();
         LightingPass();
-        BloomPass();
+
+        if (m_State.BloomEnabled) {
+            BloomPass();
+        }
 
         ResetState();
     }

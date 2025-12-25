@@ -54,7 +54,6 @@ namespace Blackberry {
 
     private:
         void OnUpdate();
-        void OnRender();
         void OnUIRender();
         void OnOverlayRender();
         void OnEvent(const Event& event);

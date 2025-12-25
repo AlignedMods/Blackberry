@@ -25,10 +25,8 @@ namespace BlackberryEditor {
         virtual void OnAttach() override;
         virtual void OnDetach() override;
     
-        virtual void OnUpdate(f32 ts) override;
-        virtual void OnRender() override;
+        virtual void OnUpdate() override;
         virtual void OnUIRender() override;
-        virtual void OnOverlayRender() override;
         virtual void OnEvent(const Blackberry::Event& event) override;
     
     private:

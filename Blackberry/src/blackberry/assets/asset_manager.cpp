@@ -59,34 +59,52 @@ namespace Blackberry {
         return m_AssetMap;
     }
 
-    void AssetManager::AddTextureFromPath(const FS::Path& path) {
+    void AssetManager::LoadTextureFromPath(const FS::Path& path) {
         FS::Path full = Project::GetAssetPath(path);
         Ref<Texture2D> tex = Texture2D::Create(full);
         AddAsset({path, AssetType::Texture, tex});
     }
 
-    void AssetManager::AddFontFromPath(const FS::Path& path) {
+    void AssetManager::LoadFontFromPath(const FS::Path& path) {
         FS::Path full = Project::GetAssetPath(path);
         Font font = Font::Create(full);
         AddAsset({path, AssetType::Font, font});
     }
 
-    void AssetManager::AddModelFromPath(const FS::Path& path) {
+    void AssetManager::LoadModelFromPath(const FS::Path& path) {
         FS::Path full = Project::GetAssetPath(path);
         Model model = Model::Create(full);
         AddAsset({path, AssetType::Model, model});
     }
 
-    void AssetManager::AddMaterialFromPath(const FS::Path& path) {
+    void AssetManager::LoadMaterialFromPath(const FS::Path& path) {
         FS::Path full = Project::GetAssetPath(path);
         Material mat = Material::Create(full);
         AddAsset({path, AssetType::Material, mat});
     }
 
-    void AssetManager::AddEnviromentMapFromPath(const FS::Path& path) {
+    void AssetManager::LoadEnviromentMapFromPath(const FS::Path& path) {
         FS::Path full = Project::GetAssetPath(path);
         Ref<EnviromentMap> env = EnviromentMap::Create(full);
         AddAsset({path, AssetType::EnviromentMap, env});
+    }
+
+    void AssetManager::LoadAssetFromPath(const FS::Path& path) {
+        std::string ext = path.Extension();
+        std::transform(ext.begin(), ext.end(), ext.begin(),
+            [](u8 c){ return std::tolower(c); });
+
+        if (ext == ".png" || ext == ".jpg" || ext == ".jpeg") {
+            LoadTextureFromPath(path);
+        } else if (ext == ".ttf" || ext == ".otf") {
+            LoadFontFromPath(path);
+        } else if (ext == ".glb" || ext == ".gltf") {
+            LoadModelFromPath(path);
+        } else if (ext == ".blmat") {
+            LoadMaterialFromPath(path);
+        } else if (ext == ".hdr" || ext == ".hdri") {
+            LoadEnviromentMapFromPath(path);
+        }
     }
 
 } // namespace Blackberry

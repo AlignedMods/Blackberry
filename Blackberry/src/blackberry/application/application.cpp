@@ -68,8 +68,6 @@ namespace Blackberry {
             m_Running = m_Running && !m_Window->ShouldClose();
 
             m_Window->OnRenderStart();
-            OnRender();
-
             m_Window->OnUpdate();
             OnUpdate();
 
@@ -135,13 +133,7 @@ namespace Blackberry {
         }
 
         for (auto layer : m_LayerStack->GetAllLayers()) {
-            layer->OnUpdate(m_dt);
-        }
-    }
-
-    void Application::OnRender() {
-        for (auto layer : m_LayerStack->GetAllLayers()) {
-            layer->OnRender();
+            layer->OnUpdate();
         }
     }
 

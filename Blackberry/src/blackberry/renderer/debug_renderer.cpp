@@ -38,6 +38,11 @@ namespace Blackberry {
         auto& renderer = BL_APP.GetRenderer();
 
         s_DebugRendererState.TargetTexture = render;
+
+        renderer.BindRenderTexture(render);
+        renderer.Clear(BlColor(0, 0, 0, 255));
+
+        renderer.UnBindRenderTexture();
     }
 
     void DebugRenderer::ResetRenderTexture() {}
@@ -84,7 +89,6 @@ namespace Blackberry {
         s_DebugRendererState.OutlineShader->SetVec3("u_OutlineColor", BlVec3(1.0f, 0.5f, 0.1f));
 
         renderer.BindRenderTexture(s_DebugRendererState.TargetTexture.Data());
-        renderer.Clear(BlColor(0, 0, 0, 255));
 
         renderer.BindTexture(s_DebugRendererState.DummyRenderTexture->Attachments[0], 0);
         renderer.DrawIndexed(6);
