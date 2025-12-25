@@ -48,6 +48,8 @@ namespace Blackberry {
     void DebugRenderer::ResetRenderTexture() {}
 
     void DebugRenderer::DrawEntityOutline(Entity e) {
+        if (!e.HasComponent<TransformComponent>() || !e.HasComponent<MeshComponent>()) return;
+
         auto& sceneRenderer = *e.EntityScene->GetSceneRenderer();
         auto& renderer = BL_APP.GetRenderer();
 

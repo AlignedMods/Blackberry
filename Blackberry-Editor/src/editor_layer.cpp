@@ -323,8 +323,7 @@ namespace BlackberryEditor {
             if (acceptInput || m_ViewportHovered) {
                 // camera controller
                 if (Input::GetScrollLevel() != 0.0f) {
-                    f32 scale = 0.1f * Input::GetScrollLevel();
-                    m_EditorCamera.Camera.Zoom = std::clamp(std::exp(std::log(m_EditorCamera.Camera.Zoom)+scale), 0.125f, 64.0f);
+                    m_EditorCameraSpeed += Input::GetScrollLevel();
                 }
             
                 if (Input::IsMouseDown(MouseButton::Right)) { 
@@ -1318,9 +1317,13 @@ namespace BlackberryEditor {
         ImGui::Image(m_RenderTexture->Attachments[0]->ID, ImVec2(size.x, size.y), ImVec2(0, 1), ImVec2(1, 0));
 
         if (m_IsEntitySelected) {
-            ImGui::SetCursorPosX(cursorX);
-            ImGui::SetCursorPosY(cursorY);
-            ImGui::Image(m_OutlineTexture->Attachments[0]->ID, ImVec2(size.x, size.y), ImVec2(0, 1), ImVec2(1, 0));
+            Entity e(m_SelectedEntity, m_CurrentScene);
+
+            if (e.HasComponent<TransformComponent>() && e.HasComponent<MeshComponent>()) {
+                ImGui::SetCursorPosX(cursorX);
+                ImGui::SetCursorPosY(cursorY);
+                ImGui::Image(m_OutlineTexture->Attachments[0]->ID, ImVec2(size.x, size.y), ImVec2(0, 1), ImVec2(1, 0));
+            }
         }
 
         if (ImGui::IsItemHovered()) {
