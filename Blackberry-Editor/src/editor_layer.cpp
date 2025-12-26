@@ -287,6 +287,7 @@ namespace BlackberryEditor {
         guizmoColors[ImGuizmo::COLOR::SELECTION] = ImVec4(0.8f, 0.8f, 0.8f, 0.7f);
 
         m_EditingScene = Project::GetStartScene();
+        m_EditingScenePath = Project::GetSpecification().StartScene;
         m_CurrentScene = m_EditingScene;
 
         // ImGui::GetIO().IniFilename = std::filesystem::path(m_AppDataDirectory / "Blackberry-Editor" / "editor_layout.ini").string().c_str();
@@ -440,8 +441,7 @@ namespace BlackberryEditor {
                 }
     
                 if (ImGui::MenuItem("Save Project", "CTRL+S")) {
-                    BL_ASSERT(0, "yes");
-                    Project::Save();
+                    SaveProject();
                 }
     
                 ImGui::EndMenu();
@@ -497,6 +497,11 @@ namespace BlackberryEditor {
             auto& kp = BL_EVENT_CAST(KeyPressedEvent);
             if (kp.GetKeyCode() == KeyCode::F3) {
                 m_ShowDemoWindow = true;
+            }
+
+            // ImGui keybinds
+            if (kp.GetKeyCode() == KeyCode::S && Input::IsKeyDown(KeyCode::Ctrl)) {
+                SaveProject();
             }
 
             if (ImGui::GetIO().WantCaptureKeyboard) {
@@ -1566,6 +1571,11 @@ namespace BlackberryEditor {
         m_EditorCamera.Transform.Scale = BlVec3(camTransform.at("Scale")[0], camTransform.at("Scale")[1], camTransform.at("Scale")[2]);
 
         Project::Load(lastProjectPath);
+    }
+
+    void EditorLayer::SaveProject() {
+        Project::Save();
+        Project::SaveScene(m_EditingScene, Project::GetAssetPath(m_EditingScenePath));
     }
 
 #pragma endregion

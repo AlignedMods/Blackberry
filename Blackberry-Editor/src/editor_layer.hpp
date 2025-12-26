@@ -51,6 +51,8 @@ namespace BlackberryEditor {
         // editor specific functions
         void SaveEditorState();
         void LoadEditorState();
+
+        void SaveProject();
     
     private:
         // panels
@@ -85,6 +87,7 @@ namespace BlackberryEditor {
         Blackberry::Ref<Blackberry::Scene> m_RuntimeScene;
         Blackberry::Ref<Blackberry::Scene> m_CurrentScene;
         EditorState m_EditorState = EditorState::Edit;
+        Blackberry::FS::Path m_EditingScenePath;
     
         Blackberry::FS::Path m_CurrentDirectory;
         Blackberry::FS::Path m_BaseDirectory;

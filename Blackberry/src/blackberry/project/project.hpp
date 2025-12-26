@@ -39,6 +39,8 @@ namespace Blackberry {
 
         static AssetManager& GetAssetManager();
 
+        static ProjectSpecification& GetSpecification();
+
     private:
         FS::Path m_ProjectDirectory;
         FS::Path m_ProjectPath;

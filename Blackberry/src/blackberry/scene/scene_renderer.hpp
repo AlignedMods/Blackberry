@@ -156,8 +156,8 @@ namespace Blackberry {
 
         Ref<Framebuffer> PBROutput; // The rendered image after passing through the PBR shader
         Ref<Framebuffer> BloomBrightAreas; // The areas above the bloom threshold
-        std::array<Ref<Framebuffer>, 6> BloomDownscalePasses; // Bloom downscale passes
-        std::array<Ref<Framebuffer>, 5> BloomUpscalePasses; // Bloom upscale passes
+        std::array<Ref<Framebuffer>, 8> BloomDownscalePasses; // Bloom downscale passes
+        std::array<Ref<Framebuffer>, 7> BloomUpscalePasses; // Bloom upscale passes
         Ref<Framebuffer> BloomCombinePass; // Bloom combine pass
 
         Ref<EnviromentMap> CurrentEnviromentMap;

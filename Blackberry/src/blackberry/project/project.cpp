@@ -89,4 +89,9 @@ namespace Blackberry {
         return s_ActiveProject->m_AssetManager;
     }
 
+    ProjectSpecification& Project::GetSpecification() {
+        BL_ASSERT(s_ActiveProject, "No active project!");
+        return s_ActiveProject->m_Specification;
+    }
+
 } // namespace Blackberry

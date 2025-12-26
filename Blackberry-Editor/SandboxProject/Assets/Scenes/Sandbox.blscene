@@ -73,7 +73,7 @@ Entities:
       UUID: 4222715408903924542
       Name: Duck
     TransformComponent:
-      Position: [4.5584617, -4.838202e-06, 9.4017]
+      Position: [5.0169315, 4.0999904, 11.553408]
       Rotation: [1.0002937e-06, 0.9944962, 1.0002937e-06, -0.10477237]
       Scale: [12.180022, 12.18, 12.180022]
     MeshComponent:

@@ -563,6 +563,7 @@ namespace Blackberry {
 
             renderer.BindShader(m_State.BloomDownscaleShader);
             m_State.BloomDownscaleShader->SetVec2("u_TexResolution", BlVec2(1920, 1080));
+            m_State.BloomDownscaleShader->SetInt("u_CurrentMip", 0);
 
             renderer.BindTexture(m_State.BloomBrightAreas->Attachments[0], 0);
 
@@ -574,6 +575,7 @@ namespace Blackberry {
 
                 renderer.BindTexture(m_State.BloomDownscalePasses[i]->Attachments[0], 0);
                 m_State.BloomDownscaleShader->SetVec2("u_TexResolution", BlVec2(m_State.BloomDownscalePasses[i]->Attachments[0]->Width, m_State.BloomDownscalePasses[i]->Attachments[0]->Height));
+                if (i == 0) m_State.BloomDownscaleShader->SetInt("u_CurrentMip", 1);
             }
         }
 
@@ -583,15 +585,18 @@ namespace Blackberry {
             renderer.BindShader(m_State.BloomUpscaleShader);
             m_State.BloomUpscaleShader->SetFloat("u_FilterRadius", 0.005f);
 
-            renderer.BindTexture(m_State.BloomDownscalePasses[5]->Attachments[0], 0);
+            renderer.BindTexture(m_State.BloomDownscalePasses[7]->Attachments[0], 0);
 
-            for (u32 i = 0; i < m_State.BloomUpscalePasses.size(); i++) {
-                renderer.BindFramebuffer(m_State.BloomUpscalePasses[4 - i]);
+            for (u32 i = m_State.BloomUpscalePasses.size() - 1; i > 0; i--) {
+                u32 mip = i;
+                u32 nextMip = i - 1;
+
+                renderer.BindFramebuffer(m_State.BloomUpscalePasses[mip]);
                 renderer.Clear(BlColor(0, 0, 0, 255));
 
                 renderer.DrawIndexed(6);
 
-                renderer.BindTexture(m_State.BloomUpscalePasses[4 - i]->Attachments[0], 0);
+                renderer.BindTexture(m_State.BloomUpscalePasses[mip]->Attachments[0], 0);
             }
 
             renderer.UnBindFramebuffer();
@@ -599,24 +604,25 @@ namespace Blackberry {
 
         {
             BL_PROFILE_SCOPE("SceneRenderer::BloomPass/CombineUpscales");
-
+            
             renderer.BindShader(m_State.BloomCombineShader);
             m_State.BloomCombineShader->SetInt("u_Original", 0);
             m_State.BloomCombineShader->SetInt("u_Blurred", 1);
-
-            renderer.BindTexture(m_State.BloomUpscalePasses[3]->Attachments[0], 0);
-            renderer.BindTexture(m_State.BloomUpscalePasses[4]->Attachments[0], 1);
-
+            m_State.BloomCombineShader->SetInt("u_Mode", 0);
+            
             renderer.BindFramebuffer(m_State.BloomCombinePass);
             renderer.Clear(BlColor(0, 0, 0, 255));
-
-            for (u32 i = 0; i < m_State.BloomUpscalePasses.size() - 1; i++) {
+            
+            for (u32 i = m_State.BloomUpscalePasses.size() - 1; i > 0; i--) {
+                u32 mip = i;
+                u32 nextMip = i - 1;
+            
+                renderer.BindTexture(m_State.BloomUpscalePasses[nextMip]->Attachments[0], 0);
+                renderer.BindTexture(m_State.BloomUpscalePasses[mip]->Attachments[0], 1);
+            
                 renderer.DrawIndexed(6);
-
-                renderer.BindTexture(m_State.BloomUpscalePasses[2 - 1]->Attachments[0], 0);
-                renderer.BindTexture(m_State.BloomUpscalePasses[3 - 1]->Attachments[0], 1);
             }
-
+            
             renderer.UnBindFramebuffer();
         }
 
@@ -626,9 +632,12 @@ namespace Blackberry {
             renderer.BindShader(m_State.BloomCombineShader);
             m_State.BloomCombineShader->SetInt("u_Original", 0);
             m_State.BloomCombineShader->SetInt("u_Blurred", 1);
+
+            m_State.BloomCombineShader->SetFloat("u_CombineAmount", 0.5f);
+            m_State.BloomCombineShader->SetInt("u_Mode", 1);
         
-            renderer.BindTexture(m_State.BloomCombinePass->Attachments[0], 1);
             renderer.BindTexture(m_State.PBROutput->Attachments[0], 0);
+            renderer.BindTexture(m_State.BloomCombinePass->Attachments[0], 1);
         
             renderer.BindFramebuffer(m_State.BloomUpscalePasses[0]);
             renderer.Clear(BlColor(0, 0, 0, 255));
