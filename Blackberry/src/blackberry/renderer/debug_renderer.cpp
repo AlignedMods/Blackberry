@@ -12,6 +12,9 @@ namespace Blackberry {
         Ref<Shader> OutlineShader;
 
         Ref<Framebuffer> TargetTexture;
+
+        Ref<VertexArray> QuadVAO;
+        Ref<VertexArray> CubeVAO;
     };
 
     static DebugRendererState s_DebugRendererState;
@@ -30,26 +33,97 @@ namespace Blackberry {
 
         s_DebugRendererState.OutlineShader = Shader::Create(FS::Path("Assets/Shaders/Default/Core/Quad.vert"), FS::Path("Assets/Shaders/Default/Debug/Outline.frag"));
         s_DebugRendererState.MaskShader = Shader::Create(FS::Path("Assets/Shaders/Default/Core/Quad.vert"), FS::Path("Assets/Shaders/Default/Core/FlatColor.frag"));
+
+        // quad vertices (for fullscreen quads or text)
+        std::array<f32, 24> QuadVertices = {{
+            // pos         // texCoord
+            -1.0f,  1.0f,  0.0f, 1.0f,   // top-left
+            -1.0f, -1.0f,  0.0f, 0.0f,   // bottom-left
+             1.0f, -1.0f,  1.0f, 0.0f,   // bottom-right
+            
+            -1.0f,  1.0f,  0.0f, 1.0f,   // top-left
+             1.0f, -1.0f,  1.0f, 0.0f,   // bottom-right
+             1.0f,  1.0f,  1.0f, 1.0f    // top-right
+        }};
+
+        Ref<VertexBuffer> quadVertexBuffer = VertexBuffer::Create(QuadVertices.data(), sizeof(f32) * 4, 6, BufferUsage::Static);
+        s_DebugRendererState.QuadVAO = VertexArray::Create();
+        s_DebugRendererState.QuadVAO->SetVertexBuffer(quadVertexBuffer);
+        s_DebugRendererState.QuadVAO->SetVertexLayout({
+            {0, ShaderDataType::Float2, "Position"},
+            {1, ShaderDataType::Float2, "TexCoord"}
+        });
+
+        std::array<f32, 108> CubeVertices = {{
+           -0.5f, -0.5f, -0.5f,
+            0.5f, -0.5f, -0.5f,
+            0.5f,  0.5f, -0.5f,
+            0.5f,  0.5f, -0.5f,
+           -0.5f,  0.5f, -0.5f,
+           -0.5f, -0.5f, -0.5f,
+
+           -0.5f, -0.5f,  0.5f,
+            0.5f, -0.5f,  0.5f,
+            0.5f,  0.5f,  0.5f,
+            0.5f,  0.5f,  0.5f,
+           -0.5f,  0.5f,  0.5f,
+           -0.5f, -0.5f,  0.5f,
+
+           -0.5f,  0.5f,  0.5f,
+           -0.5f,  0.5f, -0.5f,
+           -0.5f, -0.5f, -0.5f,
+           -0.5f, -0.5f, -0.5f,
+           -0.5f, -0.5f,  0.5f,
+           -0.5f,  0.5f,  0.5f,
+
+            0.5f,  0.5f,  0.5f,
+            0.5f,  0.5f, -0.5f,
+            0.5f, -0.5f, -0.5f,
+            0.5f, -0.5f, -0.5f,
+            0.5f, -0.5f,  0.5f,
+            0.5f,  0.5f,  0.5f,
+
+           -0.5f, -0.5f, -0.5f,
+            0.5f, -0.5f, -0.5f,
+            0.5f, -0.5f,  0.5f,
+            0.5f, -0.5f,  0.5f,
+           -0.5f, -0.5f,  0.5f,
+           -0.5f, -0.5f, -0.5f,
+
+           -0.5f,  0.5f, -0.5f,
+            0.5f,  0.5f, -0.5f,
+            0.5f,  0.5f,  0.5f,
+            0.5f,  0.5f,  0.5f,
+           -0.5f,  0.5f,  0.5f,
+           -0.5f,  0.5f, -0.5f,
+        }};
+
+        Ref<VertexBuffer> cubeVertexBuffer = VertexBuffer::Create(CubeVertices.data(), sizeof(f32) * 3, 36, BufferUsage::Static);
+        s_DebugRendererState.CubeVAO = VertexArray::Create();
+        s_DebugRendererState.CubeVAO->SetVertexBuffer(cubeVertexBuffer);
+        s_DebugRendererState.CubeVAO->SetVertexLayout({
+            {0, ShaderDataType::Float3, "Position"}
+        });
     }
 
     void DebugRenderer::Shutdown() {}
 
     void DebugRenderer::SetRenderTarget(Ref<Framebuffer> target) {
-        auto& renderer = BL_APP.GetRenderer();
+        auto& api = BL_APP.GetRendererAPI();
 
         s_DebugRendererState.TargetTexture = target;
 
-        renderer.BindFramebuffer(target);
-        renderer.Clear(BlColor(0, 0, 0, 255));
+        api.BindFramebuffer(target);
+        api.ClearFramebuffer();
 
-        renderer.UnBindFramebuffer();
+        api.UnBindFramebuffer();
     }
 
     void DebugRenderer::DrawEntityOutline(Entity e) {
         if (!e.HasComponent<TransformComponent>() || !e.HasComponent<MeshComponent>()) return;
 
         auto& sceneRenderer = *e.EntityScene->GetSceneRenderer();
-        auto& renderer = BL_APP.GetRenderer();
+        auto& api = BL_APP.GetRendererAPI();
 
         sceneRenderer.RenderEntity(e);
         sceneRenderer.GeometryPass(); // Only do the geometry pass since doing the lighting pass would do PBR calculations
@@ -58,43 +132,36 @@ namespace Blackberry {
 
         Ref<Texture2D> entities = sceneRenderer.GetState().GBuffer->Attachments[4];
 
-        DrawBuffer quad;
-        quad.Vertices = sceneRenderer.GetState().QuadVertices.data();
-        quad.VertexCount = 6;
-        quad.VertexSize = sizeof(f32) * 4;
+        api.BindShader(s_DebugRendererState.MaskShader);
 
-        quad.Indices = sceneRenderer.GetState().QuadIndices.data();
-        quad.IndexCount = 6;
-        quad.IndexSize = sizeof(u32);
+        api.BindFramebuffer(s_DebugRendererState.DummyRenderTexture);
+        api.ClearFramebuffer();
 
-        renderer.SubmitDrawBuffer(quad);
-        renderer.SetBufferLayout({
-            {0, ShaderDataType::Float2, "Position"},
-            {1, ShaderDataType::Float2, "TexCoord"},
-        });
+        api.BindTexture2D(entities, 0);
+        api.DrawVertexArray(s_DebugRendererState.QuadVAO);
+        api.UnBindTexture2D();
 
-        renderer.BindShader(s_DebugRendererState.MaskShader);
-
-        renderer.BindFramebuffer(s_DebugRendererState.DummyRenderTexture);
-        renderer.Clear(BlColor(0, 0, 0, 255));
-
-        renderer.BindTexture(entities, 0);
-        renderer.DrawIndexed(6);
-        renderer.UnBindTexture();
-
-        renderer.BindShader(s_DebugRendererState.OutlineShader);
+        api.BindShader(s_DebugRendererState.OutlineShader);
 
         s_DebugRendererState.OutlineShader->SetVec2("u_TexelSize", BlVec2(1.0f / s_DebugRendererState.TargetTexture->Specification.Width, 1.0f / s_DebugRendererState.TargetTexture->Specification.Height));
         s_DebugRendererState.OutlineShader->SetFloat("u_Thickness", 4.0f);
         s_DebugRendererState.OutlineShader->SetVec3("u_OutlineColor", BlVec3(1.0f, 0.5f, 0.1f));
 
-        renderer.BindFramebuffer(s_DebugRendererState.TargetTexture);
+        api.BindFramebuffer(s_DebugRendererState.TargetTexture);
 
-        renderer.BindTexture(s_DebugRendererState.DummyRenderTexture->Attachments[0], 0);
-        renderer.DrawIndexed(6);
-        renderer.UnBindTexture();
+        api.BindTexture2D(s_DebugRendererState.DummyRenderTexture->Attachments[0], 0);
+        api.DrawVertexArray(s_DebugRendererState.QuadVAO);
+        api.UnBindTexture2D();
 
-        renderer.UnBindFramebuffer();
+        api.UnBindFramebuffer();
+    }
+
+    Ref<VertexArray>& DebugRenderer::GetQuadVAO() {
+        return s_DebugRendererState.QuadVAO;
+    }
+
+    Ref<VertexArray>& DebugRenderer::GetCubeVAO() {
+        return s_DebugRendererState.CubeVAO;
     }
 
 } // namespace Blackberry

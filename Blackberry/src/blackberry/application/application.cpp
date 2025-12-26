@@ -7,7 +7,7 @@
 #include "blackberry/input/mousebuttons.hpp"
 #include "blackberry/ecs/ecs.hpp"
 #include "platform/glfw/glfw_window.hpp"
-#include "platform/opengl/opengl3_renderer.hpp"
+#include "platform/opengl/opengl_renderer_api.hpp"
 #include "blackberry/lua/lua.hpp"
 #include "blackberry/core/timer.hpp"
 #include "blackberry/renderer/debug_renderer.hpp"
@@ -35,7 +35,8 @@ namespace Blackberry {
         m_Window = new Window_GLFW(data, spec.EnableImGui);
 
         BlVec2 viewport = BlVec2(static_cast<f32>(data.Width), static_cast<f32>(data.Height));
-        m_Renderer = new Renderer_OpenGL3(viewport);
+        m_RendererAPI = new OpenGLRendererAPI();
+        m_RendererAPI->SetViewportSize(viewport);
 
         DebugRenderer::Initialize();
 
@@ -56,7 +57,7 @@ namespace Blackberry {
         delete m_LayerStack; // we want on detach to be called right here
 
         delete m_Window;
-        delete m_Renderer;
+        delete m_RendererAPI;
     }
 
     void Application::Run() {
@@ -161,7 +162,7 @@ namespace Blackberry {
 
         if (type == EventType::WindowResize) {
             const auto& wr = BL_EVENT_CAST(WindowResizeEvent);
-            m_Renderer->UpdateViewport(BlVec2((f32)wr.GetWidth(), (f32)wr.GetHeight()));
+            m_RendererAPI->SetViewportSize(BlVec2((f32)wr.GetWidth(), (f32)wr.GetHeight()));
         }
 
         auto& stack = m_LayerStack->GetAllLayers();

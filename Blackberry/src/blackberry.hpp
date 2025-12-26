@@ -5,7 +5,7 @@
 // windowing, rendering, input
 #include "blackberry/application/application.hpp"
 #include "blackberry/application/window.hpp"
-#include "blackberry/application/renderer.hpp"
+#include "blackberry/application/renderer_api.hpp"
 #include "blackberry/application/layer.hpp"
 #include "blackberry/input/keycodes.hpp"
 #include "blackberry/input/mousebuttons.hpp"

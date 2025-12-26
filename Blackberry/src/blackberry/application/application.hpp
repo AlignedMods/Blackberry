@@ -5,7 +5,7 @@
 #include "blackberry/core/log.hpp"
 #include "blackberry/core/types.hpp"
 #include "blackberry/application/window.hpp"
-#include "blackberry/application/renderer.hpp"
+#include "blackberry/application/renderer_api.hpp"
 
 #define BL_APP Blackberry::Application::Get()
 
@@ -46,7 +46,7 @@ namespace Blackberry {
         ApplicationSpecification& GetSpecification() { return m_Specification; }
         LayerStack& GetLayerStack() { return *m_LayerStack; }
         Dispatcher& GetDispatcher() { return m_Dispatcher; }
-        Renderer& GetRenderer() { return *m_Renderer; }
+        RendererAPI& GetRendererAPI() { return *m_RendererAPI; }
         Window& GetWindow() { return *m_Window; }
 
         f32 GetDeltaTime() const { return m_dt; }
@@ -78,7 +78,7 @@ namespace Blackberry {
         Dispatcher m_Dispatcher;
 
         Window* m_Window = nullptr;
-        Renderer* m_Renderer = nullptr;
+        RendererAPI* m_RendererAPI = nullptr;
 
         friend class Dispatcher;
     };

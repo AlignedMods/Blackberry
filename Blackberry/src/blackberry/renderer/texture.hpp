@@ -75,6 +75,8 @@ namespace Blackberry {
         void ClearAttachmentFloat(u32 attachment, f32 value);
 
         f32 ReadPixelFloat(u32 attachment, u32 x, u32 y);
+
+        void BlitDepthBuffer(Ref<Framebuffer> other);
     
         u32 ID = 0;
         FramebufferSpecification Specification;

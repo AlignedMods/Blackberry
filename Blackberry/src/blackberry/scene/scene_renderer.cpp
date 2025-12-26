@@ -2,72 +2,11 @@
 #include "blackberry/scene/scene.hpp"
 #include "blackberry/project/project.hpp"
 #include "blackberry/core/timer.hpp"
+#include "blackberry/renderer/debug_renderer.hpp"
 
 #include "glad/gl.h"
 
 namespace Blackberry {
-
-#pragma region ShaderCode
-
-    static const char* s_VertexShaderFontSource = BL_STR(
-        \x23version 460 core\n
-        \x23 extension GL_ARB_bindless_texture : enable\n
-
-        layout (location = 0) in vec3 a_Pos;
-        layout (location = 1) in vec4 a_Color;
-        layout (location = 2) in vec2 a_TexCoord;
-
-        uniform mat4 u_Projection;
-
-        layout (location = 0) out vec4 o_Color;
-        layout (location = 1) out vec2 o_TexCoord;
-
-        void main() {
-            gl_Position = u_Projection * vec4(a_Pos, 1.0f);
-
-            o_Color = a_Color;
-            o_TexCoord = a_TexCoord;
-        }
-    );
-
-    static const char* s_FragmentShaderFontSource = BL_STR(
-        \x23version 460 core\n
-        \x23 extension GL_ARB_bindless_texture : enable\n
-
-        layout (location = 0) in vec4 a_Color;
-        layout (location = 1) in vec2 a_TexCoord;
-
-        uniform sampler2D u_FontAtlas;
-
-        out vec4 o_FragColor;
-
-        float screenPxRange() {
-            const float pxRange = 2.0;
-            vec2 unitRange = vec2(pxRange) / vec2(textureSize(u_FontAtlas, 0));
-            vec2 screenTexSize = vec2(1.0) / fwidth(a_TexCoord);
-            return max(0.5*dot(unitRange, screenTexSize), 1.0);
-        }
-
-        float median(float r, float g, float b) {
-            return max(min(r, g), min(max(r, g), b));
-        }
-
-        void main() {
-            vec4 texelColor = texture(u_FontAtlas, a_TexCoord) * a_Color;
-
-            // msdf thing
-            vec3 msd = texture(u_FontAtlas, a_TexCoord).rgb;
-            float sd = median(msd.r, msd.g, msd.b);
-            float screenPxDistance = screenPxRange() * (sd - 0.5);
-            float opacity = clamp(screenPxDistance + 0.5, 0.0, 1.0);
-            if (opacity == 0.0) { discard; }
-
-            vec4 bgColor = vec4(0.0);
-            o_FragColor = mix(bgColor, a_Color, opacity);
-        }
-    );
-
-#pragma endregion
 
     constexpr u32 MAX_OBJECTS = 2048;
     constexpr u32 MAX_MATERIALS = 2048;
@@ -84,8 +23,22 @@ namespace Blackberry {
     }
 
     SceneRenderer::SceneRenderer() {
+        Ref<VertexBuffer> vbo = VertexBuffer::Create(BufferUsage::Dynamic);
+        Ref<IndexBuffer> ibo = IndexBuffer::Create(BufferUsage::Dynamic);
+        m_State.GeometryBuffer = VertexArray::Create();
+        m_State.GeometryBuffer->SetVertexBuffer(vbo);
+        m_State.GeometryBuffer->SetIndexBuffer(ibo);
+        m_State.GeometryBuffer->SetVertexLayout({
+           {0, ShaderDataType::Float3, "Position"},
+           {1, ShaderDataType::Float3, "Normal"},
+           {2, ShaderDataType::Float2, "TexCoord"},
+           {3, ShaderDataType::Int, "MaterialIndex"},
+           {4, ShaderDataType::Int, "ObjectIndex"},
+           {5, ShaderDataType::Int, "EntityID"} 
+        });
+
         m_State.MeshGeometryShader = Shader::Create(FS::Path("Assets/Shaders/Default/GeometryPass.vert"), FS::Path("Assets/Shaders/Default/GeometryPass.frag"));
-        m_State.MeshLightingShader = Shader::Create(FS::Path("Assets/Shaders/Default/LightingPass.vert"), FS::Path("Assets/Shaders/Default/LightingPass.frag"));
+        m_State.MeshLightingShader = Shader::Create(FS::Path("Assets/Shaders/Default/Core/Quad.vert"), FS::Path("Assets/Shaders/Default/LightingPass.frag"));
         m_State.SkyboxShader = Shader::Create(FS::Path("Assets/Shaders/Default/Skybox.vert"), FS::Path("Assets/Shaders/Default/Skybox.frag"));
 
         m_State.BloomExtractBrightAreasShader = Shader::Create(FS::Path("Assets/Shaders/Default/Core/Quad.vert"), FS::Path("Assets/Shaders/Default/Bloom/ExtractBrightAreas.frag"));
@@ -131,7 +84,8 @@ namespace Blackberry {
             spec.Width = 1920;
             spec.Height = 1080;
             spec.Attachments = {
-                {0, FramebufferAttachmentType::ColorRGBA16F}
+                {0, FramebufferAttachmentType::ColorRGBA16F},
+                {1, FramebufferAttachmentType::Depth}
             };
             spec.ActiveAttachments = {0};
 
@@ -383,30 +337,14 @@ namespace Blackberry {
     void SceneRenderer::GeometryPass() {
         BL_PROFILE_SCOPE("SceneRenderer::GeometryPass");
 
-        auto& renderer = BL_APP.GetRenderer();
+        auto& api = BL_APP.GetRendererAPI();
 
         if (m_State.MeshIndices.size() > 0) {
             // Geometry pass
-            DrawBuffer geometryBuffer;
-            geometryBuffer.Vertices = m_State.MeshVertices.data();
-            geometryBuffer.VertexSize = sizeof(SceneMeshVertex);
-            geometryBuffer.VertexCount = m_State.MeshVertexCount;
+            m_State.GeometryBuffer->GetVertexBuffer()->UpdateData(m_State.MeshVertices.data(), sizeof(SceneMeshVertex), m_State.MeshVertexCount);
+            m_State.GeometryBuffer->GetIndexBuffer()->UpdateData(m_State.MeshIndices.data(), sizeof(u32), m_State.MeshIndexCount);
 
-            geometryBuffer.Indices = m_State.MeshIndices.data();
-            geometryBuffer.IndexSize = sizeof(u32);
-            geometryBuffer.IndexCount = m_State.MeshIndexCount;
-
-            renderer.SubmitDrawBuffer(geometryBuffer);
-            renderer.SetBufferLayout({
-                {0, ShaderDataType::Float3, "Position"},
-                {1, ShaderDataType::Float3, "Normal"},
-                {2, ShaderDataType::Float2, "TexCoord"},
-                {3, ShaderDataType::Int, "MaterialIndex"},
-                {4, ShaderDataType::Int, "ObjectIndex"},
-                {5, ShaderDataType::Int, "EntityID"}
-            });
-
-            renderer.BindShader(m_State.MeshGeometryShader);
+            api.BindShader(m_State.MeshGeometryShader);
             m_State.MeshGeometryShader->SetMatrix("u_ViewProjection", m_Camera.GetCameraMatrixFloat());
 
             {
@@ -419,43 +357,79 @@ namespace Blackberry {
                 m_State.MaterialBuffer.ReserveMemory(sizeof(GPUMaterial) * m_State.Materials.size(), m_State.Materials.data());
             }
 
-
-            renderer.BindFramebuffer(m_State.GBuffer);
-            renderer.Clear(BlColor(0, 0, 0, 255));
+            api.BindFramebuffer(m_State.GBuffer);
+            api.ClearFramebuffer();
 
             m_State.GBuffer->ClearAttachmentFloat(4, -1.0f);
 
-            renderer.DrawIndexed(m_State.MeshIndexCount);
+            api.DrawVertexArray(m_State.GeometryBuffer);
 
-            renderer.UnBindFramebuffer();
+            api.UnBindFramebuffer();
         }
     }
 
     void SceneRenderer::LightingPass() {
         BL_PROFILE_SCOPE("SceneRenderer::LightingPass");
 
-        auto& renderer = BL_APP.GetRenderer();
+        auto& api = BL_APP.GetRendererAPI();
 
-        renderer.BindFramebuffer(m_State.PBROutput);
-        renderer.Clear(BlColor(0, 0, 0, 255));
+        api.BindFramebuffer(m_State.PBROutput);
+        api.ClearFramebuffer();
+
+        api.BindShader(m_State.MeshLightingShader);
         
-        DrawBuffer skyboxBuffer;
-        skyboxBuffer.Vertices = m_State.CubeVertices.data();
-        skyboxBuffer.VertexSize = sizeof(f32) * 3;
-        skyboxBuffer.VertexCount = 36;
+        m_State.MeshLightingShader->SetInt("u_GPosition", 0);
+        m_State.MeshLightingShader->SetInt("u_GNormal", 1);
+        m_State.MeshLightingShader->SetInt("u_GAlbedo", 2);
+        m_State.MeshLightingShader->SetInt("u_GMat", 3);
+        
+        api.BindTexture2D(m_State.GBuffer->Attachments[0], 0);
+        api.BindTexture2D(m_State.GBuffer->Attachments[1], 1);
+        api.BindTexture2D(m_State.GBuffer->Attachments[2], 2);
+        api.BindTexture2D(m_State.GBuffer->Attachments[3], 3);
+        
+        m_State.MeshLightingShader->SetVec3("u_ViewPos", m_Camera.Transform.Position);
+        
+        // set lights
+        m_State.MeshLightingShader->SetVec4("u_DirectionalLight.Direction", m_State.DirectionalLight.Direction);
+        m_State.MeshLightingShader->SetVec4("u_DirectionalLight.Color", m_State.DirectionalLight.Color);
+        m_State.MeshLightingShader->SetVec4("u_DirectionalLight.Params", m_State.DirectionalLight.Params);
+        
+        m_State.PointLightBuffer.ReserveMemory(sizeof(GPUPointLight) * m_State.PointLights.size(), m_State.PointLights.data());
+        m_State.SpotLightBuffer.ReserveMemory(sizeof(GPUSpotLight) * m_State.SpotLights.size(), m_State.SpotLights.data());
+        m_State.MeshLightingShader->SetInt("u_PointLightCount", m_State.PointLights.size());
+        m_State.MeshLightingShader->SetInt("u_SpotLightCount", m_State.SpotLights.size());
+                                  
+        m_State.MeshLightingShader->SetInt("u_IrradianceMap", 4);
+        m_State.MeshLightingShader->SetInt("u_PrefilterMap", 5);
+        m_State.MeshLightingShader->SetInt("u_BrdfLUT", 6);
+        
+        if (m_State.CurrentEnviromentMap) {
+            api.BindTextureCubemap(m_State.CurrentEnviromentMap->Irradiance, 4);
+            api.BindTextureCubemap(m_State.CurrentEnviromentMap->Prefilter, 5);
+            api.BindTexture2D(m_State.CurrentEnviromentMap->BrdfLUT, 6);
+        
+            m_State.MeshLightingShader->SetVec3("u_FogColor", m_State.EnviromentFogColor);
+            m_State.MeshLightingShader->SetFloat("u_FogDistance", m_State.EnviromentFogDistance);
+        } else {
+            api.BindTextureCubemap(m_State.DefaultEnviromentMap->Irradiance, 4);
+            api.BindTextureCubemap(m_State.DefaultEnviromentMap->Prefilter, 5);
+            api.BindTexture2D(m_State.DefaultEnviromentMap->BrdfLUT, 6);
+        
+            m_State.MeshLightingShader->SetVec3("u_FogColor", m_State.EnviromentFogColor);
+            m_State.MeshLightingShader->SetFloat("u_FogDistance", m_State.EnviromentFogDistance);
+        }
 
-        skyboxBuffer.Indices = m_State.CubeIndices.data();
-        skyboxBuffer.IndexSize = sizeof(u32);
-        skyboxBuffer.IndexCount = 36;
-
-        renderer.SubmitDrawBuffer(skyboxBuffer);
-        renderer.SetBufferLayout({
-            {0, ShaderDataType::Float3, "Position"},
-        });
-
+        api.DrawVertexArray(DebugRenderer::GetQuadVAO());
+        
+        api.UnBindTextureCubemap();
+        
+        // Copy depth from geometry pass
+        // m_State.GBuffer->BlitDepthBuffer(m_State.PBROutput);
+        
         glDepthMask(GL_FALSE);
-
-        renderer.BindShader(m_State.SkyboxShader);
+        
+        api.BindShader(m_State.SkyboxShader);
         
         glm::mat4 projection = m_Camera.GetCameraProjection();
         glm::mat4 view = m_Camera.GetCameraView();
@@ -464,202 +438,140 @@ namespace Blackberry {
         m_State.SkyboxShader->SetMatrix("u_View", glm::value_ptr(view));
         
         if (m_State.CurrentEnviromentMap) {
-            renderer.BindCubemap(m_State.CurrentEnviromentMap->Prefilter, 0);
+            api.BindTextureCubemap(m_State.CurrentEnviromentMap->Prefilter, 0);
             m_State.SkyboxShader->SetFloat("u_LOD", m_State.EnviromentMapLOD);
         } else {
-            renderer.BindCubemap(m_State.DefaultEnviromentMap->Prefilter, 0);
+            api.BindTextureCubemap(m_State.DefaultEnviromentMap->Prefilter, 0);
             m_State.SkyboxShader->SetFloat("u_LOD", 0.0f);
         }
         
-        renderer.DrawIndexed(36);
-
-        glDepthMask(GL_TRUE);
-
-        DrawBuffer lightingBuffer;
-        lightingBuffer.Vertices = m_State.QuadVertices.data();
-        lightingBuffer.VertexSize = sizeof(f32) * 4;
-        lightingBuffer.VertexCount = 6;
-
-        lightingBuffer.Indices = m_State.QuadIndices.data();
-        lightingBuffer.IndexSize = sizeof(u32);
-        lightingBuffer.IndexCount = 6;
-
-        renderer.SubmitDrawBuffer(lightingBuffer);
-        renderer.SetBufferLayout({
-            {0, ShaderDataType::Float2, "Position"},
-            {1, ShaderDataType::Float2, "TexCoord"}
-        });
-
-        renderer.BindShader(m_State.MeshLightingShader);
-        m_State.MeshLightingShader->SetVec3("u_ViewPos", m_Camera.Transform.Position);
-
-        u64 handles[5]{};
-        for (u32 i = 0; i < 5; i++) {
-            handles[i] = m_State.GBuffer->Attachments[i]->BindlessHandle;
-        }
-        m_State.ShaderGBuffer.ReserveMemory(sizeof(u64) * 5, handles);
-
-        // set lights
-        m_State.MeshLightingShader->SetVec4("u_DirectionalLight.Direction", m_State.DirectionalLight.Direction);
-        m_State.MeshLightingShader->SetVec4("u_DirectionalLight.Color", m_State.DirectionalLight.Color);
-        m_State.MeshLightingShader->SetVec4("u_DirectionalLight.Params", m_State.DirectionalLight.Params);
-
-        m_State.PointLightBuffer.ReserveMemory(sizeof(GPUPointLight) * m_State.PointLights.size(), m_State.PointLights.data());
-        m_State.SpotLightBuffer.ReserveMemory(sizeof(GPUSpotLight) * m_State.SpotLights.size(), m_State.SpotLights.data());
-        m_State.MeshLightingShader->SetInt("u_PointLightCount", m_State.PointLights.size());
-        m_State.MeshLightingShader->SetInt("u_SpotLightCount", m_State.SpotLights.size());
-                                  
-        m_State.MeshLightingShader->SetInt("u_IrradianceMap", 0);
-        m_State.MeshLightingShader->SetInt("u_PrefilterMap", 1);
-        m_State.MeshLightingShader->SetInt("u_BrdfLUT", 2);
-
-        if (m_State.CurrentEnviromentMap) {
-            renderer.BindCubemap(m_State.CurrentEnviromentMap->Irradiance, 0);
-            renderer.BindCubemap(m_State.CurrentEnviromentMap->Prefilter, 1);
-            renderer.BindTexture(m_State.CurrentEnviromentMap->BrdfLUT, 2);
+        api.DrawVertexArray(DebugRenderer::GetCubeVAO());
         
-            m_State.MeshLightingShader->SetVec3("u_FogColor", m_State.EnviromentFogColor);
-            m_State.MeshLightingShader->SetFloat("u_FogDistance", m_State.EnviromentFogDistance);
-        } else {
-            renderer.BindCubemap(m_State.DefaultEnviromentMap->Irradiance, 0);
-            renderer.BindCubemap(m_State.DefaultEnviromentMap->Prefilter, 1);
-            renderer.BindTexture(m_State.DefaultEnviromentMap->BrdfLUT, 2);
-
-            m_State.MeshLightingShader->SetVec3("u_FogColor", m_State.EnviromentFogColor);
-            m_State.MeshLightingShader->SetFloat("u_FogDistance", m_State.EnviromentFogDistance);
-        }
-
-        renderer.DrawIndexed(6);
-
-        renderer.UnBindCubemap();
-
-        renderer.UnBindFramebuffer();
+        glDepthMask(GL_TRUE);
+        
+        api.UnBindFramebuffer();
     }
 
     void SceneRenderer::BloomPass() {
-        auto& renderer = BL_APP.GetRenderer();
+        auto& api = BL_APP.GetRendererAPI();
 
         {
             BL_PROFILE_SCOPE("SceneRenderer::BloomPass/BrightAreas");
-
-            renderer.BindFramebuffer(m_State.BloomBrightAreas);
-            renderer.Clear(BlColor(0, 0, 0, 255));
-
-            renderer.BindShader(m_State.BloomExtractBrightAreasShader);
-
+        
+            api.BindShader(m_State.BloomExtractBrightAreasShader);
+        
             m_State.BloomExtractBrightAreasShader->SetFloat("u_Threshold", m_State.BloomThreshold);
-            renderer.BindTexture(m_State.PBROutput->Attachments.at(0), 0);
-
-            // we can simply reuse the previous buffer (from the lighting pass)
-            renderer.DrawIndexed(6);
-
-            renderer.UnBindTexture();
-
-            renderer.UnBindFramebuffer();
+            api.BindTexture2D(m_State.PBROutput->Attachments.at(0), 0);
+            
+            api.DrawVertexArray(DebugRenderer::GetQuadVAO());
+        
+            api.UnBindTexture2D();
+        
+            api.UnBindFramebuffer();
         }
-
+        
         {
             BL_PROFILE_SCOPE("SceneRenderer::BloomPass/Downscale");
-
-            renderer.BindShader(m_State.BloomDownscaleShader);
+        
+            api.BindShader(m_State.BloomDownscaleShader);
             m_State.BloomDownscaleShader->SetVec2("u_TexResolution", BlVec2(1920, 1080));
             m_State.BloomDownscaleShader->SetInt("u_CurrentMip", 0);
-
-            renderer.BindTexture(m_State.BloomBrightAreas->Attachments[0], 0);
-
+        
+            api.BindTexture2D(m_State.BloomBrightAreas->Attachments[0], 0);
+        
             for (u32 i = 0; i < m_State.BloomDownscalePasses.size(); i++) {
-                renderer.BindFramebuffer(m_State.BloomDownscalePasses[i]);
-                renderer.Clear(BlColor(0, 0, 0, 255));
-
-                renderer.DrawIndexed(6);
-
-                renderer.BindTexture(m_State.BloomDownscalePasses[i]->Attachments[0], 0);
+                api.BindFramebuffer(m_State.BloomDownscalePasses[i]);
+                api.ClearFramebuffer();
+        
+                api.DrawVertexArray(DebugRenderer::GetQuadVAO());
+        
+                api.BindTexture2D(m_State.BloomDownscalePasses[i]->Attachments[0], 0);
                 m_State.BloomDownscaleShader->SetVec2("u_TexResolution", BlVec2(m_State.BloomDownscalePasses[i]->Attachments[0]->Width, m_State.BloomDownscalePasses[i]->Attachments[0]->Height));
                 if (i == 0) m_State.BloomDownscaleShader->SetInt("u_CurrentMip", 1);
             }
         }
-
+        
         {
             BL_PROFILE_SCOPE("SceneRenderer::BloomPass/Upscale");
-
-            renderer.BindShader(m_State.BloomUpscaleShader);
+        
+            api.BindShader(m_State.BloomUpscaleShader);
             m_State.BloomUpscaleShader->SetFloat("u_FilterRadius", 0.005f);
-
-            renderer.BindTexture(m_State.BloomDownscalePasses[7]->Attachments[0], 0);
-
+        
+            api.BindTexture2D(m_State.BloomDownscalePasses[7]->Attachments[0], 0);
+        
             for (u32 i = m_State.BloomUpscalePasses.size() - 1; i > 0; i--) {
                 u32 mip = i;
                 u32 nextMip = i - 1;
-
-                renderer.BindFramebuffer(m_State.BloomUpscalePasses[mip]);
-                renderer.Clear(BlColor(0, 0, 0, 255));
-
-                renderer.DrawIndexed(6);
-
-                renderer.BindTexture(m_State.BloomUpscalePasses[mip]->Attachments[0], 0);
+        
+                api.BindFramebuffer(m_State.BloomUpscalePasses[mip]);
+                api.ClearFramebuffer();
+        
+                api.DrawVertexArray(DebugRenderer::GetQuadVAO());
+        
+                api.BindTexture2D(m_State.BloomUpscalePasses[mip]->Attachments[0], 0);
             }
-
-            renderer.UnBindFramebuffer();
+        
+            api.UnBindFramebuffer();
         }
-
+        
         {
             BL_PROFILE_SCOPE("SceneRenderer::BloomPass/CombineUpscales");
             
-            renderer.BindShader(m_State.BloomCombineShader);
+            api.BindShader(m_State.BloomCombineShader);
             m_State.BloomCombineShader->SetInt("u_Original", 0);
             m_State.BloomCombineShader->SetInt("u_Blurred", 1);
             m_State.BloomCombineShader->SetInt("u_Mode", 0);
             
-            renderer.BindFramebuffer(m_State.BloomCombinePass);
-            renderer.Clear(BlColor(0, 0, 0, 255));
+            api.BindFramebuffer(m_State.BloomCombinePass);
+            api.ClearFramebuffer();
             
             for (u32 i = m_State.BloomUpscalePasses.size() - 1; i > 0; i--) {
                 u32 mip = i;
                 u32 nextMip = i - 1;
             
-                renderer.BindTexture(m_State.BloomUpscalePasses[nextMip]->Attachments[0], 0);
-                renderer.BindTexture(m_State.BloomUpscalePasses[mip]->Attachments[0], 1);
+                api.BindTexture2D(m_State.BloomUpscalePasses[nextMip]->Attachments[0], 0);
+                api.BindTexture2D(m_State.BloomUpscalePasses[mip]->Attachments[0], 1);
             
-                renderer.DrawIndexed(6);
+                api.DrawVertexArray(DebugRenderer::GetQuadVAO());
             }
             
-            renderer.UnBindFramebuffer();
+            api.UnBindFramebuffer();
         }
-
+        
         {
             BL_PROFILE_SCOPE("SceneRenderer::BloomPass/CombinePBR");
         
-            renderer.BindShader(m_State.BloomCombineShader);
+            api.BindShader(m_State.BloomCombineShader);
             m_State.BloomCombineShader->SetInt("u_Original", 0);
             m_State.BloomCombineShader->SetInt("u_Blurred", 1);
-
+        
             m_State.BloomCombineShader->SetFloat("u_CombineAmount", 0.5f);
             m_State.BloomCombineShader->SetInt("u_Mode", 1);
         
-            renderer.BindTexture(m_State.PBROutput->Attachments[0], 0);
-            renderer.BindTexture(m_State.BloomCombinePass->Attachments[0], 1);
+            api.BindTexture2D(m_State.PBROutput->Attachments[0], 0);
+            api.BindTexture2D(m_State.BloomCombinePass->Attachments[0], 1);
         
-            renderer.BindFramebuffer(m_State.BloomUpscalePasses[0]);
-            renderer.Clear(BlColor(0, 0, 0, 255));
+            api.BindFramebuffer(m_State.BloomUpscalePasses[0]);
+            api.ClearFramebuffer();
         
-            renderer.DrawIndexed(6);
+            api.DrawVertexArray(DebugRenderer::GetQuadVAO());
         
-            renderer.UnBindFramebuffer();
+            api.UnBindFramebuffer();
         }
-
+        
         {
             BL_PROFILE_SCOPE("SceneRenderer::BloomPass/Tonemapping");
         
-            renderer.BindShader(m_State.ToneMapShader);
+            api.BindShader(m_State.ToneMapShader);
             
-            renderer.BindTexture(m_State.BloomUpscalePasses[0]->Attachments[0], 0);
+            api.BindTexture2D(m_State.BloomUpscalePasses[0]->Attachments[0], 0);
             
-            renderer.BindFramebuffer(m_RenderTarget);
-            renderer.Clear(BlColor(0, 0, 0, 255));
+            api.BindFramebuffer(m_RenderTarget);
+            api.ClearFramebuffer();
             
-            renderer.DrawIndexed(6);
+            api.DrawVertexArray(DebugRenderer::GetQuadVAO());
             
-            renderer.UnBindFramebuffer();
+            api.UnBindFramebuffer();
         }
     }
 

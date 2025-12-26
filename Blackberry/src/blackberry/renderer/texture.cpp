@@ -230,11 +230,24 @@ namespace Blackberry {
         return pixel;
     }
 
+    void Framebuffer::BlitDepthBuffer(Ref<Framebuffer> other) {
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, ID);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, other->ID);
+        glBlitFramebuffer(
+          0, 0, Specification.Width, Specification.Height, 0, 0, Specification.Width, Specification.Height, GL_DEPTH_BUFFER_BIT, GL_NEAREST
+        );
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        // glBlitNamedFramebuffer(ID, other->ID, 
+        //                        0, 0, Specification.Width, Specification.Height, 
+        //                        0, 0, other->Specification.Width, other->Specification.Height, 
+        //                        GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+    }
+
     void Framebuffer::Invalidate() {
         if (Specification.Width == 0 || Specification.Height == 0) return;
 
-        glGenFramebuffers(1, &ID);
-        glBindFramebuffer(GL_FRAMEBUFFER, ID);
+        glCreateFramebuffers(1, &ID);
     
         for (auto& attachment : Specification.Attachments) {
             Ref<Texture2D> texAttachment = CreateRef<Texture2D>();
@@ -255,7 +268,7 @@ namespace Blackberry {
                 glTextureParameteri(id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                 glTextureParameteri(id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachment.Attachment, GL_TEXTURE_2D, id, 0);
+                glNamedFramebufferTexture(ID, GL_COLOR_ATTACHMENT0 + attachment.Attachment, id, 0);
 
                 texAttachment->Format = TextureFormat::RGBA8;
                 texAttachment->ID = id;
@@ -274,7 +287,7 @@ namespace Blackberry {
                 glTextureParameteri(id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                 glTextureParameteri(id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachment.Attachment, GL_TEXTURE_2D, id, 0);
+                glNamedFramebufferTexture(ID, GL_COLOR_ATTACHMENT0 + attachment.Attachment, id, 0);
 
                 texAttachment->Format = TextureFormat::RGBA8;
                 texAttachment->ID = id;
@@ -293,7 +306,7 @@ namespace Blackberry {
                 glTextureParameteri(id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                 glTextureParameteri(id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachment.Attachment, GL_TEXTURE_2D, id, 0);
+                glNamedFramebufferTexture(ID, GL_COLOR_ATTACHMENT0 + attachment.Attachment, id, 0);
 
                 texAttachment->Format = TextureFormat::RGBA16F;
                 texAttachment->ID = id;
@@ -302,10 +315,9 @@ namespace Blackberry {
             } else if (attachment.Type == FramebufferAttachmentType::Depth) {
                 u32 id = 0;
 
-                glGenRenderbuffers(1, &id);
-                glBindRenderbuffer(GL_RENDERBUFFER, id);
-                glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, Specification.Width, Specification.Height);
-                glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, id);
+                glCreateRenderbuffers(1, &id);
+                glNamedRenderbufferStorage(id, GL_DEPTH_COMPONENT24, Specification.Width, Specification.Height);
+                glNamedFramebufferRenderbuffer(ID, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, id);
 
                 texAttachment->Format = TextureFormat::RGBA8;
                 texAttachment->ID = id;
@@ -314,10 +326,9 @@ namespace Blackberry {
             } else if (attachment.Type == FramebufferAttachmentType::Depth24) {
                 u32 id = 0;
 
-                glGenRenderbuffers(1, &id);
-                glBindRenderbuffer(GL_RENDERBUFFER, id);
-                glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, Specification.Width, Specification.Height);
-                glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, id);
+                glCreateRenderbuffers(1, &id);
+                glNamedRenderbufferStorage(id, GL_DEPTH_COMPONENT24, Specification.Width, Specification.Height);
+                glNamedFramebufferRenderbuffer(ID, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, id);
 
                 texAttachment->Format = TextureFormat::RGBA8;
                 texAttachment->ID = id;
@@ -336,7 +347,7 @@ namespace Blackberry {
                 glTextureParameteri(id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                 glTextureParameteri(id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachment.Attachment, GL_TEXTURE_2D, id, 0);
+                glNamedFramebufferTexture(ID, GL_COLOR_ATTACHMENT0 + attachment.Attachment, id, 0);
 
                 texAttachment->Format = TextureFormat::RGBA8;
                 texAttachment->ID = id;
@@ -355,7 +366,7 @@ namespace Blackberry {
                 glTextureParameteri(id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                 glTextureParameteri(id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachment.Attachment, GL_TEXTURE_2D, id, 0);
+                glNamedFramebufferTexture(ID, GL_COLOR_ATTACHMENT0 + attachment.Attachment, id, 0);
 
                 texAttachment->Format = TextureFormat::RGBA8;
                 texAttachment->ID = id;
@@ -381,11 +392,9 @@ namespace Blackberry {
         for (auto& attachment : Specification.ActiveAttachments) {
             activeAttachments.push_back(GL_COLOR_ATTACHMENT0 + attachment);
         }
-        glDrawBuffers(activeAttachments.size(), activeAttachments.data());
+        glNamedFramebufferDrawBuffers(ID, activeAttachments.size(), activeAttachments.data());
 
-        BL_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Render Texture not complete!");
-    
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        BL_ASSERT(glCheckNamedFramebufferStatus(ID, GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer not complete!");
     }
 
 } // namespace Blackberry

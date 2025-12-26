@@ -1334,6 +1334,7 @@ namespace BlackberryEditor {
         ImGui::SetCursorPosY(cursorY);
         auto& rendererState = m_CurrentScene->GetSceneRenderer()->GetState();
         ImGui::Image(m_RenderTexture->Attachments[0]->ID, ImVec2(size.x, size.y), ImVec2(0, 1), ImVec2(1, 0));
+        // ImGui::Image(rendererState.PBROutput->Attachments[0]->ID, ImVec2(size.x, size.y), ImVec2(0, 1), ImVec2(1, 0));
 
         if (m_IsEntitySelected) {
             Entity e(m_SelectedEntity, m_CurrentScene);
