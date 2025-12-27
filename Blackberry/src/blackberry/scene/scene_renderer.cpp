@@ -361,6 +361,7 @@ namespace Blackberry {
             api.ClearFramebuffer();
 
             api.EnableCapability(RendererCapability::DepthTest);
+            api.EnableCapability(RendererCapability::FaceCull);
             api.SetDepthFunc(DepthFunc::Lequal);
 
             m_State.GBuffer->ClearAttachmentFloat(4, -1.0f);
@@ -431,6 +432,7 @@ namespace Blackberry {
         // m_State.GBuffer->BlitDepthBuffer(m_State.PBROutput);
         
         api.SetDepthMask(false);
+        api.DisableCapability(RendererCapability::FaceCull);
 
         api.BindShader(m_State.SkyboxShader);
         
@@ -460,6 +462,9 @@ namespace Blackberry {
 
         {
             BL_PROFILE_SCOPE("SceneRenderer::BloomPass/BrightAreas");
+
+            api.BindFramebuffer(m_State.BloomBrightAreas);
+            api.ClearFramebuffer();
         
             api.BindShader(m_State.BloomExtractBrightAreasShader);
         
@@ -498,20 +503,30 @@ namespace Blackberry {
             BL_PROFILE_SCOPE("SceneRenderer::BloomPass/Upscale");
         
             api.BindShader(m_State.BloomUpscaleShader);
+
+            m_State.BloomUpscaleShader->SetInt("u_Texture0", 0);
+            m_State.BloomUpscaleShader->SetInt("u_Texture1", 1);
+
             m_State.BloomUpscaleShader->SetFloat("u_FilterRadius", 0.005f);
-        
-            api.BindTexture2D(m_State.BloomDownscalePasses[7]->Attachments[0], 0);
-        
-            for (u32 i = m_State.BloomUpscalePasses.size() - 1; i > 0; i--) {
-                u32 mip = i;
-                u32 nextMip = i - 1;
-        
+
+            for (u32 i = m_State.BloomUpscalePasses.size(); i > 0; i--) {
+                u32 mip = i - 1; // Goofy hack i don't want to explain
+
                 api.BindFramebuffer(m_State.BloomUpscalePasses[mip]);
                 api.ClearFramebuffer();
+
+                if (mip == m_State.BloomUpscalePasses.size() - 1) { // This is the first pass
+                    api.BindTexture2D(m_State.BloomDownscalePasses[i]->Attachments[0], 0);
+                    api.BindTexture2D(m_State.BloomDownscalePasses[i - 1]->Attachments[0], 1);
+                } else if (mip == 0) { // This is the last pass
+                    api.BindTexture2D(m_State.BloomUpscalePasses[mip + 1]->Attachments[0], 0);
+                    api.BindTexture2D(m_State.BloomBrightAreas->Attachments[0], 1);
+                } else { // This is any other pass
+                    api.BindTexture2D(m_State.BloomUpscalePasses[mip + 1]->Attachments[0], 0);
+                    api.BindTexture2D(m_State.BloomDownscalePasses[mip]->Attachments[0], 1);
+                }
         
                 api.DrawVertexArray(DebugRenderer::GetQuadVAO());
-        
-                api.BindTexture2D(m_State.BloomUpscalePasses[mip]->Attachments[0], 0);
             }
         
             api.UnBindFramebuffer();
@@ -520,25 +535,31 @@ namespace Blackberry {
         {
             BL_PROFILE_SCOPE("SceneRenderer::BloomPass/CombineUpscales");
             
-            api.BindShader(m_State.BloomCombineShader);
-            m_State.BloomCombineShader->SetInt("u_Original", 0);
-            m_State.BloomCombineShader->SetInt("u_Blurred", 1);
-            m_State.BloomCombineShader->SetInt("u_Mode", 0);
-            
-            api.BindFramebuffer(m_State.BloomCombinePass);
-            api.ClearFramebuffer();
-            
-            for (u32 i = m_State.BloomUpscalePasses.size() - 1; i > 0; i--) {
-                u32 mip = i;
-                u32 nextMip = i - 1;
-            
-                api.BindTexture2D(m_State.BloomUpscalePasses[nextMip]->Attachments[0], 0);
-                api.BindTexture2D(m_State.BloomUpscalePasses[mip]->Attachments[0], 1);
-            
-                api.DrawVertexArray(DebugRenderer::GetQuadVAO());
-            }
-            
-            api.UnBindFramebuffer();
+            // api.BindShader(m_State.BloomCombineShader);
+            // m_State.BloomCombineShader->SetInt("u_Original", 0);
+            // m_State.BloomCombineShader->SetInt("u_Blurred", 1);
+            // m_State.BloomCombineShader->SetInt("u_Mode", 0);
+            // 
+            // // api.EnableCapability(RendererCapability::Blend);
+            // // api.SetBlendFunc(BlendFunc::One, BlendFunc::One);
+            // // api.SetBlendEquation(BlendEquation::Add);
+            // 
+            // api.BindFramebuffer(m_State.BloomCombinePass);
+            // api.ClearFramebuffer();
+            // 
+            // for (u32 i = m_State.BloomUpscalePasses.size() - 1; i > 0; i--) {
+            //     u32 mip = i;
+            //     u32 nextMip = i - 1;
+            // 
+            //     api.BindTexture2D(m_State.BloomUpscalePasses[nextMip]->Attachments[0], 0);
+            //     api.BindTexture2D(m_State.BloomUpscalePasses[mip]->Attachments[0], 1);
+            // 
+            //     api.DrawVertexArray(DebugRenderer::GetQuadVAO());
+            // }
+            // 
+            // // api.DisableCapability(RendererCapability::Blend);
+            // 
+            // api.UnBindFramebuffer();
         }
         
         {
@@ -549,12 +570,12 @@ namespace Blackberry {
             m_State.BloomCombineShader->SetInt("u_Blurred", 1);
         
             m_State.BloomCombineShader->SetFloat("u_CombineAmount", 0.5f);
-            m_State.BloomCombineShader->SetInt("u_Mode", 1);
+            m_State.BloomCombineShader->SetInt("u_Mode", 0);
         
             api.BindTexture2D(m_State.PBROutput->Attachments[0], 0);
-            api.BindTexture2D(m_State.BloomCombinePass->Attachments[0], 1);
+            api.BindTexture2D(m_State.BloomUpscalePasses[0]->Attachments[0], 1);
         
-            api.BindFramebuffer(m_State.BloomUpscalePasses[0]);
+            api.BindFramebuffer(m_State.BloomCombinePass);
             api.ClearFramebuffer();
         
             api.DrawVertexArray(DebugRenderer::GetQuadVAO());
@@ -567,7 +588,7 @@ namespace Blackberry {
         
             api.BindShader(m_State.ToneMapShader);
             
-            api.BindTexture2D(m_State.BloomUpscalePasses[0]->Attachments[0], 0);
+            api.BindTexture2D(m_State.BloomCombinePass->Attachments[0], 0);
             
             api.BindFramebuffer(m_RenderTarget);
             api.ClearFramebuffer();

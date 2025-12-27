@@ -108,7 +108,7 @@ namespace Blackberry {
         glEnable(GetOpenGLRendererCapability(cap));
     }
 
-    void OpenGLRendererAPI::Disableapability(RendererCapability cap) const {
+    void OpenGLRendererAPI::DisableCapability(RendererCapability cap) const {
         glDisable(GetOpenGLRendererCapability(cap));
     }
 

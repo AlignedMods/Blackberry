@@ -45,6 +45,16 @@
             "Path": "EnviromentMaps/BlueSky.hdr",
             "Type": "Enviroment Map"
         },
+        "Handle - 18012666058110698168": {
+            "Handle": 18012666058110698168,
+            "Path": "Materials/RedEmission.blmat",
+            "Type": "Material"
+        },
+        "Handle - 18327058575313377665": {
+            "Handle": 18327058575313377665,
+            "Path": "Materials/WhiteEmission.blmat",
+            "Type": "Material"
+        },
         "Handle - 21128899974857072": {
             "Handle": 21128899974857072,
             "Path": "Textures/Container.png",
@@ -60,10 +70,25 @@
             "Path": "Textures/ContainerSpecular.png",
             "Type": "Texture"
         },
+        "Handle - 3430606806693664817": {
+            "Handle": 3430606806693664817,
+            "Path": "Materials/BlueEmission.blmat",
+            "Type": "Material"
+        },
         "Handle - 3506026168109084076": {
             "Handle": 3506026168109084076,
             "Path": "Meshes/House.glb",
             "Type": "Model"
+        },
+        "Handle - 5099224238756901267": {
+            "Handle": 5099224238756901267,
+            "Path": "Scenes/BloomTest.blscene",
+            "Type": "Scene"
+        },
+        "Handle - 5485797090388768424": {
+            "Handle": 5485797090388768424,
+            "Path": "EnviromentMaps/NightSky.hdr",
+            "Type": "Enviroment Map"
         },
         "Handle - 5537097041247948532": {
             "Handle": 5537097041247948532,
@@ -89,6 +114,11 @@
             "Handle": 8535543139313001771,
             "Path": "Meshes/rubber_duck.glb",
             "Type": "Model"
+        },
+        "Handle - 8648580271206673229": {
+            "Handle": 8648580271206673229,
+            "Path": "Materials/GreenEmission.blmat",
+            "Type": "Material"
         },
         "Handle - 9023906316994206417": {
             "Handle": 9023906316994206417,

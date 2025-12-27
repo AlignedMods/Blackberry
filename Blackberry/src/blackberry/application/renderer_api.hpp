@@ -54,7 +54,7 @@ namespace Blackberry {
         virtual void ClearFramebuffer(const BlVec4& color = BlVec4(0.0f)) const = 0;
 
         virtual void EnableCapability(RendererCapability cap) const = 0;
-        virtual void Disableapability(RendererCapability cap) const = 0;
+        virtual void DisableCapability(RendererCapability cap) const = 0;
 
         virtual void SetBlendFunc(BlendFunc func1, BlendFunc func2) const = 0;
         virtual void SetBlendEquation(BlendEquation eq) const = 0;

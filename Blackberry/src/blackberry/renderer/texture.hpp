@@ -74,7 +74,8 @@ namespace Blackberry {
         void ClearAttachmentInt(u32 attachment, int value);
         void ClearAttachmentFloat(u32 attachment, f32 value);
 
-        f32 ReadPixelFloat(u32 attachment, u32 x, u32 y);
+        // NOTE: You must free the memory that comes with this function! (with free() NOT delete!)
+        void* ReadPixels(u32 attachment, BlVec2 position, BlVec2 dimensions, u32 size);
 
         void BlitDepthBuffer(Ref<Framebuffer> other);
     

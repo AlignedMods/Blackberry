@@ -289,8 +289,8 @@ namespace Blackberry {
                 EnviromentComponent env;
                 env.EnviromentMap = yamlEnv["EnviromentMap"].as<u64>();
                 env.LevelOfDetail = yamlEnv["LevelOfDetail"].as<f32>();
-                // env.EnableBloom = yamlEnv["EnableBloom"].as<bool>();
-                // env.BloomThreshold = yamlEnv["BloomThreshold"].as<f32>();
+                env.EnableBloom = yamlEnv["EnableBloom"].as<bool>();
+                env.BloomThreshold = yamlEnv["BloomThreshold"].as<f32>();
 
                 e.AddComponent<EnviromentComponent>(env);
             }

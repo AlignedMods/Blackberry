@@ -216,18 +216,26 @@ namespace Blackberry {
         glClearTexImage(Attachments.at(attachment)->ID, 0, GL_RED, GL_FLOAT, &value);
     }
 
-    f32 Framebuffer::ReadPixelFloat(u32 attachment, u32 x, u32 y) {
-        BL_ASSERT(Specification.Attachments.at(attachment).Type == FramebufferAttachmentType::ColorR32F, "Not a floating point attachment!");
-
+    void* Framebuffer::ReadPixels(u32 attachment, BlVec2 position, BlVec2 dimensions, u32 sizeBytes) {
         glBindFramebuffer(GL_FRAMEBUFFER, ID);
         glReadBuffer(GL_COLOR_ATTACHMENT0 + attachment);
 
-        float pixel = 0.0f;
-        glReadPixels(x, y, 1, 1, GL_RED, GL_FLOAT, &pixel);
+        GLenum format = 0;
+        GLenum type = 0;
+
+        switch (Specification.Attachments.at(attachment).Type) {
+            case FramebufferAttachmentType::ColorRGBA16F: format = GL_RGBA; type = GL_FLOAT; break;
+            case FramebufferAttachmentType::ColorR32I: format = GL_RED_INTEGER; type = GL_UNSIGNED_BYTE; break;
+            case FramebufferAttachmentType::ColorR32F: format = GL_RED; type = GL_FLOAT; break;
+        }
+
+        void* pixels = malloc(dimensions.x * dimensions.y * sizeBytes);
+
+        glReadPixels(position.x, position.y, dimensions.x, dimensions.y, format, type, pixels);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        return pixel;
+        return pixels;
     }
 
     void Framebuffer::BlitDepthBuffer(Ref<Framebuffer> other) {

@@ -384,8 +384,9 @@ namespace BlackberryEditor {
                     u32 fbX = static_cast<u32>(u * 1920);
                     u32 fbY = static_cast<u32>(v * 1080);
 
-                    float pixel = m_SavedGBuffer->ReadPixelFloat(4, fbX, fbY);
-                    int id = static_cast<int>(pixel);
+                    f32* pixel = reinterpret_cast<f32*>(m_SavedGBuffer->ReadPixels(4, BlVec2(fbX, fbY), BlVec2(1, 1), sizeof(f32)));
+                    int id = static_cast<int>(*pixel);
+                    free(pixel);
                     
                     if (id != -1) {
                         m_SelectedEntity = static_cast<EntityID>(id);
@@ -709,6 +710,13 @@ namespace BlackberryEditor {
 
                 std::ofstream file(p.String());
                 file.close();
+
+                Asset asset;
+                asset.Type = AssetType::Scene;
+                asset.FilePath = FS::Relative(p, m_BaseDirectory);
+                asset.Data = Scene::Create(p);
+
+                Project::GetAssetManager().AddAsset(asset);
 
                 ImGui::CloseCurrentPopup();
             }
@@ -1375,6 +1383,7 @@ namespace BlackberryEditor {
                     Ref<Scene> scene = std::get<Ref<Scene>>(asset.Data);
                     m_EditingScene = scene;
                     m_CurrentScene = m_EditingScene;
+                    m_EditingScenePath = path;
                 }
             }
             ImGui::EndDragDropTarget();
