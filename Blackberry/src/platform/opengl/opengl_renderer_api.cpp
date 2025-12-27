@@ -47,6 +47,20 @@ namespace Blackberry {
         std::cerr << "\n\n";
     }
 
+    static GLenum GetOpenGLRendererCapability(RendererCapability cap) {
+        switch (cap) {
+            case RendererCapability::Blend: return GL_BLEND;
+            case RendererCapability::FaceCull: return GL_CULL_FACE;
+            case RendererCapability::DepthTest: return GL_DEPTH_TEST;
+            case RendererCapability::ScissorTest: return GL_SCISSOR_TEST;
+            case RendererCapability::StencilTest: return GL_STENCIL_TEST;
+            case RendererCapability::SeamlessCubemap: return GL_TEXTURE_CUBE_MAP_SEAMLESS;
+            default: BL_ASSERT(false, "Unreachable"); return 0;
+        }
+
+        return 0;
+    }
+
     OpenGLRendererAPI::OpenGLRendererAPI() {
         int flags;
         glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
@@ -57,17 +71,6 @@ namespace Blackberry {
             glDebugMessageCallback(glDebugCallbackFunction, nullptr);
             glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
         }
-
-        // depth
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LEQUAL);
-        glDepthRange(0.0, 1.0);
-
-        // backface-culling
-        // glEnable(GL_CULL_FACE);
-
-        // seamless cubemaps
-        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
         BL_CORE_INFO("Using OpenGL backend");
         BL_CORE_INFO("    Vendor: {}", reinterpret_cast<const char*>(glGetString(GL_VENDOR)));
@@ -99,6 +102,82 @@ namespace Blackberry {
     void OpenGLRendererAPI::ClearFramebuffer(const BlVec4& color) const {
         glClearColor(color.r, color.g, color.b, color.a);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    }
+
+    void OpenGLRendererAPI::EnableCapability(RendererCapability cap) const {
+        glEnable(GetOpenGLRendererCapability(cap));
+    }
+
+    void OpenGLRendererAPI::Disableapability(RendererCapability cap) const {
+        glDisable(GetOpenGLRendererCapability(cap));
+    }
+
+    void OpenGLRendererAPI::SetBlendFunc(BlendFunc func1, BlendFunc func2) const {
+        GLenum glFunc1 = 0;
+        GLenum glFunc2 = 0;
+
+        switch (func1) {
+            case BlendFunc::Zero: glFunc1 = GL_ZERO; break;
+            case BlendFunc::One: glFunc1 = GL_ONE; break;
+            case BlendFunc::SrcColor: glFunc1 = GL_SRC_COLOR; break;
+            case BlendFunc::OneMinusSrcColor: glFunc1 = GL_ONE_MINUS_SRC_COLOR; break;
+            case BlendFunc::DstColor: glFunc1 = GL_DST_COLOR; break;
+            case BlendFunc::OneMinusDstColor: glFunc1 = GL_ONE_MINUS_DST_COLOR; break;
+            case BlendFunc::SrcAlpha: glFunc1 = GL_SRC_ALPHA; break;
+            case BlendFunc::OneMinusSrcAlpha: glFunc1 = GL_ONE_MINUS_SRC_ALPHA; break;
+            case BlendFunc::DstAlpha: glFunc1 = GL_DST_ALPHA; break;
+            case BlendFunc::OneMinusDstAlpha: glFunc1 = GL_ONE_MINUS_DST_ALPHA; break;
+        }
+
+        switch (func2) {
+            case BlendFunc::Zero: glFunc2 = GL_ZERO; break;
+            case BlendFunc::One: glFunc2 = GL_ONE; break;
+            case BlendFunc::SrcColor: glFunc2 = GL_SRC_COLOR; break;
+            case BlendFunc::OneMinusSrcColor: glFunc2 = GL_ONE_MINUS_SRC_COLOR; break;
+            case BlendFunc::DstColor: glFunc2 = GL_DST_COLOR; break;
+            case BlendFunc::OneMinusDstColor: glFunc2 = GL_ONE_MINUS_DST_COLOR; break;
+            case BlendFunc::SrcAlpha: glFunc2 = GL_SRC_ALPHA; break;
+            case BlendFunc::OneMinusSrcAlpha: glFunc2 = GL_ONE_MINUS_SRC_ALPHA; break;
+            case BlendFunc::DstAlpha: glFunc2 = GL_DST_ALPHA; break;
+            case BlendFunc::OneMinusDstAlpha: glFunc2 = GL_ONE_MINUS_DST_ALPHA; break;
+        }
+
+        glBlendFunc(glFunc1, glFunc2);
+    }
+
+    void OpenGLRendererAPI::SetBlendEquation(BlendEquation eq) const {
+        GLenum glEq = 0;
+
+        switch (eq) {
+            case BlendEquation::Add: glEq = GL_FUNC_ADD; break;
+            case BlendEquation::Subtract: glEq = GL_FUNC_SUBTRACT; break;
+            case BlendEquation::ReverseSubtract: glEq = GL_FUNC_REVERSE_SUBTRACT; break;
+            case BlendEquation::Min: glEq = GL_MIN; break;
+            case BlendEquation::Max: glEq = GL_MAX; break;
+        }
+
+        glBlendEquation(glEq);
+    }
+
+    void OpenGLRendererAPI::SetDepthFunc(DepthFunc func) const {
+        GLenum glFunc = 0;
+
+        switch (func) {
+            case DepthFunc::Never: glFunc = GL_NEVER; break;
+            case DepthFunc::Less: glFunc = GL_LESS; break;
+            case DepthFunc::Equal: glFunc = GL_EQUAL; break;
+            case DepthFunc::Lequal: glFunc = GL_LEQUAL; break;
+            case DepthFunc::Greater: glFunc = GL_GREATER; break;
+            case DepthFunc::NotEqual: glFunc = GL_NOTEQUAL; break;
+            case DepthFunc::Gequal: glFunc = GL_GEQUAL; break;
+            case DepthFunc::Always: glFunc = GL_ALWAYS; break;
+        }
+
+        glDepthFunc(glFunc);
+    }
+
+    void OpenGLRendererAPI::SetDepthMask(bool mask) const {
+        glDepthMask(mask);
     }
 
     void OpenGLRendererAPI::DrawVertexArray(const Ref<VertexArray>& vertexArray) const {

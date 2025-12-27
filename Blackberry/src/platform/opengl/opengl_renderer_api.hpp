@@ -16,6 +16,15 @@ namespace Blackberry {
 
         virtual void SetViewportSize(BlVec2 size) const override;
         virtual void ClearFramebuffer(const BlVec4& color = BlVec4(0.0f)) const override;
+
+        virtual void EnableCapability(RendererCapability cap) const override;
+        virtual void Disableapability(RendererCapability cap) const override;
+
+        virtual void SetBlendFunc(BlendFunc func1, BlendFunc func2) const override;
+        virtual void SetBlendEquation(BlendEquation eq) const override;
+
+        virtual void SetDepthFunc(DepthFunc func) const override;
+        virtual void SetDepthMask(bool mask) const override;
         
         virtual void DrawVertexArray(const Ref<VertexArray>& vertexArray) const override;
 

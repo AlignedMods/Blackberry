@@ -360,6 +360,9 @@ namespace Blackberry {
             api.BindFramebuffer(m_State.GBuffer);
             api.ClearFramebuffer();
 
+            api.EnableCapability(RendererCapability::DepthTest);
+            api.SetDepthFunc(DepthFunc::Lequal);
+
             m_State.GBuffer->ClearAttachmentFloat(4, -1.0f);
 
             api.DrawVertexArray(m_State.GeometryBuffer);
@@ -427,8 +430,8 @@ namespace Blackberry {
         // Copy depth from geometry pass
         // m_State.GBuffer->BlitDepthBuffer(m_State.PBROutput);
         
-        glDepthMask(GL_FALSE);
-        
+        api.SetDepthMask(false);
+
         api.BindShader(m_State.SkyboxShader);
         
         glm::mat4 projection = m_Camera.GetCameraProjection();
@@ -446,9 +449,9 @@ namespace Blackberry {
         }
         
         api.DrawVertexArray(DebugRenderer::GetCubeVAO());
-        
-        glDepthMask(GL_TRUE);
-        
+
+        api.SetDepthMask(true);
+
         api.UnBindFramebuffer();
     }
 

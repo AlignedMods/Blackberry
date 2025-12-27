@@ -7,14 +7,60 @@
 
 namespace Blackberry {
 
-    enum class RendererFeature {
-        
+    enum class RendererCapability {
+        Blend,
+        FaceCull,
+        DepthTest,
+        ScissorTest,
+        StencilTest,
+        SeamlessCubemap
+    };
+
+    enum class BlendFunc {
+        Zero,
+        One,
+        SrcColor,
+        OneMinusSrcColor,
+        DstColor,
+        OneMinusDstColor,
+        SrcAlpha,
+        OneMinusSrcAlpha,
+        DstAlpha,
+        OneMinusDstAlpha
+    };
+
+    enum class BlendEquation {
+        Add,
+        Subtract,
+        ReverseSubtract,
+        Min,
+        Max
+    };
+
+    enum class DepthFunc {
+        Never,
+        Less,
+        Equal,
+        Lequal,
+        Greater,
+        NotEqual,
+        Gequal,
+        Always
     };
 
     class RendererAPI {
     public:
         virtual void SetViewportSize(BlVec2 size) const = 0;
         virtual void ClearFramebuffer(const BlVec4& color = BlVec4(0.0f)) const = 0;
+
+        virtual void EnableCapability(RendererCapability cap) const = 0;
+        virtual void Disableapability(RendererCapability cap) const = 0;
+
+        virtual void SetBlendFunc(BlendFunc func1, BlendFunc func2) const = 0;
+        virtual void SetBlendEquation(BlendEquation eq) const = 0;
+
+        virtual void SetDepthFunc(DepthFunc func) const = 0;
+        virtual void SetDepthMask(bool mask) const = 0;
         
         virtual void DrawVertexArray(const Ref<VertexArray>& vertexArray) const = 0;
 
