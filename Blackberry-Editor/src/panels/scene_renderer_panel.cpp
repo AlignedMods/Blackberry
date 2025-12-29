@@ -27,6 +27,8 @@ namespace BlackberryEditor {
         ImGui::SliderInt("Deferred rendering step", &m_CurrentDeferredImage, 0, IM_ARRAYSIZE(names) - 1, name);
         ImGui::Image(state.GBuffer->Attachments[m_CurrentDeferredImage]->ID, ImVec2(sizeX, sizeY), ImVec2(0, 1), ImVec2(1, 0));
 
+        ImGui::Image(state.CurrentEnviromentMap->BrdfLUT->ID, ImVec2(sizeX, sizeY), ImVec2(0, 1), ImVec2(1, 0));
+
         // ImGui::Image(state.CurrentEnviromentMap->BrdfLUT->ID, ImVec2(sizeX, sizeY));
 
         ImGui::DragFloat("Bloom Threshold", &state.BloomThreshold, 0.1f);

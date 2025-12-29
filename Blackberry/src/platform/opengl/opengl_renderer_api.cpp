@@ -206,7 +206,7 @@ namespace Blackberry {
         SetViewportSize(m_PreviousFramebufferSize);
     }
 
-    void OpenGLRendererAPI::BindTexture2D(const Ref<Texture2D>& texture, u32 slot) const {
+    void OpenGLRendererAPI::BindTexture2D(const Ref<Texture>& texture, u32 slot) const {
         glActiveTexture(GL_TEXTURE0 + slot);
         glBindTexture(GL_TEXTURE_2D, texture->ID);
     }
@@ -215,7 +215,7 @@ namespace Blackberry {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
-    void OpenGLRendererAPI::BindTextureCubemap(const Ref<Texture2D>& texture, u32 slot) const {
+    void OpenGLRendererAPI::BindTextureCubemap(const Ref<Texture>& texture, u32 slot) const {
         glActiveTexture(GL_TEXTURE0 + slot);
         glBindTexture(GL_TEXTURE_CUBE_MAP, texture->ID);
     }

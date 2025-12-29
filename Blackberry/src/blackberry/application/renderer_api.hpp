@@ -69,10 +69,10 @@ namespace Blackberry {
         virtual void BindFramebuffer(const Ref<Framebuffer>& framebuffer) const = 0;
         virtual void UnBindFramebuffer() const = 0;
 
-        virtual void BindTexture2D(const Ref<Texture2D>& texture, u32 slot = 0) const = 0;
+        virtual void BindTexture2D(const Ref<Texture>& texture, u32 slot = 0) const = 0;
         virtual void UnBindTexture2D() const = 0;
 
-        virtual void BindTextureCubemap(const Ref<Texture2D>& texture, u32 slot = 0) const = 0;
+        virtual void BindTextureCubemap(const Ref<Texture>& texture, u32 slot = 0) const = 0;
         virtual void UnBindTextureCubemap() const = 0;
     };
 

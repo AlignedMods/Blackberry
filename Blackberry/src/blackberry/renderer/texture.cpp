@@ -8,12 +8,26 @@
 
 namespace Blackberry {
 
-    Texture2D::~Texture2D() {
-        Delete();
+    static u32 GetMipCount(u32 width, u32 height) {
+        f32 axis = static_cast<f32>(glm::min(width, height));
+
+        u32 mip = 0;
+
+        while (axis >= 1.0f) {
+            mip++;
+            axis *= 0.5f;
+        }
+
+        return mip;
     }
 
-    Ref<Texture2D> Texture2D::Create(u32 width, u32 height) {
-        Ref<Texture2D> tex = CreateRef<Texture2D>();
+    Texture2D::~Texture2D() {
+        glDeleteTextures(1, &ID);
+        glMakeTextureHandleNonResidentARB(BindlessHandle);
+    }
+
+    Ref<Texture> Texture2D::Create(u32 width, u32 height) {
+        Ref<Texture> tex = CreateRef<Texture>();
 
         tex->Width= width;
         tex->Height = height;
@@ -36,7 +50,7 @@ namespace Blackberry {
         return tex;
     }
     
-    Ref<Texture2D> Texture2D::Create(const FS::Path& path, TextureFormat desiredFormat) {
+    Ref<Texture> Texture2D::Create(const FS::Path& path, TextureFormat desiredFormat) {
         int width = 0, height = 0;
 
         bool useFloatingPoint = false;
@@ -62,17 +76,17 @@ namespace Blackberry {
 
         if (pixels == nullptr) {
             BL_ERROR("Failed to load texture from path: {}", path.String());
-            return CreateRef<Texture2D>();
+            return CreateRef<Texture>();
         }
     
-        Ref<Texture2D> texture = Create(pixels, width, height, desiredFormat);
+        Ref<Texture> texture = Create(pixels, width, height, desiredFormat);
 
         stbi_image_free(pixels);
 
         return texture;
     }
 
-    Ref<Texture2D> Texture2D::Create(Ref<Image> image) {
+    Ref<Texture> Texture2D::Create(Ref<Image> image) {
         TextureFormat format = TextureFormat::RGB8;
 
         switch (image->Format) {
@@ -84,13 +98,13 @@ namespace Blackberry {
             default: BL_CORE_WARN("Unknown ImageFormat!"); break;
         }
 
-        Ref<Texture2D> tex = Create(image->Pixels, image->Width, image->Height, format);
+        Ref<Texture> tex = Create(image->Pixels, image->Width, image->Height, format);
 
         return tex;
     }
     
-    Ref<Texture2D> Texture2D::Create(void* pixels, u32 width, u32 height, TextureFormat pixelFormat, TextureFiltering filter) {
-        Ref<Texture2D> tex = CreateRef<Texture2D>();
+    Ref<Texture> Texture2D::Create(void* pixels, u32 width, u32 height, TextureFormat pixelFormat, TextureFiltering filter) {
+        Ref<Texture> tex = CreateRef<Texture>();
 
         tex->Width = width;
         tex->Height = height;
@@ -129,6 +143,11 @@ namespace Blackberry {
                 format = GL_RGBA;
                 glFormat = GL_RGBA8;
                 break;
+            case TextureFormat::RG16F:
+                format = GL_RG;
+                glFormat = GL_RG16F;
+                type = GL_FLOAT;
+                break;
             case TextureFormat::RGB16F:
                 format = GL_RGB;
                 glFormat = GL_RGB16F;
@@ -141,7 +160,7 @@ namespace Blackberry {
                 break;
         }
     
-        glTextureStorage2D(tex->ID, 1, glFormat, width, height);
+        glTextureStorage2D(tex->ID, GetMipCount(width, height), glFormat, width, height);
         glTextureSubImage2D(tex->ID, 0, 0, 0, width, height, format, type, pixels);
 
         glGenerateTextureMipmap(tex->ID);
@@ -156,17 +175,6 @@ namespace Blackberry {
         return tex;
     }
     
-    void Texture2D::Delete() {
-        BL_CORE_INFO("Destroying texture!");
-
-        glDeleteTextures(1, &ID);
-        glMakeTextureHandleNonResidentARB(BindlessHandle);
-        ID = 0;
-        BindlessHandle = 0;
-        Width = 0;
-        Height = 0;
-    }
-    
     void* Texture2D::ReadPixels() {
         u8* pixels = new u8[Width * Height * 4];
     
@@ -177,6 +185,66 @@ namespace Blackberry {
         glBindTexture(GL_TEXTURE_2D, 0);
     
         return pixels;
+    }
+
+    TextureCubemap::~TextureCubemap() {
+        glDeleteTextures(1, &ID);
+        glMakeTextureHandleNonResidentARB(BindlessHandle);
+    }
+
+    Ref<Texture> TextureCubemap::Create(u32 width, u32 height, TextureFormat desiredFormat) {
+        Ref<Texture> cubemap = CreateRef<Texture>();
+
+        glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &cubemap->ID);
+
+        GLuint format = GL_RGBA;
+        GLuint glFormat = GL_RGBA8;
+        GLuint type = GL_UNSIGNED_BYTE;
+    
+        switch (desiredFormat) {
+            case TextureFormat::U8:
+                format = GL_RED;
+                glFormat = GL_R8;
+                break;
+            case TextureFormat::RGB8:
+                format = GL_RGB;
+                glFormat = GL_RGB8;
+                break;
+            case TextureFormat::RGBA8:
+                format = GL_RGBA;
+                glFormat = GL_RGBA8;
+                break;
+            case TextureFormat::RGB16F:
+                format = GL_RGB;
+                glFormat = GL_RGB16F;
+                type = GL_FLOAT;
+                break;
+            case TextureFormat::RGBA16F:
+                format = GL_RGBA;
+                glFormat = GL_RGBA16F;
+                type = GL_FLOAT;
+                break;
+        }
+
+        glTextureStorage2D(cubemap->ID, GetMipCount(width, height), glFormat, width, height);
+        // glTextureSubImage2D(cubemap->ID, 0, 0, 0, width, height, format, type, nullptr);
+
+        glTextureParameteri(cubemap->ID, GL_TEXTURE_WRAP_S, GL_REPEAT);	
+        glTextureParameteri(cubemap->ID, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTextureParameteri(cubemap->ID, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        glTextureParameteri(cubemap->ID, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTextureParameteri(cubemap->ID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        glGenerateTextureMipmap(cubemap->ID);
+
+        cubemap->BindlessHandle = glGetTextureHandleARB(cubemap->ID);
+        if (cubemap->BindlessHandle == 0 || !glIsTexture(cubemap->ID)) {
+            BL_CORE_CRITICAL("Failed to create bindless texture!");
+            exit(1);
+        }
+        glMakeTextureHandleResidentARB(cubemap->BindlessHandle);
+
+        return cubemap;
     }
     
     Framebuffer::~Framebuffer() {
@@ -193,7 +261,7 @@ namespace Blackberry {
     
     void Framebuffer::Delete() {
         glDeleteFramebuffers(1, &ID);
-        Attachments.clear();
+        // Attachments.clear();
         ID = 0;
     }
 
@@ -239,17 +307,18 @@ namespace Blackberry {
     }
 
     void Framebuffer::BlitDepthBuffer(Ref<Framebuffer> other) {
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, ID);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, other->ID);
-        glBlitFramebuffer(
-          0, 0, Specification.Width, Specification.Height, 0, 0, Specification.Width, Specification.Height, GL_DEPTH_BUFFER_BIT, GL_NEAREST
-        );
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glBlitNamedFramebuffer(ID, other->ID, 
+                               0, 0, Specification.Width, Specification.Height, 
+                               0, 0, other->Specification.Width, other->Specification.Height, 
+                               GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+    }
 
-        // glBlitNamedFramebuffer(ID, other->ID, 
-        //                        0, 0, Specification.Width, Specification.Height, 
-        //                        0, 0, other->Specification.Width, other->Specification.Height, 
-        //                        GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+    void Framebuffer::AttachColorAttachment(u32 attachment, const Ref<Texture>& texture, u32 mip) {
+        glNamedFramebufferTexture(ID, GL_COLOR_ATTACHMENT0 + attachment, texture->ID, mip);
+    }
+
+    void Framebuffer::AttachColorAttachmentCubemap(u32 attachment, const Ref<Texture>& texture, u32 side, u32 mip) {
+        glNamedFramebufferTextureLayer(ID, GL_COLOR_ATTACHMENT0 + attachment, texture->ID, mip, side);
     }
 
     void Framebuffer::Invalidate() {
@@ -258,7 +327,7 @@ namespace Blackberry {
         glCreateFramebuffers(1, &ID);
     
         for (auto& attachment : Specification.Attachments) {
-            Ref<Texture2D> texAttachment = CreateRef<Texture2D>();
+            Ref<Texture> texAttachment = CreateRef<Texture>();
             texAttachment->Width = Specification.Width;
             texAttachment->Height = Specification.Height;
             bool createBindlessHandle = true;

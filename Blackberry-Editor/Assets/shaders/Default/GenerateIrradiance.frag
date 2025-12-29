@@ -8,8 +8,7 @@ const float PI = 3.14159265359;
 
 out vec4 o_FragColor;
 
-void main()
-{		
+void main() {		
     vec3 N = normalize(a_LocalPos);
 
     vec3 irradiance = vec3(0.0);   

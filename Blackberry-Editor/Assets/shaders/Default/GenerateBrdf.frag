@@ -49,8 +49,15 @@ vec3 ImportanceSampleGGX(vec2 Xi, vec3 N, float roughness)
 float GeometrySchlickGGX(float NdotV, float roughness)
 {
     // note that we use a different k for IBL
-    float a = roughness;
-    float k = (a * a) / 2.0;
+    // float a = roughness;
+    // float k = (a * a) / 2.0;
+    // 
+    // float nom   = NdotV;
+    // float denom = NdotV * (1.0 - k) + k;
+    // 
+    // return nom / denom;
+    float r = (roughness + 1.0);
+    float k = (r * r) / 8.0;
 
     float nom   = NdotV;
     float denom = NdotV * (1.0 - k) + k;
@@ -110,6 +117,6 @@ vec2 IntegrateBRDF(float NdotV, float roughness)
 // ----------------------------------------------------------------------------
 void main() 
 {
-    vec2 integratedBRDF = IntegrateBRDF(a_TexCoords.x, 1.0 - a_TexCoords.y);
+    vec2 integratedBRDF = IntegrateBRDF(a_TexCoords.x, a_TexCoords.y);
     o_FragColor = integratedBRDF;
 }

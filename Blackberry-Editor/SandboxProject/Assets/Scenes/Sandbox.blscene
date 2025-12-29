@@ -1,12 +1,31 @@
 Entities:
   - TagComponent:
-      UUID: 8363055567088055493
-      Name: Enviroment
-    EnviromentComponent:
-      EnviromentMap: 16970579584870424807
-      LevelOfDetail: 0
-      EnableBloom: true
-      BloomThreshold: 73
+      UUID: 8036015914084969727
+      Name: Sphere
+    TransformComponent:
+      Position: [0, 1.15, 0]
+      Rotation: [-0.5333875, -0, 0, 0.84587103]
+      Scale: [0.9999999, 1.0000001, 1.0000001]
+    MeshComponent:
+      MeshHandle: 16676790944532672824
+      MaterialHandles:
+        0: 6079583968888783653
+    RigidBodyComponent:
+      Type: Static
+      Resitution: 1
+      Friction: 1
+    SphereColliderComponent:
+      Radius: 1
+  - TagComponent:
+      UUID: 5183718714978214366
+      Name: Directional Light
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0.19081809, -0.95955384, -0.16946515, 0.118854895]
+      Scale: [0.99999917, 1.0000001, 0.999999]
+    DirectionalLightComponent:
+      Color: [1, 1, 1]
+      Intensity: 8.5
   - TagComponent:
       UUID: 3605025198173883544
       Name: Plane
@@ -25,12 +44,10 @@ Entities:
     BoxColliderComponent:
       Scale: [1, 0, 1]
   - TagComponent:
-      UUID: 5183718714978214366
-      Name: Directional Light
-    TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [-0.0016347617, -0.35689068, -0.9066922, 0.22480102]
-      Scale: [0.9999993, 0.9999998, 0.9999994]
-    DirectionalLightComponent:
-      Color: [1, 1, 1]
-      Intensity: 8.5
+      UUID: 8363055567088055493
+      Name: Enviroment
+    EnviromentComponent:
+      EnviromentMap: 16970579584870424807
+      LevelOfDetail: 0
+      EnableBloom: true
+      BloomThreshold: 73

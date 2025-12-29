@@ -7,9 +7,10 @@ namespace Blackberry {
     struct EnviromentMap {
         static Ref<EnviromentMap> Create(const FS::Path& hdri);
 
-        Ref<Texture2D> Prefilter;
-        Ref<Texture2D> Irradiance;
-        Ref<Texture2D> BrdfLUT;
+        Ref<Texture> Skybox;
+        Ref<Texture> Prefilter;
+        Ref<Texture> Irradiance;
+        Ref<Texture> BrdfLUT;
     };
 
 } // namespace Blackberry

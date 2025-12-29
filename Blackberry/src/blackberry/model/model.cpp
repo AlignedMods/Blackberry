@@ -18,8 +18,8 @@ namespace Blackberry {
         return buffer + offset;
     }
 
-    static Ref<Texture2D> GLTF_GetTexture(cgltf_texture_view& tex) {
-        if (!tex.texture) return CreateRef<Texture2D>();
+    static Ref<Texture> GLTF_GetTexture(cgltf_texture_view& tex) {
+        if (!tex.texture) return CreateRef<Texture>();
 
         cgltf_buffer_view* view = tex.texture->image->buffer_view;
         u8* data = reinterpret_cast<u8*>(view->buffer->data) + view->offset;
@@ -28,7 +28,7 @@ namespace Blackberry {
         int width, height;
         void* pixels = stbi_load_from_memory(data, size, &width, &height, nullptr, 4);
 
-        Ref<Texture2D> texture = Texture2D::Create(pixels, width, height, TextureFormat::RGBA8);
+        Ref<Texture> texture = Texture2D::Create(pixels, width, height, TextureFormat::RGBA8);
 
         return texture;
     }

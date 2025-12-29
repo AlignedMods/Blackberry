@@ -99,7 +99,7 @@ void main() {
     
     vec3 N = normal;
     vec3 V = normalize(viewPos - worldPos);
-    vec3 R = reflect(-V, N);
+    vec3 R = normalize(reflect(-V, N));
 
     vec3 F0 = vec3(0.04);
     F0 = mix(F0, albedo, metallic);
@@ -163,7 +163,6 @@ void main() {
 
     vec3 F = FresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
     
-    // vec3 ambient = vec3(0.03) * albedo * ao;
     vec3 kS = FresnelSchlick(max(dot(N, V), 0.0), F0);
     vec3 kD = 1.0 - kS;
     kD *= 1.0 - metallic;
@@ -171,19 +170,18 @@ void main() {
     vec3 irradiance = texture(u_IrradianceMap, N).rgb;
     vec3 diffuse = irradiance * albedo;
 
-    const float MAX_REFLECTION_LOD = 4.0;
+    const float MAX_REFLECTION_LOD = 7.0;
     vec3 prefilteredColor = textureLod(u_PrefilterMap, R, roughness * MAX_REFLECTION_LOD).rgb;
-    vec2 brdf = texture(u_BrdfLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
-    vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
+    // vec2 brdf = texture(u_BrdfLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
+    // vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
+    vec3 specular = prefilteredColor * F;
 
-    vec3 ambient = (diffuse + specular) * ao;
+    vec3 ambient = (kD * diffuse + specular) * ao;
 
     vec3 color = ambient + Lo;
-
-    if (color == vec3(0.0)) // mainly here for skybox support
-        discard;
     
     o_FragColor = vec4(color, 1.0);
+    // o_FragColor = vec4(texture(u_BrdfLUT, a_TexCoord).rg, 0.0, 1.0);
 }
 
 float DistributionGGX(vec3 N, vec3 H, float roughness) {

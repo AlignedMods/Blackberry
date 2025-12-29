@@ -1,105 +1,13 @@
 Entities:
   - TagComponent:
-      UUID: 15533614867228848589
-      Name: Light
+      UUID: 2170080406950159449
+      Name: Cube
     TransformComponent:
-      Position: [3, 0.5, 1]
-      Rotation: [0, 0, 0, 0]
-      Scale: [0.25, 0.25, 0.25]
+      Position: [-2, 1, -3]
+      Rotation: [0.41451883, 0.7795964, 0.41451883, 0.22040355]
+      Scale: [1, 1, 1]
     MeshComponent:
       MeshHandle: 12120187917695872185
-      MaterialHandles:
-        0: 3430606806693664817
-    RigidBodyComponent:
-      Type: Static
-      Resitution: 1
-      Friction: 1
-    BoxColliderComponent:
-      Scale: [1, 1, 1]
-    PointLightComponent:
-      Color: [0.17760617, 0.4570294, 1]
-      Radius: 10
-      Intensity: 12
-  - TagComponent:
-      UUID: 15571776755938844329
-      Name: Light
-    TransformComponent:
-      Position: [-4, 0.5, -3]
-      Rotation: [0, 0, 0, 0]
-      Scale: [0.25, 0.25, 0.25]
-    MeshComponent:
-      MeshHandle: 12120187917695872185
-      MaterialHandles:
-        0: 18012666058110698168
-    RigidBodyComponent:
-      Type: Static
-      Resitution: 1
-      Friction: 1
-    BoxColliderComponent:
-      Scale: [1, 1, 1]
-    PointLightComponent:
-      Color: [1, 0.26640928, 0.26640928]
-      Radius: 2.3
-      Intensity: 23.5
-  - TagComponent:
-      UUID: 807093834229835891
-      Name: Light
-    TransformComponent:
-      Position: [0, 0.5, 1.5]
-      Rotation: [0, 0, 0, 0]
-      Scale: [0.25, 0.25, 0.25]
-    MeshComponent:
-      MeshHandle: 12120187917695872185
-      MaterialHandles:
-        0: 18327058575313377665
-    RigidBodyComponent:
-      Type: Static
-      Resitution: 1
-      Friction: 1
-    BoxColliderComponent:
-      Scale: [1, 1, 1]
-    PointLightComponent:
-      Color: [0.92650676, 1, 0.34362936]
-      Radius: 11.8
-      Intensity: 10
-  - TagComponent:
-      UUID: 6287105399373209627
-      Name: Light
-    TransformComponent:
-      Position: [-0.8, 2.4, -1]
-      Rotation: [0, 0, 0, 0]
-      Scale: [0.25, 0.25, 0.25]
-    MeshComponent:
-      MeshHandle: 12120187917695872185
-      MaterialHandles:
-        0: 8648580271206673229
-    RigidBodyComponent:
-      Type: Static
-      Resitution: 1
-      Friction: 1
-    BoxColliderComponent:
-      Scale: [1, 1, 1]
-    PointLightComponent:
-      Color: [0.3935243, 1, 0.17760617]
-      Radius: 10
-      Intensity: 25
-  - TagComponent:
-      UUID: 9268973291978535039
-      Name: Enviroment
-    EnviromentComponent:
-      EnviromentMap: 5485797090388768424
-      LevelOfDetail: 1.361
-      EnableBloom: true
-      BloomThreshold: 3
-  - TagComponent:
-      UUID: 17545230179226520393
-      Name: Plane
-    TransformComponent:
-      Position: [0, -1, 0]
-      Rotation: [0, 0, 0, 1]
-      Scale: [12.5, 7.672499, 12.5]
-    MeshComponent:
-      MeshHandle: 14564222973131806585
       MaterialHandles:
         {}
     RigidBodyComponent:
@@ -107,23 +15,30 @@ Entities:
       Resitution: 1
       Friction: 1
     BoxColliderComponent:
-      Scale: [1, 0, 1]
+      Scale: [1, 1, 1]
   - TagComponent:
-      UUID: 3375745843521457647
-      Name: Directional Light
-    TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0.14815608, -0.8802148, -0.37077203, 0.25651467]
-      Scale: [1, 0.99999994, 1]
-    DirectionalLightComponent:
-      Color: [0.7292676, 1, 0.5096525]
-      Intensity: 4
-  - TagComponent:
-      UUID: 11762814938996227315
+      UUID: 9062945143513237737
       Name: Cube
     TransformComponent:
-      Position: [-3, 0, 0]
-      Rotation: [0, -4.4703484e-08, 0, 1]
+      Position: [0, 2.7, 4]
+      Rotation: [0.19536553, 0.039747566, 0.19536555, 0.9602524]
+      Scale: [1.25, 1.25, 1.25]
+    MeshComponent:
+      MeshHandle: 12120187917695872185
+      MaterialHandles:
+        {}
+    RigidBodyComponent:
+      Type: Static
+      Resitution: 1
+      Friction: 1
+    BoxColliderComponent:
+      Scale: [1, 1, 1]
+  - TagComponent:
+      UUID: 13320187638463258923
+      Name: Cube
+    TransformComponent:
+      Position: [2, 0, 1]
+      Rotation: [0, 0, 0, 1]
       Scale: [0.5, 0.5, 0.5]
     MeshComponent:
       MeshHandle: 12120187917695872185
@@ -153,11 +68,11 @@ Entities:
     BoxColliderComponent:
       Scale: [1, 1, 1]
   - TagComponent:
-      UUID: 13320187638463258923
+      UUID: 11762814938996227315
       Name: Cube
     TransformComponent:
-      Position: [2, 0, 1]
-      Rotation: [0, 0, 0, 1]
+      Position: [-3, 0, 0]
+      Rotation: [0, -4.4703484e-08, 0, 1]
       Scale: [0.5, 0.5, 0.5]
     MeshComponent:
       MeshHandle: 12120187917695872185
@@ -170,31 +85,24 @@ Entities:
     BoxColliderComponent:
       Scale: [1, 1, 1]
   - TagComponent:
-      UUID: 9062945143513237737
-      Name: Cube
+      UUID: 3375745843521457647
+      Name: Directional Light
     TransformComponent:
-      Position: [0, 2.7, 4]
-      Rotation: [0.19536553, 0.039747566, 0.19536555, 0.9602524]
-      Scale: [1.25, 1.25, 1.25]
-    MeshComponent:
-      MeshHandle: 12120187917695872185
-      MaterialHandles:
-        {}
-    RigidBodyComponent:
-      Type: Static
-      Resitution: 1
-      Friction: 1
-    BoxColliderComponent:
-      Scale: [1, 1, 1]
+      Position: [0, 0, 0]
+      Rotation: [0.14815608, -0.8802148, -0.37077203, 0.25651467]
+      Scale: [1, 0.99999994, 1]
+    DirectionalLightComponent:
+      Color: [1, 1, 1]
+      Intensity: 0.5
   - TagComponent:
-      UUID: 2170080406950159449
-      Name: Cube
+      UUID: 17545230179226520393
+      Name: Plane
     TransformComponent:
-      Position: [-2, 1, -3]
-      Rotation: [0.41451883, 0.7795964, 0.41451883, 0.22040355]
-      Scale: [1, 1, 1]
+      Position: [0, -1, 0]
+      Rotation: [0, 0, 0, 1]
+      Scale: [12.5, 7.672499, 12.5]
     MeshComponent:
-      MeshHandle: 12120187917695872185
+      MeshHandle: 14564222973131806585
       MaterialHandles:
         {}
     RigidBodyComponent:
@@ -202,4 +110,96 @@ Entities:
       Resitution: 1
       Friction: 1
     BoxColliderComponent:
+      Scale: [1, 0, 1]
+  - TagComponent:
+      UUID: 9268973291978535039
+      Name: Enviroment
+    EnviromentComponent:
+      EnviromentMap: 5485797090388768424
+      LevelOfDetail: 0
+      EnableBloom: true
+      BloomThreshold: 3
+  - TagComponent:
+      UUID: 6287105399373209627
+      Name: Light
+    TransformComponent:
+      Position: [-0.8, 2.4, -1]
+      Rotation: [0, 0, 0, 0]
+      Scale: [0.25, 0.25, 0.25]
+    MeshComponent:
+      MeshHandle: 12120187917695872185
+      MaterialHandles:
+        0: 8648580271206673229
+    RigidBodyComponent:
+      Type: Static
+      Resitution: 1
+      Friction: 1
+    BoxColliderComponent:
       Scale: [1, 1, 1]
+    PointLightComponent:
+      Color: [0.3935243, 1, 0.17760617]
+      Radius: 10
+      Intensity: 25
+  - TagComponent:
+      UUID: 807093834229835891
+      Name: Light
+    TransformComponent:
+      Position: [0, 0.5, 1.5]
+      Rotation: [0, 0, 0, 0]
+      Scale: [0.25, 0.25, 0.25]
+    MeshComponent:
+      MeshHandle: 12120187917695872185
+      MaterialHandles:
+        0: 18327058575313377665
+    RigidBodyComponent:
+      Type: Static
+      Resitution: 1
+      Friction: 1
+    BoxColliderComponent:
+      Scale: [1, 1, 1]
+    PointLightComponent:
+      Color: [0.92650676, 1, 0.34362936]
+      Radius: 11.8
+      Intensity: 10
+  - TagComponent:
+      UUID: 15571776755938844329
+      Name: Light
+    TransformComponent:
+      Position: [-4, 0.5, -3]
+      Rotation: [0, 0, 0, 0]
+      Scale: [0.25, 0.25, 0.25]
+    MeshComponent:
+      MeshHandle: 12120187917695872185
+      MaterialHandles:
+        0: 18012666058110698168
+    RigidBodyComponent:
+      Type: Static
+      Resitution: 1
+      Friction: 1
+    BoxColliderComponent:
+      Scale: [1, 1, 1]
+    PointLightComponent:
+      Color: [1, 0.26640928, 0.26640928]
+      Radius: 2.3
+      Intensity: 23.5
+  - TagComponent:
+      UUID: 15533614867228848589
+      Name: Light
+    TransformComponent:
+      Position: [3, 0.5, 1]
+      Rotation: [0, 0, 0, 0]
+      Scale: [0.25, 0.25, 0.25]
+    MeshComponent:
+      MeshHandle: 12120187917695872185
+      MaterialHandles:
+        0: 3430606806693664817
+    RigidBodyComponent:
+      Type: Static
+      Resitution: 1
+      Friction: 1
+    BoxColliderComponent:
+      Scale: [1, 1, 1]
+    PointLightComponent:
+      Color: [0.17760617, 0.4570294, 1]
+      Radius: 10
+      Intensity: 12

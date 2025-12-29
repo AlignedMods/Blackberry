@@ -110,6 +110,11 @@
             "Path": "Meshes/Default/Cylinder.glb",
             "Type": "Model"
         },
+        "Handle - 6079583968888783653": {
+            "Handle": 6079583968888783653,
+            "Path": "Materials/RedMetal.blmat",
+            "Type": "Material"
+        },
         "Handle - 8535543139313001771": {
             "Handle": 8535543139313001771,
             "Path": "Meshes/rubber_duck.glb",

@@ -12,6 +12,7 @@ namespace Blackberry {
         RGB8,
         RGBA8,
 
+        RG16F,
         RGB16F,
         RGBA16F
     };
@@ -43,24 +44,34 @@ namespace Blackberry {
         std::vector<u32> ActiveAttachments;
     };
 
-    struct Texture2D {
-        Texture2D() = default;
-        ~Texture2D();
+    // Base class for all textures (Texture2D, TextureCubemap, ...)
+    struct Texture {
+        virtual ~Texture() = default;
 
-        static Ref<Texture2D> Create(u32 width, u32 height);
-        static Ref<Texture2D> Create(const FS::Path& path, TextureFormat desiredFormat = TextureFormat::RGBA8);
-        static Ref<Texture2D> Create(Ref<Image> image);
-        static Ref<Texture2D> Create(void* pixels, u32 width, u32 height, TextureFormat pixelFormat, TextureFiltering filter = TextureFiltering::Linear);
-
-        void Delete();
-    
-        void* ReadPixels();
-    
         u32 ID = 0;
-        u64 BindlessHandle = 0; // for bindless textures
+        u64 BindlessHandle = 0;
         u32 Width = 0;
         u32 Height = 0;
         TextureFormat Format = TextureFormat::RGBA8;
+    };
+
+    struct Texture2D : public Texture {
+        Texture2D() = default;
+        ~Texture2D();
+
+        static Ref<Texture> Create(u32 width, u32 height);
+        static Ref<Texture> Create(const FS::Path& path, TextureFormat desiredFormat = TextureFormat::RGBA8);
+        static Ref<Texture> Create(Ref<Image> image);
+        static Ref<Texture> Create(void* pixels, u32 width, u32 height, TextureFormat pixelFormat, TextureFiltering filter = TextureFiltering::Linear);
+    
+        void* ReadPixels();
+    };
+
+    struct TextureCubemap : public Texture {
+        TextureCubemap() = default;
+        ~TextureCubemap();
+
+        static Ref<Texture> Create(u32 width, u32 height, TextureFormat desiredFormat = TextureFormat::RGBA8);
     };
     
     struct Framebuffer {
@@ -78,10 +89,13 @@ namespace Blackberry {
         void* ReadPixels(u32 attachment, BlVec2 position, BlVec2 dimensions, u32 size);
 
         void BlitDepthBuffer(Ref<Framebuffer> other);
+
+        void AttachColorAttachment(u32 attachment, const Ref<Texture>& texture, u32 mip);
+        void AttachColorAttachmentCubemap(u32 attachment, const Ref<Texture>& texture, u32 side, u32 mip);
     
         u32 ID = 0;
         FramebufferSpecification Specification;
-        std::vector<Ref<Texture2D>> Attachments;
+        std::vector<Ref<Texture>> Attachments;
 
     private:
         void Invalidate();

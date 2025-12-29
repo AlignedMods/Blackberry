@@ -1307,7 +1307,7 @@ namespace BlackberryEditor {
 
                 ImGui::Unindent();
 
-                ImGui::SliderFloat("Level Of Detail", &env.LevelOfDetail, 0.0f, 4.0f);
+                ImGui::SliderFloat("Level Of Detail", &env.LevelOfDetail, 0.0f, 7.0f);
 
                 ImGui::Checkbox("Enable Bloom", &env.EnableBloom);
                 ImGui::DragFloat("Bloom Threshold", &env.BloomThreshold);

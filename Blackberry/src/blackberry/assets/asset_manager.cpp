@@ -61,7 +61,7 @@ namespace Blackberry {
 
     void AssetManager::LoadTextureFromPath(const FS::Path& path) {
         FS::Path full = Project::GetAssetPath(path);
-        Ref<Texture2D> tex = Texture2D::Create(full);
+        Ref<Texture> tex = Texture2D::Create(full);
         AddAsset({path, AssetType::Texture, tex});
     }
 

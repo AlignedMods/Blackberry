@@ -65,19 +65,19 @@ vec3 ImportanceSampleGGX(vec2 Xi, vec3 N, float roughness)
 
 void main() {
 	vec3 N = normalize(a_LocalPos);
-
+	
 	vec3 R = N;
 	vec3 V = R;
-
+	
 	const uint SAMPLE_COUNT = 1024u;
 	vec3 prefilterColor = vec3(0.0);
 	float totalWeight = 0.0;
-
+	
 	for (uint i = 0; i < SAMPLE_COUNT; i++) {
 		vec2 Xi = Hammersley(i, SAMPLE_COUNT);
 		vec3 H = ImportanceSampleGGX(Xi, N, u_Roughness);
 		vec3 L = normalize(2.0 * dot(V, H) * H - V);
-
+	
 		float NdotL = max(dot(N, L), 0.0);
         if(NdotL > 0.0)
         {
@@ -86,19 +86,20 @@ void main() {
             float NdotH = max(dot(N, H), 0.0);
             float HdotV = max(dot(H, V), 0.0);
             float pdf = D * NdotH / (4.0 * HdotV) + 0.0001; 
-
-            float resolution = 512.0; // resolution of source cubemap (per face)
+	
+            float resolution = 1024.0; // resolution of source cubemap (per face)
             float saTexel  = 4.0 * PI / (6.0 * u_Roughness * resolution);
             float saSample = 1.0 / (float(SAMPLE_COUNT) * pdf + 0.0001);
-
+	
             float mipLevel = u_Roughness == 0.0 ? 0.0 : 0.5 * log2(saSample / saTexel); 
             
             prefilterColor += textureLod(u_EnvironmentMap, L, mipLevel).rgb * NdotL;
             totalWeight      += NdotL;
         }
 	}
-
+	
 	prefilterColor = prefilterColor / totalWeight;
-
+	
 	o_FragColor = vec4(prefilterColor, 1.0);
+	// o_FragColor = vec4(1.0);
 }

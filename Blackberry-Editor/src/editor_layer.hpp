@@ -96,15 +96,15 @@ namespace BlackberryEditor {
         bool m_DirtyCurrentDirectoryIterator = true;
     
         // icons
-        Blackberry::Ref<Blackberry::Texture2D> m_DirectoryIcon;
-        Blackberry::Ref<Blackberry::Texture2D> m_FileIcon;
-        Blackberry::Ref<Blackberry::Texture2D> m_BackDirectoryIcon;
+        Blackberry::Ref<Blackberry::Texture> m_DirectoryIcon;
+        Blackberry::Ref<Blackberry::Texture> m_FileIcon;
+        Blackberry::Ref<Blackberry::Texture> m_BackDirectoryIcon;
 
-        Blackberry::Ref<Blackberry::Texture2D> m_PlayIcon;
-        Blackberry::Ref<Blackberry::Texture2D> m_SimulateIcon;
-        Blackberry::Ref<Blackberry::Texture2D> m_StopIcon;
-        Blackberry::Ref<Blackberry::Texture2D> m_PauseIcon;
-        Blackberry::Ref<Blackberry::Texture2D> m_ResumeIcon;
+        Blackberry::Ref<Blackberry::Texture> m_PlayIcon;
+        Blackberry::Ref<Blackberry::Texture> m_SimulateIcon;
+        Blackberry::Ref<Blackberry::Texture> m_StopIcon;
+        Blackberry::Ref<Blackberry::Texture> m_PauseIcon;
+        Blackberry::Ref<Blackberry::Texture> m_ResumeIcon;
 
         Blackberry::Ref<Blackberry::Framebuffer> m_SavedGBuffer;
     

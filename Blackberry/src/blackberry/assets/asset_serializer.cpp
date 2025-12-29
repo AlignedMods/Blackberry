@@ -44,7 +44,7 @@ namespace Blackberry {
             asset.FilePath = assetPath;
             
             if (asset.Type == AssetType::Texture) {
-                Ref<Texture2D> tex = Texture2D::Create(Project::GetAssetPath(assetPath));
+                Ref<Texture> tex = Texture2D::Create(Project::GetAssetPath(assetPath));
                 asset.Data = tex;
             } else if (asset.Type == AssetType::Font) {
                 Font font = Font::Create(Project::GetAssetPath(assetPath));

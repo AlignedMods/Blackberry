@@ -51,9 +51,9 @@ namespace Blackberry {
 
         // m_State.EnviromentMap = EnviromentMap::Create("Assets/Textures/Skybox.hdr");
         m_State.DefaultEnviromentMap = CreateRef<EnviromentMap>();
-        m_State.DefaultEnviromentMap->Prefilter = CreateRef<Texture2D>();
-        m_State.DefaultEnviromentMap->Irradiance = CreateRef<Texture2D>();
-        m_State.DefaultEnviromentMap->BrdfLUT = CreateRef<Texture2D>();
+        m_State.DefaultEnviromentMap->Prefilter = CreateRef<Texture>();
+        m_State.DefaultEnviromentMap->Irradiance = CreateRef<Texture>();
+        m_State.DefaultEnviromentMap->BrdfLUT = CreateRef<Texture>();
         m_State.CurrentEnviromentMap = m_State.DefaultEnviromentMap;
 
         m_State.TransformBuffer = ShaderStorageBuffer::Create(0);
@@ -429,7 +429,7 @@ namespace Blackberry {
         api.UnBindTextureCubemap();
         
         // Copy depth from geometry pass
-        // m_State.GBuffer->BlitDepthBuffer(m_State.PBROutput);
+        m_State.GBuffer->BlitDepthBuffer(m_State.PBROutput);
         
         api.SetDepthMask(false);
         api.DisableCapability(RendererCapability::FaceCull);
@@ -446,7 +446,7 @@ namespace Blackberry {
             api.BindTextureCubemap(m_State.CurrentEnviromentMap->Prefilter, 0);
             m_State.SkyboxShader->SetFloat("u_LOD", m_State.EnviromentMapLOD);
         } else {
-            api.BindTextureCubemap(m_State.DefaultEnviromentMap->Prefilter, 0);
+            api.BindTextureCubemap(m_State.DefaultEnviromentMap->Skybox, 0);
             m_State.SkyboxShader->SetFloat("u_LOD", 0.0f);
         }
         
