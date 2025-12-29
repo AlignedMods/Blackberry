@@ -34,8 +34,8 @@ namespace Blackberry {
         void OnRenderEditor(Ref<Framebuffer> target, SceneCamera& camera);
         void OnRenderRuntime(Ref<Framebuffer> target);
 
-        EntityID CreateEntity(const std::string& name);
-        EntityID CreateEntityWithUUID(u64 uuid);
+        EntityID CreateEntity(const std::string& name, u64 parent = 0);
+        EntityID CreateEntityWithUUID(u64 uuid, u64 parent = 0);
 
         void DuplicateEntity(EntityID entity);
         void CopyEntity(EntityID entity);
@@ -46,6 +46,7 @@ namespace Blackberry {
         bool IsPaused() const;
 
         EntityID GetEntity(const std::string& name);
+        EntityID GetEntityFromUUID(u64 uuid);
         std::vector<EntityID> GetEntities();
 
         SceneRenderer* GetSceneRenderer();

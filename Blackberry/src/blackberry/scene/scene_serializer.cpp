@@ -42,6 +42,18 @@ namespace Blackberry {
             out << YAML::EndMap; // TagComponent
         }
 
+        if (e.HasComponent<RelationshipComponent>()) {
+            auto& rel = e.GetComponent<RelationshipComponent>();
+
+            out << YAML::Key << "RelationshipComponent";
+            out << YAML::BeginMap; // RelationshipComponent
+
+            out << YAML::Key << "Parent" << YAML::Value << rel.Parent;
+            out << YAML::Key << "Children" << YAML::Value << rel.Children;
+
+            out << YAML::EndMap; // RelationshipComponent
+        }
+
         if (e.HasComponent<TransformComponent>()) {
             auto& transform = e.GetComponent<TransformComponent>();
 
@@ -198,6 +210,14 @@ namespace Blackberry {
                 e = Entity(m_Scene->CreateEntityWithUUID(yamlTag["UUID"].as<u64>()), m_Scene);
                 TagComponent& tag = e.GetComponent<TagComponent>();
                 tag.Name = yamlTag["Name"].as<std::string>();
+            }
+
+            if (entity["RelationshipComponent"]) {
+                auto yamlRel = entity["RelationshipComponent"];
+
+                RelationshipComponent& rel = e.GetComponent<RelationshipComponent>();
+                rel.Parent = yamlRel["Parent"].as<u64>();
+                rel.Children = yamlRel["Children"].as<std::vector<u64>>();
             }
 
             if (entity["TransformComponent"]) {

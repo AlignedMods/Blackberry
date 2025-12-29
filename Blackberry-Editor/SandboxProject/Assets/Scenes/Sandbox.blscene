@@ -1,24 +1,53 @@
 Entities:
   - TagComponent:
-      UUID: 8036015914084969727
+      UUID: 6432124494924568923
       Name: Sphere
+    RelationshipComponent:
+      Parent: 8036015914084969727
+      Children:
+        []
     TransformComponent:
-      Position: [0, 1.15, 0]
-      Rotation: [-0.5333875, -0, 0, 0.84587103]
+      Position: [0, 4.9500003, 0]
+      Rotation: [0, 0, 0, 1]
       Scale: [0.9999999, 1.0000001, 1.0000001]
     MeshComponent:
       MeshHandle: 16676790944532672824
       MaterialHandles:
-        0: 6079583968888783653
+        0: 7296462141333892632
     RigidBodyComponent:
-      Type: Static
-      Resitution: 1
+      Type: Dynamic
+      Resitution: 0.6
+      Friction: 1
+    SphereColliderComponent:
+      Radius: 1
+  - TagComponent:
+      UUID: 8036015914084969727
+      Name: Sphere
+    RelationshipComponent:
+      Parent: 0
+      Children:
+        - 6432124494924568923
+    TransformComponent:
+      Position: [3, 4.9500003, 0]
+      Rotation: [0, 0, 0, 1]
+      Scale: [0.9999999, 1.0000001, 1.0000001]
+    MeshComponent:
+      MeshHandle: 16676790944532672824
+      MaterialHandles:
+        0: 9176171662654696309
+    RigidBodyComponent:
+      Type: Dynamic
+      Resitution: 0.6
       Friction: 1
     SphereColliderComponent:
       Radius: 1
   - TagComponent:
       UUID: 5183718714978214366
       Name: Directional Light
+    RelationshipComponent:
+      Parent: 0
+      Children:
+        []
     TransformComponent:
       Position: [0, 0, 0]
       Rotation: [0.19081809, -0.95955384, -0.16946515, 0.118854895]
@@ -29,6 +58,10 @@ Entities:
   - TagComponent:
       UUID: 3605025198173883544
       Name: Plane
+    RelationshipComponent:
+      Parent: 0
+      Children:
+        []
     TransformComponent:
       Position: [0, 0, 0]
       Rotation: [0, 0, 0, 1]
@@ -39,15 +72,19 @@ Entities:
         0: 0
     RigidBodyComponent:
       Type: Static
-      Resitution: 1
+      Resitution: 0.3
       Friction: 1
     BoxColliderComponent:
       Scale: [1, 0, 1]
   - TagComponent:
       UUID: 8363055567088055493
       Name: Enviroment
+    RelationshipComponent:
+      Parent: 0
+      Children:
+        - 4
     EnviromentComponent:
       EnviromentMap: 16970579584870424807
       LevelOfDetail: 0
       EnableBloom: true
-      BloomThreshold: 73
+      BloomThreshold: 3

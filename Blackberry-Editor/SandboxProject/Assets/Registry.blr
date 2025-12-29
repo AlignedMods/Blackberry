@@ -45,36 +45,6 @@
             "Path": "EnviromentMaps/BlueSky.hdr",
             "Type": "Enviroment Map"
         },
-        "Handle - 18012666058110698168": {
-            "Handle": 18012666058110698168,
-            "Path": "Materials/RedEmission.blmat",
-            "Type": "Material"
-        },
-        "Handle - 18327058575313377665": {
-            "Handle": 18327058575313377665,
-            "Path": "Materials/WhiteEmission.blmat",
-            "Type": "Material"
-        },
-        "Handle - 21128899974857072": {
-            "Handle": 21128899974857072,
-            "Path": "Textures/Container.png",
-            "Type": "Texture"
-        },
-        "Handle - 2870631290784515890": {
-            "Handle": 2870631290784515890,
-            "Path": "Materials/Red-Plastic.blmat",
-            "Type": "Material"
-        },
-        "Handle - 3152177466728395767": {
-            "Handle": 3152177466728395767,
-            "Path": "Textures/ContainerSpecular.png",
-            "Type": "Texture"
-        },
-        "Handle - 3430606806693664817": {
-            "Handle": 3430606806693664817,
-            "Path": "Materials/BlueEmission.blmat",
-            "Type": "Material"
-        },
         "Handle - 3506026168109084076": {
             "Handle": 3506026168109084076,
             "Path": "Meshes/House.glb",
@@ -100,30 +70,20 @@
             "Path": "Fonts/creato_display/CreatoDisplay-Medium.otf",
             "Type": "Font"
         },
-        "Handle - 581071103399731738": {
-            "Handle": 581071103399731738,
-            "Path": "Materials/Rusty-Metal.blmat",
-            "Type": "Material"
-        },
         "Handle - 6020665715492184391": {
             "Handle": 6020665715492184391,
             "Path": "Meshes/Default/Cylinder.glb",
             "Type": "Model"
         },
-        "Handle - 6079583968888783653": {
-            "Handle": 6079583968888783653,
-            "Path": "Materials/RedMetal.blmat",
+        "Handle - 761659761808722940": {
+            "Handle": 761659761808722940,
+            "Path": "Materials/Metal/Gold.blmat",
             "Type": "Material"
         },
         "Handle - 8535543139313001771": {
             "Handle": 8535543139313001771,
             "Path": "Meshes/rubber_duck.glb",
             "Type": "Model"
-        },
-        "Handle - 8648580271206673229": {
-            "Handle": 8648580271206673229,
-            "Path": "Materials/GreenEmission.blmat",
-            "Type": "Material"
         },
         "Handle - 9023906316994206417": {
             "Handle": 9023906316994206417,
@@ -134,6 +94,11 @@
             "Handle": 9223372036854775808,
             "Path": "Scenes/Sandbox.blscene",
             "Type": "Scene"
+        },
+        "Handle - 9704321289475970708": {
+            "Handle": 9704321289475970708,
+            "Path": "Materials/Plastic/Red.blmat",
+            "Type": "Material"
         }
     }
 }

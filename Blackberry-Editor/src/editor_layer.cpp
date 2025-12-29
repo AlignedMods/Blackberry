@@ -983,6 +983,26 @@ namespace BlackberryEditor {
                 }
             }
 
+            if (ImGui::BeginDragDropTarget()) {
+                const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EXPLORER_ENTITY_DRAG_DROP");
+
+                if (payload) {
+                    u64 uuid = *reinterpret_cast<u64*>(payload->Data);
+
+                    auto& rel = entity.GetComponent<RelationshipComponent>();
+                    Entity e = Entity(m_CurrentScene->GetEntityFromUUID(uuid), m_CurrentScene);
+                    
+                    e.GetComponent<RelationshipComponent>().Parent = entity.GetComponent<TagComponent>().UUID;
+                    rel.Children.push_back(uuid);
+                }
+            }
+
+            if (ImGui::BeginDragDropSource()) {
+                ImGui::SetDragDropPayload("EXPLORER_ENTITY_DRAG_DROP", &entity.GetComponent<TagComponent>().UUID, sizeof(u64));
+
+                ImGui::EndDragDropSource();
+            }
+
             if (ImGui::BeginPopupContextItem("EntityPopup")) {
                 if (ImGui::MenuItem("Delete Entity")) {
                     m_CurrentScene->DestroyEntity(entity.GetComponent<TagComponent>().UUID);
@@ -1041,11 +1061,24 @@ namespace BlackberryEditor {
 
             ImGui::Text("Name: "); ImGui::SameLine();
             ImGui::InputText("##EntityName", &tag.Name);
-            ImGui::TextDisabled("UUID: %llu", tag.UUID);
+            ImGui::TextDisabled("UUID: %llu", tag.UUID); ImGui::SameLine();
+            ImGui::TextDisabled("EntityID: %u", entity.ID);
 
             ImGui::SeparatorText("Components: ");
 
-            DrawComponent<TransformComponent>("Transform2D", entity, [](TransformComponent& transform) {
+            DrawComponent<RelationshipComponent>("Relationship", entity, [&](RelationshipComponent& rel) {
+                if (ImGui::InputScalar("Parent", ImGuiDataType_U64, &rel.Parent)) {
+                    if (rel.Parent != 0) {
+                        auto e = Entity(m_CurrentScene->GetEntityFromUUID(rel.Parent), m_CurrentScene);
+
+                        u64 uuid = entity.GetComponent<TagComponent>().UUID;
+
+                        e.GetComponent<RelationshipComponent>().Children.push_back(uuid);
+                    }
+                }
+            });
+
+            DrawComponent<TransformComponent>("Transform", entity, [](TransformComponent& transform) {
                 DrawVec3Control("Position: ", &transform.Position);
                 ImGui::Separator();
 

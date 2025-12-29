@@ -32,6 +32,11 @@ namespace Blackberry {
         u64 UUID = 0;
     };
 
+    struct RelationshipComponent {
+        u64 Parent = 0;
+        std::vector<u64> Children;
+    };
+
     struct TransformComponent {
         BlVec3 Position;
         BlQuat Rotation = BlQuat(1.0f, 0.0f, 0.0f, 0.0f);

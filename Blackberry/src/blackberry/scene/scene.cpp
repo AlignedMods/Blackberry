@@ -155,9 +155,9 @@ namespace Blackberry {
         m_Renderer->Render(this);
     }
 
-    EntityID Scene::CreateEntity(const std::string& name) {
+    EntityID Scene::CreateEntity(const std::string& name, u64 parent) {
         u64 id = UUID();
-        CreateEntityWithUUID(id);
+        CreateEntityWithUUID(id, parent);
         m_NamedEntityMap[name] = id;
 
         TagComponent& tag = m_ECS->GetComponent<TagComponent>(m_EntityMap.at(id));
@@ -166,10 +166,17 @@ namespace Blackberry {
         return m_EntityMap.at(id);
     }
 
-    EntityID Scene::CreateEntityWithUUID(u64 uuid) {
+    EntityID Scene::CreateEntityWithUUID(u64 uuid, u64 parent) {
         m_EntityMap[uuid] = m_ECS->CreateEntity();
 
         m_ECS->AddComponent<TagComponent>(m_EntityMap.at(uuid), { "", uuid });
+        m_ECS->AddComponent<RelationshipComponent>(m_EntityMap.at(uuid), { parent, {} });
+
+        // Add a child to the parent component
+        if (parent != 0) {
+            RelationshipComponent& rel = m_ECS->GetComponent<RelationshipComponent>(static_cast<EntityID>(m_EntityMap.at(parent)));
+            rel.Children.push_back(static_cast<u32>(uuid));
+        }
 
         return m_EntityMap.at(uuid);
     }
@@ -206,6 +213,10 @@ namespace Blackberry {
         }
 
         return m_EntityMap.at(m_NamedEntityMap.at(name));
+    }
+
+    EntityID Scene::GetEntityFromUUID(u64 uuid) {
+        return m_EntityMap.at(uuid);
     }
 
     std::vector<EntityID> Scene::GetEntities() {
