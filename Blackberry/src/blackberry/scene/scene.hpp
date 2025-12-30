@@ -34,8 +34,13 @@ namespace Blackberry {
         void OnRenderEditor(Ref<Framebuffer> target, SceneCamera& camera);
         void OnRenderRuntime(Ref<Framebuffer> target);
 
-        EntityID CreateEntity(const std::string& name, u64 parent = 0);
-        EntityID CreateEntityWithUUID(u64 uuid, u64 parent = 0);
+        EntityID CreateEntity(const std::string& name);
+        EntityID CreateEntityWithUUID(u64 uuid);
+
+        void SetEntityParent(u64 entity, u64 parent);
+        void DetachEntity(u64 uuid);
+
+        void FinishEntityEdit(u64 entity);
 
         void DuplicateEntity(EntityID entity);
         void CopyEntity(EntityID entity);
@@ -49,13 +54,21 @@ namespace Blackberry {
         EntityID GetEntityFromUUID(u64 uuid);
         std::vector<EntityID> GetEntities();
 
+        // NOTE: This gets ALL of the parent's transforms, not just one
+        TransformComponent GetEntityParentTransform(EntityID e);
+        TransformComponent GetEntityTransform(EntityID e);
+
+        ECS* GetECS();
         SceneRenderer* GetSceneRenderer();
+
+        std::vector<u64>& GetRootEntities();
 
     private:
         ECS* m_ECS = nullptr;
         PhysicsEngine* m_PhysicsWorld = nullptr;
         SceneRenderer* m_Renderer = nullptr;
         std::unordered_map<u64, EntityID> m_EntityMap;
+        std::vector<u64> m_RootEntities;
         std::unordered_map<std::string, u64> m_NamedEntityMap;
 
         const f32 m_Gravity = 9.8f;

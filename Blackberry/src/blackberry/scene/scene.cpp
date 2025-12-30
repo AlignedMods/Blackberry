@@ -17,7 +17,7 @@ extern "C" {
 namespace Blackberry {
 
     Scene::Scene()
-        : m_ECS(new ECS), m_PhysicsWorld(new PhysicsEngine), m_Renderer(new SceneRenderer) {
+        : m_ECS(new ECS), m_PhysicsWorld(new PhysicsEngine), m_Renderer(new SceneRenderer(this)) {
         BL_CORE_TRACE("New scene created ({})", reinterpret_cast<void*>(this));
     }
 
@@ -155,9 +155,9 @@ namespace Blackberry {
         m_Renderer->Render(this);
     }
 
-    EntityID Scene::CreateEntity(const std::string& name, u64 parent) {
+    EntityID Scene::CreateEntity(const std::string& name) {
         u64 id = UUID();
-        CreateEntityWithUUID(id, parent);
+        CreateEntityWithUUID(id);
         m_NamedEntityMap[name] = id;
 
         TagComponent& tag = m_ECS->GetComponent<TagComponent>(m_EntityMap.at(id));
@@ -166,19 +166,71 @@ namespace Blackberry {
         return m_EntityMap.at(id);
     }
 
-    EntityID Scene::CreateEntityWithUUID(u64 uuid, u64 parent) {
+    EntityID Scene::CreateEntityWithUUID(u64 uuid) {
         m_EntityMap[uuid] = m_ECS->CreateEntity();
 
         m_ECS->AddComponent<TagComponent>(m_EntityMap.at(uuid), { "", uuid });
-        m_ECS->AddComponent<RelationshipComponent>(m_EntityMap.at(uuid), { parent, {} });
-
-        // Add a child to the parent component
-        if (parent != 0) {
-            RelationshipComponent& rel = m_ECS->GetComponent<RelationshipComponent>(static_cast<EntityID>(m_EntityMap.at(parent)));
-            rel.Children.push_back(static_cast<u32>(uuid));
-        }
+        m_ECS->AddComponent<RelationshipComponent>(m_EntityMap.at(uuid), {});
 
         return m_EntityMap.at(uuid);
+    }
+
+    void Scene::SetEntityParent(u64 entity, u64 parent) {
+        DetachEntity(entity);
+
+        RelationshipComponent& rel = m_ECS->GetComponent<RelationshipComponent>(m_EntityMap.at(entity));
+        rel.Parent = parent;
+
+        if (parent != 0) {
+            auto& pRel = m_ECS->GetComponent<RelationshipComponent>(m_EntityMap.at(parent));
+
+            u64 oldFirst = pRel.FirstChild;
+            pRel.FirstChild = entity;
+
+            rel.NextSibling = oldFirst;
+            rel.PrevSibling = 0;
+
+            if (oldFirst != 0) {
+                auto& fRel = m_ECS->GetComponent<RelationshipComponent>(m_EntityMap.at(oldFirst));
+                fRel.PrevSibling = entity;
+            }
+        }
+    }
+
+    void Scene::DetachEntity(u64 uuid) {
+        auto& rel = m_ECS->GetComponent<RelationshipComponent>(m_EntityMap.at(uuid));
+
+        if (rel.Parent != 0) {
+            auto& pRel = m_ECS->GetComponent<RelationshipComponent>(m_EntityMap.at(rel.Parent));
+
+            if (pRel.FirstChild == uuid) {
+                pRel.FirstChild = rel.NextSibling;
+            }
+        }
+
+        if (rel.PrevSibling != 0) {
+            auto& psRel = m_ECS->GetComponent<RelationshipComponent>(m_EntityMap.at(rel.PrevSibling));
+
+            psRel.NextSibling = rel.NextSibling;
+        }
+
+        if (rel.NextSibling != 0) {
+            auto& nsRel = m_ECS->GetComponent<RelationshipComponent>(m_EntityMap.at(rel.NextSibling));
+
+            nsRel.PrevSibling = rel.PrevSibling;
+        }
+
+        rel.Parent = 0;
+        rel.PrevSibling = 0;
+        rel.NextSibling = 0;
+    }
+
+    void Scene::FinishEntityEdit(u64 entity) {
+        auto& rel = m_ECS->GetComponent<RelationshipComponent>(m_EntityMap.at(entity));
+
+        if (rel.Parent == 0) {
+            m_RootEntities.push_back(entity);
+        }
     }
 
     void Scene::DuplicateEntity(EntityID entity) {
@@ -223,8 +275,45 @@ namespace Blackberry {
         return m_ECS->GetAllEntities();
     }
 
+    TransformComponent Scene::GetEntityParentTransform(EntityID e) {
+        TransformComponent transform;
+
+        RelationshipComponent rel = m_ECS->GetComponent<RelationshipComponent>(e);
+
+        // We loop over all of the parents and add their transforms
+        while (rel.Parent) {
+            Entity parent(GetEntityFromUUID(rel.Parent), this);
+
+            if (parent.HasComponent<TransformComponent>()) {
+                auto& parentTransform = parent.GetComponent<TransformComponent>();
+                transform.Position += parentTransform.Position;
+            }
+
+            rel = parent.GetComponent<RelationshipComponent>();
+        }
+
+        return transform;
+    }
+
+    TransformComponent Scene::GetEntityTransform(EntityID e) {
+        BL_ASSERT(m_ECS->HasComponent<TransformComponent>(e), "Entity does not contain transform!");
+
+        TransformComponent transform = m_ECS->GetComponent<TransformComponent>(e);
+        transform.Position += GetEntityParentTransform(e).Position;
+
+        return transform;
+    }
+
+    ECS* Scene::GetECS() {
+        return m_ECS;
+    }
+
     SceneRenderer* Scene::GetSceneRenderer() {
         return m_Renderer;
+    }
+
+    std::vector<u64>& Scene::GetRootEntities() {
+        return m_RootEntities;
     }
 
 } // namespace Blackberry

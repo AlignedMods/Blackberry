@@ -49,7 +49,9 @@ namespace Blackberry {
             out << YAML::BeginMap; // RelationshipComponent
 
             out << YAML::Key << "Parent" << YAML::Value << rel.Parent;
-            out << YAML::Key << "Children" << YAML::Value << rel.Children;
+            out << YAML::Key << "FirstChild" << YAML::Value << rel.FirstChild;
+            out << YAML::Key << "NextSibling" << YAML::Value << rel.NextSibling;
+            out << YAML::Key << "PrevSibling" << YAML::Value << rel.PrevSibling;
 
             out << YAML::EndMap; // RelationshipComponent
         }
@@ -203,21 +205,29 @@ namespace Blackberry {
         for (auto entity : entities) {
             Entity e;
 
-            // Still hate how this works
             if (entity["TagComponent"]) {
                 auto yamlTag = entity["TagComponent"];
 
                 e = Entity(m_Scene->CreateEntityWithUUID(yamlTag["UUID"].as<u64>()), m_Scene);
-                TagComponent& tag = e.GetComponent<TagComponent>();
+                auto& tag = e.GetComponent<TagComponent>();
                 tag.Name = yamlTag["Name"].as<std::string>();
             }
 
             if (entity["RelationshipComponent"]) {
                 auto yamlRel = entity["RelationshipComponent"];
 
-                RelationshipComponent& rel = e.GetComponent<RelationshipComponent>();
+                auto& rel = e.GetComponent<RelationshipComponent>();
                 rel.Parent = yamlRel["Parent"].as<u64>();
-                rel.Children = yamlRel["Children"].as<std::vector<u64>>();
+                rel.FirstChild = yamlRel["FirstChild"].as<u64>();
+                rel.NextSibling = yamlRel["NextSibling"].as<u64>();
+                rel.PrevSibling = yamlRel["PrevSibling"].as<u64>();
+            }
+
+            if (entity["TagComponent"]) {
+                auto yamlTag = entity["TagComponent"];
+
+                auto& tag = e.GetComponent<TagComponent>();
+                tag.Name = yamlTag["Name"].as<std::string>();
             }
 
             if (entity["TransformComponent"]) {
@@ -314,6 +324,8 @@ namespace Blackberry {
 
                 e.AddComponent<EnviromentComponent>(env);
             }
+
+            m_Scene->FinishEntityEdit(e.GetComponent<TagComponent>().UUID);
         }
     }
 

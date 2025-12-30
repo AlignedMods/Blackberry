@@ -34,11 +34,13 @@ namespace Blackberry {
 
     struct RelationshipComponent {
         u64 Parent = 0;
-        std::vector<u64> Children;
+        u64 FirstChild = 0;
+        u64 NextSibling = 0;
+        u64 PrevSibling = 0;
     };
 
     struct TransformComponent {
-        BlVec3 Position;
+        BlVec3 Position = BlVec3(0.0f);
         BlQuat Rotation = BlQuat(1.0f, 0.0f, 0.0f, 0.0f);
         BlVec3 Scale = BlVec3(1.0f);
 

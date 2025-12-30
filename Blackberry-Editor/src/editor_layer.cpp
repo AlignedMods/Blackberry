@@ -961,69 +961,76 @@ namespace BlackberryEditor {
             ImGui::EndPopup();
         };
         
-        for (auto id : m_CurrentScene->GetEntities()) {
-            ImGui::PushID(static_cast<u32>(id));
-    
-            Entity entity(id, m_CurrentScene);
+        struct EntityHierarchyData {
+            u64 UUID = 0;
+            u32 Depth = 0;
+        };
 
-            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(16, 0));
+        std::vector<EntityHierarchyData> entities;
 
-            if (m_SelectedEntity == id) {
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.26f, 0.59f, 0.98f, 0.4f));
-                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.26f, 0.59f, 0.98f, 0.7f));
-                ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.26f, 0.59f, 0.98f, 1.0f));
-                
-                ImGui::Button(entity.GetComponent<TagComponent>().Name.c_str(), ImVec2(ImGui::GetContentRegionAvail().x - 32.0f, 0));
-                
-                ImGui::PopStyleColor(3);
-            } else if (entity.HasComponent<TagComponent>()) {
-                if (ImGui::Button(entity.GetComponent<TagComponent>().Name.c_str(), ImVec2(ImGui::GetContentRegionAvail().x - 32.0f, 0))) {
-                    m_IsEntitySelected = true;
-                    m_SelectedEntity = id;
-                }
+        BL_CORE_INFO("-----------------------");
+        std::function<void(u64, u32)> traverse = [&](u64 entityUUID, u32 depth) {
+            Entity e(m_CurrentScene->GetEntityFromUUID(entityUUID), m_CurrentScene);
+            auto& rel = e.GetComponent<RelationshipComponent>();
+
+            BL_CORE_INFO("Entity: {}", entityUUID);
+            entities.push_back({entityUUID, depth});
+
+            u64 child = rel.FirstChild;
+            while (child != 0) {
+                Entity childEntity = Entity(m_CurrentScene->GetEntityFromUUID(child), m_CurrentScene);
+                auto& childRel = childEntity.GetComponent<RelationshipComponent>();
+
+                traverse(child, depth + 1);
+
+                child = childRel.NextSibling;
+            }
+        };
+
+        auto& rootEntities = m_CurrentScene->GetRootEntities();
+
+        for (u64 uuid : rootEntities) {
+            traverse(uuid, 0);
+        }
+
+        for (const auto& data : entities) {
+            Entity e(m_CurrentScene->GetEntityFromUUID(data.UUID), m_CurrentScene);
+
+            ImGui::PushID(static_cast<int>(e.ID));
+
+            if (data.Depth > 0) {  
+                ImGui::Indent(data.Depth * 20.0f);
+            }
+
+            std::string name = fmt::format("{}, {}", e.GetComponent<TagComponent>().Name, data.Depth);
+            if (ImGui::Button(name.c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0.0f))) {
+                m_SelectedEntity = e.ID;
+                m_IsEntitySelected = true;
+            }
+
+            if (ImGui::BeginDragDropSource()) {
+                ImGui::SetDragDropPayload("EXPLORER_ENTITY_DRAG_DROP", &data.UUID, sizeof(data.UUID));
+
+                ImGui::EndDragDropSource();
             }
 
             if (ImGui::BeginDragDropTarget()) {
                 const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EXPLORER_ENTITY_DRAG_DROP");
 
                 if (payload) {
-                    u64 uuid = *reinterpret_cast<u64*>(payload->Data);
+                    u64 childUUID = *reinterpret_cast<u64*>(payload->Data);
 
-                    auto& rel = entity.GetComponent<RelationshipComponent>();
-                    Entity e = Entity(m_CurrentScene->GetEntityFromUUID(uuid), m_CurrentScene);
-                    
-                    e.GetComponent<RelationshipComponent>().Parent = entity.GetComponent<TagComponent>().UUID;
-                    rel.Children.push_back(uuid);
-                }
-            }
-
-            if (ImGui::BeginDragDropSource()) {
-                ImGui::SetDragDropPayload("EXPLORER_ENTITY_DRAG_DROP", &entity.GetComponent<TagComponent>().UUID, sizeof(u64));
-
-                ImGui::EndDragDropSource();
-            }
-
-            if (ImGui::BeginPopupContextItem("EntityPopup")) {
-                if (ImGui::MenuItem("Delete Entity")) {
-                    m_CurrentScene->DestroyEntity(entity.GetComponent<TagComponent>().UUID);
-
-                    if (m_SelectedEntity == id) {
-                        m_IsEntitySelected = false;
-                        m_SelectedEntity = entt::null;
-                    }
+                    m_CurrentScene->SetEntityParent(childUUID, data.UUID);
+                    m_CurrentScene->FinishEntityEdit(childUUID);
                 }
 
-                if (ImGui::MenuItem("Duplicate Entity")) {
-                    // NOTE: calling Scene::DuplicateEntity causes a lot of issues regarding UUIDs
-                    // it is fine to call it when duplicating entire scenes but not when duplicating one entity!
-                    m_CurrentScene->CopyEntity(m_SelectedEntity);
-                }
-
-                ImGui::EndPopup();
+                ImGui::EndDragDropTarget();
             }
 
-            ImGui::PopStyleVar();
-    
+            if (data.Depth > 0) {  
+                ImGui::Unindent(data.Depth * 20.0f);
+            }
+
             ImGui::PopID();
         }
 
@@ -1073,7 +1080,7 @@ namespace BlackberryEditor {
 
                         u64 uuid = entity.GetComponent<TagComponent>().UUID;
 
-                        e.GetComponent<RelationshipComponent>().Children.push_back(uuid);
+                        // e.GetComponent<RelationshipComponent>().Children.push_back(uuid);
                     }
                 }
             });
@@ -1426,7 +1433,7 @@ namespace BlackberryEditor {
         if (m_IsEntitySelected && m_GizmoState != GizmoState::None) {
             Entity e(m_SelectedEntity, m_CurrentScene);
             if (e.HasComponent<TransformComponent>()) {
-                TransformComponent& transform = e.GetComponent<TransformComponent>();
+                TransformComponent transform = m_CurrentScene->GetEntityTransform(m_SelectedEntity);
                 glm::mat4 transformMatrix = transform.GetMatrix();
 
                 SceneCamera currentCamera = m_CurrentScene->GetSceneRenderer()->GetCamera();
@@ -1467,6 +1474,11 @@ namespace BlackberryEditor {
                     transform.Position = BlVec3(pos[0], pos[1], pos[2]);
                     transform.Rotation = BlQuat(BlVec3(glm::radians(rot[0]), glm::radians(rot[1]), glm::radians(rot[2])));
                     transform.Scale    = BlVec3(scale[0], scale[1], scale[2]);
+
+                    // We still want to keep the transform local (but we need to draw it correctly)
+                    transform.Position -= m_CurrentScene->GetEntityParentTransform(m_SelectedEntity).Position;
+
+                    e.GetComponent<TransformComponent>() = transform;
                 }
             }
         }

@@ -117,7 +117,7 @@ namespace Blackberry {
 
     class SceneRenderer {
     public:
-        SceneRenderer();
+        SceneRenderer(Scene* scene);
 
         void Render(Scene* scene);
 
@@ -144,12 +144,12 @@ namespace Blackberry {
         SceneRendererState& GetState();
 
     private:
-        void AddMesh(const RelationshipComponent& rel, const TransformComponent& transform, const Mesh& mesh, const Material& mat, BlColor color, u32 entityID);
-        void AddModel(const RelationshipComponent& rel, const TransformComponent& transform, const MeshComponent& model, BlColor color, u32 entityID);
+        void AddMesh(const TransformComponent& transform, const Mesh& mesh, const Material& mat, BlColor color, u32 entityID);
+        void AddModel(const TransformComponent& transform, const MeshComponent& model, BlColor color, u32 entityID);
 
         void AddDirectionalLight(const TransformComponent& transform, const DirectionalLightComponent& light);
-        void AddPointLight(const RelationshipComponent& rel, const TransformComponent& transform, const PointLightComponent& light);
-        void AddSpotLight(const RelationshipComponent& rel, const TransformComponent& transform, const SpotLightComponent& light);
+        void AddPointLight(const TransformComponent& transform, const PointLightComponent& light);
+        void AddSpotLight(const TransformComponent& transform, const SpotLightComponent& light);
 
         void AddEnviroment(const EnviromentComponent& env);
 
@@ -160,6 +160,8 @@ namespace Blackberry {
 
         SceneCamera m_Camera;
         Ref<Framebuffer> m_RenderTarget;
+
+        Scene* m_Context = nullptr;
     };
 
 } // namespace Blackberry

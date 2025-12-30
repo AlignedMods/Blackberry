@@ -22,7 +22,9 @@ namespace Blackberry {
         );
     }
 
-    SceneRenderer::SceneRenderer() {
+    SceneRenderer::SceneRenderer(Scene* scene) {
+        m_Context = scene;
+
         Ref<VertexBuffer> vbo = VertexBuffer::Create(BufferUsage::Dynamic);
         Ref<IndexBuffer> ibo = IndexBuffer::Create(BufferUsage::Dynamic);
         m_State.GeometryBuffer = VertexArray::Create();
@@ -155,22 +157,22 @@ namespace Blackberry {
                 AddDirectionalLight(transform, light);    
             });
             
-            auto lightView = scene->m_ECS->GetEntitiesWithComponents<RelationshipComponent, TransformComponent, PointLightComponent>();
+            auto lightView = scene->m_ECS->GetEntitiesWithComponents<TransformComponent, PointLightComponent>();
             
-            lightView.each([&](RelationshipComponent& rel, TransformComponent& transform, PointLightComponent& light) {
-                AddPointLight(rel, transform, light);
+            lightView.each([&](TransformComponent& transform, PointLightComponent& light) {
+                AddPointLight(transform, light);
             });
             
-            auto spotLightView = scene->m_ECS->GetEntitiesWithComponents<RelationshipComponent, TransformComponent, SpotLightComponent>();
+            auto spotLightView = scene->m_ECS->GetEntitiesWithComponents<TransformComponent, SpotLightComponent>();
             
-            spotLightView.each([&](RelationshipComponent& rel, TransformComponent& transform, SpotLightComponent& light) {
-                AddSpotLight(rel, transform, light);
+            spotLightView.each([&](TransformComponent& transform, SpotLightComponent& light) {
+                AddSpotLight(transform, light);
             });
             
-            auto meshView = scene->m_ECS->GetEntitiesWithComponents<RelationshipComponent, TransformComponent, MeshComponent>();
+            auto meshView = scene->m_ECS->GetEntitiesWithComponents<TransformComponent, MeshComponent>();
             
-            meshView.each([&](entt::entity id, RelationshipComponent& rel, TransformComponent& transform, MeshComponent& mesh) {
-                AddModel(rel, transform, mesh, BlColor(255, 255, 255, 255), static_cast<u32>(id));
+            meshView.each([&](entt::entity id, TransformComponent& transform, MeshComponent& mesh) {
+                AddModel(transform, mesh, BlColor(255, 255, 255, 255), static_cast<u32>(id));
             });
             
             auto envView = scene->m_ECS->GetEntitiesWithComponents<EnviromentComponent>();
@@ -197,15 +199,14 @@ namespace Blackberry {
 
     void SceneRenderer::RenderEntity(Entity entity) {
         if (entity.HasComponent<TransformComponent>() && entity.HasComponent<MeshComponent>()) {
-            auto& rel = entity.GetComponent<RelationshipComponent>();
             auto& transform = entity.GetComponent<TransformComponent>();
             auto& mesh = entity.GetComponent<MeshComponent>();
 
-            AddModel(rel, transform, mesh, BlColor(255, 255, 255, 255), static_cast<u32>(entity.ID));
+            AddModel(transform, mesh, BlColor(255, 255, 255, 255), static_cast<u32>(entity.ID));
         }
     }
 
-    void SceneRenderer::AddMesh(const RelationshipComponent& rel, const TransformComponent& transform, const Mesh& mesh, const Material& mat, BlColor color, u32 entityID) {
+    void SceneRenderer::AddMesh(const TransformComponent& transform, const Mesh& mesh, const Material& mat, BlColor color, u32 entityID) {
         BlVec4 normColor = NormalizeColor(color);
 
         // vertices
@@ -220,8 +221,10 @@ namespace Blackberry {
             m_State.MeshIndices.push_back(mesh.Indices[i] + vertexCount);
         }
 
+        TransformComponent transformMat = m_Context->GetEntityTransform(static_cast<EntityID>(entityID));
+
         // Add transform which will be sent to shader
-        m_State.Transforms.push_back(transform.GetMatrix());
+        m_State.Transforms.push_back(transformMat.GetMatrix());
 
         GPUMaterial gpuMat;
 
@@ -254,7 +257,7 @@ namespace Blackberry {
         m_State.MaterialIndex++;
     }
 
-    void SceneRenderer::AddModel(const RelationshipComponent& rel, const TransformComponent& transform, const MeshComponent& model, BlColor color, u32 entityID) {
+    void SceneRenderer::AddModel(const TransformComponent& transform, const MeshComponent& model, BlColor color, u32 entityID) {
         if (Project::GetAssetManager().ContainsAsset(model.MeshHandle)) {
             const Asset& asset = Project::GetAssetManager().GetAsset(model.MeshHandle);
             auto& trueModel = std::get<Model>(asset.Data);
@@ -267,7 +270,7 @@ namespace Blackberry {
                         auto& asset = Project::GetAssetManager().GetAsset(model.MaterialHandles.at(i));
                         auto& material = std::get<Material>(Project::GetAssetManager().GetAsset(model.MaterialHandles.at(i)).Data);
 
-                        AddMesh(rel, transform, trueModel.Meshes[i], material, color, entityID);
+                        AddMesh(transform, trueModel.Meshes[i], material, color, entityID);
 
                         useDefaultMaterial = false;
                     }
@@ -275,10 +278,10 @@ namespace Blackberry {
 
                 if (useDefaultMaterial && trueModel.Meshes[i].HasMeshMaterial) {
                     auto& material = trueModel.Meshes[i].MeshMaterial;
-                    AddMesh(rel, transform, trueModel.Meshes[i], material, color, entityID); 
+                    AddMesh(transform, trueModel.Meshes[i], material, color, entityID); 
                 } else if (useDefaultMaterial && !trueModel.Meshes[i].HasMeshMaterial) {
                     auto& material = DEFAULT_MATERIAL;
-                    AddMesh(rel, transform, trueModel.Meshes[i], material, color, entityID); 
+                    AddMesh(transform, trueModel.Meshes[i], material, color, entityID); 
                 }
             }
         }
@@ -293,7 +296,7 @@ namespace Blackberry {
         m_State.DirectionalLight = l;
     }
 
-    void SceneRenderer::AddPointLight(const RelationshipComponent& rel, const TransformComponent& transform, const PointLightComponent& light) {
+    void SceneRenderer::AddPointLight(const TransformComponent& transform, const PointLightComponent& light) {
         GPUPointLight l;
         l.Position = BlVec4(transform.Position.x, transform.Position.y, transform.Position.z, 0.0f);
         l.Color = BlVec4(light.Color.x, light.Color.y, light.Color.z, 0.0f);
@@ -302,7 +305,7 @@ namespace Blackberry {
         m_State.PointLights.push_back(l);
     }
 
-    void SceneRenderer::AddSpotLight(const RelationshipComponent& rel, const TransformComponent& transform, const SpotLightComponent& light) {
+    void SceneRenderer::AddSpotLight(const TransformComponent& transform, const SpotLightComponent& light) {
         GPUSpotLight l;
         l.Position = BlVec4(transform.Position.x, transform.Position.y, transform.Position.z, 0.0f);
         l.Direction = BlVec4(transform.Rotation.x, transform.Rotation.y, transform.Rotation.z, glm::cos(glm::radians(light.Cutoff)));
