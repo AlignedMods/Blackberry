@@ -42,8 +42,7 @@ namespace Blackberry {
 
         void FinishEntityEdit(u64 entity);
 
-        void DuplicateEntity(EntityID entity);
-        void CopyEntity(EntityID entity);
+        void DuplicateEntity(u64 entity);
 
         void DestroyEntity(u64 uuid);
 

@@ -538,7 +538,7 @@ namespace BlackberryEditor {
                 if (m_IsEntitySelected) {
                     Entity e(m_SelectedEntity, m_CurrentScene);
 
-                    m_CurrentScene->CopyEntity(m_SelectedEntity);
+                    m_CurrentScene->DuplicateEntity(e.GetComponent<TagComponent>().UUID);
                 }
             }
 
@@ -962,19 +962,18 @@ namespace BlackberryEditor {
         };
         
         struct EntityHierarchyData {
+            EntityID EntityID = entt::null;
             u64 UUID = 0;
             u32 Depth = 0;
         };
 
         std::vector<EntityHierarchyData> entities;
 
-        BL_CORE_INFO("-----------------------");
         std::function<void(u64, u32)> traverse = [&](u64 entityUUID, u32 depth) {
             Entity e(m_CurrentScene->GetEntityFromUUID(entityUUID), m_CurrentScene);
             auto& rel = e.GetComponent<RelationshipComponent>();
 
-            BL_CORE_INFO("Entity: {}", entityUUID);
-            entities.push_back({entityUUID, depth});
+            entities.push_back({e.ID, entityUUID, depth});
 
             u64 child = rel.FirstChild;
             while (child != 0) {
@@ -993,6 +992,9 @@ namespace BlackberryEditor {
             traverse(uuid, 0);
         }
 
+        u64 entityToDelete = 0;
+        u64 entityToDuplicate = 0;
+
         for (const auto& data : entities) {
             Entity e(m_CurrentScene->GetEntityFromUUID(data.UUID), m_CurrentScene);
 
@@ -1002,10 +1004,24 @@ namespace BlackberryEditor {
                 ImGui::Indent(data.Depth * 20.0f);
             }
 
-            std::string name = fmt::format("{}, {}", e.GetComponent<TagComponent>().Name, data.Depth);
-            if (ImGui::Button(name.c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0.0f))) {
-                m_SelectedEntity = e.ID;
-                m_IsEntitySelected = true;
+            if (m_SelectedEntity == data.EntityID) {
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.4f, 0.4f, 1.0f, 1.0f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.45f, 0.45f, 1.0f, 1.0f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.5f, 0.5f, 1.0f, 1.0f));
+
+                std::string name = e.GetComponent<TagComponent>().Name;
+                if (ImGui::Button(name.c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0.0f))) {
+                    m_SelectedEntity = e.ID;
+                    m_IsEntitySelected = true;
+                }
+
+                ImGui::PopStyleColor(3);
+            } else {
+                std::string name = e.GetComponent<TagComponent>().Name;
+                if (ImGui::Button(name.c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0.0f))) {
+                    m_SelectedEntity = e.ID;
+                    m_IsEntitySelected = true;
+                }
             }
 
             if (ImGui::BeginDragDropSource()) {
@@ -1031,10 +1047,43 @@ namespace BlackberryEditor {
                 ImGui::Unindent(data.Depth * 20.0f);
             }
 
+            if (ImGui::BeginPopupContextItem()) {
+                if (ImGui::MenuItem("Delete Entity")) {
+                    entityToDelete = data.UUID;
+                }
+
+                if (ImGui::MenuItem("Duplicate Entity")) {
+                    entityToDuplicate = data.UUID;
+                }
+
+                ImGui::EndPopup();
+            }
+
             ImGui::PopID();
         }
 
         ImGui::End();
+
+        if (entityToDelete) {
+            if (m_CurrentScene->GetEntityFromUUID(entityToDelete) == m_SelectedEntity) {
+                m_SelectedEntity = entt::null;
+                m_IsEntitySelected = false;
+            }
+
+            for (auto id : m_CurrentScene->GetEntities()) {
+                BL_CORE_INFO("Entities before delete: {}", static_cast<u32>(id));
+            }
+
+            m_CurrentScene->DestroyEntity(entityToDelete);
+
+            for (auto id : m_CurrentScene->GetEntities()) {
+                BL_CORE_INFO("Entities after delete: {}", static_cast<u32>(id));
+            }
+        }
+
+        if (entityToDuplicate) {
+            m_CurrentScene->DuplicateEntity(entityToDuplicate);
+        }
     }
     
     void EditorLayer::UI_Properties() {
@@ -1072,18 +1121,6 @@ namespace BlackberryEditor {
             ImGui::TextDisabled("EntityID: %u", entity.ID);
 
             ImGui::SeparatorText("Components: ");
-
-            DrawComponent<RelationshipComponent>("Relationship", entity, [&](RelationshipComponent& rel) {
-                if (ImGui::InputScalar("Parent", ImGuiDataType_U64, &rel.Parent)) {
-                    if (rel.Parent != 0) {
-                        auto e = Entity(m_CurrentScene->GetEntityFromUUID(rel.Parent), m_CurrentScene);
-
-                        u64 uuid = entity.GetComponent<TagComponent>().UUID;
-
-                        // e.GetComponent<RelationshipComponent>().Children.push_back(uuid);
-                    }
-                }
-            });
 
             DrawComponent<TransformComponent>("Transform", entity, [](TransformComponent& transform) {
                 DrawVec3Control("Position: ", &transform.Position);

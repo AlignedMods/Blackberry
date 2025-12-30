@@ -233,19 +233,38 @@ namespace Blackberry {
         }
     }
 
-    void Scene::DuplicateEntity(EntityID entity) {
-        ECS::DuplicateEntity(entity, &m_ECS->m_Registry, &m_ECS->m_Registry);
-    }
-
-    void Scene::CopyEntity(EntityID entity) {
-        auto newEntity = ECS::CopyEntity(entity, &m_ECS->m_Registry, &m_ECS->m_Registry);
+    void Scene::DuplicateEntity(u64 entity) {
+        auto newEntity = ECS::CopyEntity(m_EntityMap.at(entity), &m_ECS->m_Registry, &m_ECS->m_Registry);
 
         u64 uuid = m_ECS->GetComponent<TagComponent>(newEntity).UUID;
         m_EntityMap[uuid] = newEntity;
+
+        FinishEntityEdit(uuid);
     }
 
     void Scene::DestroyEntity(u64 uuid) {
         BL_ASSERT(m_EntityMap.contains(uuid), "Entity with UUID {} does not exist!", uuid);
+
+        auto& rel = m_ECS->GetComponent<RelationshipComponent>(m_EntityMap.at(uuid));
+        if (rel.Parent == 0) {
+            for (auto entity : m_RootEntities) {
+                BL_CORE_INFO("vector before erase: {}", entity);
+            }
+            std::erase(m_RootEntities, uuid);
+            for (auto entity : m_RootEntities) {
+                BL_CORE_INFO("vector after erase: {}", entity);
+            }
+        }
+
+        u64 child = rel.FirstChild;
+        while (child != 0) {
+            Entity childEntity = Entity(GetEntityFromUUID(child), this);
+            RelationshipComponent childRel = childEntity.GetComponent<RelationshipComponent>(); // NOTE: **MAKE** A COPY TO THIS, THIS IS A COMPONENT OF A SOON TO BE DELETED ENTITY!
+        
+            DestroyEntity(child);
+        
+            child = childRel.NextSibling;
+        }
 
         m_ECS->DestroyEntity(m_EntityMap.at(uuid));
         m_EntityMap.erase(uuid);
