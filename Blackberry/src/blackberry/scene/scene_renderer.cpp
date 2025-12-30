@@ -397,6 +397,8 @@ namespace Blackberry {
         api.BindTexture2D(m_State.GBuffer->Attachments[3], 3);
         
         m_State.MeshLightingShader->SetVec3("u_ViewPos", m_Camera.Transform.Position);
+        // m_State.MeshLightingShader->SetVec3("u_ViewPos", BlVec3(0.0f));
+        BL_CORE_INFO("View pos: {}, {}, {}", m_Camera.Transform.Position.x, m_Camera.Transform.Position.y, m_Camera.Transform.Position.z);
         
         // set lights
         m_State.MeshLightingShader->SetVec4("u_DirectionalLight.Direction", m_State.DirectionalLight.Direction);

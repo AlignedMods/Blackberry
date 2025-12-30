@@ -24,7 +24,9 @@ void main() {
 
     gl_Position = u_ViewProjection * worldPos;
 
-    o_Normal = mat3(transpose(inverse(Transforms[a_ObjectIndex]))) * a_Normal;
+    mat3 normalMatrix = transpose(inverse(mat3(Transforms[a_ObjectIndex])));
+    o_Normal = normalMatrix * a_Normal;
+
     o_TexCoord = a_TexCoord;
     o_FragPos = worldPos.xyz;
     o_MaterialIndex = a_MaterialIndex;

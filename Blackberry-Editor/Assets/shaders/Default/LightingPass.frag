@@ -76,16 +76,6 @@ vec3 AddLight(vec3 N, vec3 H, vec3 V, vec3 L, vec3 F0, float roughness, float me
     return (kD * albedo / PI + specular) * radiance * NdotL;
 }
 
-vec3 TonemapACES(vec3 color) {
-    const float a = 2.51;
-    const float b = 0.03;
-    const float c = 2.43;
-    const float d = 0.59;
-    const float e = 0.14;
-
-    return clamp((color * (a * color + b)) / (color * (c * color + d) + e), 0.0, 1.0);
-}
-
 void main() {
     vec3 worldPos   = texture(u_GPosition, a_TexCoord).rgb;
     vec3 normal     = texture(u_GNormal, a_TexCoord).rgb;
@@ -95,11 +85,13 @@ void main() {
     float ao        = texture(u_GMat, a_TexCoord).b;
     float emission  = texture(u_GMat, a_TexCoord).a;
 
-    vec3 viewPos = u_ViewPos;
-    
-    vec3 N = normal;
-    vec3 V = normalize(viewPos - worldPos);
-    vec3 R = normalize(reflect(-V, N));
+    roughness = max(roughness, 0.001);
+
+    vec3 N = normalize(normal);
+    vec3 V = normalize(u_ViewPos - worldPos);
+    // vec3 N = normalize(V);
+    // vec3 V = normalize(-worldPos);
+    vec3 R = reflect(-V, N);
 
     vec3 F0 = vec3(0.04);
     F0 = mix(F0, albedo, metallic);
@@ -111,23 +103,23 @@ void main() {
     {
         vec3 color = u_DirectionalLight.Color.rgb;
         float intensity = u_DirectionalLight.Params.r;
-
+    
         // calculate radiance
         vec3 L = normalize(-u_DirectionalLight.Direction.xyz);
         vec3 H = normalize(V + L);
         vec3 radiance = color * intensity;
-
+    
         Lo = AddLight(N, H, V, L, F0, roughness, metallic, albedo, radiance);
     }
-
+    
     // Point Lights
     for (int i = 0; i < u_PointLightCount; i++) {
         vec3 position = PointLights[i].Position.xyz;
         vec3 color = PointLights[i].Color.rgb;
-
+    
         float radius = PointLights[i].Params.r;
         float intensity = PointLights[i].Params.g;
-
+    
         // calculate per light radiance
         vec3 L = normalize(position - worldPos);
         vec3 H = normalize(V + L);
@@ -135,35 +127,35 @@ void main() {
         float x = clamp(1.0 - (distance / radius), 0.0, 1.0);
         float attenuation = x * x;
         vec3 radiance = color * attenuation * intensity;
-
+    
         Lo += AddLight(N, H, V, L, F0, roughness, metallic, albedo, radiance);
     }
-
+    
     // Spot Lights
     for (int i = 0; i < u_SpotLightCount; i++) {
         vec3 position = SpotLights[i].Position.xyz;
         vec3 direction = SpotLights[i].Direction.xyz;
         vec3 color = SpotLights[i].Color.rgb;
-
+    
         float cutoff = SpotLights[i].Direction.a;
         float intensity = SpotLights[i].Color.a;
-
+    
         vec3 L = normalize(position - worldPos);
         vec3 H = normalize(V + L);
-
+    
         float theta = dot(L, normalize(-direction));
-
+    
         if (theta > cutoff) {
             vec3 radiance = color * intensity;
             Lo += AddLight(N, H, V, L, F0, roughness, metallic, albedo, radiance);
         }
     }
-
+    
     Lo += albedo * vec3(emission);
 
     vec3 F = FresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
     
-    vec3 kS = FresnelSchlick(max(dot(N, V), 0.0), F0);
+    vec3 kS = F;
     vec3 kD = 1.0 - kS;
     kD *= 1.0 - metallic;
 
@@ -172,23 +164,24 @@ void main() {
 
     const float MAX_REFLECTION_LOD = 7.0;
     vec3 prefilteredColor = textureLod(u_PrefilterMap, R, roughness * MAX_REFLECTION_LOD).rgb;
-    // vec2 brdf = texture(u_BrdfLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
-    // vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
-    vec3 specular = prefilteredColor * F;
+    float NdotV = clamp(dot(N, V), 0.001, 1.0);
+    // note to future self: maybe don't always assume textures want mips (ask me how i know)
+    vec2 brdf = textureLod(u_BrdfLUT, vec2(NdotV, roughness), 0).rg;
+    vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
 
     vec3 ambient = (kD * diffuse + specular) * ao;
 
     vec3 color = ambient + Lo;
     
     o_FragColor = vec4(color, 1.0);
-    // o_FragColor = vec4(texture(u_BrdfLUT, a_TexCoord).rg, 0.0, 1.0);
 }
 
-float DistributionGGX(vec3 N, vec3 H, float roughness) {
-    float a = roughness * roughness;
-    float a2 = a * a;
+float DistributionGGX(vec3 N, vec3 H, float roughness)
+{
+    float a = roughness*roughness;
+    float a2 = a*a;
     float NdotH = max(dot(N, H), 0.0);
-    float NdotH2 = NdotH * NdotH;
+    float NdotH2 = NdotH*NdotH;
 
     float nom   = a2;
     float denom = (NdotH2 * (a2 - 1.0) + 1.0);
@@ -196,18 +189,20 @@ float DistributionGGX(vec3 N, vec3 H, float roughness) {
 
     return nom / denom;
 }
-
-float GeometrySchlickGGX(float NdotV, float roughness) {
+// ----------------------------------------------------------------------------
+float GeometrySchlickGGX(float NdotV, float roughness)
+{
     float r = (roughness + 1.0);
-    float k = (r * r) / 8.0;
+    float k = (r*r) / 8.0;
 
     float nom   = NdotV;
     float denom = NdotV * (1.0 - k) + k;
 
     return nom / denom;
 }
-
-float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness) {
+// ----------------------------------------------------------------------------
+float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
+{
     float NdotV = max(dot(N, V), 0.0);
     float NdotL = max(dot(N, L), 0.0);
     float ggx2 = GeometrySchlickGGX(NdotV, roughness);

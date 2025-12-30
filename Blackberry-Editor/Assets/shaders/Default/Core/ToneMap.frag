@@ -24,10 +24,15 @@ vec3 TonemapACES(vec3 color){
 	return pow(clamp(m2 * (a / b), 0.0, 1.0), vec3(1.0 / 2.2));	
 }
 
+vec3 TonemapReinhard(vec3 color) {
+    return color / (color + vec3(1.0));
+}
+
 void main() {
     vec3 color = texture(u_Texture, a_TexCoord).rgb;
 
-    color = TonemapACES(color);
+    // color = TonemapACES(color);
+    color = TonemapReinhard(color);
     color = pow(color, vec3(1.0 / 2.2));
 
     o_FragColor = vec4(color, 1.0);
