@@ -45,6 +45,11 @@
             "Path": "Meshes/ferrari.glb",
             "Type": "Model"
         },
+        "Handle - 16603138601643247201": {
+            "Handle": 16603138601643247201,
+            "Path": "EnviromentMaps/PinkSky.hdr",
+            "Type": "Environment Map"
+        },
         "Handle - 16676790944532672824": {
             "Handle": 16676790944532672824,
             "Path": "Meshes/Default/Sphere.glb",

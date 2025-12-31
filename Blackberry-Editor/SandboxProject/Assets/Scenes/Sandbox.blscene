@@ -46,7 +46,7 @@ Entities:
     MeshComponent:
       MeshHandle: 16676790944532672824
       MaterialHandles:
-        0: 0
+        0: 9704321289475970708
     RigidBodyComponent:
       Type: Static
       Resitution: 1
@@ -84,7 +84,7 @@ Entities:
       NextSibling: 0
       PrevSibling: 0
     EnvironmentComponent:
-      EnvironmentMap: 16970579584870424807
+      EnvironmentMap: 16603138601643247201
       LevelOfDetail: 0
       EnableBloom: true
       BloomThreshold: 3

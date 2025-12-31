@@ -1,5 +1,5 @@
-Albedo-Color: [1, 0, 0, 1]
+Albedo-Color: [1, 0.20849419, 0.20849419, 1]
 Metallic-Factor: 0
-Roughness-Factor: 0.713
+Roughness-Texture: "Materials/Plastic/Source/Common/Roughness.jpg"
 AO-Factor: 1
 Emission: 0

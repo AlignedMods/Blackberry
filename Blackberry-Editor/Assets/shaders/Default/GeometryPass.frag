@@ -43,25 +43,25 @@ void main() {
     // Store the normal in the second buffer
     o_GNormal.rgb = a_Normal;
     // Store the albedo color in the third buffer
-    if (Materials[a_MaterialIndex].UseAlbedoTexture == 1) {
+    if (Materials[a_MaterialIndex].UseAlbedoTexture == 1 && Materials[a_MaterialIndex].AlbedoTexture != uvec2(0.0)) {
         o_GAlbedo.rgb = texture(sampler2D(Materials[a_MaterialIndex].AlbedoTexture), a_TexCoord).rgb;
     } else {
         o_GAlbedo.rgb = Materials[a_MaterialIndex].AlbedoColor.rgb;
     }
     // Store material information in the fourth buffer
-    if (Materials[a_MaterialIndex].UseMetallicTexture == 1) {
+    if (Materials[a_MaterialIndex].UseMetallicTexture == 1 && Materials[a_MaterialIndex].MetallicTexture != uvec2(0.0)) {
         o_GMat.r = texture(sampler2D(Materials[a_MaterialIndex].MetallicTexture), a_TexCoord).r;
     } else {
         o_GMat.r = Materials[a_MaterialIndex].MetallicFactor;
     }
     
-    if (Materials[a_MaterialIndex].UseRoughnessTexture == 1) {
+    if (Materials[a_MaterialIndex].UseRoughnessTexture == 1 && Materials[a_MaterialIndex].RoughnessTexture != uvec2(0.0)) {
         o_GMat.g = texture(sampler2D(Materials[a_MaterialIndex].RoughnessTexture), a_TexCoord).r;
     } else {
         o_GMat.g = Materials[a_MaterialIndex].RoughnessFactor;
     }
     
-    if (Materials[a_MaterialIndex].UseAOTexture == 1) {
+    if (Materials[a_MaterialIndex].UseAOTexture == 1 && Materials[a_MaterialIndex].AOTexture != uvec2(0.0)) {
         o_GMat.b = texture(sampler2D(Materials[a_MaterialIndex].AOTexture), a_TexCoord).r;
     } else {
         o_GMat.b = Materials[a_MaterialIndex].AOFactor;

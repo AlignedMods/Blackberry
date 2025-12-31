@@ -47,7 +47,19 @@ namespace BlackberryEditor {
                 ImGui::Checkbox("Use Albedo Texture", &mat.UseAlbedoTexture);
 
                 if (mat.UseAlbedoTexture) {
-                    ImGui::Image(mat.AlbedoTexture->ID, ImVec2(128.0f, 128.0f)); ImGui::SameLine();
+                    ImGui::ImageButton("##AlbedoTexture", mat.AlbedoTexture->ID, ImVec2(128.0f, 128.0f)); ImGui::SameLine();
+
+                    if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) && ImGui::IsItemHovered()) {
+                        std::string fullPath = OS::OpenFile("Textures (*.png, *.jpg, *.jpeg, *.bmp, *.webp)");
+
+                        if (!fullPath.empty()) {
+                            FS::Path path = fullPath;
+
+                            mat.AlbedoTexturePath = FS::Relative(path, Project::GetAssetDirecory());
+                            mat.AlbedoTexture = Texture2D::Create(path);
+                        } 
+                    }
+
                     ImGui::Text("Albedo");
                 } else {
                     ImGui::ColorEdit4("##AlbedoColor", &mat.AlbedoColor.x); ImGui::SameLine();
@@ -57,7 +69,19 @@ namespace BlackberryEditor {
                 ImGui::Checkbox("Use Metallic Texture", &mat.UseMetallicTexture);
 
                 if (mat.UseMetallicTexture) {
-                    ImGui::Image(mat.MetallicTexture->ID, ImVec2(128.0f, 128.0f)); ImGui::SameLine();
+                    ImGui::ImageButton("##MetallicTexture", mat.MetallicTexture->ID, ImVec2(128.0f, 128.0f)); ImGui::SameLine();
+
+                    if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) && ImGui::IsItemHovered()) {
+                        std::string fullPath = OS::OpenFile("Textures (*.png, *.jpg, *.jpeg, *.bmp, *.webp)");
+
+                        if (!fullPath.empty()) {
+                            FS::Path path = fullPath;
+
+                            mat.MetallicTexturePath = FS::Relative(path, Project::GetAssetDirecory());
+                            mat.MetallicTexture = Texture2D::Create(path);
+                        } 
+                    }
+
                     ImGui::Text("Metallic");
                 } else {
                     ImGui::SliderFloat("##MetallicFactor", &mat.MetallicFactor, 0.0f, 1.0f); ImGui::SameLine();
@@ -67,7 +91,19 @@ namespace BlackberryEditor {
                 ImGui::Checkbox("Use Roughness Texture", &mat.UseRoughnessTexture);
 
                 if (mat.UseRoughnessTexture) {
-                    ImGui::Image(mat.RoughnessTexture->ID, ImVec2(128.0f, 128.0f)); ImGui::SameLine();
+                    ImGui::ImageButton("##RoughnessTexture", mat.RoughnessTexture->ID, ImVec2(128.0f, 128.0f)); ImGui::SameLine();
+
+                    if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) && ImGui::IsItemHovered()) {
+                        std::string fullPath = OS::OpenFile("Textures (*.png, *.jpg, *.jpeg, *.bmp, *.webp)");
+
+                        if (!fullPath.empty()) {
+                            FS::Path path = fullPath;
+
+                            mat.RoughnessTexturePath = FS::Relative(path, Project::GetAssetDirecory());
+                            mat.RoughnessTexture = Texture2D::Create(path);
+                        } 
+                    }
+
                     ImGui::Text("Roughness");
                 } else {
                     ImGui::SliderFloat("##RoughnessFactor", &mat.RoughnessFactor, 0.0f, 1.0f); ImGui::SameLine();
