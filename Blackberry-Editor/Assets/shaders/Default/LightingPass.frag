@@ -85,6 +85,8 @@ void main() {
     float ao        = texture(u_GMat, a_TexCoord).b;
     float emission  = texture(u_GMat, a_TexCoord).a;
 
+    roughness = clamp(roughness, 0.001, 0.99);
+
     // roughness = max(roughness, 0.001);
 
     vec3 N = normal;

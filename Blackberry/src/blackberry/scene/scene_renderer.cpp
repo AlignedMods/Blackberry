@@ -221,9 +221,10 @@ namespace Blackberry {
         }
 
         TransformComponent transformMat = m_Context->GetEntityTransform(static_cast<EntityID>(entityID));
+        BlMat4 final = transformMat.GetMatrix() * mesh.Transform;
 
         // Add transform which will be sent to shader
-        m_State.Transforms.push_back(transformMat.GetMatrix());
+        m_State.Transforms.push_back(final);
 
         GPUMaterial gpuMat;
 

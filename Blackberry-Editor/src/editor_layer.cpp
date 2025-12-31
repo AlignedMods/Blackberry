@@ -317,6 +317,7 @@ namespace BlackberryEditor {
         m_DirectoryIcon     = Texture2D::Create("Assets/Icons/directory.png");
         m_FileIcon          = Texture2D::Create("Assets/Icons/file.png");
         m_BackDirectoryIcon = Texture2D::Create("Assets/Icons/back_directory.png");
+        m_ReloadDirectoryIcon = Texture2D::Create("Assets/Icons/reload_directory.png");
 
         m_PlayIcon          = Texture2D::Create("Assets/Icons/play.png");
         m_SimulateIcon      = Texture2D::Create("Assets/Icons/simulate.png");
@@ -681,11 +682,24 @@ namespace BlackberryEditor {
         ImGui::Begin("File Browser");
     
         if (m_CurrentDirectory != m_BaseDirectory) {
-            if (ImGui::ImageButton("##BackDirectory", m_BackDirectoryIcon->ID, ImVec2(32.0f, 32.0f))) {
+            if (ImGui::ImageButton("##BackDirectory", m_BackDirectoryIcon->ID, ImVec2(24.0f, 24.0f))) {
                 m_CurrentDirectory = m_CurrentDirectory.ParentPath();
                 m_DirtyCurrentDirectoryIterator = true;
             }
+        } else {
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImGui::GetStyleColorVec4(ImGuiCol_Button));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImGui::GetStyleColorVec4(ImGuiCol_Button));
+            ImGui::ImageButton("##BackDirectory", m_BackDirectoryIcon->ID, ImVec2(24.0f, 24.0f), ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(1.0f, 1.0f, 1.0f, 0.7f));
+            ImGui::PopStyleColor(2);
         }
+
+        ImGui::SameLine();
+
+        if (ImGui::ImageButton("##ReloadDirectory", m_ReloadDirectoryIcon->ID, ImVec2(24.0f, 24.0f))) {
+            m_DirtyCurrentDirectoryIterator = true;
+        }
+
+        ImGui::Separator();
     
         static f32 padding = 16.0f;
         static f32 thumbnailSize = 128.0f;
@@ -698,6 +712,8 @@ namespace BlackberryEditor {
         }
     
         // ImGui::Columns(columnCount, 0, false);
+
+        ImGui::BeginChild(ImGui::GetID("FileBrowserChild"));
 
         static bool s_CreateAssetPopup = false;
         static FS::Path assetFile;
@@ -834,6 +850,8 @@ namespace BlackberryEditor {
             
             ImGui::EndTable();
         }
+
+        ImGui::EndChild();
 
         if (s_CreateAssetPopup) {
             ImGui::OpenPopup("Create Asset?");

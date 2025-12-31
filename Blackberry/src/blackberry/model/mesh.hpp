@@ -8,6 +8,8 @@ namespace Blackberry {
 
     // Basic mesh struct which holds info about a mesh (meshes can be created through models)
     struct Mesh {
+        BlMat4 Transform = BlMat4(1.0f);
+
         // data about mesh
         std::vector<BlVec3> Positions;
         std::vector<BlVec3> Normals;

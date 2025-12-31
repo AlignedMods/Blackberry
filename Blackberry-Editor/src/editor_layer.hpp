@@ -99,6 +99,7 @@ namespace BlackberryEditor {
         Blackberry::Ref<Blackberry::Texture> m_DirectoryIcon;
         Blackberry::Ref<Blackberry::Texture> m_FileIcon;
         Blackberry::Ref<Blackberry::Texture> m_BackDirectoryIcon;
+        Blackberry::Ref<Blackberry::Texture> m_ReloadDirectoryIcon;
 
         Blackberry::Ref<Blackberry::Texture> m_PlayIcon;
         Blackberry::Ref<Blackberry::Texture> m_SimulateIcon;

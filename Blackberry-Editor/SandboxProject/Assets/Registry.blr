@@ -5,6 +5,11 @@
             "Path": "Textures/rabbit.jpg",
             "Type": "Texture"
         },
+        "Handle - 11052137603346653621": {
+            "Handle": 11052137603346653621,
+            "Path": "Materials/Plastic/Green.blmat",
+            "Type": "Material"
+        },
         "Handle - 11093653209194568053": {
             "Handle": 11093653209194568053,
             "Path": "Meshes/Default/Torus.glb",
@@ -34,6 +39,11 @@
             "Handle": 15162507589004987079,
             "Path": "Textures/cat.jpg",
             "Type": "Texture"
+        },
+        "Handle - 16398485293648790794": {
+            "Handle": 16398485293648790794,
+            "Path": "Meshes/ferrari.glb",
+            "Type": "Model"
         },
         "Handle - 16676790944532672824": {
             "Handle": 16676790944532672824,
@@ -79,6 +89,11 @@
             "Handle": 761659761808722940,
             "Path": "Materials/Metal/Gold.blmat",
             "Type": "Material"
+        },
+        "Handle - 8359546782888286285": {
+            "Handle": 8359546782888286285,
+            "Path": "Meshes/ThinCube.glb",
+            "Type": "Model"
         },
         "Handle - 8535543139313001771": {
             "Handle": 8535543139313001771,

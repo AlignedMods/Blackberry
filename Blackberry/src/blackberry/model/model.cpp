@@ -70,13 +70,31 @@ namespace Blackberry {
                 return model;
             }
 
-            // load all meshes in model
-            for (cgltf_size mi = 0; mi < data->meshes_count; ++mi) {
-                cgltf_mesh& rawMesh = data->meshes[mi];
+            // load mesh data
+            for (cgltf_size ni = 0; ni < data->nodes_count; ni++) {
+                cgltf_node* rawNode = &data->nodes[ni];
+                cgltf_mesh* rawMesh = rawNode->mesh;
+
+                if (!rawMesh) continue;
+
                 Mesh mesh;
+
+                // Load transform
+                f32 worldTransform[16]{};
+                cgltf_node_transform_local(rawNode, worldTransform);
+
+                mesh.Transform = BlMat4(worldTransform[0], worldTransform[4], worldTransform[8], worldTransform[12],
+                                        worldTransform[1], worldTransform[5], worldTransform[9], worldTransform[13],
+                                        worldTransform[2], worldTransform[6], worldTransform[10], worldTransform[14],
+                                        worldTransform[3], worldTransform[7], worldTransform[11], worldTransform[15]);
                 
-                for (cgltf_size pi = 0; pi < rawMesh.primitives_count; ++pi) {
-                    cgltf_primitive& primitive = rawMesh.primitives[pi];
+                for (cgltf_size pi = 0; pi < rawMesh->primitives_count; ++pi) {
+                    cgltf_primitive& primitive = rawMesh->primitives[pi];
+
+                    if (primitive.type != cgltf_primitive_type_triangles) {
+                        BL_CORE_WARN("Mesh contains non-triangle primitives!");
+                        continue;
+                    }
                     
                     // Find position attributes
                     cgltf_accessor* posAccessor = nullptr;
@@ -100,7 +118,8 @@ namespace Blackberry {
                         for (u32 i = 0; i < count; ++i) {
                             f32* p = reinterpret_cast<f32*>(reinterpret_cast<u8*>(rawPositions) + i * stride);
                             
-                            mesh.Positions[i] = BlVec3(p[0], p[1], p[2]);
+                            BlVec3 position = BlVec3(p[0], p[1], p[2]);
+                            mesh.Positions[i] = position;
                         }
                     }
 
