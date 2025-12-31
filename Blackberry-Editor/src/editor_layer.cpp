@@ -97,52 +97,64 @@ namespace BlackberryEditor {
 
         bool used = false;
     
+        ImGui::PushStyleVarX(ImGuiStyleVar_ItemSpacing, 0.0f);
         ImGui::PushID(label.c_str());
-    
+
         // label
         ImGui::Text("%s", label.c_str());
 
-        ImGui::Indent();
+        ImGui::TableNextColumn();
+
+        const f32 lineHeight = ImGui::GetStyle().FontSizeBase + ImGui::GetStyle().FramePadding.y * 2.0f;
+        const ImVec2 buttonSize = ImVec2(20.0f, lineHeight);
+        const f32 sliderSize = (ImGui::GetContentRegionAvail().x - buttonSize.x * 3.0f) / 3.0f;
     
         // x axis control
         ImGui::PushFont(io.Fonts->Fonts[1], 16);
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.0f, 0.0f, 0.7f));
         ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 0.0f, 0.0f, 0.4f));
-        ImGui::Button(fmtX);
+        ImGui::Button(fmtX, buttonSize);
         ImGui::PopStyleColor(3);
         ImGui::PopFont();
     
         ImGui::SameLine();
-        used = (used || ImGui::DragFloat("##DragX", &vec->x, 1.0f));
+        ImGui::PushItemWidth(sliderSize);
+        used = (used || ImGui::DragFloat("##DragX", &vec->x, 1.0f, 0.0f, 0.0f, "%.2f")); ImGui::SameLine();
+        ImGui::PopItemWidth();
     
         // y axis control
         ImGui::PushFont(io.Fonts->Fonts[1], 16);
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 1.0f, 0.0f, 0.7f));
         ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 1.0f, 0.0f, 0.4f));
-        ImGui::Button(fmtY);
+        ImGui::Button(fmtY, buttonSize);
         ImGui::PopStyleColor(3);
         ImGui::PopFont();
     
         ImGui::SameLine();
-        used = (used || ImGui::DragFloat("##DragY", &vec->y));
+        ImGui::PushItemWidth(sliderSize);
+        used = (used || ImGui::DragFloat("##DragY", &vec->y, 1.0f, 0.0f, 0.0f, "%.2f")); ImGui::SameLine();
+        ImGui::PopItemWidth();
 
         // z axis control
         ImGui::PushFont(io.Fonts->Fonts[1], 16);
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 1.0f, 0.7f));
         ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 0.0f, 1.0f, 0.4f));
-        ImGui::Button(fmtZ);
+        ImGui::Button(fmtZ, buttonSize);
         ImGui::PopStyleColor(3);
         ImGui::PopFont();
     
         ImGui::SameLine();
-        used = (used || ImGui::DragFloat("##DragZ", &vec->z));
+        ImGui::PushItemWidth(sliderSize);
+        used = (used || ImGui::DragFloat("##DragZ", &vec->z, 1.0f, 0.0f, 0.0f, "%.2f")); ImGui::SameLine();
+        ImGui::PopItemWidth();
 
-        ImGui::Unindent();
+        ImGui::TableNextColumn();
     
         ImGui::PopID();
+        ImGui::PopStyleVar();
 
         return used;
     }
@@ -234,6 +246,49 @@ namespace BlackberryEditor {
             quat->z = outQuat.z;
             quat->w = outQuat.w;
         }
+    }
+
+    static void DrawAssetBox(const std::string& label, AssetType desiredType, u64* handle) {
+        ImGui::Text(label.c_str());
+        ImGui::TableNextColumn();
+
+        std::string name;
+        if (Project::GetAssetManager().ContainsAsset(*handle)) {
+            name = Project::GetAssetManager().GetAsset(*handle).FilePath.Stem().String();
+        } else {
+            name = "NULL";
+        }
+
+        f32 size = ImGui::GetContentRegionAvail().x;
+        ImGui::Button(name.c_str(), ImVec2(size - 35.0f, 0.0f)); ImGui::SameLine();
+
+        if (ImGui::BeginDragDropTarget()) {
+            const ImGuiPayload* assetManagerPayload = ImGui::AcceptDragDropPayload("ASSET_MANAGER_HANDLE_DRAG_DROP");
+            const ImGuiPayload* fileBrowserPayload = ImGui::AcceptDragDropPayload("FILE_BROWSER_FILE_DRAG_DROP");
+
+            if (assetManagerPayload) {
+                *handle = *reinterpret_cast<u64*>(assetManagerPayload->Data);
+            } else if (fileBrowserPayload) {
+                FS::Path p = reinterpret_cast<char*>(fileBrowserPayload->Data);
+        
+                if (Project::GetAssetManager().ContainsAsset(p)) {
+                    auto& asset = Project::GetAssetManager().GetAssetFromPath(p);
+                    if (asset.Type == desiredType) {
+                        *handle = asset.Handle;
+                    }
+                }
+            }
+
+            ImGui::EndDragDropTarget();
+        }
+        
+        if (name != "NULL") {
+            if (ImGui::Button("X", ImVec2(30.0f, 0.0f))) {
+                *handle = 0;
+            }
+        }
+
+        ImGui::TableNextColumn();
     }
 
 #pragma endregion
@@ -948,11 +1003,11 @@ namespace BlackberryEditor {
                 ImGui::EndMenu();
             }
 
-            if (ImGui::BeginMenu("Enviroment")) {
-                if (ImGui::MenuItem("Enviroment")) {
-                    Entity entity(m_CurrentScene->CreateEntity("Enviroment"), m_CurrentScene);
+            if (ImGui::BeginMenu("Environment")) {
+                if (ImGui::MenuItem("Environment")) {
+                    Entity entity(m_CurrentScene->CreateEntity("Environment"), m_CurrentScene);
 
-                    entity.AddComponent<EnviromentComponent>();
+                    entity.AddComponent<EnvironmentComponent>();
                 }
 
                 ImGui::EndMenu();
@@ -1105,7 +1160,7 @@ namespace BlackberryEditor {
                     AddComponentListOption<DirectionalLightComponent>("Directional Light", entity);
                     AddComponentListOption<PointLightComponent>("Point Light", entity);
                     AddComponentListOption<SpotLightComponent>("Spot Light", entity);
-                    AddComponentListOption<EnviromentComponent>("Enviroment", entity);
+                    AddComponentListOption<EnvironmentComponent>("Environment", entity);
                     
                     ImGui::EndMenu();
                 }
@@ -1123,107 +1178,45 @@ namespace BlackberryEditor {
             ImGui::SeparatorText("Components: ");
 
             DrawComponent<TransformComponent>("Transform", entity, [](TransformComponent& transform) {
+                ImGui::BeginTable("##TheTable", 2, ImGuiTableFlags_Resizable);
+                ImGui::TableNextColumn();
+
                 DrawVec3Control("Position: ", &transform.Position);
-                ImGui::Separator();
-
                 DrawEulerFromQuatControl("Rotation: ", &transform.Rotation);
-                ImGui::Separator();
-
                 DrawVec3Control("Scale: ", &transform.Scale);
+
+                ImGui::EndTable();
             });
             DrawComponent<MeshComponent>("Mesh", entity, [this](MeshComponent& mesh) {
-                ImGui::Separator();
-                ImGui::Text("Mesh: ");
-                ImGui::Indent();
+                ImGui::BeginTable("##TheTable", 2, ImGuiTableFlags_Resizable);
+                ImGui::TableNextColumn();
 
-                std::string meshName;
-                if (Project::GetAssetManager().ContainsAsset(mesh.MeshHandle)) {
-                    meshName = Project::GetAssetManager().GetAsset(mesh.MeshHandle).FilePath.Stem().String();
-                } else {
-                    meshName = "NULL";
-                }
+                DrawAssetBox("Mesh: ", AssetType::Model, &mesh.MeshHandle);
 
-                f32 size = ImGui::GetContentRegionAvail().x;
-                if (meshName == "NULL") {
-                    ImGui::PushStyleColor(ImGuiCol_Text, 0xff0000ff);
-                    ImGui::Button(meshName.c_str(), ImVec2(size, 0.0f));
-                    ImGui::PopStyleColor();
-                } else {
-                    ImGui::Button(meshName.c_str(), ImVec2(size, 0.0f));
-                }
+                ImGui::EndTable();
 
-                if (ImGui::BeginPopupContextItem("MeshHandlePopup")) {
-                    if (ImGui::MenuItem("Remove Mesh")) {
-                        mesh.MeshHandle = 0;
-                    }
+                ImGui::SeparatorText("Materials");
 
-                    ImGui::EndPopup();
-                }
+                ImGui::BeginTable("##TheTable2", 2, ImGuiTableFlags_Resizable);
+                ImGui::TableNextColumn();
 
-                if (ImGui::BeginDragDropTarget()) {
-                    const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_MANAGER_HANDLE_DRAG_DROP");
-
-                    if (payload) {
-                        mesh.MeshHandle = *reinterpret_cast<u64*>(payload->Data); // seems sus
-                    }
-
-                    ImGui::EndDragDropTarget();
-                }
-
-                ImGui::Unindent();
-
-                ImGui::Text("Materials: ");
                 ImGui::Indent();
                 
                 if (Project::GetAssetManager().ContainsAsset(mesh.MeshHandle)) {
                     Model& model = std::get<Model>(Project::GetAssetManager().GetAsset(mesh.MeshHandle).Data);
                 
                     for (u32 i = 0; i < model.MeshCount; i++) {
-                        f32 remainingSpace = ImGui::GetContentRegionAvail().x;
-                        ImGui::Text("Material [%u]: ", i); ImGui::SameLine();
-                
-                        std::string matName;
-                        if (Project::GetAssetManager().ContainsAsset(mesh.MaterialHandles[i])) {
-                            matName = Project::GetAssetManager().GetAsset(mesh.MaterialHandles[i]).FilePath.Stem().String();
-                        } else {
-                            matName = "NULL";
-                        }
-                
                         ImGui::PushID(i);
-                        size = ImGui::GetContentRegionAvail().x;
-                        if (matName == "NULL") {
-                            ImGui::PushStyleColor(ImGuiCol_Text, 0xff0000ff);
-                            ImGui::Button(matName.c_str(), ImVec2(size, 0.0f));
-                            ImGui::PopStyleColor();
-                        } else {
-                            ImGui::Button(matName.c_str(), ImVec2(size, 0.0f));
-                        }
                 
-                        if (ImGui::BeginDragDropTarget()) {
-                            const ImGuiPayload* assetManagerPayload = ImGui::AcceptDragDropPayload("ASSET_MANAGER_HANDLE_DRAG_DROP");
-                            const ImGuiPayload* fileBrowserPayload = ImGui::AcceptDragDropPayload("FILE_BROWSER_FILE_DRAG_DROP");
-                
-                            if (assetManagerPayload) {
-                                mesh.MaterialHandles[i] = *reinterpret_cast<u64*>(assetManagerPayload->Data);
-                            } else if (fileBrowserPayload) {
-                                FS::Path p = reinterpret_cast<char*>(fileBrowserPayload->Data);
-                
-                                if (Project::GetAssetManager().ContainsAsset(p)) {
-                                    auto& asset = Project::GetAssetManager().GetAssetFromPath(p);
-                                    if (asset.Type == AssetType::Material) {
-                                        mesh.MaterialHandles[i] = asset.Handle;
-                                    }
-                                }
-                            }
-                
-                            ImGui::EndDragDropTarget();
-                        }
-                
+                        DrawAssetBox(fmt::format("Material [{}]: ", i), AssetType::Material, &mesh.MaterialHandles[i]);
+
                         ImGui::PopID();
                     }
                 }
-                
+
                 ImGui::Unindent();
+
+                ImGui::EndTable();
             });
             DrawComponent<TextComponent>("Text", entity, [this](TextComponent& text) {
                 ImGui::Text("Contents: ");
@@ -1282,22 +1275,35 @@ namespace BlackberryEditor {
                 ImGui::Unindent();
             });
             DrawComponent<CameraComponent>("Camera", entity, [this](CameraComponent& camera) {
-                ImGui::Text("Zoom: ");
-                ImGui::Indent();
+                ImGui::BeginTable("##TheTable", 2, ImGuiTableFlags_Resizable);
+                ImGui::TableNextColumn();
+
+                ImGui::Text("Zoom");
+                ImGui::TableNextColumn();
+
+                f32 size = ImGui::GetContentRegionAvail().x;
+
+                ImGui::PushItemWidth(size);
                 ImGui::DragFloat("##Zoom", &camera.Zoom);
-                ImGui::Unindent();
-                ImGui::Separator();
+                ImGui::TableNextColumn();
+                ImGui::PopItemWidth();
 
                 ImGui::Text("Near: ");
-                ImGui::Indent();
-                ImGui::DragFloat("##CameraNear", &camera.Near);
-                ImGui::Unindent();
-                ImGui::Separator();
+                ImGui::TableNextColumn();
+
+                ImGui::PushItemWidth(size);
+                ImGui::DragFloat("##Near", &camera.Near);
+                ImGui::TableNextColumn();
+                ImGui::PopItemWidth();
 
                 ImGui::Text("Far: ");
-                ImGui::Indent();
-                ImGui::DragFloat("##CameraFar", &camera.Far);
-                ImGui::Unindent();
+                ImGui::TableNextColumn();
+
+                ImGui::PushItemWidth(size);
+                ImGui::DragFloat("##Far", &camera.Far);
+                ImGui::PopItemWidth();
+
+                ImGui::EndTable();
             });
             DrawComponent<ScriptComponent>("Script", entity, [this](ScriptComponent& script) {
                 auto stringPath = script.ModulePath.String();
@@ -1309,34 +1315,118 @@ namespace BlackberryEditor {
                 script.FilePath = m_BaseDirectory / script.ModulePath;
             });
             DrawComponent<RigidBodyComponent>("Rigid Body", entity, [](RigidBodyComponent& rigidBody) {
+                ImGui::BeginTable("##TheTable", 2, ImGuiTableFlags_Resizable);
+                ImGui::TableNextColumn();
+
                 static const char* const types[] = { "Static", "Dynamic", "Kinematic" };
                 static int currentType = static_cast<int>(rigidBody.Type);
 
                 ImGui::Text("Type: ");
-                ImGui::Indent();
+                ImGui::TableNextColumn();
+
+                f32 size = ImGui::GetContentRegionAvail().x;
+
+                ImGui::PushItemWidth(size);
                 if (ImGui::Combo("##Type", &currentType, types, IM_ARRAYSIZE(types))) {
                     rigidBody.Type = static_cast<RigidBodyType>(currentType);
                 }
-                ImGui::Unindent();
+                ImGui::PopItemWidth();
+                ImGui::TableNextColumn();
 
-                ImGui::DragFloat("Restitution", &rigidBody.Resitution, 0.05f);
-                ImGui::DragFloat("Friction", &rigidBody.Friction, 0.05f);
+                ImGui::Text("Restitution: ");
+                ImGui::TableNextColumn();
+
+                ImGui::PushItemWidth(size);
+                ImGui::DragFloat("##Restitution", &rigidBody.Resitution, 0.05f);
+                ImGui::PopItemWidth();
+                ImGui::TableNextColumn();
+
+                ImGui::Text("Friction: ");
+                ImGui::TableNextColumn();
+
+                ImGui::PushItemWidth(size);
+                ImGui::DragFloat("##Friction", &rigidBody.Friction, 0.05f);
+                ImGui::TableNextColumn();
+                ImGui::PopItemWidth();
+
+                ImGui::EndTable();
             });
             DrawComponent<BoxColliderComponent>("Box Collider", entity, [](BoxColliderComponent& collider) {
-                DrawVec3Control("Scale", &collider.Scale);
+                ImGui::BeginTable("##TheTable", 2, ImGuiTableFlags_Resizable);
+                ImGui::TableNextColumn();
+
+                DrawVec3Control("Scale: ", &collider.Scale);
+
+                ImGui::EndTable();
             });
             DrawComponent<SphereColliderComponent>("Sphere Collider", entity, [](SphereColliderComponent& collider) {
-                ImGui::DragFloat("Radius", &collider.Radius, 0.05f);
+                ImGui::BeginTable("##TheTable", 2, ImGuiTableFlags_Resizable);
+                ImGui::TableNextColumn();
+
+                ImGui::Text("Radius: ");
+                ImGui::TableNextColumn();
+
+                ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x);
+                ImGui::DragFloat("##Radius", &collider.Radius, 0.05f);
+                ImGui::PopItemWidth();
+
+                ImGui::EndTable();
             });
             DrawComponent<DirectionalLightComponent>("Directional Light", entity, [](DirectionalLightComponent& light) {
-                ImGui::ColorEdit3("Color", &light.Color.x);
-                ImGui::DragFloat("Intensity", &light.Intensity, 0.5f);
+                ImGui::BeginTable("##TheTable", 2, ImGuiTableFlags_Resizable);
+                ImGui::TableNextColumn();
+
+                ImGui::Text("Color: ");
+                ImGui::TableNextColumn();
+
+                f32 size = ImGui::GetContentRegionAvail().x;
+
+                ImGui::PushItemWidth(size);
+                ImGui::ColorEdit3("##Color", &light.Color.x);
+                ImGui::TableNextColumn();
+                ImGui::PopItemWidth();
+
+                ImGui::Text("Intensity: ");
+                ImGui::TableNextColumn();
+
+                ImGui::PushItemWidth(size);
+                ImGui::DragFloat("##Intensity", &light.Intensity, 0.5f, 0.0f, 500.0f);
+                ImGui::TableNextColumn();
+                ImGui::PopItemWidth();
+
+                ImGui::EndTable();
             });
             DrawComponent<PointLightComponent>("Point Light", entity, [](PointLightComponent& light) {
-                ImGui::ColorEdit3("Color", &light.Color.x);
+                ImGui::BeginTable("##TheTable", 2, ImGuiTableFlags_Resizable);
+                ImGui::TableNextColumn();
 
-                ImGui::DragFloat("Radius", &light.Radius, 0.1f);
-                ImGui::DragFloat("Intensity", &light.Intensity, 0.5f);
+                ImGui::Text("Color: ");
+                ImGui::TableNextColumn();
+
+                f32 size = ImGui::GetContentRegionAvail().x;
+
+                ImGui::PushItemWidth(size);
+                ImGui::ColorEdit3("##Color", &light.Color.x);
+                ImGui::TableNextColumn();
+                ImGui::PopItemWidth();
+
+                ImGui::Text("Radius: ");
+                ImGui::TableNextColumn();
+
+                ImGui::PushItemWidth(size);
+                ImGui::DragFloat("##Radius", &light.Radius, 0.5f, 0.0f, 500.0f);
+                ImGui::TableNextColumn();
+                ImGui::PopItemWidth();
+
+                ImGui::Text("Intensity: ");
+                ImGui::TableNextColumn();
+
+                ImGui::PushItemWidth(size);
+                ImGui::DragFloat("##Intensity", &light.Intensity, 0.5f, 0.0f, 500.0f);
+                ImGui::TableNextColumn();
+                ImGui::PopItemWidth();
+
+                ImGui::EndTable();
             });
             DrawComponent<SpotLightComponent>("Point Light", entity, [](SpotLightComponent& light) {
                 ImGui::ColorEdit3("Color", &light.Color.x);
@@ -1344,50 +1434,37 @@ namespace BlackberryEditor {
                 ImGui::DragFloat("Cutoff", &light.Cutoff, 0.1f);
                 ImGui::DragFloat("Intensity", &light.Intensity, 0.5f);
             });
-            DrawComponent<EnviromentComponent>("Enviroment", entity, [](EnviromentComponent& env) {
-                ImGui::Text("Enviroment Map: ");
-                ImGui::Indent();
+            DrawComponent<EnvironmentComponent>("Environment", entity, [](EnvironmentComponent& env) {
+                ImGui::BeginTable("##TheTable", 2, ImGuiTableFlags_Resizable);
+                ImGui::TableNextColumn();
 
-                std::string meshName;
-                if (Project::GetAssetManager().ContainsAsset(env.EnviromentMap)) {
-                    meshName = Project::GetAssetManager().GetAsset(env.EnviromentMap).FilePath.Stem().String();
-                } else {
-                    meshName = "NULL";
-                }
+                DrawAssetBox("Environment Map: ", AssetType::EnvironmentMap, &env.EnvironmentMap);
+
+                ImGui::Text("Level of Detail: ");
+                ImGui::TableNextColumn();
 
                 f32 size = ImGui::GetContentRegionAvail().x;
-                if (meshName == "NULL") {
-                    ImGui::PushStyleColor(ImGuiCol_Text, 0xff0000ff);
-                    ImGui::Button(meshName.c_str(), ImVec2(size, 0.0f));
-                    ImGui::PopStyleColor();
-                } else {
-                    ImGui::Button(meshName.c_str(), ImVec2(size, 0.0f));
-                }
 
-                if (ImGui::BeginPopupContextItem("EnvMapHandlePopup")) {
-                    if (ImGui::MenuItem("Remove Enviroment Map")) {
-                        env.EnviromentMap = 0;
-                    }
+                ImGui::PushItemWidth(size);
+                ImGui::SliderFloat("##Level Of Detail", &env.LevelOfDetail, 0.0f, 7.0f);
+                ImGui::TableNextColumn();
+                ImGui::PopItemWidth();
 
-                    ImGui::EndPopup();
-                }
+                ImGui::Text("Enable Bloom: ");
+                ImGui::TableNextColumn();
+                ImGui::SetCursorPosX(ImGui::GetCursorPosX() + size - 24.0f);
+                ImGui::Checkbox("##Enable Bloom", &env.EnableBloom);
+                ImGui::TableNextColumn();
 
-                if (ImGui::BeginDragDropTarget()) {
-                    const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_MANAGER_HANDLE_DRAG_DROP");
+                ImGui::Text("Bloom Threshold: ");
+                ImGui::TableNextColumn();
 
-                    if (payload) {
-                        env.EnviromentMap = *reinterpret_cast<u64*>(payload->Data); // seems sus
-                    }
+                ImGui::PushItemWidth(size);
+                ImGui::DragFloat("##Bloom Threshold", &env.BloomThreshold);
+                ImGui::TableNextColumn();
+                ImGui::PopItemWidth();
 
-                    ImGui::EndDragDropTarget();
-                }
-
-                ImGui::Unindent();
-
-                ImGui::SliderFloat("Level Of Detail", &env.LevelOfDetail, 0.0f, 7.0f);
-
-                ImGui::Checkbox("Enable Bloom", &env.EnableBloom);
-                ImGui::DragFloat("Bloom Threshold", &env.BloomThreshold);
+                ImGui::EndTable();
             });
         }
     

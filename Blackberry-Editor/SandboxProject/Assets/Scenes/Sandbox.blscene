@@ -1,5 +1,37 @@
 Entities:
   - TagComponent:
+      UUID: 7126271373417555271
+      Name: Point Light
+    RelationshipComponent:
+      Parent: 0
+      FirstChild: 0
+      NextSibling: 0
+      PrevSibling: 0
+    TransformComponent:
+      Position: [2.7, 4.9, -1.65]
+      Rotation: [0, 0, 0, 1]
+      Scale: [1, 1, 1]
+    PointLightComponent:
+      Color: [1, 0, 0]
+      Radius: 31.5
+      Intensity: 22.5
+  - TagComponent:
+      UUID: 5471921988530868192
+      Name: Camera
+    RelationshipComponent:
+      Parent: 0
+      FirstChild: 0
+      NextSibling: 0
+      PrevSibling: 0
+    TransformComponent:
+      Position: [0.6708032, 6.337521, -1.2692239]
+      Rotation: [0, 0, 0, 1]
+      Scale: [1920, 1080, 1]
+    CameraComponent:
+      FOV: 60
+      Near: 0.1
+      Far: 10000
+  - TagComponent:
       UUID: 15091938322169714267
       Name: Sphere
     RelationshipComponent:
@@ -8,13 +40,13 @@ Entities:
       NextSibling: 0
       PrevSibling: 0
     TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0, 0]
+      Position: [-0.1, 2.65, 0]
+      Rotation: [0, 0, 0, 1]
       Scale: [1, 1, 1]
     MeshComponent:
       MeshHandle: 16676790944532672824
       MaterialHandles:
-        {}
+        0: 0
     RigidBodyComponent:
       Type: Static
       Resitution: 1
@@ -45,14 +77,14 @@ Entities:
       Scale: [1, 1, 1]
   - TagComponent:
       UUID: 8363055567088055493
-      Name: Enviroment
+      Name: Environment
     RelationshipComponent:
       Parent: 0
       FirstChild: 0
       NextSibling: 0
       PrevSibling: 0
-    EnviromentComponent:
-      EnviromentMap: 16970579584870424807
+    EnvironmentComponent:
+      EnvironmentMap: 16970579584870424807
       LevelOfDetail: 0
       EnableBloom: true
       BloomThreshold: 3
@@ -137,3 +169,19 @@ Entities:
       Friction: 1
     SphereColliderComponent:
       Radius: 1
+  - TagComponent:
+      UUID: 462927684781921975
+      Name: Point Light
+    RelationshipComponent:
+      Parent: 0
+      FirstChild: 0
+      NextSibling: 0
+      PrevSibling: 0
+    TransformComponent:
+      Position: [1.5, 4.6, -1.65]
+      Rotation: [0, 0, 0, 1]
+      Scale: [1, 1, 1]
+    PointLightComponent:
+      Color: [0, 0.31660247, 1]
+      Radius: 31.5
+      Intensity: 22.5

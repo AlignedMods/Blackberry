@@ -7,7 +7,7 @@
 #include "blackberry/model/model.hpp"
 #include "blackberry/model/material.hpp"
 #include "blackberry/core/util.hpp"
-#include "blackberry/renderer/enviroment_map.hpp"
+#include "blackberry/renderer/environment_map.hpp"
 #include "blackberry/scene/scene.hpp"
 
 #include <unordered_map>
@@ -22,7 +22,7 @@ namespace Blackberry {
         Font = 1,
         Model = 2,
         Material = 3,
-        EnviromentMap = 4,
+        EnvironmentMap = 4,
         Scene = 5
     };
 
@@ -32,7 +32,7 @@ namespace Blackberry {
             case AssetType::Font: return "Font"; break;
             case AssetType::Model: return "Model"; break;
             case AssetType::Material: return "Material"; break;
-            case AssetType::EnviromentMap: return "Enviroment Map"; break;
+            case AssetType::EnvironmentMap: return "Environment Map"; break;
             case AssetType::Scene: return "Scene"; break;
         }
 
@@ -45,7 +45,7 @@ namespace Blackberry {
         if (type == "Font") return AssetType::Font;
         if (type == "Model") return AssetType::Model;
         if (type == "Material") return AssetType::Material;
-        if (type == "Enviroment Map") return AssetType::EnviromentMap;
+        if (type == "Environment Map") return AssetType::EnvironmentMap;
         if (type == "Scene") return AssetType::Scene;
 
         BL_ASSERT(false, "Unknown asset type {}", type);
@@ -55,7 +55,7 @@ namespace Blackberry {
     struct Asset {
         FS::Path FilePath;
         AssetType Type;
-        std::variant<Ref<Texture>, Font, Model, Material, Ref<EnviromentMap>, Ref<Scene>> Data;
+        std::variant<Ref<Texture>, Font, Model, Material, Ref<EnvironmentMap>, Ref<Scene>> Data;
         AssetHandle Handle = 0;
     };
 
@@ -87,7 +87,7 @@ namespace Blackberry {
         void LoadFontFromPath(const FS::Path& path);
         void LoadModelFromPath(const FS::Path& path);
         void LoadMaterialFromPath(const FS::Path& path);
-        void LoadEnviromentMapFromPath(const FS::Path& path);
+        void LoadEnvironmentMapFromPath(const FS::Path& path);
         void LoadSceneFromPath(const FS::Path& path);
 
         void LoadAssetFromPath(const FS::Path& path);

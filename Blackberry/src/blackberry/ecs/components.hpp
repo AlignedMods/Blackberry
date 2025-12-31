@@ -112,8 +112,8 @@ namespace Blackberry {
         f32 Intensity = 1.0f;
     };
 
-    struct EnviromentComponent {
-        u64 EnviromentMap = 0;
+    struct EnvironmentComponent {
+        u64 EnvironmentMap = 0;
         f32 LevelOfDetail = 0.0f;
         bool EnableBloom = true;
         f32 BloomThreshold = 3.0f;

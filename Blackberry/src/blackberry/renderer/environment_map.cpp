@@ -1,4 +1,4 @@
-#include "blackberry/renderer/enviroment_map.hpp"
+#include "blackberry/renderer/environment_map.hpp"
 #include "blackberry/renderer/shader.hpp"
 #include "blackberry/renderer/texture.hpp"
 #include "blackberry/application/application.hpp"
@@ -44,8 +44,8 @@ namespace Blackberry {
         return tex;
     }
 
-    // The great rewrite of "EnviromentMap::Create"
-    Ref<EnviromentMap> EnviromentMap::Create(const FS::Path& hdr) {
+    // The great rewrite of "EnvironmentMap::Create"
+    Ref<EnvironmentMap> EnvironmentMap::Create(const FS::Path& hdr) {
         auto& api = BL_APP.GetRendererAPI();
 
         // Setup shaders
@@ -167,7 +167,7 @@ namespace Blackberry {
 
         api.UnBindFramebuffer();
         
-        Ref<EnviromentMap> env = CreateRef<EnviromentMap>();
+        Ref<EnvironmentMap> env = CreateRef<EnvironmentMap>();
         env->Skybox = envCubemap;
         env->Irradiance = envIrradiance;
         env->Prefilter = envPrefilter;

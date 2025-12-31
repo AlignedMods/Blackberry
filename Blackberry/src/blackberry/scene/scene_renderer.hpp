@@ -5,7 +5,7 @@
 #include "blackberry/scene/camera.hpp"
 #include "blackberry/model/material.hpp"
 #include "blackberry/renderer/shader_storage_buffer.hpp"
-#include "blackberry/renderer/enviroment_map.hpp"
+#include "blackberry/renderer/environment_map.hpp"
 #include "blackberry/scene/entity.hpp"
 
 namespace Blackberry {
@@ -105,11 +105,11 @@ namespace Blackberry {
         std::array<Ref<Framebuffer>, 7> BloomUpscalePasses; // Bloom upscale passes
         Ref<Framebuffer> BloomCombinePass; // Bloom combine pass
 
-        Ref<EnviromentMap> CurrentEnviromentMap;
-        Ref<EnviromentMap> DefaultEnviromentMap;
-        f32 EnviromentMapLOD = 0.0f;
-        BlVec3 EnviromentFogColor;
-        f32 EnviromentFogDistance = 0.0f;
+        Ref<EnvironmentMap> CurrentEnvironmentMap;
+        Ref<EnvironmentMap> DefaultEnvironmentMap;
+        f32 EnvironmentMapLOD = 0.0f;
+        BlVec3 EnvironmentFogColor;
+        f32 EnvironmentFogDistance = 0.0f;
 
         bool BloomEnabled = true;
         f32 BloomThreshold = 3.0f;
@@ -151,7 +151,7 @@ namespace Blackberry {
         void AddPointLight(const TransformComponent& transform, const PointLightComponent& light);
         void AddSpotLight(const TransformComponent& transform, const SpotLightComponent& light);
 
-        void AddEnviroment(const EnviromentComponent& env);
+        void AddEnvironment(const EnvironmentComponent& env);
 
         u32 GetMaterialIndex(const Material& mat);
 

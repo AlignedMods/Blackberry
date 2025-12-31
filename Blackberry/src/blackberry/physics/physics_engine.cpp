@@ -204,8 +204,10 @@ namespace Blackberry {
             default: BL_ASSERT(false, "Unreachable"); break;
         }
 
+        BlQuat rot = glm::normalize(transform.Rotation);
+
         JPH::BodyCreationSettings bodySettings(shape, JPH::Vec3(transform.Position.x, transform.Position.y, transform.Position.z), 
-                                                      JPH::Quat(transform.Rotation.x, transform.Rotation.y, transform.Rotation.z, transform.Rotation.w), type, layer);
+                                                      JPH::Quat(rot.w, rot.x, rot.y, rot.z), type, layer);
 
         // Create the actual rigid body
         JPH::Body* body = bodyInterface.CreateBody(bodySettings);

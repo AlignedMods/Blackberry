@@ -85,12 +85,10 @@ void main() {
     float ao        = texture(u_GMat, a_TexCoord).b;
     float emission  = texture(u_GMat, a_TexCoord).a;
 
-    roughness = max(roughness, 0.001);
+    // roughness = max(roughness, 0.001);
 
     vec3 N = normal;
     vec3 V = normalize(u_ViewPos - worldPos);
-    // vec3 N = normalize(V);
-    // vec3 V = normalize(-worldPos);
     vec3 R = reflect(-V, N);
 
     vec3 F0 = vec3(0.04);
@@ -164,10 +162,10 @@ void main() {
 
     const float MAX_REFLECTION_LOD = 7.0;
     vec3 prefilteredColor = textureLod(u_PrefilterMap, R, roughness * MAX_REFLECTION_LOD).rgb;
+    // vec3 prefilteredColor = textureLod(u_PrefilterMap, R, 0).rgb;
     // note to future self: maybe don't always assume textures want mips (ask me how i know)
     vec2 brdf = textureLod(u_BrdfLUT, vec2(max(dot(N, V), 0.0), roughness), 0).rg;
     vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
-    // vec3 specular = prefilteredColor * F;
     
     vec3 ambient = (kD * diffuse + specular) * ao;
 

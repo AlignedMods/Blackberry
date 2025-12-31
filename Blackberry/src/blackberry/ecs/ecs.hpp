@@ -45,7 +45,7 @@ namespace Blackberry {
             CopyComponent<SphereColliderComponent>(src, dest, target, newEntity);
             CopyComponent<DirectionalLightComponent>(src, dest, target, newEntity);
             CopyComponent<PointLightComponent>(src, dest, target, newEntity);
-            CopyComponent<EnviromentComponent>(src, dest, target, newEntity);
+            CopyComponent<EnvironmentComponent>(src, dest, target, newEntity);
         }
 
         // safer version on duplicate entity (generates new UUIDs)
@@ -73,7 +73,7 @@ namespace Blackberry {
             CopyComponent<SphereColliderComponent>(src, dest, target, newEntity);
             CopyComponent<DirectionalLightComponent>(src, dest, target, newEntity);
             CopyComponent<PointLightComponent>(src, dest, target, newEntity);
-            CopyComponent<EnviromentComponent>(src, dest, target, newEntity);
+            CopyComponent<EnvironmentComponent>(src, dest, target, newEntity);
 
             return newEntity;
         }

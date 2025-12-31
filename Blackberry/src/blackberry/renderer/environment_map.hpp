@@ -4,8 +4,8 @@
 
 namespace Blackberry {
 
-    struct EnviromentMap {
-        static Ref<EnviromentMap> Create(const FS::Path& hdri);
+    struct EnvironmentMap {
+        static Ref<EnvironmentMap> Create(const FS::Path& hdri);
 
         Ref<Texture> Skybox;
         Ref<Texture> Prefilter;

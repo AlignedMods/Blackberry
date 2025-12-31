@@ -154,18 +154,18 @@ namespace Blackberry {
             out << YAML::EndMap; // PointLightComponent
         }
 
-        if (e.HasComponent<EnviromentComponent>()) {
-            auto& env = e.GetComponent<EnviromentComponent>();
+        if (e.HasComponent<EnvironmentComponent>()) {
+            auto& env = e.GetComponent<EnvironmentComponent>();
 
-            out << YAML::Key << "EnviromentComponent";
-            out << YAML::BeginMap; // EnviromentComponent
+            out << YAML::Key << "EnvironmentComponent";
+            out << YAML::BeginMap; // EnvironmentComponent
 
-            out << YAML::Key << "EnviromentMap" << YAML::Value << env.EnviromentMap;
+            out << YAML::Key << "EnvironmentMap" << YAML::Value << env.EnvironmentMap;
             out << YAML::Key << "LevelOfDetail" << YAML::Value << env.LevelOfDetail;
             out << YAML::Key << "EnableBloom" << YAML::Value << env.EnableBloom;
             out << YAML::Key << "BloomThreshold" << YAML::Value << env.BloomThreshold;
 
-            out << YAML::EndMap; // EnviromentComponent
+            out << YAML::EndMap; // EnvironmentComponent
         }
 
         out << YAML::EndMap; // Entity
@@ -313,16 +313,16 @@ namespace Blackberry {
                 e.AddComponent<PointLightComponent>(light);
             }
 
-            if (entity["EnviromentComponent"]) {
-                auto yamlEnv = entity["EnviromentComponent"];
+            if (entity["EnvironmentComponent"]) {
+                auto yamlEnv = entity["EnvironmentComponent"];
 
-                EnviromentComponent env;
-                env.EnviromentMap = yamlEnv["EnviromentMap"].as<u64>();
+                EnvironmentComponent env;
+                env.EnvironmentMap = yamlEnv["EnvironmentMap"].as<u64>();
                 env.LevelOfDetail = yamlEnv["LevelOfDetail"].as<f32>();
                 env.EnableBloom = yamlEnv["EnableBloom"].as<bool>();
                 env.BloomThreshold = yamlEnv["BloomThreshold"].as<f32>();
 
-                e.AddComponent<EnviromentComponent>(env);
+                e.AddComponent<EnvironmentComponent>(env);
             }
 
             m_Scene->FinishEntityEdit(e.GetComponent<TagComponent>().UUID);

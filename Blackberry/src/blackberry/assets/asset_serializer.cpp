@@ -55,8 +55,8 @@ namespace Blackberry {
             } else if (asset.Type == AssetType::Material) {
                 Material material = Material::Create(Project::GetAssetPath(assetPath));
                 asset.Data = material;
-            } else if (asset.Type == AssetType::EnviromentMap) {
-                Ref<EnviromentMap> env = EnviromentMap::Create(Project::GetAssetPath(assetPath));
+            } else if (asset.Type == AssetType::EnvironmentMap) {
+                Ref<EnvironmentMap> env = EnvironmentMap::Create(Project::GetAssetPath(assetPath));
                 asset.Data = env;
             } else if (asset.Type == AssetType::Scene) {
                 Ref<Scene> scene = Scene::Create(Project::GetAssetPath(assetPath));

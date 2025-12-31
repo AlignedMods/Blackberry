@@ -83,10 +83,10 @@ namespace Blackberry {
         AddAsset({path, AssetType::Material, mat});
     }
 
-    void AssetManager::LoadEnviromentMapFromPath(const FS::Path& path) {
+    void AssetManager::LoadEnvironmentMapFromPath(const FS::Path& path) {
         FS::Path full = Project::GetAssetPath(path);
-        Ref<EnviromentMap> env = EnviromentMap::Create(full);
-        AddAsset({path, AssetType::EnviromentMap, env});
+        Ref<EnvironmentMap> env = EnvironmentMap::Create(full);
+        AddAsset({path, AssetType::EnvironmentMap, env});
     }
 
     void AssetManager::LoadSceneFromPath(const FS::Path& path) {
@@ -109,7 +109,7 @@ namespace Blackberry {
         } else if (ext == ".blmat") {
             LoadMaterialFromPath(path);
         } else if (ext == ".hdr" || ext == ".hdri") {
-            LoadEnviromentMapFromPath(path);
+            LoadEnvironmentMapFromPath(path);
         } else if (ext == ".blscene") {
             LoadSceneFromPath(path);
         }
