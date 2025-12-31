@@ -29,7 +29,8 @@ void main() {
             // tangent space to world
             vec3 sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * N; 
 
-            irradiance += texture(u_EnvironmentMap, sampleVec).rgb * cos(theta) * sin(theta);
+            // NOTE: DO NOT SAMPLE FROM ANY MIP OTHER THAN 0 (texture() will choose a mip automatically!)
+            irradiance += textureLod(u_EnvironmentMap, sampleVec, 0).rgb * cos(theta) * sin(theta);
             nrSamples++;
         }
     }

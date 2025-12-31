@@ -87,7 +87,7 @@ void main() {
 
     roughness = max(roughness, 0.001);
 
-    vec3 N = normalize(normal);
+    vec3 N = normal;
     vec3 V = normalize(u_ViewPos - worldPos);
     // vec3 N = normalize(V);
     // vec3 V = normalize(-worldPos);
@@ -159,16 +159,16 @@ void main() {
     vec3 kD = 1.0 - kS;
     kD *= 1.0 - metallic;
 
-    vec3 irradiance = texture(u_IrradianceMap, N).rgb;
+    vec3 irradiance = textureLod(u_IrradianceMap, N, 0).rgb;
     vec3 diffuse = irradiance * albedo;
 
     const float MAX_REFLECTION_LOD = 7.0;
     vec3 prefilteredColor = textureLod(u_PrefilterMap, R, roughness * MAX_REFLECTION_LOD).rgb;
-    float NdotV = clamp(dot(N, V), 0.001, 1.0);
     // note to future self: maybe don't always assume textures want mips (ask me how i know)
-    vec2 brdf = textureLod(u_BrdfLUT, vec2(NdotV, roughness), 0).rg;
+    vec2 brdf = textureLod(u_BrdfLUT, vec2(max(dot(N, V), 0.0), roughness), 0).rg;
     vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
-
+    // vec3 specular = prefilteredColor * F;
+    
     vec3 ambient = (kD * diffuse + specular) * ao;
 
     vec3 color = ambient + Lo;
@@ -214,7 +214,7 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 vec3 FresnelSchlick(float cosTheta, vec3 F0) {
     return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
-
+// ----------------------------------------------------------------------------
 vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness) {
     return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
-}
+}   

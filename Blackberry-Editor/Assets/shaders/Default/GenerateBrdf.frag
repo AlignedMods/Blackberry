@@ -56,14 +56,6 @@ float GeometrySchlickGGX(float NdotV, float roughness)
     float denom = NdotV * (1.0 - k) + k;
     
     return nom / denom;
-
-    // float r = (roughness + 1.0);
-    // float k = (r*r) / 8.0;
-    // 
-    // float nom   = NdotV;
-    // float denom = NdotV * (1.0 - k) + k;
-    // 
-    // return nom / denom;
 }
 // ----------------------------------------------------------------------------
 float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)

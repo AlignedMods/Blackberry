@@ -1,51 +1,7 @@
 Entities:
   - TagComponent:
-      UUID: 6432124494924568923
+      UUID: 15091938322169714267
       Name: Sphere
-    RelationshipComponent:
-      Parent: 8036015914084969727
-      FirstChild: 2869904359067698371
-      NextSibling: 0
-      PrevSibling: 0
-    TransformComponent:
-      Position: [-1.9499999, 4.3500004, 0]
-      Rotation: [0, 0, 0, 1]
-      Scale: [0.9999999, 1.0000001, 1.0000001]
-    MeshComponent:
-      MeshHandle: 16676790944532672824
-      MaterialHandles:
-        0: 7296462141333892632
-    RigidBodyComponent:
-      Type: Dynamic
-      Resitution: 0.6
-      Friction: 1
-    SphereColliderComponent:
-      Radius: 1
-  - TagComponent:
-      UUID: 8036015914084969727
-      Name: Sphere
-    RelationshipComponent:
-      Parent: 0
-      FirstChild: 6432124494924568923
-      NextSibling: 0
-      PrevSibling: 0
-    TransformComponent:
-      Position: [2.5999901, 5.3, 5.943312e-30]
-      Rotation: [0, 0, 0, 1]
-      Scale: [0.9999999, 1.0000001, 1.0000001]
-    MeshComponent:
-      MeshHandle: 16676790944532672824
-      MaterialHandles:
-        0: 761659761808722940
-    RigidBodyComponent:
-      Type: Dynamic
-      Resitution: 0.6
-      Friction: 1
-    SphereColliderComponent:
-      Radius: 1
-  - TagComponent:
-      UUID: 5183718714978214366
-      Name: Directional Light
     RelationshipComponent:
       Parent: 0
       FirstChild: 0
@@ -53,46 +9,18 @@ Entities:
       PrevSibling: 0
     TransformComponent:
       Position: [0, 0, 0]
-      Rotation: [0.19081809, -0.95955384, -0.16946515, 0.118854895]
-      Scale: [0.99999917, 1.0000001, 0.999999]
-    DirectionalLightComponent:
-      Color: [1, 1, 1]
-      Intensity: 0.5
-  - TagComponent:
-      UUID: 3605025198173883544
-      Name: Plane
-    RelationshipComponent:
-      Parent: 0
-      FirstChild: 0
-      NextSibling: 0
-      PrevSibling: 0
-    TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0, 1]
-      Scale: [7.8, 7.8, 7.8]
+      Rotation: [0, 0, 0, 0]
+      Scale: [1, 1, 1]
     MeshComponent:
-      MeshHandle: 14564222973131806585
+      MeshHandle: 16676790944532672824
       MaterialHandles:
-        0: 0
+        {}
     RigidBodyComponent:
       Type: Static
-      Resitution: 0.3
+      Resitution: 1
       Friction: 1
-    BoxColliderComponent:
-      Scale: [1, 0, 1]
-  - TagComponent:
-      UUID: 8363055567088055493
-      Name: Enviroment
-    RelationshipComponent:
-      Parent: 0
-      FirstChild: 0
-      NextSibling: 0
-      PrevSibling: 0
-    EnviromentComponent:
-      EnviromentMap: 16970579584870424807
-      LevelOfDetail: 0
-      EnableBloom: true
-      BloomThreshold: 3
+    SphereColliderComponent:
+      Radius: 1
   - TagComponent:
       UUID: 2869904359067698371
       Name: Cube
@@ -116,8 +44,21 @@ Entities:
     BoxColliderComponent:
       Scale: [1, 1, 1]
   - TagComponent:
-      UUID: 15091938322169714267
-      Name: Sphere
+      UUID: 8363055567088055493
+      Name: Enviroment
+    RelationshipComponent:
+      Parent: 0
+      FirstChild: 0
+      NextSibling: 0
+      PrevSibling: 0
+    EnviromentComponent:
+      EnviromentMap: 16970579584870424807
+      LevelOfDetail: 0
+      EnableBloom: true
+      BloomThreshold: 3
+  - TagComponent:
+      UUID: 3605025198173883544
+      Name: Plane
     RelationshipComponent:
       Parent: 0
       FirstChild: 0
@@ -125,15 +66,74 @@ Entities:
       PrevSibling: 0
     TransformComponent:
       Position: [0, 0, 0]
-      Rotation: [0, 0, 0, 0]
-      Scale: [1, 1, 1]
+      Rotation: [0, 0, 0, 1]
+      Scale: [7.8, 7.8, 7.8]
+    MeshComponent:
+      MeshHandle: 14564222973131806585
+      MaterialHandles:
+        0: 0
+    RigidBodyComponent:
+      Type: Static
+      Resitution: 0.3
+      Friction: 1
+    BoxColliderComponent:
+      Scale: [1, 0, 1]
+  - TagComponent:
+      UUID: 5183718714978214366
+      Name: Directional Light
+    RelationshipComponent:
+      Parent: 0
+      FirstChild: 0
+      NextSibling: 0
+      PrevSibling: 0
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0.23229024, -0.95035356, -0.17451552, 0.1114176]
+      Scale: [0.9999833, 1.0000215, 1.0000083]
+    DirectionalLightComponent:
+      Color: [1, 1, 1]
+      Intensity: 0.5
+  - TagComponent:
+      UUID: 8036015914084969727
+      Name: Sphere
+    RelationshipComponent:
+      Parent: 0
+      FirstChild: 6432124494924568923
+      NextSibling: 0
+      PrevSibling: 0
+    TransformComponent:
+      Position: [2.5999901, 5.3, 5.943312e-30]
+      Rotation: [0, 0, 0, 1]
+      Scale: [0.9999999, 1.0000001, 1.0000001]
     MeshComponent:
       MeshHandle: 16676790944532672824
       MaterialHandles:
-        {}
+        0: 761659761808722940
     RigidBodyComponent:
-      Type: Static
-      Resitution: 1
+      Type: Dynamic
+      Resitution: 0.6
+      Friction: 1
+    SphereColliderComponent:
+      Radius: 1
+  - TagComponent:
+      UUID: 6432124494924568923
+      Name: Sphere
+    RelationshipComponent:
+      Parent: 8036015914084969727
+      FirstChild: 2869904359067698371
+      NextSibling: 0
+      PrevSibling: 0
+    TransformComponent:
+      Position: [-1.9499999, 4.3500004, 0]
+      Rotation: [0, 0, 0, 1]
+      Scale: [0.9999999, 1.0000001, 1.0000001]
+    MeshComponent:
+      MeshHandle: 16676790944532672824
+      MaterialHandles:
+        0: 7296462141333892632
+    RigidBodyComponent:
+      Type: Dynamic
+      Resitution: 0.6
       Friction: 1
     SphereColliderComponent:
       Radius: 1
