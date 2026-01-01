@@ -1033,109 +1033,103 @@ namespace BlackberryEditor {
 
             ImGui::EndPopup();
         };
-        
-        struct EntityHierarchyData {
-            EntityID EntityID = entt::null;
-            u64 UUID = 0;
-            u32 Depth = 0;
-        };
 
-        std::vector<EntityHierarchyData> entities;
+        u64 entityToParent = 0;
+        u64 parentForEntityToParent = 0;
+
+        u64 entityToDelete = 0;
+        u64 entityToDuplicate = 0;
 
         std::function<void(u64, u32)> traverse = [&](u64 entityUUID, u32 depth) {
             Entity e(m_CurrentScene->GetEntityFromUUID(entityUUID), m_CurrentScene);
             auto& rel = e.GetComponent<RelationshipComponent>();
 
-            entities.push_back({e.ID, entityUUID, depth});
-
-            u64 child = rel.FirstChild;
-            while (child != 0) {
-                Entity childEntity = Entity(m_CurrentScene->GetEntityFromUUID(child), m_CurrentScene);
-                auto& childRel = childEntity.GetComponent<RelationshipComponent>();
-
-                traverse(child, depth + 1);
-
-                child = childRel.NextSibling;
-            }
-        };
-
-        auto& rootEntities = m_CurrentScene->GetRootEntities();
-
-        for (u64 uuid : rootEntities) {
-            traverse(uuid, 0);
-        }
-
-        u64 entityToDelete = 0;
-        u64 entityToDuplicate = 0;
-
-        for (const auto& data : entities) {
-            Entity e(m_CurrentScene->GetEntityFromUUID(data.UUID), m_CurrentScene);
-
             ImGui::PushID(static_cast<int>(e.ID));
 
-            if (data.Depth > 0) {  
-                ImGui::Indent(data.Depth * 20.0f);
+            ImGuiTreeNodeFlags flags = 0;
+            if (m_SelectedEntity == e.ID) {
+                flags |= ImGuiTreeNodeFlags_Selected;
             }
 
-            if (m_SelectedEntity == data.EntityID) {
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.4f, 0.4f, 1.0f, 1.0f));
-                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.45f, 0.45f, 1.0f, 1.0f));
-                ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.5f, 0.5f, 1.0f, 1.0f));
+            flags |= ImGuiTreeNodeFlags_OpenOnArrow;
+            flags |= ImGuiTreeNodeFlags_OpenOnDoubleClick;
+            flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
 
-                std::string name = e.GetComponent<TagComponent>().Name;
-                if (ImGui::Button(name.c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0.0f))) {
-                    m_SelectedEntity = e.ID;
-                    m_IsEntitySelected = true;
-                }
+            bool opened = false;
 
-                ImGui::PopStyleColor(3);
-            } else {
-                std::string name = e.GetComponent<TagComponent>().Name;
-                if (ImGui::Button(name.c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0.0f))) {
-                    m_SelectedEntity = e.ID;
-                    m_IsEntitySelected = true;
-                }
+            opened = ImGui::TreeNodeEx(e.GetComponent<TagComponent>().Name.c_str(), flags);
+
+            if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
+                m_SelectedEntity = e.ID;
+                m_IsEntitySelected = true;
             }
 
-            if (ImGui::BeginDragDropSource()) {
-                ImGui::SetDragDropPayload("EXPLORER_ENTITY_DRAG_DROP", &data.UUID, sizeof(data.UUID));
-
-                ImGui::EndDragDropSource();
-            }
-
-            if (ImGui::BeginDragDropTarget()) {
-                const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EXPLORER_ENTITY_DRAG_DROP");
-
-                if (payload) {
-                    u64 childUUID = *reinterpret_cast<u64*>(payload->Data);
-
-                    m_CurrentScene->SetEntityParent(childUUID, data.UUID);
-                    m_CurrentScene->FinishEntityEdit(childUUID);
-                }
-
-                ImGui::EndDragDropTarget();
-            }
-
-            if (data.Depth > 0) {  
-                ImGui::Unindent(data.Depth * 20.0f);
-            }
-
-            if (ImGui::BeginPopupContextItem()) {
+            if (ImGui::BeginPopupContextItem()) {  
                 if (ImGui::MenuItem("Delete Entity")) {
-                    entityToDelete = data.UUID;
-                }
-
-                if (ImGui::MenuItem("Duplicate Entity")) {
-                    entityToDuplicate = data.UUID;
+                    entityToDelete = e.GetComponent<TagComponent>().UUID;
                 }
 
                 ImGui::EndPopup();
             }
 
+            if (ImGui::BeginDragDropSource()) {
+                ImGui::SetDragDropPayload("EXPLORER_ENTITY_DRAG_DROP", &e.GetComponent<TagComponent>().UUID, sizeof(u64));
+
+                ImGui::Text(e.GetComponent<TagComponent>().Name.c_str());
+            
+                ImGui::EndDragDropSource();
+            }
+            
+            if (ImGui::BeginDragDropTarget()) {
+                const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EXPLORER_ENTITY_DRAG_DROP");
+            
+                if (payload) {
+                    u64 childUUID = *reinterpret_cast<u64*>(payload->Data);
+            
+                    entityToParent = childUUID;
+                    parentForEntityToParent = e.GetComponent<TagComponent>().UUID;
+                }
+            
+                ImGui::EndDragDropTarget();
+            }
+
+            if (opened) {
+                u64 child = rel.FirstChild;
+                while (child != 0) {
+                    Entity childEntity = Entity(m_CurrentScene->GetEntityFromUUID(child), m_CurrentScene);
+                    auto& childRel = childEntity.GetComponent<RelationshipComponent>();
+
+                    traverse(child, depth + 1);
+
+                    child = childRel.NextSibling;
+                }
+
+                ImGui::TreePop();
+            }
+
             ImGui::PopID();
+        };
+
+        auto& rootEntities = m_CurrentScene->GetRootEntities();
+
+        ImGui::PushStyleVarY(ImGuiStyleVar_ItemSpacing, 0.0f);
+        ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.9f, 0.5f, 0.3f, 1));
+        ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(0.9f, 0.7f, 0.5f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_HeaderActive, ImVec4(0.9f, 0.8f, 0.6f, 1.0f));
+
+        for (u64 uuid : rootEntities) {
+            traverse(uuid, 0);
         }
 
+        ImGui::PopStyleColor(3);
+        ImGui::PopStyleVar();
+
         ImGui::End();
+
+        if (entityToParent) {
+            m_CurrentScene->SetEntityParent(entityToParent, parentForEntityToParent);
+            m_CurrentScene->FinishEntityEdit(entityToParent);
+        }
 
         if (entityToDelete) {
             if (m_CurrentScene->GetEntityFromUUID(entityToDelete) == m_SelectedEntity) {

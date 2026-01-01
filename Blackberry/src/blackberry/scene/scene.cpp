@@ -228,8 +228,10 @@ namespace Blackberry {
     void Scene::FinishEntityEdit(u64 entity) {
         auto& rel = m_ECS->GetComponent<RelationshipComponent>(m_EntityMap.at(entity));
 
+        std::erase(m_RootEntities, entity); // remove entity from root entities (because entity was probably parented to something)
+
         if (rel.Parent == 0) {
-            m_RootEntities.push_back(entity);
+            m_RootEntities.push_back(entity); // if entity was not parented to something
         }
     }
 
