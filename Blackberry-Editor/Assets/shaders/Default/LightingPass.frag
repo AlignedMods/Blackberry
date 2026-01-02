@@ -127,8 +127,11 @@ void main() {
         float x = clamp(1.0 - (distance / radius), 0.0, 1.0);
         float attenuation = x * x;
         vec3 radiance = color * attenuation * intensity;
-    
-        Lo += AddLight(N, H, V, L, F0, roughness, metallic, albedo, radiance);
+
+        // Only add lights if they are in range
+        if (radius > distance) {
+            Lo += AddLight(N, H, V, L, F0, roughness, metallic, albedo, radiance);
+        }
     }
     
     // Spot Lights

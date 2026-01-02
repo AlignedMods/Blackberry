@@ -36,6 +36,9 @@ namespace Blackberry {
 
     void Scene::CopyTo(Ref<Scene> dest, Ref<Scene> source) {
         dest->m_ECS = ECS::Copy(source->m_ECS);
+
+        dest->m_RootEntities = source->m_RootEntities;
+        dest->m_EntityMap = source->m_EntityMap;
     }
 
     Ref<Scene> Scene::Copy(Ref<Scene> source) {
@@ -289,7 +292,9 @@ namespace Blackberry {
     }
 
     EntityID Scene::GetEntityFromUUID(u64 uuid) {
-        return m_EntityMap.at(uuid);
+        auto& entityMap = m_EntityMap;
+
+        return entityMap.at(uuid);
     }
 
     std::vector<EntityID> Scene::GetEntities() {

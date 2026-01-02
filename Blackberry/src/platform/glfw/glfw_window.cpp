@@ -194,7 +194,7 @@ namespace Blackberry {
             #ifdef BL_DEBUG_BUILD
                 glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
             #endif
-            glfwWindowHint(GLFW_SAMPLES, 4);
+            // glfwWindowHint(GLFW_SAMPLES, 4);
             glfwWindowHint(GLFW_DEPTH_BITS, 24);
         }
         

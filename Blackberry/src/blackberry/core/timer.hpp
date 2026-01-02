@@ -66,6 +66,12 @@ namespace Blackberry {
     #define BL_FUNC_SIG "BL_FUNC_SIG unknown!"
 #endif
 
-#define BL_PROFILE_SCOPE_LINE(name, line) Blackberry::ScopedTimer timer##line(name)
+// Okay so the reason why there are 2 BL_PROFILE_SCOPE_LINEs is because if we do fixedName##line in "BL_PROFILE_SCOPE_LINE"
+// it will get turned into fixedName##__LINE__,
+// however if we call "BL_PROFILE_SCOPE_LINE2" is magically becomes fixedName##(actual line number)
+// this is why macros are communist
+// Okay but the real reason is because "##" is dumb
+#define BL_PROFILE_SCOPE_LINE2(name, line) Blackberry::ScopedTimer fixedName##line(name)
+#define BL_PROFILE_SCOPE_LINE(name, line) BL_PROFILE_SCOPE_LINE2(name, line)
 #define BL_PROFILE_SCOPE(name) BL_PROFILE_SCOPE_LINE(name, __LINE__)
 #define BL_PROFILE_FUNCTION() BL_PROFILE_SCOPE(BL_FUNC_SIG)

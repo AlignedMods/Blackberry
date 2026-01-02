@@ -469,6 +469,8 @@ namespace Blackberry {
     }
 
     void SceneRenderer::BloomPass() {
+        BL_PROFILE_SCOPE("SceneRenderer::BloomPass");
+
         auto& api = BL_APP.GetRendererAPI();
 
         {

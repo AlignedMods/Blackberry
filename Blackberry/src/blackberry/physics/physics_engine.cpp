@@ -204,9 +204,10 @@ namespace Blackberry {
             default: BL_ASSERT(false, "Unreachable"); break;
         }
 
-        BlQuat rot = glm::normalize(transform.Rotation);
+        TransformComponent realTransform = reinterpret_cast<Scene*>(m_Scene)->GetEntityTransform(static_cast<EntityID>(entity));
+        BlQuat rot = glm::normalize(realTransform.Rotation);
 
-        JPH::BodyCreationSettings bodySettings(shape, JPH::Vec3(transform.Position.x, transform.Position.y, transform.Position.z), 
+        JPH::BodyCreationSettings bodySettings(shape, JPH::Vec3(realTransform.Position.x, realTransform.Position.y, realTransform.Position.z), 
                                                       JPH::Quat(rot.w, rot.x, rot.y, rot.z), type, layer);
 
         // Create the actual rigid body
@@ -242,7 +243,7 @@ namespace Blackberry {
             Entity e(entityID, scene);
             auto& transform = e.GetComponent<TransformComponent>();
 
-            transform.Position = BlVec3(pos.GetX(), pos.GetY(), pos.GetZ());
+            transform.Position = BlVec3(pos.GetX(), pos.GetY(), pos.GetZ()) - reinterpret_cast<Scene*>(m_Scene)->GetEntityParentTransform(entityID).Position;
             transform.Rotation = glm::normalize(BlQuat(rot.GetW(), rot.GetX(), rot.GetY(), rot.GetZ()));
         }
 
