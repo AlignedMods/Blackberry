@@ -34,7 +34,6 @@ namespace Blackberry {
         bool IsInitialized();
 
         void SetTargetFPS(u32 fps);
-        // void SetWindowIcon(const Image& image);
 
         void Close();
 
@@ -42,10 +41,11 @@ namespace Blackberry {
         void PopLayer();
         void PopLayer(const std::string& name);
 
+        void PushEvent(const Event& event);
+
         static Application& Get();
         ApplicationSpecification& GetSpecification() { return m_Specification; }
         LayerStack& GetLayerStack() { return *m_LayerStack; }
-        Dispatcher& GetDispatcher() { return m_Dispatcher; }
         RendererAPI& GetRendererAPI() { return *m_RendererAPI; }
         Window& GetWindow() { return *m_Window; }
 
@@ -75,8 +75,6 @@ namespace Blackberry {
         f64 m_FixedUpdateTime = 0.0;
 
         LayerStack* m_LayerStack = nullptr;
-        Dispatcher m_Dispatcher;
-
         Window* m_Window = nullptr;
         RendererAPI* m_RendererAPI = nullptr;
 

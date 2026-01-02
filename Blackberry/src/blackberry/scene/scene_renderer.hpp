@@ -16,15 +16,18 @@ namespace Blackberry {
         BlVec3 Position;
         BlVec3 Normal;
         BlVec2 TexCoord;
-        u32 MaterialIndex = 0;
-        u32 ObjectIndex = 0;
-        u32 EntityID = 0;
     };
 
     struct GPUDirectionalLight {
         BlVec4 Direction; // w is unused
         BlVec4 Color; // w is unused
         BlVec4 Params; // g, b, w is unused
+    };
+
+    struct alignas(16) GPUInstanceData {
+        BlMat4 Transform;
+        u32 MaterialIndex = 0;
+        u32 EntityID = 0;
     };
 
     struct alignas(16) GPUPointLight {
@@ -59,6 +62,17 @@ namespace Blackberry {
         f32 Emission = 0.0f;
     };
 
+    // All the info needed to render a mesh (using instanced rendering)
+    struct MeshInstance {
+        std::vector<SceneMeshVertex> MeshVertices;
+        std::vector<u32> MeshIndices;
+
+        u32 InstanceCount = 0;
+        std::vector<GPUInstanceData> InstanceData; // The size of this should be equal to InstanceCount
+
+        std::vector<GPUMaterial> MaterialData; // The size of this should be equal to InstanceCount
+    };
+
     struct SceneRendererState {
         // vertex arrays
         Ref<VertexArray> GeometryBuffer;
@@ -77,25 +91,17 @@ namespace Blackberry {
         Ref<Shader> FontShader;
 
         // shader buffers
-        ShaderStorageBuffer TransformBuffer;
+        ShaderStorageBuffer InstanceDataBuffer;
         ShaderStorageBuffer MaterialBuffer;
         ShaderStorageBuffer ShaderGBuffer;
         ShaderStorageBuffer PointLightBuffer;
         ShaderStorageBuffer SpotLightBuffer;
 
-        std::vector<glm::mat4> Transforms;
-        std::vector<GPUMaterial> Materials;
         std::vector<GPUPointLight> PointLights;
         std::vector<GPUSpotLight> SpotLights;
         GPUDirectionalLight DirectionalLight;
 
-        std::vector<SceneMeshVertex> MeshVertices;
-        u32 MeshVertexCount = 0;
-        std::vector<u32> MeshIndices;
-        u32 MeshIndexCount = 0;
-
-        u32 MaterialIndex = 0;
-        u32 ObjectIndex = 0;
+        std::unordered_map<u64, MeshInstance> Meshes; // All the meshes we want to render
 
         Ref<Framebuffer> GBuffer; // For deffered rendering
 
@@ -144,7 +150,7 @@ namespace Blackberry {
         SceneRendererState& GetState();
 
     private:
-        void AddMesh(const TransformComponent& transform, const Mesh& mesh, const Material& mat, BlColor color, u32 entityID);
+        void AddMesh(const TransformComponent& transform, const Mesh& mesh, const Material& mat, BlColor color, u32 entityID, u64 meshHandle);
         void AddModel(const TransformComponent& transform, const MeshComponent& model, BlColor color, u32 entityID);
 
         void AddDirectionalLight(const TransformComponent& transform, const DirectionalLightComponent& light);

@@ -46,7 +46,8 @@ namespace Blackberry {
 
     // The great rewrite of "EnvironmentMap::Create"
     Ref<EnvironmentMap> EnvironmentMap::Create(const FS::Path& hdr) {
-        auto& api = BL_APP.GetRendererAPI();
+        auto& app = BL_APP;
+        auto& api = app.GetRendererAPI();
 
         // Setup shaders
         Ref<Shader> equirectangularToCubemapShader = Shader::Create(FS::Path("Assets/Shaders/Default/GenerateSkybox.vert"), FS::Path("Assets/Shaders/Default/GenerateSkybox.frag"));

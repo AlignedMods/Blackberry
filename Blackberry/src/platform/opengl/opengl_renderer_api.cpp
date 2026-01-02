@@ -192,6 +192,18 @@ namespace Blackberry {
         glBindVertexArray(0);
     }
 
+    void OpenGLRendererAPI::DrawVertexArrayInstanced(const Ref<VertexArray>& vertexArray, u32 count) const {
+        glBindVertexArray(vertexArray->ID);
+
+        if (vertexArray->HasIndexBuffer()) {
+            glDrawElementsInstanced(GL_TRIANGLES, vertexArray->GetIndexBuffer()->Count, GL_UNSIGNED_INT, nullptr, count);
+        } else {
+            glDrawArraysInstanced(GL_TRIANGLES, 0, vertexArray->GetVertexBuffer()->Count, count);
+        }
+
+        glBindVertexArray(0);
+    }
+
     void OpenGLRendererAPI::BindShader(const Ref<Shader>& shader) const {
         glUseProgram(shader->ID);
     }

@@ -46,12 +46,12 @@ namespace Blackberry {
 
         m_LayerStack = new LayerStack;
 
+        m_Initalized = true;
+        s_Instance = this;
+
         for (auto& layer : m_LayerStack->GetAllLayers()) {
             layer->OnAttach();
         }
-
-        m_Initalized = true;
-        s_Instance = this;
     }
 
     Application::~Application() {
@@ -105,10 +105,6 @@ namespace Blackberry {
         m_TargetFPS = fps;
     }
 
-    // void Application::SetWindowIcon(const Image& image) {
-    //     m_Window->SetWindowIcon(image);
-    // }
-
     void Application::Close() {
         m_Running = false;
     }
@@ -123,6 +119,10 @@ namespace Blackberry {
 
     void Application::PopLayer(const std::string& name) {
         m_LayerStack->PopLayer(name);
+    }
+
+    void Application::PushEvent(const Event& event) {
+        OnEvent(event);
     }
 
     void Application::OnUpdate() {

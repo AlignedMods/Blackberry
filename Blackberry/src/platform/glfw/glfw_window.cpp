@@ -25,8 +25,6 @@
 #include <thread>
 #include <chrono>
 
-#define DISPATCHER Dispatcher& dispatcher = Application::Get().GetDispatcher()
-
 namespace Blackberry {
 
 #pragma region Callbacks
@@ -35,66 +33,52 @@ namespace Blackberry {
     static MouseButton GLFWMouseToBlackberry(const i32 button);
 
     static void CallbackKey(GLFWwindow* window, i32 key, i32 scancode, i32 action, i32 mods) {
-        DISPATCHER;
-
         const KeyCode keyCode = GLFWKeyToBlackberry(key);
 
         if (action == GLFW_PRESS) {
-            dispatcher.Post(KeyPressedEvent(keyCode, false));
+            BL_APP.PushEvent(KeyPressedEvent(keyCode, false));
             Input::SetKeyState(keyCode, true);
         } else if (action == GLFW_REPEAT) {
-            dispatcher.Post(KeyPressedEvent(keyCode, true));
+            BL_APP.PushEvent(KeyPressedEvent(keyCode, true));
             Input::SetKeyState(keyCode, true);
         } else if (action == GLFW_RELEASE) {
-            dispatcher.Post(KeyReleasedEvent(keyCode));
+            BL_APP.PushEvent(KeyReleasedEvent(keyCode));
             Input::SetKeyState(keyCode, false);
         }
     }
 
     static void CallbackChar(GLFWwindow* window, u32 codepoint) {
-        DISPATCHER;
-
-        dispatcher.Post(KeyTypedEvent(codepoint));
+        BL_APP.PushEvent(KeyTypedEvent(codepoint));
     }
 
     static void CallbackMouseButton(GLFWwindow* window, i32 button, i32 action, i32 mods) {
-        DISPATCHER;
-
         MouseButton btn = GLFWMouseToBlackberry(button);
 
         if (action == GLFW_PRESS) {
-            dispatcher.Post(MouseButtonPressedEvent(btn));
+            BL_APP.PushEvent(MouseButtonPressedEvent(btn));
             Input::SetMouseState(btn, true);
         } else if (action == GLFW_RELEASE) {
-            dispatcher.Post(MouseButtonReleasedEvent(btn));
+            BL_APP.PushEvent(MouseButtonReleasedEvent(btn));
             Input::SetMouseState(btn, false);
         }
     }
 
     static void CallbackMouseMove(GLFWwindow* window, f64 x, f64 y) {
-        DISPATCHER;
-
-        dispatcher.Post(MouseMovedEvent(static_cast<u32>(x), static_cast<u32>(y)));
+        BL_APP.PushEvent(MouseMovedEvent(static_cast<u32>(x), static_cast<u32>(y)));
         Input::SetMousePosition(BlVec2(static_cast<f32>(x), static_cast<f32>(y)));
     }
 
     static void CallbackScroll(GLFWwindow* window, f64 x, f64 y) {
-        DISPATCHER;
-
-        dispatcher.Post(MouseScrolledEvent(static_cast<f32>(y)));
+        BL_APP.PushEvent(MouseScrolledEvent(static_cast<f32>(y)));
         Input::SetScrollLevel(static_cast<f32>(y));
     }
 
     static void CallbackWindowResize(GLFWwindow* window, i32 width, i32 height) {
-        DISPATCHER;
-
-        dispatcher.Post(WindowResizeEvent(width, height));
+        BL_APP.PushEvent(WindowResizeEvent(width, height));
     }
 
     static void CallbackWindowClose(GLFWwindow* window) {
-        DISPATCHER;
-
-        dispatcher.Post(WindowCloseEvent());
+        BL_APP.PushEvent(WindowCloseEvent());
     }
 
 #pragma endregion

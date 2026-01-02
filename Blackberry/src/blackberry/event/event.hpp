@@ -10,6 +10,7 @@
 #define BL_EVENT_CAST(type) static_cast<const Blackberry::type&>(event)
 
 #define EVENT_CLASS_TYPE(type) virtual EventType GetEventType() const override { return EventType::type; } \
+                               EventType GetStaticType() { return EventType::type; } \
                                virtual DiscriptorType GetName() const override { return #type; }
 
 #define EVENT_CLASS_CATEGORY(category) virtual u32 GetCategoryFlags() const override { return category; }
@@ -39,6 +40,7 @@ namespace Blackberry {
         using DiscriptorType = const char*;
 
         virtual EventType GetEventType() const = 0;
+        static EventType GetStaticType();
         virtual DiscriptorType GetName() const = 0;
 
         virtual std::string ToString() const { return GetName(); };
@@ -55,14 +57,18 @@ namespace Blackberry {
 
     class Dispatcher {
     public:
-        using SlotType = std::function<void(const Event&)>;
+        Dispatcher(const Event& event)
+            : m_Event(event) {}
 
-        void Subscribe(const SlotType& slot);
-
-        void Post(const Event& event);
+        template <typename T, typename F> // F is deduced by compiler
+        void Subscribe(const F&& func) {
+            if (T::GetStaticType() == m_Event.GetEventType()) {
+                func(m_Event);
+            }
+        }
 
     private:
-        std::vector<SlotType> m_Observers;
+        const Event& m_Event;
     };
 
 } // namespace Blackberry

@@ -9,8 +9,15 @@ layout (location = 5) in int a_EntityID;
 
 uniform mat4 u_ViewProjection;
 
-layout(std430, binding = 0) buffer TransformBuffer {
-    mat4 Transforms[];
+// Data about a specific instance
+struct InstanceData {
+    mat4 Transform;
+    int MaterialIndex;
+    int EntityID;
+};
+
+layout(std430, binding = 0) buffer InstanceDataBuffer {
+    InstanceData Instances[];
 };
 
 layout (location = 0) out vec3 o_Normal;
@@ -20,11 +27,11 @@ layout (location = 3) out flat int o_MaterialIndex;
 layout (location = 4) out flat int o_EntityID;
 
 void main() {
-    vec4 worldPos = Transforms[a_ObjectIndex] * vec4(a_Pos, 1.0);
+    vec4 worldPos = Instances[gl_InstanceID].Transform * vec4(a_Pos, 1.0);
 
     gl_Position = u_ViewProjection * worldPos;
 
-    mat3 normalMatrix = transpose(inverse(mat3(Transforms[a_ObjectIndex])));
+    mat3 normalMatrix = transpose(inverse(mat3(Instances[gl_InstanceID].Transform)));
     o_Normal = normalMatrix * a_Normal;
 
     o_TexCoord = a_TexCoord;

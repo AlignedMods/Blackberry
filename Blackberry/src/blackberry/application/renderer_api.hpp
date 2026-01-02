@@ -63,6 +63,7 @@ namespace Blackberry {
         virtual void SetDepthMask(bool mask) const = 0;
         
         virtual void DrawVertexArray(const Ref<VertexArray>& vertexArray) const = 0;
+        virtual void DrawVertexArrayInstanced(const Ref<VertexArray>& vertexArray, u32 count) const = 0;
 
         virtual void BindShader(const Ref<Shader>& shader) const = 0;
 
