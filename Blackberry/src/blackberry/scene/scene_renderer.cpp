@@ -203,33 +203,31 @@ namespace Blackberry {
     }
 
     void SceneRenderer::AddMesh(const TransformComponent& transform, const Mesh& mesh, const Material& mat, BlColor color, u32 entityID, u64 meshHandle) {
+        // We only need send vertices once per mesh
+        if (!m_State.Meshes.contains(meshHandle)) {
+            auto& meshInstance = m_State.Meshes[meshHandle];
+
+            BlVec4 normColor = NormalizeColor(color);
+
+            // vertices
+            for (u32 i = 0; i < mesh.Positions.size(); i++) {
+                SceneMeshVertex vert = SceneMeshVertex(mesh.Positions[i], mesh.Normals[i], mesh.TexCoords[i]);
+                meshInstance.MeshVertices.push_back(vert);
+            }
+
+            // indices
+            for (u32 i = 0; i < mesh.Indices.size(); i++) {
+                meshInstance.MeshIndices.push_back(mesh.Indices[i]);
+            }
+        }
+
         auto& meshInstance = m_State.Meshes[meshHandle];
-
-        BlVec4 normColor = NormalizeColor(color);
-
-        // vertices
-        for (u32 i = 0; i < mesh.Positions.size(); i++) {
-            SceneMeshVertex vert = SceneMeshVertex(mesh.Positions[i], mesh.Normals[i], mesh.TexCoords[i]);
-            meshInstance.MeshVertices.push_back(vert);
-        }
-
-        // indices
-        for (u32 i = 0; i < mesh.Indices.size(); i++) {
-            meshInstance.MeshIndices.push_back(mesh.Indices[i]);
-        }
 
         TransformComponent transformMat = m_Context->GetEntityTransform(static_cast<EntityID>(entityID));
         BlMat4 final = transformMat.GetMatrix() * mesh.Transform;
 
-        GPUInstanceData data;
-        data.Transform = final;
-        data.MaterialIndex = meshInstance.MaterialData.size() - 1;
-        data.EntityID = entityID;
-
-        meshInstance.InstanceData.push_back(data);
-
         GPUMaterial gpuMat;
-
+        
         if (mat.ID != 0) {
             gpuMat.UseAlbedoTexture = mat.UseAlbedoTexture;
             gpuMat.AlbedoTexture = mat.AlbedoTexture->BindlessHandle;
@@ -246,11 +244,18 @@ namespace Blackberry {
             gpuMat.UseAOTexture = mat.UseAOTexture;
             gpuMat.AOTexture = mat.AOTexture->BindlessHandle;
             gpuMat.AOFactor = mat.AOFactor;
-
+        
             gpuMat.Emission = mat.Emission;
         }
-
+        
         meshInstance.MaterialData.push_back(gpuMat);
+        
+        GPUInstanceData data;
+        data.Transform = final;
+        data.MaterialIndex = meshInstance.MaterialData.size() - 1;
+        data.EntityID = entityID;
+        
+        meshInstance.InstanceData.push_back(data);
 
         meshInstance.InstanceCount++;
     }
@@ -610,6 +615,8 @@ namespace Blackberry {
     }
 
     void SceneRenderer::ResetState() {
+        m_State.Meshes.clear();
+
         m_State.PointLights.clear();
         m_State.SpotLights.clear();
 
