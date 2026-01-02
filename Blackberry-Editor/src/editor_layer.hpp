@@ -113,7 +113,7 @@ namespace BlackberryEditor {
 
         Blackberry::FS::Path m_AppDataDirectory;
 
-        Blackberry::Mesh m_Duck;
+        bool m_WindowClosing = false;
     };
 
 } // namespace BlackberryEditor

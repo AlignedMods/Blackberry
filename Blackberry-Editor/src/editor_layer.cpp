@@ -540,14 +540,26 @@ namespace BlackberryEditor {
         if (m_ShowDemoWindow) {
             ImGui::ShowDemoWindow(&m_ShowDemoWindow);
         }
+
+        if (m_WindowClosing) {
+            ImGui::OpenPopup("Save Changes?");
+            m_WindowClosing = false;
+        }
+
+        if (ImGui::BeginPopupModal("Save Changes?")) {
+            if (ImGui::Button("Save")) { SaveProject(); BL_APP.Close(); } ImGui::SameLine();
+            if (ImGui::Button("Close Without Saving")) { BL_APP.Close(); } ImGui::SameLine();
+            if (ImGui::Button("Cancel")) { ImGui::CloseCurrentPopup(); }
+
+            ImGui::EndPopup();
+        }
     }
     
     void EditorLayer::OnEvent(const Event& event) {
-        if (event.GetEventType() == EventType::WindowResize) {
-            auto& wr = BL_EVENT_CAST(WindowResizeEvent);
+        if (event.GetEventType() == EventType::WindowClose) {
+            auto& wc = BL_EVENT_CAST(WindowCloseEvent);
     
-            // m_RenderTexture.Delete();
-            // m_RenderTexture.Create(wr.GetWidth(), wr.GetHeight());
+            m_WindowClosing = true;
         }
     
         if (event.GetEventType() == EventType::KeyPressed) {
@@ -1054,6 +1066,10 @@ namespace BlackberryEditor {
             flags |= ImGuiTreeNodeFlags_OpenOnArrow;
             flags |= ImGuiTreeNodeFlags_OpenOnDoubleClick;
             flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
+
+            if (!rel.FirstChild) {
+                flags |= ImGuiTreeNodeFlags_Leaf;
+            }
 
             bool opened = false;
 

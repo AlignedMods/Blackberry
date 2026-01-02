@@ -67,7 +67,7 @@ namespace Blackberry {
         while (m_Running) {
             ScopedTimer timer("Application::Run");
 
-            m_Running = m_Running && !m_Window->ShouldClose();
+            // m_Running = m_Running && !m_Window->ShouldClose();
 
             m_Window->OnRenderStart();
             m_Window->OnUpdate();
