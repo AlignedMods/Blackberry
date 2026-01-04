@@ -22,7 +22,13 @@ namespace Blackberry {
         u32 AddActor(u32 entity, TransformComponent& transform, RigidBodyComponent& rigidBody, BoxColliderComponent& boxCollider);
         u32 AddActor(u32 entity, TransformComponent& transform, RigidBodyComponent& rigidBody, SphereColliderComponent& sphereCollider);
 
-        void Step();
+        void UpdateEntity(u32 entity, TransformComponent& transform, RigidBodyComponent& rigidbody);
+
+        void AddImpluse(void* actor, BlVec3 impulse);
+
+        void SetLinearVelocity(void* actor, BlVec3 velocity);
+
+        void Step(f32 ts);
         void SetContext(void* scene);
 
     private:

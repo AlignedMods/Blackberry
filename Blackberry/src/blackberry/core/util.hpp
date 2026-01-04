@@ -22,9 +22,9 @@
 
 // NOTE: blackberry asserts (BL_ASSERT) will always run the if statement AND exit program!
 #if defined(BL_DEBUG_BUILD)
-    #define BL_ASSERT(condition, ...) if (!(condition)) { BL_ERROR("Assertion failed (Line: {}, File: {})!\nMessage: {}", __LINE__, __FILE__, __VA_ARGS__); BL_DEBUGBREAK(); }
+    #define BL_ASSERT(condition, ...) do { if (!(condition)) { BL_ERROR("Assertion failed (Line: {}, File: {})!\nMessage: {}", __LINE__, __FILE__, __VA_ARGS__); BL_DEBUGBREAK(); } } while(0)
 #elif defined(BL_RELEASE_BUILD) || defined(BL_DIST_BUILD)
-    #define BL_ASSERT(condition, ...) if (!(condition)) { BL_ERROR("Assertion failed (Line: {}, File: {})!\nMessage: {}", __LINE__, __FILE__, __VA_ARGS__); exit(1); }
+    #define BL_ASSERT(condition, ...) do { if (!(condition)) { BL_ERROR("Assertion failed (Line: {}, File: {})!\nMessage: {}", __LINE__, __FILE__, __VA_ARGS__); exit(1); } } while(0)
 #endif
 
 namespace Blackberry::Util {

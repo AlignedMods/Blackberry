@@ -22,6 +22,7 @@ namespace Blackberry::Lua {
 
     void SetField(i32 index, const std::string& name);
 
+    void PushBoolean(bool value);
     void PushString(const std::string& value);
     void PushNumber(f64 value);
     void PushInteger(i64 value);

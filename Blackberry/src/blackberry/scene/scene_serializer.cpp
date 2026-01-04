@@ -6,25 +6,6 @@
 
 namespace Blackberry {
 
-    static const char* RigidBodyTypeToString(RigidBodyType type) {
-        switch (type) {
-            case RigidBodyType::Static: return "Static"; break;
-            case RigidBodyType::Dynamic: return "Dynamic"; break;
-            case RigidBodyType::Kinematic: return "Kinematic"; break;
-        }
-
-        BL_ASSERT(false, "Unreachable");
-        return "";
-    }
-
-    static RigidBodyType StringToRigidBodyType(const std::string& str) {
-        if (str == "Static") return RigidBodyType::Static;
-        if (str == "Dynamic") return RigidBodyType::Dynamic;
-        if (str == "Kinematic") return RigidBodyType::Kinematic;
-
-        BL_ASSERT(false, "Unreachable");
-        return RigidBodyType::Static;
-    }
     static void SerializeEntity(YAML::Emitter& out, Entity e) {
         BL_ASSERT(e.HasComponent<TagComponent>(), "All entities must have a TagComponent!");
 

@@ -163,8 +163,11 @@ namespace Blackberry {
             default: BL_ASSERT(false, "Unreachable"); break;
         }
 
-        JPH::BodyCreationSettings bodySettings(shape, JPH::Vec3(transform.Position.x, transform.Position.y, transform.Position.z), 
-                                                      JPH::Quat(transform.Rotation.x, transform.Rotation.y, transform.Rotation.z, transform.Rotation.w), type, layer);
+        TransformComponent realTransform = reinterpret_cast<Scene*>(m_Scene)->GetEntityTransform(static_cast<EntityID>(entity));
+        BlQuat rot = glm::normalize(realTransform.Rotation);
+
+        JPH::BodyCreationSettings bodySettings(shape, JPH::Vec3(realTransform.Position.x, realTransform.Position.y, realTransform.Position.z), 
+                                                      JPH::Quat(rot.x, rot.y, rot.z, rot.w), type, layer);
 
         // Create the actual rigid body
         JPH::Body* body = bodyInterface.CreateBody(bodySettings);
@@ -178,6 +181,7 @@ namespace Blackberry {
 
         JPH::BodyID id = body->GetID();
 
+        rigidBody.PhysicsBody = body;
         m_Actors.push_back(body);
 
         return static_cast<u32>(id.GetIndex());
@@ -190,6 +194,8 @@ namespace Blackberry {
 
         JPH::SphereShapeSettings shapeSettings(axis * sphereCollider.Radius);
         shapeSettings.SetEmbedded();
+
+        shapeSettings.mDensity = 1.0f;
 
         JPH::ShapeSettings::ShapeResult shapeResult = shapeSettings.Create();
         JPH::ShapeRefC shape = shapeResult.Get();
@@ -208,7 +214,7 @@ namespace Blackberry {
         BlQuat rot = glm::normalize(realTransform.Rotation);
 
         JPH::BodyCreationSettings bodySettings(shape, JPH::Vec3(realTransform.Position.x, realTransform.Position.y, realTransform.Position.z), 
-                                                      JPH::Quat(rot.w, rot.x, rot.y, rot.z), type, layer);
+                                                      JPH::Quat(rot.x, rot.y, rot.z, rot.w), type, layer);
 
         // Create the actual rigid body
         JPH::Body* body = bodyInterface.CreateBody(bodySettings);
@@ -222,32 +228,57 @@ namespace Blackberry {
 
         JPH::BodyID id = body->GetID();
 
+        rigidBody.PhysicsBody = body;
         m_Actors.push_back(body);
 
         return static_cast<u32>(id.GetIndex());
     }
 
-    void PhysicsEngine::Step() {
+    void PhysicsEngine::UpdateEntity(u32 entity, TransformComponent& transform, RigidBodyComponent& rigidbody) {
+        JPH::Body* body = reinterpret_cast<JPH::Body*>(rigidbody.PhysicsBody);
+        BL_ASSERT(0, "Not implemented!");
+    }
+
+    void PhysicsEngine::AddImpluse(void* actor, BlVec3 impulse) {
         auto& bodyInterface = m_System->GetBodyInterface();
 
-        // Send udated transforms back
+        JPH::Body* body = reinterpret_cast<JPH::Body*>(actor);
+
+        bodyInterface.ActivateBody(body->GetID());
+        bodyInterface.AddImpulse(body->GetID(), JPH::Vec3(impulse.x, impulse.y, impulse.z));
+    }
+
+    void PhysicsEngine::SetLinearVelocity(void* actor, BlVec3 velocity) {
+        auto& bodyInterface = m_System->GetBodyInterface();
+
+        JPH::Body* body = reinterpret_cast<JPH::Body*>(actor);
+
+        bodyInterface.ActivateBody(body->GetID());
+        bodyInterface.SetLinearVelocity(body->GetID(), JPH::Vec3(velocity.x, velocity.y, velocity.z));
+    }
+
+    void PhysicsEngine::Step(f32 ts) {
+        m_System->Update(ts, 1, s_TempAllocator, s_JobSystem);
+
+        // Send updated transforms back
         for (auto actor : m_Actors) {
             JPH::Body* body = reinterpret_cast<JPH::Body*>(actor);
 
-            auto pos = body->GetCenterOfMassPosition();
-            auto rot = body->GetRotation();
-            EntityID entityID = static_cast<EntityID>(body->GetUserData());   
+            // If a physics body is not active sending back updated transforms is useless (and sometimes buggy)
+            if (body->IsActive()) {
+                auto pos = body->GetCenterOfMassPosition();
+                auto rot = body->GetRotation();
+                EntityID entityID = static_cast<EntityID>(body->GetUserData());   
 
-            Scene* scene = reinterpret_cast<Scene*>(m_Scene);
+                Scene* scene = reinterpret_cast<Scene*>(m_Scene);
 
-            Entity e(entityID, scene);
-            auto& transform = e.GetComponent<TransformComponent>();
+                Entity e(entityID, scene);
+                auto& transform = e.GetComponent<TransformComponent>();
 
-            transform.Position = BlVec3(pos.GetX(), pos.GetY(), pos.GetZ()) - reinterpret_cast<Scene*>(m_Scene)->GetEntityParentTransform(entityID).Position;
-            transform.Rotation = glm::normalize(BlQuat(rot.GetW(), rot.GetX(), rot.GetY(), rot.GetZ()));
+                transform.Position = BlVec3(pos.GetX(), pos.GetY(), pos.GetZ()) - reinterpret_cast<Scene*>(m_Scene)->GetEntityParentTransform(entityID).Position;
+                transform.Rotation = glm::normalize(BlQuat(rot.GetW(), rot.GetX(), rot.GetY(), rot.GetZ()));
+            }
         }
-
-        m_System->Update(BL_APP.GetDeltaTime(), 1, s_TempAllocator, s_JobSystem);
     }
 
     void PhysicsEngine::SetContext(void* scene) {

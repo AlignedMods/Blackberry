@@ -86,6 +86,10 @@ namespace Blackberry::Lua {
         lua_setfield(s_LState, index, name.c_str());
     }
 
+    void PushBoolean(bool value) {
+        lua_pushboolean(s_LState, value);
+    }
+
     void PushString(const std::string& value) {
         lua_pushstring(s_LState, value.c_str());
     }

@@ -58,6 +58,7 @@ namespace Blackberry {
         TransformComponent GetEntityTransform(EntityID e);
 
         ECS* GetECS();
+        PhysicsEngine* GetPhysicsEngine();
         SceneRenderer* GetSceneRenderer();
 
         std::vector<u64>& GetRootEntities();
@@ -71,6 +72,8 @@ namespace Blackberry {
         std::unordered_map<std::string, u64> m_NamedEntityMap;
 
         const f32 m_Gravity = 9.8f;
+
+        f32 m_PhysicsTickTime = 0.0f;
 
         bool m_Paused = false;
 

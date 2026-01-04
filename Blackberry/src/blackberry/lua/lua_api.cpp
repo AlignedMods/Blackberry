@@ -2,6 +2,7 @@
 #include "blackberry/core/log.hpp"
 #include "blackberry/scene/entity.hpp"
 #include "blackberry/lua/lua.hpp"
+#include "blackberry/input/input.hpp"
 
 namespace Blackberry::Lua {
 
@@ -53,6 +54,40 @@ namespace Blackberry::Lua {
 
     static int LoadLogModule(lua_State* L) {
         luaL_newlib(L, LogModule);
+
+        return 1;
+    }
+
+#pragma endregion
+
+#pragma region InputModule
+
+    static int WInputIsKeyPressed(lua_State* L) {
+        i64 keycode = lua_tointeger(L, 1);
+        bool pressed = Input::IsKeyPressed(static_cast<KeyCode>(keycode));
+
+        Lua::PushBoolean(pressed);
+
+        return 1;
+    }
+
+    static int WInputIsKeyDown(lua_State* L) {
+        i64 keycode = lua_tointeger(L, 1);
+        bool pressed = Input::IsKeyDown(static_cast<KeyCode>(keycode));
+
+        Lua::PushBoolean(pressed);
+
+        return 1;
+    }
+
+    static luaL_Reg InputModule[] = {
+        { "IsKeyPressed", WInputIsKeyPressed },
+        { "IsKeyDown", WInputIsKeyDown },
+        { nullptr, nullptr }
+    };
+
+    static int LoadInputModule(lua_State* L) {
+        luaL_newlib(L, InputModule);
 
         return 1;
     }
@@ -181,6 +216,104 @@ namespace Blackberry::Lua {
 
 #pragma endregion
 
+#pragma region RigidBodyComponent
+
+    static int WEntityGetRigidBodyType(lua_State* L) {
+        u64 handle = lua_tointeger(L, 1);
+        Scene* scene = reinterpret_cast<Scene*>(lua_touserdata(L, 2));
+
+        Entity e(scene->GetEntityFromUUID(handle), scene);
+        BL_ASSERT(e.HasComponent<RigidBodyComponent>(), "Entity does not contain rigid body!");
+
+        Lua::PushString(RigidBodyTypeToString(e.GetComponent<RigidBodyComponent>().Type));
+
+        return 1;
+    }
+
+    static int WEntityGetRigidBodyRestitution(lua_State* L) {
+        u64 handle = lua_tointeger(L, 1);
+        Scene* scene = reinterpret_cast<Scene*>(lua_touserdata(L, 2));
+
+        Entity e(scene->GetEntityFromUUID(handle), scene);
+        BL_ASSERT(e.HasComponent<RigidBodyComponent>(), "Entity does not contain rigid body!");
+
+        Lua::PushNumber(e.GetComponent<RigidBodyComponent>().Resitution);
+
+        return 1;
+    }
+
+    static int WEntityGetRigidBodyFriction(lua_State* L) {
+        u64 handle = lua_tointeger(L, 1);
+        Scene* scene = reinterpret_cast<Scene*>(lua_touserdata(L, 2));
+
+        Entity e(scene->GetEntityFromUUID(handle), scene);
+        BL_ASSERT(e.HasComponent<RigidBodyComponent>(), "Entity does not contain rigid body!");
+
+        Lua::PushNumber(e.GetComponent<RigidBodyComponent>().Friction);
+
+        return 1;
+    }
+
+    static int WEntityRigidBodyAddImpulse(lua_State* L) {
+        u64 handle = lua_tointeger(L, 1);
+        Scene* scene = reinterpret_cast<Scene*>(lua_touserdata(L, 2));
+
+        BlVec3 impulse(0.0f);
+
+        if (lua_istable(L, 3)) {
+            lua_getfield(L, 3, "x");
+            impulse.x = static_cast<f32>(lua_tonumber(L, -1));
+            lua_pop(L, 1);
+            
+            lua_getfield(L, 3, "y");
+            impulse.y = static_cast<f32>(lua_tonumber(L, -1));
+            lua_pop(L, 1);
+
+            lua_getfield(L, 3, "z");
+            impulse.z = static_cast<f32>(lua_tonumber(L, -1));
+            lua_pop(L, 1);
+        }
+
+        Entity e(scene->GetEntityFromUUID(handle), scene);
+        BL_ASSERT(e.HasComponent<RigidBodyComponent>(), "Entity does not contain rigid body!");
+
+        scene->GetPhysicsEngine()->AddImpluse(e.GetComponent<RigidBodyComponent>().PhysicsBody, impulse);
+
+        return 0;
+    }
+
+    static int WEntityRigidBodySetLinearVelocity(lua_State* L) {
+        u64 handle = lua_tointeger(L, 1);
+        Scene* scene = reinterpret_cast<Scene*>(lua_touserdata(L, 2));
+
+        BlVec3 velocity(0.0f);
+
+        if (lua_istable(L, 3)) {
+            lua_getfield(L, 3, "x");
+            velocity.x = static_cast<f32>(lua_tonumber(L, -1));
+            lua_pop(L, 1);
+            
+            lua_getfield(L, 3, "y");
+            velocity.y = static_cast<f32>(lua_tonumber(L, -1));
+            lua_pop(L, 1);
+
+            lua_getfield(L, 3, "z");
+            velocity.z = static_cast<f32>(lua_tonumber(L, -1));
+            lua_pop(L, 1);
+        }
+
+        Entity e(scene->GetEntityFromUUID(handle), scene);
+        BL_ASSERT(e.HasComponent<RigidBodyComponent>(), "Entity does not contain rigid body!");
+
+        scene->GetPhysicsEngine()->SetLinearVelocity(e.GetComponent<RigidBodyComponent>().PhysicsBody, velocity);
+
+        return 0;
+    }
+
+#pragma endregion
+
+#pragma region EntityModule
+
     static int WEntityAddComponent(lua_State* L) {
         Entity* entity = static_cast<Entity*>(lua_touserdata(L, 1));
         const char* componentName = lua_tostring(L, 2);
@@ -197,6 +330,13 @@ namespace Blackberry::Lua {
         { "SetTransformRotation", WEntitySetTransformRotation},
         { "SetTransformScale", WEntitySetTransformScale},
 
+        { "GetRigidBodyType", WEntityGetRigidBodyType},
+        { "GetRigidBodyRestitution", WEntityGetRigidBodyRestitution},
+        { "GetRigidBodyFriction", WEntityGetRigidBodyFriction},
+
+        { "RigidBodyAddImpulse", WEntityRigidBodyAddImpulse },
+        { "RigidBodySetLinearVelocity", WEntityRigidBodySetLinearVelocity },
+
         { "AddComponent", WEntityAddComponent },
         { nullptr, nullptr }
     };
@@ -207,6 +347,8 @@ namespace Blackberry::Lua {
         return 1;
     }
 
+#pragma endregion
+
     static int LoadInternalCallsModule(lua_State* L) {
         // create InternalCalls table
         lua_newtable(L);
@@ -215,6 +357,11 @@ namespace Blackberry::Lua {
         lua_newtable(L);
         luaL_setfuncs(L, LogModule, 0);
         lua_setfield(L, -2, "Log"); // InternalCalls.Log
+
+        // create Input module
+        lua_newtable(L);
+        luaL_setfuncs(L, InputModule, 0);
+        lua_setfield(L, -2, "Input"); // InternalCalls.Input
 
         // create Entity module
         lua_newtable(L);

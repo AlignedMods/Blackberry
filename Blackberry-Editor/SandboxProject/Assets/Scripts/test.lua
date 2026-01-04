@@ -1,10 +1,11 @@
 require("Core.Vector3")
 require("Core.Log")
 require("Core.Entity")
+require("Core.Components")
+require("Core.Input")
 
 Script = {
-    ScriptEntity = Entity.new(),
-    ScaleOffset = 1.0
+    ScriptEntity = Entity.new()
 }
 
 function Script:OnAttach(entity)
@@ -15,15 +16,12 @@ function Script:OnDetach()
     print("Script being detached!")
 end
 
-function Script:OnUpdate(dt, entity)
-    self.ScaleOffset = self.ScaleOffset + dt
+function Script:OnUpdate(dt)
+    if Input.IsKeyPressed(KeyCode.Enter) then
+        local rigidBody = self.ScriptEntity:GetRigidBodyComponent()
 
-    local transform = self.ScriptEntity:GetTransformComponent()
-    transform.Scale.x = self.ScaleOffset
-    transform.Scale.y = self.ScaleOffset
-    transform.Scale.z = self.ScaleOffset
-
-    self.ScriptEntity:SetTransformComponent(transform)
+        rigidBody:SetLinearVelocity(Vector3.new(0, 10, 0))
+    end
 end
 
 return Script

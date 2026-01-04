@@ -2,6 +2,7 @@
 
 #include "blackberry/core/types.hpp"
 #include "blackberry/core/path.hpp"
+#include "blackberry/core/util.hpp"
 
 #include "glm/glm.hpp"
 #include "glm/ext/matrix_transform.hpp"
@@ -21,6 +22,26 @@ namespace Blackberry {
         Dynamic = 1,
         Kinematic = 2
     };
+
+    inline const char* RigidBodyTypeToString(RigidBodyType type) {
+        switch (type) {
+            case RigidBodyType::Static: return "Static"; break;
+            case RigidBodyType::Dynamic: return "Dynamic"; break;
+            case RigidBodyType::Kinematic: return "Kinematic"; break;
+        }
+
+        BL_ASSERT(false, "Unreachable");
+        return "";
+    }
+
+    inline RigidBodyType StringToRigidBodyType(const std::string& str) {
+        if (str == "Static") return RigidBodyType::Static;
+        if (str == "Dynamic") return RigidBodyType::Dynamic;
+        if (str == "Kinematic") return RigidBodyType::Kinematic;
+
+        BL_ASSERT(false, "Unreachable");
+        return RigidBodyType::Static;
+    }
 
     enum class ForceType {
         Linear,
@@ -75,6 +96,8 @@ namespace Blackberry {
         RigidBodyType Type = RigidBodyType::Static;
         f32 Resitution = 1.0f;
         f32 Friction = 1.0f;
+
+        void* PhysicsBody = nullptr;
     };
 
     struct BoxColliderComponent {

@@ -52,6 +52,19 @@ namespace Blackberry {
     void Scene::Delete() {}
 
     void Scene::OnRuntimeStart() {
+        m_PhysicsWorld->SetContext(this);
+
+        auto boxBodyView = m_ECS->GetEntitiesWithComponents<TransformComponent, RigidBodyComponent, BoxColliderComponent>();
+        auto sphereBodyView = m_ECS->GetEntitiesWithComponents<TransformComponent, RigidBodyComponent, SphereColliderComponent>();
+
+        boxBodyView.each([&](entt::entity entity, TransformComponent& transform, RigidBodyComponent& rigidbody, BoxColliderComponent& boxCollider) {
+            m_PhysicsWorld->AddActor(static_cast<u32>(entity), transform, rigidbody, boxCollider);    
+        });
+
+        sphereBodyView.each([&](entt::entity entity, TransformComponent& transform, RigidBodyComponent& rigidbody, SphereColliderComponent& sphereCollider) {
+            m_PhysicsWorld->AddActor(static_cast<u32>(entity), transform, rigidbody, sphereCollider);    
+        });
+
         auto view = m_ECS->GetEntitiesWithComponents<ScriptComponent>();
 
         // Set the search path for modules
@@ -88,19 +101,6 @@ namespace Blackberry {
             Lua::DumpStack();
 
             Lua::Pop(3); // Clean up all the junk we set before calling the function
-        });
-
-        m_PhysicsWorld->SetContext(this);
-
-        auto boxBodyView = m_ECS->GetEntitiesWithComponents<TransformComponent, RigidBodyComponent, BoxColliderComponent>();
-        auto sphereBodyView = m_ECS->GetEntitiesWithComponents<TransformComponent, RigidBodyComponent, SphereColliderComponent>();
-
-        boxBodyView.each([&](entt::entity entity, TransformComponent& transform, RigidBodyComponent& rigidbody, BoxColliderComponent& boxCollider) {
-            m_PhysicsWorld->AddActor(static_cast<u32>(entity), transform, rigidbody, boxCollider);    
-        });
-
-        sphereBodyView.each([&](entt::entity entity, TransformComponent& transform, RigidBodyComponent& rigidbody, SphereColliderComponent& sphereCollider) {
-            m_PhysicsWorld->AddActor(static_cast<u32>(entity), transform, rigidbody, sphereCollider);    
         });
     }
 
@@ -144,25 +144,27 @@ namespace Blackberry {
     void Scene::OnUpdateRuntime() {
         if (m_Paused) return;
 
+        // Run the physics at a constant 60 fps
+        m_PhysicsTickTime += BL_APP.GetDeltaTime();
+        while (m_PhysicsTickTime >= 0.01667f) {
+            m_PhysicsWorld->Step(m_PhysicsTickTime);
+            m_PhysicsTickTime -= 0.01667f;
+        }
+
         auto scriptView = m_ECS->GetEntitiesWithComponents<ScriptComponent>();
 
         scriptView.each([&](auto entity, ScriptComponent& script) {
-            Entity e(entity, this);
-
             Lua::SetExecutionContext(script.ModulePath.String());
             
             Lua::GetMember("OnUpdate");
 
             Lua::PushValue(-2); // push the table (self)
             Lua::PushNumber(BL_APP.GetDeltaTime());
-            Lua::PushLightUserData(&e); // entity pointer
 
-            Lua::CallFunction(3, 0);
+            Lua::CallFunction(2, 0);
 
             Lua::Pop(1);
         });
-
-        m_PhysicsWorld->Step();
     }
 
     void Scene::OnRenderEditor(Ref<Framebuffer> target, SceneCamera& camera) {
@@ -353,6 +355,10 @@ namespace Blackberry {
 
     ECS* Scene::GetECS() {
         return m_ECS;
+    }
+
+    PhysicsEngine* Scene::GetPhysicsEngine() {
+        return m_PhysicsWorld;
     }
 
     SceneRenderer* Scene::GetSceneRenderer() {
