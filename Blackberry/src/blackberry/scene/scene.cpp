@@ -54,17 +54,40 @@ namespace Blackberry {
     void Scene::OnRuntimeStart() {
         auto view = m_ECS->GetEntitiesWithComponents<ScriptComponent>();
 
+        // Set the search path for modules
+        Lua::GetMember("package", "path");
+        std::string currentPath = Lua::ToString(-1);
+        std::string newPath = currentPath + ";" + FS::Path(Project::GetAssetDirecory() / "Scripts").String() + "/?.lua";
+
+        Lua::Pop(1);
+        Lua::PushString(newPath);
+        Lua::SetField(-2, "path");
+        Lua::Pop(1);
+
         view.each([&](auto entity, ScriptComponent& script) {
             // Execute script
-            Lua::RunFile(script.FilePath, script.ModulePath.String());
+            Lua::RunFile(Project::GetAssetPath(script.ModulePath), script.ModulePath.String());
             Lua::SetExecutionContext(script.ModulePath.String());
 
+            // Create entity
+            Lua::GetMember("Entity", "new");
+            Lua::PushInteger(m_ECS->GetComponent<TagComponent>(entity).UUID);
+            Lua::PushLightUserData(this);
+            Lua::CallFunction(2, 1);
+
+            Lua::Remove(-2); // Remove "Entity" table
+
+            Lua::PushValue(-2); // push script table
             Lua::GetMember("OnAttach");
-            Lua::CallFunction(0, 0);
+            
+            Lua::PushValue(-2);
+            Lua::PushValue(-4);
 
-            Lua::Pop(1);
+            Lua::CallFunction(2, 0);
 
-            script.IsLoaded = true;
+            Lua::DumpStack();
+
+            Lua::Pop(3); // Clean up all the junk we set before calling the function
         });
 
         m_PhysicsWorld->SetContext(this);
@@ -85,14 +108,12 @@ namespace Blackberry {
         auto view = m_ECS->GetEntitiesWithComponents<ScriptComponent>();
 
         view.each([&](auto entity, ScriptComponent& script) {
-            if (script.IsLoaded) {
-                Lua::SetExecutionContext(script.ModulePath.String());
+            Lua::SetExecutionContext(script.ModulePath.String());
 
-                Lua::GetMember("OnDetach");
-                Lua::CallFunction(0, 0);
+            Lua::GetMember("OnDetach");
+            Lua::CallFunction(0, 0);
 
-                Lua::Pop(1);
-            }
+            Lua::Pop(1);
         });
     }
 

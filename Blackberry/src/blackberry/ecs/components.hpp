@@ -67,6 +67,10 @@ namespace Blackberry {
         bool Active = true;
     };
 
+    struct ScriptComponent {
+        FS::Path ModulePath;
+    };
+
     struct RigidBodyComponent {
         RigidBodyType Type = RigidBodyType::Static;
         f32 Resitution = 1.0f;
@@ -87,12 +91,6 @@ namespace Blackberry {
 
         f32 Kerning = 0.0f;
         f32 LineSpacing = 0.0f;
-    };
-
-    struct ScriptComponent {
-        FS::Path ModulePath;
-        FS::Path FilePath;
-        bool IsLoaded = false;
     };
 
     struct DirectionalLightComponent {

@@ -65,6 +65,8 @@ namespace Blackberry {
         m_Running = true;
 
         while (m_Running) {
+            Instrumentor::NewFrame();
+
             ScopedTimer timer("Application::Run");
 
             // m_Running = m_Running && !m_Window->ShouldClose();

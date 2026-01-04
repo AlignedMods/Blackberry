@@ -22,6 +22,7 @@ namespace BlackberryEditor {
         ImGui::Text("SceneRenderer::GeometryPass %fms", Instrumentor::GetTimePoint("SceneRenderer::GeometryPass").Milliseconds());
         ImGui::Text("SceneRenderer::LightingPass %fms", Instrumentor::GetTimePoint("SceneRenderer::LightingPass").Milliseconds());
         ImGui::Text("SceneRenderer::BloomPass %fms", Instrumentor::GetTimePoint("SceneRenderer::BloomPass").Milliseconds());
+        ImGui::Text("SceneRenderer::ResetState %fms", Instrumentor::GetTimePoint("SceneRenderer::ResetState").Milliseconds());
         // ImGui::Text("Draw calls: %d", BL_APP.GetRendererAPI().GetDrawCallCount());
 
         auto* renderer = m_Context->GetSceneRenderer();

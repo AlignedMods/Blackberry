@@ -21,12 +21,28 @@ namespace Blackberry {
         return Time;
     }
 
+    void TimePoint::operator+=(const TimePoint& other) {
+        Time += other.Time;
+    }
+
+    TimePoint TimePoint::operator+(const TimePoint& other) {
+        return { Time + other.Time };
+    }
+
 #pragma endregion
 
 #pragma region Instrumentor
 
+    void Instrumentor::NewFrame() {
+        s_TimePoints.clear();
+    }
+
     void Instrumentor::SetTimePoint(const char* name, TimePoint timePoint) {
-        s_TimePoints[name] = timePoint;
+        if (s_TimePoints.contains(name)) {
+            s_TimePoints[name] += timePoint;
+        } else {
+            s_TimePoints[name] = timePoint;
+        }
     }
 
     TimePoint Instrumentor::GetTimePoint(const char* name) {

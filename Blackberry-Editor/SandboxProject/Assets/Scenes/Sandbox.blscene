@@ -141,6 +141,8 @@ Entities:
       MeshHandle: 16676790944532672824
       MaterialHandles:
         0: 761659761808722940
+    ScriptComponent:
+      ModulePath: Scripts/test.lua
     RigidBodyComponent:
       Type: Dynamic
       Resitution: 0.6

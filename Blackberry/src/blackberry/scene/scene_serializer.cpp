@@ -94,6 +94,17 @@ namespace Blackberry {
             out << YAML::EndMap; // CameraComponent
         }
 
+        if (e.HasComponent<ScriptComponent>()) {
+            auto& script = e.GetComponent<ScriptComponent>();
+
+            out << YAML::Key << "ScriptComponent";
+            out << YAML::BeginMap; // ScriptComponent
+
+            out << YAML::Key << "ModulePath" << YAML::Value << script.ModulePath.String();
+
+            out << YAML::EndMap; // ScriptComponent
+        }
+
         if (e.HasComponent<RigidBodyComponent>()) {
             auto& rigidBody = e.GetComponent<RigidBodyComponent>();
 
@@ -260,6 +271,15 @@ namespace Blackberry {
                 camera.Far = yamlCamera["Far"].as<f32>();
 
                 e.AddComponent<CameraComponent>(camera);
+            }
+
+            if (entity["ScriptComponent"]) {
+                auto yamlScript = entity["ScriptComponent"];
+
+                ScriptComponent script;
+                script.ModulePath = yamlScript["ModulePath"].as<std::string>();
+
+                e.AddComponent<ScriptComponent>(script);
             }
 
             if (entity["RigidBodyComponent"]) {

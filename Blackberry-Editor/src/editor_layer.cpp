@@ -1339,8 +1339,9 @@ namespace BlackberryEditor {
                 ImGui::Text("Module Path: "); ImGui::SameLine();
                 ImGui::InputText("##ModulePath", &stringPath);
 
-                script.ModulePath = stringPath;
-                script.FilePath = m_BaseDirectory / script.ModulePath;
+                if (!stringPath.empty()) {
+                    script.ModulePath = stringPath;
+                }
             });
             DrawComponent<RigidBodyComponent>("Rigid Body", entity, [](RigidBodyComponent& rigidBody) {
                 ImGui::BeginTable("##TheTable", 2, ImGuiTableFlags_Resizable);

@@ -147,35 +147,45 @@ namespace Blackberry {
         {
             BL_PROFILE_SCOPE("SceneRenderer::Render");
 
-            auto dirLightView = scene->m_ECS->GetEntitiesWithComponents<TransformComponent, DirectionalLightComponent>();
+            {
+                auto view = scene->m_ECS->GetEntitiesWithComponents<TransformComponent, DirectionalLightComponent>();
+                
+                view.each([&](TransformComponent& transform, DirectionalLightComponent& light) {
+                    AddDirectionalLight(transform, light);    
+                });
+            }
             
-            dirLightView.each([&](TransformComponent& transform, DirectionalLightComponent& light) {
-                AddDirectionalLight(transform, light);    
-            });
+            {
+                auto view = scene->m_ECS->GetEntitiesWithComponents<TransformComponent, PointLightComponent>();
+                
+                view.each([&](TransformComponent& transform, PointLightComponent& light) {
+                    AddPointLight(transform, light);
+                });
+            }
             
-            auto lightView = scene->m_ECS->GetEntitiesWithComponents<TransformComponent, PointLightComponent>();
+            {
+                auto view = scene->m_ECS->GetEntitiesWithComponents<TransformComponent, SpotLightComponent>();
+                
+                view.each([&](TransformComponent& transform, SpotLightComponent& light) {
+                    AddSpotLight(transform, light);
+                });
+            }
+           
+            {
+                auto view = scene->m_ECS->GetEntitiesWithComponents<TransformComponent, MeshComponent>();
+                
+                view.each([&](entt::entity id, TransformComponent& transform, MeshComponent& mesh) {
+                    AddModel(transform, mesh, BlColor(255, 255, 255, 255), static_cast<u32>(id));
+                });
+            }
             
-            lightView.each([&](TransformComponent& transform, PointLightComponent& light) {
-                AddPointLight(transform, light);
-            });
-            
-            auto spotLightView = scene->m_ECS->GetEntitiesWithComponents<TransformComponent, SpotLightComponent>();
-            
-            spotLightView.each([&](TransformComponent& transform, SpotLightComponent& light) {
-                AddSpotLight(transform, light);
-            });
-            
-            auto meshView = scene->m_ECS->GetEntitiesWithComponents<TransformComponent, MeshComponent>();
-            
-            meshView.each([&](entt::entity id, TransformComponent& transform, MeshComponent& mesh) {
-                AddModel(transform, mesh, BlColor(255, 255, 255, 255), static_cast<u32>(id));
-            });
-            
-            auto envView = scene->m_ECS->GetEntitiesWithComponents<EnvironmentComponent>();
-            
-            envView.each([&](EnvironmentComponent& env) {
-                AddEnvironment(env);
-            });
+            {
+                auto view = scene->m_ECS->GetEntitiesWithComponents<EnvironmentComponent>();
+                
+                view.each([&](EnvironmentComponent& env) {
+                    AddEnvironment(env);
+                });
+            }
         }
 
         Flush();
@@ -617,6 +627,8 @@ namespace Blackberry {
     }
 
     void SceneRenderer::ResetState() {
+        BL_PROFILE_SCOPE("SceneRenderer::ResetState");
+
         m_State.Meshes.clear();
 
         m_State.PointLights.clear();

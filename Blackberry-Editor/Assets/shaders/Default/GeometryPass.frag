@@ -41,7 +41,7 @@ void main() {
     // Store the position in the first buffer
     o_GPosition.rgb = a_FragPos;
     // Store the normal in the second buffer
-    o_GNormal.rgb = a_Normal;
+    o_GNormal.rgb = normalize(a_Normal);
     // Store the albedo color in the third buffer
     if (Materials[a_MaterialIndex].UseAlbedoTexture == 1 && Materials[a_MaterialIndex].AlbedoTexture != uvec2(0.0)) {
         o_GAlbedo.rgb = texture(sampler2D(Materials[a_MaterialIndex].AlbedoTexture), a_TexCoord).rgb;

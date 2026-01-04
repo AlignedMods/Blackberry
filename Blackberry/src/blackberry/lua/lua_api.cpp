@@ -10,20 +10,44 @@ namespace Blackberry::Lua {
     static int WLogTrace(lua_State* L) {
         const char* msg = luaL_checkstring(L, 1);
 
-        BL_INFO("[Lua] {}", msg);
+        BL_TRACE("[Lua] {}", msg);
         return 0;
     }
 
     static int WLogInfo(lua_State* L) {
         const char* msg = luaL_checkstring(L, 1);
         
-        BL_TRACE("[Lua] {}", msg);
+        BL_INFO("[Lua] {}", msg);
+        return 0;
+    }
+
+    static int WLogWarn(lua_State* L) {
+        const char* msg = luaL_checkstring(L, 1);
+        
+        BL_WARN("[Lua] {}", msg);
+        return 0;
+    }
+
+    static int WLogError(lua_State* L) {
+        const char* msg = luaL_checkstring(L, 1);
+        
+        BL_ERROR("[Lua] {}", msg);
+        return 0;
+    }
+
+    static int WLogCritical(lua_State* L) {
+        const char* msg = luaL_checkstring(L, 1);
+        
+        BL_CRITICAL("[Lua] {}", msg);
         return 0;
     }
 
     static luaL_Reg LogModule[] = {
         { "Trace", WLogTrace },
         { "Info", WLogInfo },
+        { "Warn", WLogWarn },
+        { "Error", WLogError },
+        { "Critical", WLogCritical },
         { nullptr, nullptr }
     };
 
@@ -35,99 +59,127 @@ namespace Blackberry::Lua {
 
 #pragma endregion
 
-#pragma region EntityModule
+#pragma region TransformComponent
 
-    static int WEntityGetComponent(lua_State* L) {
-        Entity* entity = static_cast<Entity*>(lua_touserdata(L, 1));
-        const char* componentName = luaL_checkstring(L, 2);
+    static int WEntityGetTransformPosition(lua_State* L) {
+        u64 handle = lua_tointeger(L, 1);
+        Scene* scene = reinterpret_cast<Scene*>(lua_touserdata(L, 2));
 
-        if (!strcmp(componentName, "Transform")) {
-            if (entity->HasComponent<TransformComponent>()) {
-                TransformComponent& transform = entity->GetComponent<TransformComponent>();
-                
-                lua_newtable(L);
-                lua_pushstring(L, "Position");
-                Lua::PushVec3(transform.Position);
-                lua_settable(L, -3);
+        Entity e(scene->GetEntityFromUUID(handle), scene);
+        BL_ASSERT(e.HasComponent<TransformComponent>(), "Entity does not contain transform!");
 
-                lua_pushstring(L, "Rotation");
-                // Lua::PushVec3(transform.Rotation);
-                lua_settable(L, -3);
-                
-                lua_pushstring(L, "Scale");
-                Lua::PushVec3(transform.Scale);
-                lua_settable(L, -3);
-                
-                return 1; // return the table
-            } else {
-                lua_pushnil(L);
-                return 1; // return nil if component doesn't exist
-            }
-        };
+        Lua::PushVec3(e.GetComponent<TransformComponent>().Position);
 
-        return 0;
+        return 1;
     }
 
-    static int WEntitySetComponent(lua_State* L) {
-        Entity* entity = static_cast<Entity*>(lua_touserdata(L, 1));
-        const char* componentName = luaL_checkstring(L, 2);
+    static int WEntityGetTransformRotation(lua_State* L) {
+        u64 handle = lua_tointeger(L, 1);
+        Scene* scene = reinterpret_cast<Scene*>(lua_touserdata(L, 2));
 
-        if (!strcmp(componentName, "Transform")) {
-            if (entity->HasComponent<TransformComponent>()) {
-                TransformComponent& transform = entity->GetComponent<TransformComponent>();
-                
-                lua_getfield(L, 3, "Position");
-                if (lua_istable(L, -1)) {
-                    lua_getfield(L, -1, "x");
-                    transform.Position.x = static_cast<f32>(lua_tonumber(L, -1));
-                    lua_pop(L, 1);
-                    
-                    lua_getfield(L, -1, "y");
-                    transform.Position.y = static_cast<f32>(lua_tonumber(L, -1));
-                    lua_pop(L, 1);
+        Entity e(scene->GetEntityFromUUID(handle), scene);
+        BL_ASSERT(e.HasComponent<TransformComponent>(), "Entity does not contain transform!");
 
-                    lua_getfield(L, -1, "z");
-                    transform.Position.z = static_cast<f32>(lua_tonumber(L, -1));
-                    lua_pop(L, 1);
-                }
-                lua_pop(L, 1); // pop Position table
+        Lua::PushVec3(glm::degrees(glm::eulerAngles(e.GetComponent<TransformComponent>().Rotation)));
 
-                lua_getfield(L, 3, "Rotation");
-                if (lua_istable(L, -1)) {
-                    lua_getfield(L, -1, "x");
-                    transform.Rotation.x = static_cast<f32>(lua_tonumber(L, -1));
-                    lua_pop(L, 1);
-                    
-                    lua_getfield(L, -1, "y");
-                    transform.Rotation.y = static_cast<f32>(lua_tonumber(L, -1));
-                    lua_pop(L, 1);
+        return 1;
+    }
 
-                    lua_getfield(L, -1, "z");
-                    transform.Rotation.z = static_cast<f32>(lua_tonumber(L, -1));
-                    lua_pop(L, 1);
-                }
-                lua_pop(L, 1); // pop Rotation table
-                
-                lua_getfield(L, 3, "Scale");
-                if (lua_istable(L, -1)) {
-                    lua_getfield(L, -1, "x");
-                    transform.Scale.x = static_cast<f32>(lua_tonumber(L, -1));
-                    lua_pop(L, 1);
-                    
-                    lua_getfield(L, -1, "y");
-                    transform.Scale.y = static_cast<f32>(lua_tonumber(L, -1));
-                    lua_pop(L, 1);
+    static int WEntityGetTransformScale(lua_State* L) {
+        u64 handle = lua_tointeger(L, 1);
+        Scene* scene = reinterpret_cast<Scene*>(lua_touserdata(L, 2));
 
-                    lua_getfield(L, -1, "z");
-                    transform.Scale.z = static_cast<f32>(lua_tonumber(L, -1));
-                    lua_pop(L, 1);
-                }
-                lua_pop(L, 1); // pop Scale table
-            }
+        Entity e(scene->GetEntityFromUUID(handle), scene);
+        BL_ASSERT(e.HasComponent<TransformComponent>(), "Entity does not contain transform!");
+
+        Lua::PushVec3(e.GetComponent<TransformComponent>().Scale);
+
+        return 1;
+    }
+
+    static int WEntitySetTransformPosition(lua_State* L) {
+        u64 handle = lua_tointeger(L, 1);
+        Scene* scene = reinterpret_cast<Scene*>(lua_touserdata(L, 2));
+
+        Entity e(scene->GetEntityFromUUID(handle), scene);
+        BL_ASSERT(e.HasComponent<TransformComponent>(), "Entity does not contain transform!");
+
+        auto& transform = e.GetComponent<TransformComponent>();
+
+        if (lua_istable(L, 3)) {
+            lua_getfield(L, 3, "x");
+            transform.Position.x = static_cast<f32>(lua_tonumber(L, -1));
+            lua_pop(L, 1);
+            
+            lua_getfield(L, 3, "y");
+            transform.Position.y = static_cast<f32>(lua_tonumber(L, -1));
+            lua_pop(L, 1);
+
+            lua_getfield(L, 3, "z");
+            transform.Position.z = static_cast<f32>(lua_tonumber(L, -1));
+            lua_pop(L, 1);
         }
 
         return 0;
     }
+
+    static int WEntitySetTransformRotation(lua_State* L) {
+        u64 handle = lua_tointeger(L, 1);
+        Scene* scene = reinterpret_cast<Scene*>(lua_touserdata(L, 2));
+
+        Entity e(scene->GetEntityFromUUID(handle), scene);
+        BL_ASSERT(e.HasComponent<TransformComponent>(), "Entity does not contain transform!");
+
+        auto& transform = e.GetComponent<TransformComponent>();
+
+        BlVec3 eulerRot(0.0f);
+
+        if (lua_istable(L, 3)) {
+            lua_getfield(L, 3, "x");
+            eulerRot.x = static_cast<f32>(lua_tonumber(L, -1));
+            lua_pop(L, 1);
+            
+            lua_getfield(L, 3, "y");
+            eulerRot.y = static_cast<f32>(lua_tonumber(L, -1));
+            lua_pop(L, 1);
+
+            lua_getfield(L, 3, "z");
+            eulerRot.z = static_cast<f32>(lua_tonumber(L, -1));
+            lua_pop(L, 1);
+        }
+
+        transform.Rotation = BlQuat(glm::radians(eulerRot));
+
+        return 0;
+    }
+
+    static int WEntitySetTransformScale(lua_State* L) {
+        u64 handle = lua_tointeger(L, 1);
+        Scene* scene = reinterpret_cast<Scene*>(lua_touserdata(L, 2));
+
+        Entity e(scene->GetEntityFromUUID(handle), scene);
+        BL_ASSERT(e.HasComponent<TransformComponent>(), "Entity does not contain transform!");
+
+        auto& transform = e.GetComponent<TransformComponent>();
+
+        if (lua_istable(L, 3)) {
+            lua_getfield(L, 3, "x");
+            transform.Scale.x = static_cast<f32>(lua_tonumber(L, -1));
+            lua_pop(L, 1);
+            
+            lua_getfield(L, 3, "y");
+            transform.Scale.y = static_cast<f32>(lua_tonumber(L, -1));
+            lua_pop(L, 1);
+
+            lua_getfield(L, 3, "z");
+            transform.Scale.z = static_cast<f32>(lua_tonumber(L, -1));
+            lua_pop(L, 1);
+        }
+
+        return 0;
+    }
+
+#pragma endregion
 
     static int WEntityAddComponent(lua_State* L) {
         Entity* entity = static_cast<Entity*>(lua_touserdata(L, 1));
@@ -137,8 +189,14 @@ namespace Blackberry::Lua {
     }
 
     static luaL_Reg EntityModule[] = {
-        { "GetComponent", WEntityGetComponent },
-        { "SetComponent", WEntitySetComponent },
+        { "GetTransformPosition", WEntityGetTransformPosition},
+        { "GetTransformRotation", WEntityGetTransformRotation},
+        { "GetTransformScale", WEntityGetTransformScale},
+
+        { "SetTransformPosition", WEntitySetTransformPosition},
+        { "SetTransformRotation", WEntitySetTransformRotation},
+        { "SetTransformScale", WEntitySetTransformScale},
+
         { "AddComponent", WEntityAddComponent },
         { nullptr, nullptr }
     };
@@ -149,27 +207,25 @@ namespace Blackberry::Lua {
         return 1;
     }
 
-#pragma endregion
-
-    static int LoadBlackberryModule(lua_State* L) {
-        // create Blackberry table
+    static int LoadInternalCallsModule(lua_State* L) {
+        // create InternalCalls table
         lua_newtable(L);
 
         // create Log module
         lua_newtable(L);
         luaL_setfuncs(L, LogModule, 0);
-        lua_setfield(L, -2, "Log"); // Blackberry.Log
+        lua_setfield(L, -2, "Log"); // InternalCalls.Log
 
         // create Entity module
         lua_newtable(L);
         luaL_setfuncs(L, EntityModule, 0);
-        lua_setfield(L, -2, "Entity"); // Blackberry.Entity
+        lua_setfield(L, -2, "Entity"); // InternalCalls.Entity
 
         return 1;
     }
 
     void SetupApi(lua_State* L) {
-        luaL_requiref(L, "Blackberry", LoadBlackberryModule, 1);
+        luaL_requiref(L, "InternalCalls", LoadInternalCallsModule, 1);
         lua_pop(L, 1); // remove module from stack
     }
 

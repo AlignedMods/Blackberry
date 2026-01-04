@@ -11,11 +11,16 @@ namespace Blackberry {
         f32 Milliseconds() const;
         f32 Nanoseconds() const;
 
+        void operator+=(const TimePoint& other);
+        TimePoint operator+(const TimePoint& other);
+
         f32 Time = 0.0f;
     };
 
     class Instrumentor {
     public:
+        static void NewFrame();
+
         static void SetTimePoint(const char* name, TimePoint timePoint);
         static TimePoint GetTimePoint(const char* name);
     };

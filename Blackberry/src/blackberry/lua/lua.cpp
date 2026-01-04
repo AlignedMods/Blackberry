@@ -17,9 +17,17 @@ namespace Blackberry::Lua {
 
     static lua_State* s_LState = nullptr;
 
+    static int LuaPanicFunc(lua_State* L) {
+        BL_CORE_ERROR("Lua panic!");
+
+        return 1;
+    }
+
     void Initialize() {
         s_LState = luaL_newstate();
         luaL_openlibs(s_LState);
+
+        lua_atpanic(s_LState, LuaPanicFunc);
 
         SetupApi(s_LState);
     }
@@ -74,12 +82,20 @@ namespace Blackberry::Lua {
         return lua_gettop(s_LState);
     }
 
+    void SetField(i32 index, const std::string& name) {
+        lua_setfield(s_LState, index, name.c_str());
+    }
+
     void PushString(const std::string& value) {
         lua_pushstring(s_LState, value.c_str());
     }
 
     void PushNumber(f64 value) {
         lua_pushnumber(s_LState, value);
+    }
+
+    void PushInteger(i64 value) {
+        lua_pushinteger(s_LState, value);
     }
 
     void PushLightUserData(void* data) {
@@ -102,26 +118,29 @@ namespace Blackberry::Lua {
     }
 
     void PushVec3(BlVec3 vec) {
-        lua_newtable(s_LState);
-        lua_pushstring(s_LState, "x");
-        lua_pushnumber(s_LState, vec.x);
-        lua_settable(s_LState, -3);
+        GetMember("Vector3", "new");
 
-        lua_pushstring(s_LState, "y");
-        lua_pushnumber(s_LState, vec.y);
-        lua_settable(s_LState, -3);
+        PushNumber(vec.x);
+        PushNumber(vec.y);
+        PushNumber(vec.z);
 
-        lua_pushstring(s_LState, "z");
-        lua_pushnumber(s_LState, vec.z);
-        lua_settable(s_LState, -3);
+        CallFunction(3, 1);
     }
 
-    i32 ToInteger(i32 index) {
+    void Insert(i32 index) {
+        lua_insert(s_LState, index);
+    }
+
+    i64 ToInteger(i32 index) {
         return lua_tointeger(s_LState, index);
     }
 
     f64 ToNumber(i32 index) {
         return lua_tonumber(s_LState, index);
+    }
+
+    std::string ToString(i32 index) {
+        return lua_tostring(s_LState, index);
     }
 
     std::string ToTypename(i32 index) {
@@ -141,6 +160,23 @@ namespace Blackberry::Lua {
             const char* errorMsg = lua_tostring(s_LState, -1);
             BL_ERROR("Lua Error during function call: {}", errorMsg);
             lua_pop(s_LState, 1); // Remove error message from stack
+        }
+    }
+
+    void DumpStack() {
+        i32 top = GetTop();
+
+        const void* previousPointer = nullptr;
+        for (i32 i = 1; i <= top; i++) {
+            const void* pointer = lua_topointer(s_LState, i);
+
+            if (pointer == previousPointer) {
+                BL_CORE_WARN("Slot: {}, Type: {}, Address: {}", i, ToTypename(i), pointer);
+            } else {
+                BL_CORE_TRACE("Slot: {}, Type: {}, Address: {}", i, ToTypename(i), pointer);
+            }
+
+            previousPointer = pointer;
         }
     }
 
