@@ -1,6 +1,6 @@
 workspace "Blackberry"
     configurations { "Debug", "Release", "Dist" }
-    platforms { "x86_64" }
+    platforms { "x86", "x86_64" }
 
     OutputDir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 

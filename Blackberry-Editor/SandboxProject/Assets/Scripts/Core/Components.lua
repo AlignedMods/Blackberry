@@ -15,23 +15,9 @@ TransformComponent.__index = TransformComponent
 
 function TransformComponent.new()
     local transform = {}
+    setmetatable(transform, TransformComponent)
 
-    local proxy = {}
-
-    -- Create metatable which monitors the TransformComponent just like the North Korean government
-    local mt = {
-        __index = function(_, key)
-            print("READ: ", key)
-            return transform[key]
-        end,
-
-        __newindex = function(_, key, value)
-            print("WRITE: ", key)
-            transform[key] = value
-        end
-    }
-
-    return setmetatable(proxy, mt)
+    return transform
 end
 
 RigidBodyComponent = {

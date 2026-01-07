@@ -10,10 +10,6 @@ Script = {
 
 function Script:OnAttach(entity)
     self.ScriptEntity = Entity.new(entity.Handle, entity.Scene)
-
-    local transform = self.ScriptEntity:GetTransformComponent()
-    print("Transform: ", transform.Position)
-    transform.Position.z = 30
 end
 
 function Script:OnDetach()
