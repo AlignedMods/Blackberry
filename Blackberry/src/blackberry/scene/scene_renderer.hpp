@@ -101,7 +101,9 @@ namespace Blackberry {
         std::vector<GPUSpotLight> SpotLights;
         GPUDirectionalLight DirectionalLight;
 
-        std::unordered_map<u64, MeshInstance> Meshes; // All the meshes we want to render
+        // All the meshes we want to render (NOTE: probably super ineffecient)
+        // The way you get a specific mesh is: Meshes[entityID][meshIndex]
+        std::unordered_map<u32, std::unordered_map<u32, MeshInstance>> Meshes;
 
         Ref<Framebuffer> GBuffer; // For deffered rendering
 
@@ -150,7 +152,7 @@ namespace Blackberry {
         SceneRendererState& GetState();
 
     private:
-        void AddMesh(const TransformComponent& transform, const Mesh& mesh, const Material& mat, BlColor color, u32 entityID, u64 meshHandle);
+        void AddMesh(const TransformComponent& transform, const Mesh& mesh, const Material& mat, BlColor color, u32 entityID, u32 meshIndex);
         void AddModel(const TransformComponent& transform, const MeshComponent& model, BlColor color, u32 entityID);
 
         void AddDirectionalLight(const TransformComponent& transform, const DirectionalLightComponent& light);

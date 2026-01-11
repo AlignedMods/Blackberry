@@ -212,10 +212,10 @@ namespace Blackberry {
         }
     }
 
-    void SceneRenderer::AddMesh(const TransformComponent& transform, const Mesh& mesh, const Material& mat, BlColor color, u32 entityID, u64 meshHandle) {
+    void SceneRenderer::AddMesh(const TransformComponent& transform, const Mesh& mesh, const Material& mat, BlColor color, u32 entityID, u32 meshIndex) {
         // We only need send vertices once per mesh
-        if (!m_State.Meshes.contains(meshHandle)) {
-            auto& meshInstance = m_State.Meshes[meshHandle];
+        if (!m_State.Meshes[entityID].contains(meshIndex)) {
+            auto& meshInstance = m_State.Meshes[entityID][meshIndex];
 
             BlVec4 normColor = NormalizeColor(color);
 
@@ -231,7 +231,7 @@ namespace Blackberry {
             }
         }
 
-        auto& meshInstance = m_State.Meshes[meshHandle];
+        auto& meshInstance = m_State.Meshes[entityID][meshIndex];
 
         TransformComponent transformMat = m_Context->GetEntityTransform(static_cast<EntityID>(entityID));
         BlMat4 final = transformMat.GetMatrix() * mesh.Transform;
@@ -283,7 +283,7 @@ namespace Blackberry {
                         auto& asset = Project::GetAssetManager().GetAsset(model.MaterialHandles.at(i));
                         auto& material = std::get<Material>(Project::GetAssetManager().GetAsset(model.MaterialHandles.at(i)).Data);
 
-                        AddMesh(transform, trueModel.Meshes[i], material, color, entityID, model.MeshHandle);
+                        AddMesh(transform, trueModel.Meshes[i], material, color, entityID, i);
 
                         useDefaultMaterial = false;
                     }
@@ -291,10 +291,10 @@ namespace Blackberry {
 
                 if (useDefaultMaterial && trueModel.Meshes[i].HasMeshMaterial) {
                     auto& material = trueModel.Meshes[i].MeshMaterial;
-                    AddMesh(transform, trueModel.Meshes[i], material, color, entityID, model.MeshHandle); 
+                    AddMesh(transform, trueModel.Meshes[i], material, color, entityID, i); 
                 } else if (useDefaultMaterial && !trueModel.Meshes[i].HasMeshMaterial) {
                     auto& material = DEFAULT_MATERIAL;
-                    AddMesh(transform, trueModel.Meshes[i], material, color, entityID, model.MeshHandle); 
+                    AddMesh(transform, trueModel.Meshes[i], material, color, entityID, i); 
                 }
             }
         }
@@ -367,27 +367,29 @@ namespace Blackberry {
         api.EnableCapability(RendererCapability::FaceCull);
         api.SetDepthFunc(DepthFunc::Lequal);
 
-        for (auto& [handle, instance] : m_State.Meshes) {
-            m_State.GeometryBuffer->GetVertexBuffer()->UpdateData(instance.MeshVertices.data(), sizeof(SceneMeshVertex), instance.MeshVertices.size());
-            m_State.GeometryBuffer->GetIndexBuffer()->UpdateData(instance.MeshIndices.data(), sizeof(u32), instance.MeshIndices.size());
+        for (auto& [id, e] : m_State.Meshes) {
+            for (auto& [index, instance] : e) {
+                m_State.GeometryBuffer->GetVertexBuffer()->UpdateData(instance.MeshVertices.data(), sizeof(SceneMeshVertex), instance.MeshVertices.size());
+                m_State.GeometryBuffer->GetIndexBuffer()->UpdateData(instance.MeshIndices.data(), sizeof(u32), instance.MeshIndices.size());
 
-            {
-                BL_PROFILE_SCOPE("SceneRenderer::Flush/Passing instance data");
-                m_State.InstanceDataBuffer.ReserveMemory(sizeof(GPUInstanceData) * instance.InstanceData.size(), instance.InstanceData.data());
+                {
+                    BL_PROFILE_SCOPE("SceneRenderer::Flush/Passing instance data");
+                    m_State.InstanceDataBuffer.ReserveMemory(sizeof(GPUInstanceData) * instance.InstanceData.size(), instance.InstanceData.data());
+                }
+
+                {
+                    BL_PROFILE_SCOPE("SceneRenderer::Flush/Passing materials");
+                    m_State.MaterialBuffer.ReserveMemory(sizeof(GPUMaterial) * instance.MaterialData.size(), instance.MaterialData.data());
+                }
+
+                api.DrawVertexArrayInstanced(m_State.GeometryBuffer, instance.InstanceCount);
+
+                instance.InstanceCount = 0;
+                instance.InstanceData.clear();
+                instance.MaterialData.clear();
+                instance.MeshIndices.clear();
+                instance.MeshVertices.clear();
             }
-
-            {
-                BL_PROFILE_SCOPE("SceneRenderer::Flush/Passing materials");
-                m_State.MaterialBuffer.ReserveMemory(sizeof(GPUMaterial) * instance.MaterialData.size(), instance.MaterialData.data());
-            }
-
-            api.DrawVertexArrayInstanced(m_State.GeometryBuffer, instance.InstanceCount);
-
-            instance.InstanceCount = 0;
-            instance.InstanceData.clear();
-            instance.MaterialData.clear();
-            instance.MeshIndices.clear();
-            instance.MeshVertices.clear();
         }
 
         api.UnBindFramebuffer();
@@ -562,8 +564,8 @@ namespace Blackberry {
             m_State.BloomCombineShader->SetInt("u_Original", 0);
             m_State.BloomCombineShader->SetInt("u_Blurred", 1);
         
-            m_State.BloomCombineShader->SetFloat("u_CombineAmount", 0.5f);
-            m_State.BloomCombineShader->SetInt("u_Mode", 0);
+            m_State.BloomCombineShader->SetFloat("u_CombineAmount", 0.4f);
+            m_State.BloomCombineShader->SetInt("u_Mode", 1);
         
             api.BindTexture2D(m_State.PBROutput->Attachments[0], 0);
             api.BindTexture2D(m_State.BloomUpscalePasses[0]->Attachments[0], 1);
