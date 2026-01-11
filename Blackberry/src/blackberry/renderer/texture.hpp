@@ -88,6 +88,7 @@ namespace Blackberry {
         // NOTE: You must free the memory that comes with this function! (with free() NOT delete!)
         void* ReadPixels(u32 attachment, BlVec2 position, BlVec2 dimensions, u32 size);
 
+        void BlitToSwapchain();
         void BlitDepthBuffer(Ref<Framebuffer> other);
 
         void AttachColorAttachment(u32 attachment, const Ref<Texture>& texture, u32 mip);

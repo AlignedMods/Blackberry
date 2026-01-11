@@ -1,0 +1,223 @@
+#version 460 core
+#extension GL_ARB_bindless_texture : enable
+
+layout (location = 0) in vec2 a_TexCoord;
+
+struct DirectionalLight {
+    vec4 Direction; // w is unused
+    vec4 Color; // w is unused
+    vec4 Params; // g, b, w is unused
+};
+
+struct PointLight {
+    vec4 Position; // w is unused
+    vec4 Color; // w is unused
+    vec4 Params; // w is unused
+};
+
+struct SpotLight {
+    vec4 Position; // w is unused
+    vec4 Direction; // w is used for cutoff
+    vec4 Color; // w is used for intensity
+};
+
+layout (std430, binding = 3) buffer PointLightBuffer {
+    PointLight PointLights[];
+};
+
+layout (std430, binding = 4) buffer SpotLightBuffer {
+    SpotLight SpotLights[];
+};
+
+uniform sampler2D u_GPosition;
+uniform sampler2D u_GNormal;
+uniform sampler2D u_GAlbedo;
+uniform sampler2D u_GMat;
+
+uniform int u_PointLightCount;
+uniform int u_SpotLightCount;
+uniform DirectionalLight u_DirectionalLight;
+
+uniform vec3 u_ViewPos;
+
+uniform samplerCube u_IrradianceMap;
+uniform samplerCube u_PrefilterMap;
+uniform sampler2D u_BrdfLUT;
+
+uniform vec3 u_FogColor;
+uniform float u_FogDistance;
+
+out vec4 o_FragColor;
+
+const float PI = 3.14159265359;
+
+float DistributionGGX(vec3 N, vec3 H, float roughness);
+float GeometrySchlickGGX(float NdotV, float roughness);
+float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
+vec3 FresnelSchlick(float cosTheta, vec3 F0);
+vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness);
+
+vec3 AddLight(vec3 N, vec3 H, vec3 V, vec3 L, vec3 F0, float roughness, float metallic, vec3 albedo, vec3 radiance) {
+    // cook-torrance brdf
+    float NDF = DistributionGGX(N, H, roughness);
+    float G = GeometrySmith(N, V, L, roughness);
+    vec3 F = FresnelSchlick(max(dot(H, V), 0.0), F0);
+    
+    vec3 kS = F;
+    vec3 kD = vec3(1.0) - kS;
+    kD *= 1.0 - metallic;
+    
+    vec3 numerator = NDF * G * F;
+    float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001;
+    vec3 specular = numerator / denominator;
+    
+    // add to radiance
+    float NdotL = max(dot(N, L), 0.0);
+    return (kD * albedo / PI + specular) * radiance * NdotL;
+}
+
+void main() {
+    vec3 worldPos   = texture(u_GPosition, a_TexCoord).rgb;
+    vec3 normal     = texture(u_GNormal, a_TexCoord).rgb;
+    vec3 albedo = pow(texture(u_GAlbedo, a_TexCoord).rgb, vec3(2.2));
+    float metallic  = texture(u_GMat, a_TexCoord).r;
+    float roughness = texture(u_GMat, a_TexCoord).g;
+    float ao        = texture(u_GMat, a_TexCoord).b;
+    float emission  = texture(u_GMat, a_TexCoord).a;
+
+    roughness = clamp(roughness, 0.001, 0.99);
+
+    // roughness = max(roughness, 0.001);
+
+    vec3 N = normal;
+    vec3 V = normalize(u_ViewPos - worldPos);
+    vec3 R = reflect(-V, N);
+
+    vec3 F0 = vec3(0.04);
+    F0 = mix(F0, albedo, metallic);
+    
+    // reflectance equation
+    vec3 Lo = vec3(0.0);
+
+    // Directional Light
+    {
+        vec3 color = u_DirectionalLight.Color.rgb;
+        float intensity = u_DirectionalLight.Params.r;
+    
+        // calculate radiance
+        vec3 L = normalize(-u_DirectionalLight.Direction.xyz);
+        vec3 H = normalize(V + L);
+        vec3 radiance = color * intensity;
+    
+        Lo = AddLight(N, H, V, L, F0, roughness, metallic, albedo, radiance);
+    }
+    
+    // Point Lights
+    for (int i = 0; i < u_PointLightCount; i++) {
+        vec3 position = PointLights[i].Position.xyz;
+        vec3 color = PointLights[i].Color.rgb;
+    
+        float radius = PointLights[i].Params.r;
+        float intensity = PointLights[i].Params.g;
+    
+        // calculate per light radiance
+        vec3 L = normalize(position - worldPos);
+        vec3 H = normalize(V + L);
+        float distance = max(length(position - worldPos), 0.0);
+        float x = clamp(1.0 - (distance / radius), 0.0, 1.0);
+        float attenuation = x * x;
+        vec3 radiance = color * attenuation * intensity;
+
+        // Only add lights if they are in range
+        if (radius > distance) {
+            Lo += AddLight(N, H, V, L, F0, roughness, metallic, albedo, radiance);
+        }
+    }
+    
+    // Spot Lights
+    for (int i = 0; i < u_SpotLightCount; i++) {
+        vec3 position = SpotLights[i].Position.xyz;
+        vec3 direction = SpotLights[i].Direction.xyz;
+        vec3 color = SpotLights[i].Color.rgb;
+    
+        float cutoff = SpotLights[i].Direction.a;
+        float intensity = SpotLights[i].Color.a;
+    
+        vec3 L = normalize(position - worldPos);
+        vec3 H = normalize(V + L);
+    
+        float theta = dot(L, normalize(-direction));
+    
+        if (theta > cutoff) {
+            vec3 radiance = color * intensity;
+            Lo += AddLight(N, H, V, L, F0, roughness, metallic, albedo, radiance);
+        }
+    }
+    
+    Lo += albedo * vec3(emission);
+
+    vec3 F = FresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
+    
+    vec3 kS = F;
+    vec3 kD = 1.0 - kS;
+    kD *= 1.0 - metallic;
+
+    vec3 irradiance = textureLod(u_IrradianceMap, N, 0).rgb;
+    vec3 diffuse = irradiance * albedo;
+
+    const float MAX_REFLECTION_LOD = 7.0;
+    vec3 prefilteredColor = textureLod(u_PrefilterMap, R, roughness * MAX_REFLECTION_LOD).rgb;
+    // vec3 prefilteredColor = textureLod(u_PrefilterMap, R, 0).rgb;
+    // note to future self: maybe don't always assume textures want mips (ask me how i know)
+    vec2 brdf = textureLod(u_BrdfLUT, vec2(max(dot(N, V), 0.0), roughness), 0).rg;
+    vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
+    
+    vec3 ambient = (kD * diffuse + specular) * ao;
+
+    vec3 color = ambient + Lo;
+    
+    o_FragColor = vec4(color, 1.0);
+}
+
+float DistributionGGX(vec3 N, vec3 H, float roughness)
+{
+    float a = roughness*roughness;
+    float a2 = a*a;
+    float NdotH = max(dot(N, H), 0.0);
+    float NdotH2 = NdotH*NdotH;
+
+    float nom   = a2;
+    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+    denom = PI * denom * denom;
+
+    return nom / denom;
+}
+// ----------------------------------------------------------------------------
+float GeometrySchlickGGX(float NdotV, float roughness)
+{
+    float r = (roughness + 1.0);
+    float k = (r*r) / 8.0;
+
+    float nom   = NdotV;
+    float denom = NdotV * (1.0 - k) + k;
+
+    return nom / denom;
+}
+// ----------------------------------------------------------------------------
+float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
+{
+    float NdotV = max(dot(N, V), 0.0);
+    float NdotL = max(dot(N, L), 0.0);
+    float ggx2 = GeometrySchlickGGX(NdotV, roughness);
+    float ggx1 = GeometrySchlickGGX(NdotL, roughness);
+
+    return ggx1 * ggx2;
+}
+
+vec3 FresnelSchlick(float cosTheta, vec3 F0) {
+    return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}
+// ----------------------------------------------------------------------------
+vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness) {
+    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}   

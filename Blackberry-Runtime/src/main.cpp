@@ -11,32 +11,45 @@ namespace BlackberryRuntime {
             auto commandLineArgs = BL_APP.GetSpecification().CommandLineArgs;
             const char* path = commandLineArgs.Args[1];
             Project::Load(path);
-            m_CurrentScene = &Project::GetStartScene().Scene;
+            m_CurrentScene = Project::GetStartScene();
 
-            m_CurrentScene->OnPlay();
+            m_CurrentScene->OnRuntimeStart();
+            m_CurrentScene->SetPaused(false);
 
-            m_Camera = m_CurrentScene->GetSceneCamera();
+            FramebufferSpecification spec;
+            spec.Width = 1920;
+            spec.Height = 1080;
+            spec.Attachments = {
+                {0, FramebufferAttachmentType::ColorRGBA8},
+                {1, FramebufferAttachmentType::Depth24}
+            };
+            spec.ActiveAttachments = { 0 };
+            m_RenderTarget = Framebuffer::Create(spec);
         }
 
         virtual void OnDetach() override {
-            m_CurrentScene->OnStop();
+            m_CurrentScene->OnRuntimeStop();
         }
 
-        virtual void OnUpdate(f32 ts) override {
-            m_CurrentScene->OnUpdate();
-            m_CurrentScene->OnRuntimeUpdate();
+        virtual void OnUpdate() override {
+            auto& api = BL_APP.GetRendererAPI();
+
+            m_CurrentScene->OnUpdateRuntime();
+            m_CurrentScene->OnRenderRuntime(m_RenderTarget);
+
+            api.ClearFramebuffer();
+            m_RenderTarget->BlitToSwapchain();
         }
 
-        virtual void OnRender() override {
-            Renderer2D::Clear(BlColor(0x69, 0x69, 0x69, 0xff));
-
-            m_CurrentScene->SetCamera(&m_Camera);
-            m_CurrentScene->OnRender();
+        virtual void OnEvent(const Event& e) {
+            if (e.GetEventType() == EventType::WindowClose) {
+                BL_APP.Close();
+            }
         }
     
     private:
-        Scene* m_CurrentScene = nullptr;
-        SceneCamera m_Camera;
+        Ref<Scene> m_CurrentScene;
+        Ref<Framebuffer> m_RenderTarget;
     };
     
 } // namespace BlackberryRuntime

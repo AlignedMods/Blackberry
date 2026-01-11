@@ -1,5 +1,6 @@
 #include "blackberry/renderer/texture.hpp"
 #include "blackberry/core/util.hpp"
+#include "blackberry/application/application.hpp"
 
 #include "glad/gl.h"
 #include "GLFW/glfw3.h"
@@ -304,6 +305,15 @@ namespace Blackberry {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         return pixels;
+    }
+
+    void Framebuffer::BlitToSwapchain() {
+        auto& window = BL_APP.GetWindow();
+
+        glBlitNamedFramebuffer(ID, 0, 
+                               0, 0, Specification.Width, Specification.Height, 
+                               0, 0, window.GetWindowDims().x, window.GetWindowDims().y,
+                               GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
     }
 
     void Framebuffer::BlitDepthBuffer(Ref<Framebuffer> other) {
