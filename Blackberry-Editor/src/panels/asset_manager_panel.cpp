@@ -9,43 +9,43 @@ namespace BlackberryEditor {
     void AssetManagerPanel::OnUIRender(bool& open) {
         if (!open) return;
 
-        ImGui::Begin("Asset Manager", &open);
+        if (ImGui::Begin("Asset Manager", &open)) {
+            auto& assetManager = Project::GetAssetManager();
 
-        auto& assetManager = Project::GetAssetManager();
+            ImGui::Checkbox("Allow Editing", &m_AllowEditing);
 
-        ImGui::Checkbox("Allow Editing", &m_AllowEditing);
+            if (ImGui::CollapsingHeader("Registry")) {
+                for (auto&[handle, asset] : assetManager.GetAllAssets()) {
+                    ImGui::SeparatorText("Asset");
+                    ImGui::Indent();
 
-        if (ImGui::CollapsingHeader("Registry")) {
-            for (auto&[handle, asset] : assetManager.GetAllAssets()) {
-                ImGui::SeparatorText("Asset");
-                ImGui::Indent();
+                    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
+                    ImGui::PushID(&handle);
 
-                ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
-                ImGui::PushID(&handle);
+                    ImGui::Text("Handle: "); ImGui::SameLine(150.0f);
+                    ImGui::Button(fmt::to_string(handle).c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0.0f));
 
-                ImGui::Text("Handle: "); ImGui::SameLine(150.0f);
-                ImGui::Button(fmt::to_string(handle).c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0.0f));
+                    if (ImGui::BeginDragDropSource()) {
+                        ImGui::SetDragDropPayload("ASSET_MANAGER_HANDLE_DRAG_DROP", &handle, sizeof(handle));
+                        ImGui::Text(fmt::to_string(handle).c_str());
+                        ImGui::EndDragDropSource();
+                    }
+                    ImGui::Separator();
 
-                if (ImGui::BeginDragDropSource()) {
-                    ImGui::SetDragDropPayload("ASSET_MANAGER_HANDLE_DRAG_DROP", &handle, sizeof(handle));
-                    ImGui::Text(fmt::to_string(handle).c_str());
-                    ImGui::EndDragDropSource();
+                    std::string strPath = asset.FilePath;
+
+                    ImGui::Text("Path: "); ImGui::SameLine(150.0f);
+                    ImGui::Button(strPath.c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0.0f));
+                    ImGui::Separator();
+
+                    ImGui::Text("Type: "); ImGui::SameLine(150.0f);
+                    ImGui::Button(AssetTypeToString(asset.Type), ImVec2(ImGui::GetContentRegionAvail().x, 0.0f));
+
+                    ImGui::PopID();
+                    ImGui::PopStyleVar();
+
+                    ImGui::Unindent();
                 }
-                ImGui::Separator();
-
-                std::string strPath = asset.FilePath;
-
-                ImGui::Text("Path: "); ImGui::SameLine(150.0f);
-                ImGui::Button(strPath.c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0.0f));
-                ImGui::Separator();
-
-                ImGui::Text("Type: "); ImGui::SameLine(150.0f);
-                ImGui::Button(AssetTypeToString(asset.Type), ImVec2(ImGui::GetContentRegionAvail().x, 0.0f));
-
-                ImGui::PopID();
-                ImGui::PopStyleVar();
-
-                ImGui::Unindent();
             }
         }
 

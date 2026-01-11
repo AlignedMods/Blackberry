@@ -36,6 +36,8 @@ namespace BlackberryEditor {
         void UI_Explorer();
         void UI_Properties();
         void UI_Viewport();
+
+        void UI_EditorSettings();
     
         void UI_NewProject();
         void UI_NewScene();
@@ -71,6 +73,7 @@ namespace BlackberryEditor {
         Blackberry::Font m_EditorFont;
         Blackberry::SceneCamera m_EditorCamera;
         f32 m_EditorCameraSpeed = 2.0f;
+        f32 m_EditorCameraSensitivity = 2.0f;
     
         Blackberry::EntityID m_SelectedEntity = entt::null;
         bool m_IsEntitySelected = false;

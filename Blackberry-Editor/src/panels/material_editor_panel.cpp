@@ -129,9 +129,9 @@ namespace BlackberryEditor {
                     Material::Save(mat, path);
                 }
             }
-
-            ImGui::End();
         }
+
+        ImGui::End();
     }
 
     void MaterialEditorPanel::SetContext(u64 materialHandle) {
