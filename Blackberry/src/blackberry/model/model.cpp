@@ -57,6 +57,17 @@ namespace Blackberry {
         return im;
     }
 
+    static BlMat4 GLTF_GetNodeTransform(cgltf_node* node) {
+        cgltf_float trans[16]{};
+        cgltf_node_transform_world(node, trans);
+        BlMat4 mat = BlMat4(trans[0],  trans[1],  trans[2],  trans[3],
+                            trans[4],  trans[5],  trans[6],  trans[7],
+                            trans[8],  trans[9],  trans[10], trans[11],
+                            trans[12], trans[13], trans[14], trans[15]);
+
+        return mat;
+    }
+
     static bool LoadFromGLTF(const FS::Path& path, Model& out) {
         cgltf_options options{};
         cgltf_data* data = nullptr;
@@ -147,12 +158,7 @@ namespace Blackberry {
             cgltf_mesh& gltfMesh = *node.mesh;
 
             // Get transform
-            cgltf_float trans[16]{};
-            cgltf_node_transform_local(&node, trans);
-            BlMat4 mat = BlMat4(trans[0],  trans[1],  trans[2],  trans[3],
-                                trans[4],  trans[5],  trans[6],  trans[7],
-                                trans[8],  trans[9],  trans[10], trans[11],
-                                trans[12], trans[13], trans[14], trans[15]);
+            BlMat4 mat = GLTF_GetNodeTransform(&node);
 
             for (u32 p = 0; p < gltfMesh.primitives_count; p++) {
                 cgltf_primitive& prim = gltfMesh.primitives[p];
