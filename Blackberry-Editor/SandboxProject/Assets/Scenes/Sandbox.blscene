@@ -99,11 +99,13 @@ Entities:
     TransformComponent:
       Position: [0, 0, 0]
       Rotation: [0, 0, 0, 1]
-      Scale: [7.8, 7.8, 7.8]
+      Scale: [3.8999999, 3.8999999, 3.8999999]
     MeshComponent:
-      MeshHandle: 14564222973131806585
+      MeshHandle: 3405518964921626129
       MaterialHandles:
         0: 0
+        1: 0
+        2: 0
     RigidBodyComponent:
       Type: Static
       Resitution: 0.3

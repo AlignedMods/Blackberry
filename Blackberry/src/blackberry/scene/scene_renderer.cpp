@@ -216,6 +216,8 @@ namespace Blackberry {
         // We only need send vertices once per mesh
         if (!m_State.Meshes[entityID].contains(meshIndex)) {
             auto& meshInstance = m_State.Meshes[entityID][meshIndex];
+            meshInstance.MeshVertices.reserve(mesh.Positions.size());
+            meshInstance.MeshIndices.reserve(mesh.Indices.size());
 
             BlVec4 normColor = NormalizeColor(color);
 
@@ -275,26 +277,13 @@ namespace Blackberry {
             const Asset& asset = Project::GetAssetManager().GetAsset(model.MeshHandle);
             auto& trueModel = std::get<Model>(asset.Data);
 
-            for (u32 i = 0; i < trueModel.MeshCount; ++i) {
-                bool useDefaultMaterial = true;
+            for (u32 i = 0; i < trueModel.Meshes.size(); i++) {
+                const Mesh& mesh = trueModel.Meshes[i];
 
-                if (model.MaterialHandles.contains(i)) {
-                    if (Project::GetAssetManager().ContainsAsset(model.MaterialHandles.at(i))) {
-                        auto& asset = Project::GetAssetManager().GetAsset(model.MaterialHandles.at(i));
-                        auto& material = std::get<Material>(Project::GetAssetManager().GetAsset(model.MaterialHandles.at(i)).Data);
-
-                        AddMesh(transform, trueModel.Meshes[i], material, color, entityID, i);
-
-                        useDefaultMaterial = false;
-                    }
-                }
-
-                if (useDefaultMaterial && trueModel.Meshes[i].HasMeshMaterial) {
-                    auto& material = trueModel.Meshes[i].MeshMaterial;
-                    AddMesh(transform, trueModel.Meshes[i], material, color, entityID, i); 
-                } else if (useDefaultMaterial && !trueModel.Meshes[i].HasMeshMaterial) {
-                    auto& material = DEFAULT_MATERIAL;
-                    AddMesh(transform, trueModel.Meshes[i], material, color, entityID, i); 
+                if (mesh.MaterialIndex == Mesh::InvalidMaterialIndex) {
+                    AddMesh(transform, trueModel.Meshes[i], DEFAULT_MATERIAL, color, entityID, i);
+                } else {
+                    AddMesh(transform, trueModel.Meshes[i], trueModel.Materials[mesh.MaterialIndex], color, entityID, i);
                 }
             }
         }
@@ -565,7 +554,7 @@ namespace Blackberry {
             m_State.BloomCombineShader->SetInt("u_Blurred", 1);
         
             m_State.BloomCombineShader->SetFloat("u_CombineAmount", 0.4f);
-            m_State.BloomCombineShader->SetInt("u_Mode", 1);
+            m_State.BloomCombineShader->SetInt("u_Mode", 0);
         
             api.BindTexture2D(m_State.PBROutput->Attachments[0], 0);
             api.BindTexture2D(m_State.BloomUpscalePasses[0]->Attachments[0], 1);

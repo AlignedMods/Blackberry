@@ -13,6 +13,7 @@ workspace "Blackberry"
 
     filter "configurations:Release"
         optimize "On"
+        symbols "On"
         defines { "BL_RELEASE_BUILD" }
 
     filter "configurations:Dist"

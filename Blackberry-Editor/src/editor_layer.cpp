@@ -530,9 +530,9 @@ namespace BlackberryEditor {
         UI_Explorer();
         UI_Properties();
         UI_Viewport();
-
+        
         UI_EditorSettings();
-
+        
         m_MaterialEditorPanel.OnUIRender(m_MaterialEditorPanelOpen);
         m_SceneRendererPanel.SetContext(m_CurrentScene);
         m_SceneRendererPanel.OnUIRender(m_SceneRendererPanelOpen);
@@ -1234,7 +1234,7 @@ namespace BlackberryEditor {
                     if (Project::GetAssetManager().ContainsAsset(mesh.MeshHandle)) {
                         Model& model = std::get<Model>(Project::GetAssetManager().GetAsset(mesh.MeshHandle).Data);
                     
-                        for (u32 i = 0; i < model.MeshCount; i++) {
+                        for (u32 i = 0; i < model.Meshes.size(); i++) {
                             ImGui::PushID(i);
                     
                             DrawAssetBox(fmt::format("Material [{}]: ", i), AssetType::Material, &mesh.MaterialHandles[i]);

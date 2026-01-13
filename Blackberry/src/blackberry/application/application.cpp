@@ -128,6 +128,8 @@ namespace Blackberry {
     }
 
     void Application::OnUpdate() {
+        m_RendererAPI->ClearFramebuffer();
+
         while (m_Window->GetTime() - m_FixedUpdateTime > 0.0167) {
             m_FixedUpdateTime += 0.0167;
 

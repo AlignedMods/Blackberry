@@ -60,6 +60,11 @@
             "Path": "EnviromentMaps/BlueSky.hdr",
             "Type": "Environment Map"
         },
+        "Handle - 3405518964921626129": {
+            "Handle": 3405518964921626129,
+            "Path": "Meshes/TestScene.glb",
+            "Type": "Model"
+        },
         "Handle - 3506026168109084076": {
             "Handle": 3506026168109084076,
             "Path": "Meshes/House.glb",

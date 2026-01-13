@@ -11,7 +11,7 @@ namespace Blackberry {
 
     public:
         std::vector<Mesh> Meshes;
-        u32 MeshCount = 0;
+        std::vector<Material> Materials;
     };
 
 } // namespace Blackberry
