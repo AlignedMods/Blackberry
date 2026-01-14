@@ -170,7 +170,8 @@ void main() {
     // vec3 prefilteredColor = textureLod(u_PrefilterMap, R, 0).rgb;
     // note to future self: maybe don't always assume textures want mips (ask me how i know)
     vec2 brdf = textureLod(u_BrdfLUT, vec2(max(dot(N, V), 0.0), roughness), 0).rg;
-    vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
+    // vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
+    vec3 specular = prefilteredColor * F;
     
     vec3 ambient = (kD * diffuse + specular) * ao;
 

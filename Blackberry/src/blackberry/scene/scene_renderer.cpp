@@ -279,12 +279,18 @@ namespace Blackberry {
 
             for (u32 i = 0; i < trueModel.Meshes.size(); i++) {
                 const Mesh& mesh = trueModel.Meshes[i];
+                const Material* mat = nullptr;
 
-                if (mesh.MaterialIndex == Mesh::InvalidMaterialIndex) {
-                    AddMesh(transform, trueModel.Meshes[i], DEFAULT_MATERIAL, color, entityID, i);
-                } else {
-                    AddMesh(transform, trueModel.Meshes[i], trueModel.Materials[mesh.MaterialIndex], color, entityID, i);
+                mat = &trueModel.Materials[mesh.MaterialIndex];
+
+                if (model.MaterialHandles.contains(mesh.MaterialIndex)) {
+                    u64 matHandle = model.MaterialHandles.at(mesh.MaterialIndex);
+                    if (Project::GetAssetManager().ContainsAsset(matHandle)) {
+                        mat = &std::get<Material>(Project::GetAssetManager().GetAsset(matHandle).Data);
+                    }
                 }
+
+                AddMesh(transform, trueModel.Meshes[i], *mat, color, entityID, i);
             }
         }
     }

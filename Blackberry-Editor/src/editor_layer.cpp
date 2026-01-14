@@ -1234,7 +1234,7 @@ namespace BlackberryEditor {
                     if (Project::GetAssetManager().ContainsAsset(mesh.MeshHandle)) {
                         Model& model = std::get<Model>(Project::GetAssetManager().GetAsset(mesh.MeshHandle).Data);
                     
-                        for (u32 i = 0; i < model.Meshes.size(); i++) {
+                        for (u32 i = 0; i < model.Materials.size(); i++) {
                             ImGui::PushID(i);
                     
                             DrawAssetBox(fmt::format("Material [{}]: ", i), AssetType::Material, &mesh.MaterialHandles[i]);

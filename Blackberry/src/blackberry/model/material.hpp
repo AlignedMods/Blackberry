@@ -35,6 +35,7 @@ namespace Blackberry {
         f32 Emission = 0.0f;
 
         u32 ID = 0;
+        bool IsDefault = false;
     };
 
 } // namespace Blackberry

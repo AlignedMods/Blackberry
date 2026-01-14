@@ -149,6 +149,14 @@ namespace Blackberry {
             out.Materials.push_back(mat);
         }
 
+        // If there is no materials we will load a default material
+        if (data->materials_count == 0) {
+            Material mat = Material::Create();
+
+            mat.IsDefault = true;
+            out.Materials.push_back(mat);
+        }
+
         // Load meshes
         out.Meshes.reserve(data->meshes_count);
         for (u32 i = 0; i < data->nodes_count; i++) {
@@ -209,6 +217,8 @@ namespace Blackberry {
                 if (prim.material) {
                     // Nice little pointer arithmetic am i right
                     mesh.MaterialIndex = static_cast<u32>(prim.material - data->materials);
+                } else { // Use default material
+                    mesh.MaterialIndex = 0;
                 }
 
                 out.Meshes.push_back(mesh);

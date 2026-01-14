@@ -11,7 +11,7 @@ namespace Blackberry {
 
     public:
         std::vector<Mesh> Meshes;
-        std::vector<Material> Materials;
+        std::vector<Material> Materials; // This ALWAYS has at LEAST one material! (default gets created if none are contained!)
     };
 
 } // namespace Blackberry
