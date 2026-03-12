@@ -120,7 +120,8 @@ namespace BlackberryEditor {
                     ImGui::Text("AO");
                 }
 
-                ImGui::DragFloat("Emission", &mat.Emission, 0.1f, 0.0f, 200.0f);
+                ImGui::SliderFloat("##Emission", &mat.Emission, 0.0f, 1.0f); ImGui::SameLine();
+                ImGui::Text("Emission");
 
                 if (ImGui::Button("Save")) {
                     auto path = Project::GetAssetPath(Project::GetAssetManager().GetAsset(m_Context).FilePath);
